@@ -1,0 +1,68 @@
+[
+  {
+    "id": "eckiger_bogen",
+    "name": "Eckiger Bogen",
+    "image": "assets/formteile/eckiger_bogen.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "etage_45",
+    "name": "Etage 45",
+    "image": "assets/formteile/etage_45.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "kanal_bogen_winkel",
+    "name": "Kanal Bogen Winkel",
+    "image": "assets/formteile/kanal_bogen_winkel.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "kreis_bogen",
+    "name": "Kreis Bogen",
+    "image": "assets/formteile/kreis_bogen.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "t_abzweig_durchgang_rund1",
+    "name": "T Abzweig Durchgang Rund1",
+    "image": "assets/formteile/t_abzweig_durchgang_rund1.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "t_abzweig_durchgang_rund2",
+    "name": "T Abzweig Durchgang Rund2",
+    "image": "assets/formteile/t_abzweig_durchgang_rund2.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "t_abzweig_rund1",
+    "name": "T Abzweig Rund1",
+    "image": "assets/formteile/t_abzweig_rund1.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "t_abzweig_rund2",
+    "name": "T Abzweig Rund2",
+    "image": "assets/formteile/t_abzweig_rund2.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "t_stueck_90",
+    "name": "T Stueck 90",
+    "image": "assets/formteile/t_stueck_90.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "uebergang_gross",
+    "name": "Uebergang Gross",
+    "image": "assets/formteile/uebergang_gross.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  },
+  {
+    "id": "uebergang_klein",
+    "name": "Uebergang Klein",
+    "image": "assets/formteile/uebergang_klein.png",
+    "status": "Bild übernommen, Formelprüfung offen"
+  }
+]
