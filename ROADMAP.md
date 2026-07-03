@@ -1,34 +1,27 @@
-# Roadmap – Druckverlust Pro Professional
+# Roadmap
 
-## Version 1.0 – Stabile Webbasis
-- Projektangaben und Stammdaten
-- Hauptberechnung mit Kanal/Rohr/Sonderbauteilen
-- Formteil-Rechner mit Teilstrecken-Zuweisung
-- Automatische Σζ-Übernahme
-- Projekt speichern/öffnen als `.dp`
-- Professioneller PDF-Export ohne Browserdruck
-- GitHub Pages / Cloudflare Pages geeignet
+## 0.2.0 – Professional Core
+- Berechnungs-Engine modularisieren
+- Formteilbibliothek vorbereiten
+- PDF-Bericht stabilisieren
 
-## Version 1.1 – Formteilbibliothek Professional
-- Alle Formteile aus den gelieferten Ordnern übernehmen
-- Originalbilder verwenden
-- Formeln und Tabellen aus Excel validieren
-- Pro Formteil mindestens ein Referenztest
-- Suche und Kategorien: Rund, Rechteck, Übergänge, Abzweige, Spezial
+## 0.3.0 – Formteil-Rechner Professional
+- Jede Excel-Formel 1:1 übernehmen
+- Referenztest pro Formteil
+- Formteilparameter sauber dokumentieren
 
-## Version 1.2 – Referenztests und Qualität
-- TEST-001 vollständig automatisieren
-- Weitere Praxisbeispiele ergänzen
-- Abweichungsprotokoll gegen Excel
-- Plausibilitätsprüfung für Luftgeschwindigkeit und Druckverlust
+## 0.4.0 – PDF Professional
+- Formteilbilder im Bericht
+- automatische Seitenumbrüche
+- Querformat für große Tabellen
 
-## Version 1.3 – Herstellerdatenbank
-- Monoblock, Schalldämpfer, VAV, Auslässe als wählbare Bauteile
-- Hersteller/Typ/Druckverlust-Datenbank
-- Eigene Bauteile speichern
+## 0.5.0 – Herstellerdatenbank
+- Monoblock
+- Schalldämpfer
+- VAV
+- Auslässe
 
-## Version 2.0 – Professional Workflow
-- Strangorientierter Aufbau
-- Automatische Teilstrecken-Erkennung
-- Grafischer Anlageneditor als Option
-- Mehrsprachigkeit DE/FR/EN
+## 1.0.0 – Release
+- Excel-freier Arbeitsablauf
+- geprüfte Referenztests
+- stabiler PDF-Bericht

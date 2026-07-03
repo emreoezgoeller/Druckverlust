@@ -1,55 +1,23 @@
 # Druckverlust Pro Professional
 
-Webbasierte Druckverlustberechnung für Lüftungstechnik – entwickelt aus der Praxis für den Planungsalltag.
+Webbasierte Druckverlustberechnung für Lüftungstechnik.  
+**Fachliche Vorlage / Idee:** Emre Özgöller
 
-**Projektidee / Fachliche Vorlage:** Emre Özgöller  
-**Ziel:** Excel ersetzen, Berechnungen vereinfachen und professionelle PDF-Berichte erzeugen.
+## Version
+`0.2.0` – Sprint 1: Professional Core
 
-## Online nutzen
-Die Anwendung kann direkt über GitHub Pages oder Cloudflare Pages veröffentlicht werden.  
-Startdatei: `index.html`
-
-## Aktueller Stand
-Diese Version ist die GitHub-Startbasis für die weitere Entwicklung.
-
-Enthalten:
-- Hauptberechnung mit Kanal/Rohr/Sonderbauteil
-- Formteilbilder und Rechnerbasis
-- PDF-Export als echte PDF-Erzeugung
+## Enthalten
+- Modulare Projektstruktur
+- Berechnungs-Engine für Kanal/Rohr/Sonderbauteil
+- Formteilbibliothek mit Originalbildern und Excel-Referenzen
+- Teilstrecken-Zuweisung für Formteile
+- Automatische Σζ-Übernahme
 - Projekt speichern/öffnen als `.dp`
-- GitHub-Struktur mit Roadmap, Changelog und Testplan
+- PDF-Bericht mit eigenem PDF-Generator
+- Referenztest TEST-001
 
-## Projektstruktur
+## GitHub Pages
+Die App läuft als statische Webseite. Startdatei: `index.html`.
 
-```text
-Druckverlust-Pro/
-├── index.html
-├── assets/
-│   ├── logo.png
-│   └── formteile/
-├── src/
-│   ├── app.js
-│   ├── style.css
-│   ├── calculation/
-│   ├── formteile/
-│   ├── pdf/
-│   ├── project/
-│   └── ui/
-├── docs/
-│   ├── ARCHITEKTUR.md
-│   └── TESTPLAN.md
-├── tests/
-│   └── reference/
-├── ROADMAP.md
-└── CHANGELOG.md
-```
-
-## Entwicklungsregeln
-1. Keine Funktion wird als fertig markiert, bevor sie bedienbar ist.
-2. Berechnungen werden gegen Excel-Referenzen geprüft.
-3. PDF-Ausgabe darf keine leeren Seiten, Dateipfade oder Browser-Kopfzeilen enthalten.
-4. Formteile werden mit Originalbild, Parametern und Referenzformel dokumentiert.
-5. Neue Versionen werden über Changelog und Roadmap nachvollziehbar geführt.
-
-## Nächster Sprint
-**Sprint 1:** Berechnungs-Engine modularisieren und Formteilbibliothek vorbereiten.
+## Wichtig
+Die aktuellen Zeta-Formeln sind in Sprint 1 als Arbeits-/Näherungslogik hinterlegt. In Sprint 2 werden die Formeln je Formteil 1:1 aus den Excel-Dateien übernommen und mit Referenztests abgesichert.

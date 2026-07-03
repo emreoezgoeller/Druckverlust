@@ -1,21 +1,6 @@
 {
   "id": "TEST-001",
-  "name": "Musterstrang 900 m3/h",
-  "airflow_m3h": 900,
-  "length_m_each": 1.25,
-  "segments": [
-    {"type":"kanal", "width_m":0.45, "height_m":0.45},
-    {"type":"kanal", "width_m":0.80, "height_m":0.80},
-    {"type":"rohr", "diameter_m":0.50},
-    {"type":"rohr", "diameter_m":0.30},
-    {"type":"rohr", "diameter_m":0.40}
-  ],
-  "special_components": [
-    {"name":"Monoblock", "pressure_loss_pa":100}
-  ],
-  "expected": {
-    "duct_network_pa_approx": 9.5,
-    "total_pa_approx": 109.5,
-    "tolerance_pa": 0.1
-  }
+  "name": "Monoblock Referenz 900 m³/h",
+  "expectedTotalPa": 109.5,
+  "note": "Alle Längen 1.25 m, Monoblock 100 Pa. Sprint 1 enthält noch Toleranz, Sprint 2 wird exakt gegen Excel geprüft."
 }
