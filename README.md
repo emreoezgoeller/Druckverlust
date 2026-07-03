@@ -1,23 +1,28 @@
 # Druckverlust Pro Professional
 
-Webbasierte Druckverlustberechnung für Lüftungstechnik.  
+Webbasierte Druckverlustberechnung für Lüftungstechnik.
+
 **Fachliche Vorlage / Idee:** Emre Özgöller
 
 ## Version
-`0.2.0` – Sprint 1: Professional Core
+
+`0.3.1` – Stabiler Arbeitsstand für GitHub Pages
 
 ## Enthalten
-- Modulare Projektstruktur
-- Berechnungs-Engine für Kanal/Rohr/Sonderbauteil
-- Formteilbibliothek mit Originalbildern und Excel-Referenzen
-- Teilstrecken-Zuweisung für Formteile
-- Automatische Σζ-Übernahme
-- Projekt speichern/öffnen als `.dp`
-- PDF-Bericht mit eigenem PDF-Generator
-- Referenztest TEST-001
+
+- Funktionierende Hauptberechnung mit Kanal / Rohr / Sonderbauteil
+- Teilstrecken hinzufügen, bearbeiten und löschen
+- Formteilbibliothek mit Originalbildern
+- Formteil-Rechner mit Teilstrecken-Zuweisung
+- Automatische Σζ-Übernahme in die Hauptberechnung
+- Projekt speichern / öffnen als `.dp`
+- PDF-Bericht mit eigenem PDF-Generator über jsPDF
+- TEST-001 Referenzfall
 
 ## GitHub Pages
+
 Die App läuft als statische Webseite. Startdatei: `index.html`.
 
 ## Wichtig
-Die aktuellen Zeta-Formeln sind in Sprint 1 als Arbeits-/Näherungslogik hinterlegt. In Sprint 2 werden die Formeln je Formteil 1:1 aus den Excel-Dateien übernommen und mit Referenztests abgesichert.
+
+Die aktuell hinterlegten Zeta-Formeln sind weiterhin Arbeitslogik. Die Formeln werden in Sprint 3 je Formteil gegen die Excel-Dateien geprüft und schrittweise 1:1 ersetzt.

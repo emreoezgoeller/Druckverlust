@@ -1,21 +1,21 @@
 # Roadmap
 
-## 0.2.0 – Professional Core
-- Berechnungs-Engine modularisieren
-- Formteilbibliothek vorbereiten
-- PDF-Bericht stabilisieren
+## 0.3.1 – Stabilisierung
+- Bedienbare Web-App wiederherstellen
+- PDF-Export stabilisieren
+- Original-Formteilbilder verwenden
 
-## 0.3.0 – Formteil-Rechner Professional
-- Jede Excel-Formel 1:1 übernehmen
-- Referenztest pro Formteil
+## 0.4.0 – Formteil-Rechner Professional
+- Excel-Formeln je Formteil 1:1 prüfen
+- Referenztest pro Formteil ergänzen
 - Formteilparameter sauber dokumentieren
 
-## 0.4.0 – PDF Professional
-- Formteilbilder im Bericht
+## 0.5.0 – PDF Professional
+- Formteilbilder im Bericht gruppiert nach Teilstrecken
 - automatische Seitenumbrüche
 - Querformat für große Tabellen
 
-## 0.5.0 – Herstellerdatenbank
+## 0.6.0 – Herstellerdatenbank
 - Monoblock
 - Schalldämpfer
 - VAV
