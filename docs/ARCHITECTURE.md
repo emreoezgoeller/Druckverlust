@@ -1,24 +1,20 @@
-# Architektur – Druckverlust Pro
+# Druckverlust Pro – Architektur v0.4.1
 
 ## Grundsatz
-Die Weboberfläche darf nicht die Berechnung enthalten. Die Berechnung liegt in unabhängigen Engines.
+Die Benutzeroberfläche darf nicht die Berechnungslogik enthalten. Alle Fachberechnungen laufen langfristig über zentrale Engines.
 
-## Module
+## Kernmodule
 
-### CalculationEngine
-Berechnet Kanal, Rohr, Formteile, Sonderbauteile und Gesamtdruckverlust.
-
-### ProjectSchema
-Definiert das `.dp` Projektformat.
-
-### FormPartRegistry
-Verwaltet Formteile, Kategorien, Bilder, Parameter und später die Excel-validierten Formeln.
-
-### StorageEngine
-Speichert und öffnet Projekte als `.dp` Datei.
-
-### PdfReportEngine
-Erzeugt künftig den professionellen PDF-Bericht aus dem Datenmodell.
+```text
+src/core/CalculationEngine.js   – Kanal, Rohr, Druckverlust, Summen
+src/core/ProjectSchema.js       – einheitliche Projekt-/Teilstreckenstruktur
+src/core/FormPartRegistry.js    – Liste aller verfügbaren Formteile
+src/core/FormPartEngine.js      – ζ-Berechnung und Zuweisung
+src/core/ProjectEngine.js       – Projektoperationen und Neuberechnung
+```
 
 ## Ziel
-Die aktuelle Oberfläche bleibt bedienbar. Die Module werden schrittweise angeschlossen.
+- bestehende Web-App bleibt lauffähig
+- neue Module werden schrittweise angeschlossen
+- keine bestehenden Funktionen werden gelöscht
+- jede Berechnung erhält einen Referenztest gegen Excel

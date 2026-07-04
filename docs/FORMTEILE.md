@@ -1,23 +1,23 @@
 # Formteilbibliothek
 
-Jedes Formteil erhält später:
+Stand v0.4.1: Die Formteile sind registriert und besitzen Originalbilder/Excel-Referenzen. Die formelscharfe Übertragung aus Excel erfolgt formteilweise ab v0.5.0.
 
-- eindeutige ID
-- Name
-- Kategorie
-- Originalbild
-- Eingabeparameter
-- Berechnungsfunktion
-- Excel-Referenz
-- Testwerte
+## Vorhandene Formteile
+- Kreisförmiger Bogen / Krümmer
+- Eckiger Kanalbogen
+- Kanal-Bogen Winkel
+- Übergang klein → gross
+- Übergang gross → klein
+- Etage 45°
+- T-Abzweig Durchgang Variante 1
+- T-Abzweig Durchgang Variante 2
+- T-Abzweig Variante 1
+- T-Abzweig Variante 2
+- 90° T-Stück
 
-## Kategorien
-- Rund
-- Rechteck
-- Übergänge
-- Abzweige
-- Spezial
-- Sonderbauteile
+## Nächster Schritt
+Für jedes Formteil wird ein eigener Excel-Abgleich definiert:
 
-## Regel
-Der Benutzer gibt nie Σζ manuell ein. Formteile werden berechnet und einer Teilstrecke zugeordnet.
+```text
+Eingabewerte → ζ aus Excel → ζ aus Web-App → bestanden/nicht bestanden
+```

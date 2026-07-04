@@ -1,6 +1,19 @@
 {
   "id": "TEST-001",
-  "name": "Monoblock Referenz 900 m³/h",
-  "expectedTotalPa": 109.5,
-  "note": "Alle Längen 1.25 m, Monoblock 100 Pa. Sprint 1 enthält noch Toleranz, Sprint 2 wird exakt gegen Excel geprüft."
+  "name": "Musterstrang 900 m³/h mit fünf Teilstrecken à 1.25 m",
+  "description": "Referenz aus Emre Özgöllers Excel-Prüfung. Sonderbauteil Monoblock = 100 Pa.",
+  "settings": { "rho": 1.2, "lambda": 0.025 },
+  "items": [
+    { "id": "TS1", "kind": "section", "type": "rect", "description": "Kanal 450×450", "volume": 900, "width": 0.45, "height": 0.45, "length": 1.25, "zetaSum": 0 },
+    { "id": "TS2", "kind": "section", "type": "rect", "description": "Kanal 800×800", "volume": 900, "width": 0.80, "height": 0.80, "length": 1.25, "zetaSum": 0 },
+    { "id": "SB1", "kind": "sonderbauteil", "type": "special", "description": "Monoblock", "pressure": 100, "amount": 1 },
+    { "id": "TS3", "kind": "section", "type": "round", "description": "Rohr Ø500", "volume": 900, "diameter": 0.50, "length": 1.25, "zetaSum": 0 },
+    { "id": "TS4", "kind": "section", "type": "round", "description": "Rohr Ø300", "volume": 900, "diameter": 0.30, "length": 1.25, "zetaSum": 0 },
+    { "id": "TS5", "kind": "section", "type": "round", "description": "Rohr Ø400", "volume": 900, "diameter": 0.40, "length": 1.25, "zetaSum": 0 }
+  ],
+  "expected": {
+    "targetTotalPa": 109.5,
+    "tolerancePa": 1.5,
+    "note": "Zielwert aus Excel gerundet. Engine-Wert darf wegen Rundungs-/Lambda-Abgleich bis zur finalen Kalibrierung leicht abweichen."
+  }
 }

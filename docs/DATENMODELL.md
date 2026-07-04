@@ -1,50 +1,37 @@
-# Druckverlust Pro – Datenmodell 0.3.3
+# Datenmodell v0.4.1
 
-## Ziel
-
-Die Weboberfläche, der PDF-Bericht und die Berechnungslogik sollen künftig dieselben Daten verwenden. Dadurch vermeiden wir doppelte Formeln und unterschiedliche Ergebnisse.
-
-## Projektstruktur intern
-
-```text
-Projekt
-├── project      Projektdaten und Berechnungseinstellungen
-├── rows         Teilstrecken, Rohre, Kanäle und Sonderbauteile
-├── parts        zugeordnete Formteile mit ζ-Werten
-└── specials     reserviert für spätere Herstellerdatenbank
-```
-
-## Teilstrecke / Row
-
+## Projekt
 ```json
 {
-  "id": "ts1",
-  "type": "duct | pipe | special",
-  "ts": "TS1",
-  "desc": "Rechteckkanal 450 × 450 mm",
-  "q": 900,
-  "b": 0.45,
-  "h": 0.45,
-  "d": 0,
-  "l": 1.25,
-  "pa": 0,
-  "zetaSum": 0.33
+  "schemaVersion": "0.4.1",
+  "meta": {},
+  "settings": { "rho": 1.2, "lambda": 0.025 },
+  "items": []
 }
 ```
 
-## Formteil
-
+## Teilstrecke
 ```json
 {
-  "id": "part1",
-  "rowId": "ts1",
-  "formPartId": "kreis_bogen",
-  "name": "Kreisförmiger Bogen / Krümmer",
-  "zeta": 0.21,
-  "values": { "R": 110, "d": 125, "alpha": 90 }
+  "kind": "section",
+  "type": "rect | round",
+  "volume": 900,
+  "width": 0.45,
+  "height": 0.45,
+  "diameter": 0,
+  "length": 1.25,
+  "formParts": [],
+  "zetaSum": 0
 }
 ```
 
-## Grundsatz
-
-Die Haupttabelle darf künftig keine manuelle Σζ-Eingabe erzwingen. Σζ entsteht aus den zugeordneten Formteilen.
+## Sonderbauteil
+```json
+{
+  "kind": "sonderbauteil",
+  "type": "special",
+  "description": "Monoblock",
+  "pressure": 100,
+  "amount": 1
+}
+```

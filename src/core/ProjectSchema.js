@@ -1,43 +1,74 @@
-/**
- * Druckverlust Pro – ProjectSchema
- * Version 0.3.3
- *
- * Einheitliches Projektformat für .dp-Dateien.
- */
-export const PROJECT_SCHEMA_VERSION = '0.3.3';
+/* Druckverlust Pro – ProjectSchema v0.4.1 */
+(function (global) {
+  'use strict';
 
-export function createEmptyProject() {
-  return {
-    schemaVersion: PROJECT_SCHEMA_VERSION,
-    meta: {
+  function uid(prefix = 'id') {
+    return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  }
+
+  function createProject(meta = {}) {
+    return {
+      schemaVersion: '0.4.1',
+      app: 'Druckverlust Pro',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      application: 'Druckverlust Pro'
-    },
-    project: {
-      name: 'Neues Projekt',
-      object: '',
-      system: 'Lüftungsanlage',
-      editor: 'Emre Özgöller',
-      date: new Date().toISOString().slice(0, 10),
-      rho: 1.21,
-      lambda: 0.025
-    },
-    rows: [],
-    parts: [],
-    specials: []
-  };
-}
+      meta: {
+        projectName: meta.projectName || meta.projekt || '',
+        objectName: meta.objectName || meta.objekt || '',
+        systemName: meta.systemName || meta.anlage || '',
+        editor: meta.editor || meta.bearbeiter || '',
+        date: meta.date || new Date().toLocaleDateString('de-CH')
+      },
+      settings: {
+        rho: Number(meta.rho) || 1.2,
+        lambda: Number(meta.lambda) || 0.025
+      },
+      items: []
+    };
+  }
 
-export function normalizeProject(raw = {}) {
-  const base = createEmptyProject();
-  return {
-    ...base,
-    ...raw,
-    meta: { ...base.meta, ...(raw.meta || {}), updatedAt: new Date().toISOString() },
-    project: { ...base.project, ...(raw.project || {}) },
-    rows: Array.isArray(raw.rows) ? raw.rows : [],
-    parts: Array.isArray(raw.parts) ? raw.parts : [],
-    specials: Array.isArray(raw.specials) ? raw.specials : []
-  };
-}
+  function createSection(data = {}) {
+    return {
+      id: data.id || uid('ts'),
+      kind: 'section',
+      type: data.type || 'rect',
+      description: data.description || '',
+      volume: Number(data.volume || 0),
+      width: Number(data.width || 0),
+      height: Number(data.height || 0),
+      diameter: Number(data.diameter || 0),
+      length: Number(data.length || 1.25),
+      formParts: Array.isArray(data.formParts) ? data.formParts : [],
+      zetaSum: Number(data.zetaSum || 0),
+      note: data.note || ''
+    };
+  }
+
+  function createSpecial(data = {}) {
+    return {
+      id: data.id || uid('sb'),
+      kind: 'sonderbauteil',
+      type: 'special',
+      description: data.description || data.name || 'Sonderbauteil',
+      pressure: Number(data.pressure || 0),
+      amount: Number(data.amount || 1),
+      note: data.note || ''
+    };
+  }
+
+  function addItem(project, item) {
+    project.items.push(item);
+    project.updatedAt = new Date().toISOString();
+    return project;
+  }
+
+  function updateSectionZeta(section) {
+    section.zetaSum = (section.formParts || []).reduce((sum, part) => sum + (Number(part.zeta) || 0), 0);
+    return section;
+  }
+
+  const ProjectSchema = { uid, createProject, createSection, createSpecial, addItem, updateSectionZeta };
+  global.DruckverlustPro = global.DruckverlustPro || {};
+  global.DruckverlustPro.ProjectSchema = ProjectSchema;
+  if (typeof module !== 'undefined' && module.exports) module.exports = ProjectSchema;
+})(typeof window !== 'undefined' ? window : globalThis);
