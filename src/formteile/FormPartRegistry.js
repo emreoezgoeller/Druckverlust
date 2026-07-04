@@ -1,3 +1,6 @@
+import { calculateKreisBogen } from './calculators/kreisBogenCalculator.js';
+
+
 export class FormPartRegistry {
   constructor(definitions = []) {
     this.items = new Map();
@@ -64,19 +67,26 @@ export class FormPartRegistry {
   }
 
   calculate(id, values = {}) {
-    const item = this.get(id);
+  const item = this.get(id);
 
-    if (!item) throw new Error(`Formteil nicht gefunden: ${id}`);
-    if (typeof item.calculate !== 'function') {
-      throw new Error(`Formteil ${id} besitzt keine Berechnungsfunktion.`);
-    }
-
-    return Number(item.calculate(values));
+  if (!item) throw new Error(`Formteil nicht gefunden: ${id}`);
+  if (typeof item.calculate !== 'function') {
+    throw new Error(`Formteil ${id} besitzt keine Berechnungsfunktion.`);
   }
+
+  return item.calculate(values);
+}
 }
 
 export const defaultFormParts = [
-  { id: 'kreis_bogen', category: 'Rund', name: 'Kreisförmiger Bogen / Krümmer', image: 'assets/formteile/kreis_bogen.png', parameters: ['R', 'd', 'alpha'] },
+  {
+  id: 'kreis_bogen',
+  category: 'Rund',
+  name: 'Kreisförmiger Bogen / Krümmer',
+  image: 'assets/formteile/kreis_bogen.png',
+  parameters: ['R', 'd', 'alpha'],
+  calculate: calculateKreisBogen
+},
   { id: 'eckiger_bogen', category: 'Rechteck', name: 'Eckiger Kanalbogen', image: 'assets/formteile/eckiger_bogen.png', parameters: ['R', 'a', 'b'] },
   { id: 'kanal_bogen_winkel', category: 'Rechteck', name: 'Kanal-Bogen Winkel', image: 'assets/formteile/kanal_bogen_winkel.png', parameters: ['alpha', 'a', 'b'] },
   { id: 'uebergang_klein_gross', category: 'Übergänge', name: 'Übergang klein → gross', image: 'assets/formteile/uebergang_klein.png', parameters: ['alpha', 'A1', 'A2'] },
