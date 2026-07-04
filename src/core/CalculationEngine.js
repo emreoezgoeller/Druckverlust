@@ -1,176 +1,272 @@
-/* Druckverlust Pro – CalculationEngine v0.4.1
- * Zentrale, browserkompatible Berechnungs-Engine.
- * Keine DOM-Abhängigkeit. Kann später von UI, Tests und PDF gemeinsam genutzt werden.
+/**
+ * Druckverlust Pro – CalculationEngine
+ * Version 0.4.2
+ *
+ * Zentrale, DOM-unabhängige Berechnungslogik.
+ * Dieses Modul ist bewusst unabhängig von der Oberfläche, vom PDF-Export
+ * und von der Projektverwaltung. Dadurch können wir alle Ergebnisse sauber
+ * gegen Excel-Referenzen testen.
+ *
+ * Einheiten:
+ * - Luftmenge q: m³/h
+ * - Breite/Höhe/Durchmesser/Länge: m
+ * - Fläche: m²
+ * - Geschwindigkeit: m/s
+ * - Druck: Pa
  */
-(function (global) {
-  'use strict';
 
-  const DEFAULTS = Object.freeze({
-    rho: 1.2,       // kg/m³
-    lambda: 0.025,  // -
-    decimals: 3
-  });
+const DEFAULTS = Object.freeze({
+  rho: 1.21,
+  lambda: 0.025,
+  round: false,
+});
 
-  function n(value, fallback = 0) {
-    const parsed = typeof value === 'string' ? parseFloat(value.replace(',', '.')) : Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
+export function toNumber(value, fallback = 0) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const n = Number(String(value).replace(',', '.'));
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  function round(value, decimals = 3) {
-    if (!Number.isFinite(value)) return 0;
-    const factor = Math.pow(10, decimals);
-    return Math.round((value + Number.EPSILON) * factor) / factor;
-  }
+export function round(value, digits = 3) {
+  const factor = 10 ** digits;
+  return Math.round((toNumber(value) + Number.EPSILON) * factor) / factor;
+}
 
-  function areaRect(width, height) {
-    const b = n(width);
-    const h = n(height);
-    return b > 0 && h > 0 ? b * h : 0;
-  }
+export function calcDuctArea(widthM, heightM) {
+  const b = toNumber(widthM);
+  const h = toNumber(heightM);
+  return b > 0 && h > 0 ? b * h : 0;
+}
 
-  function areaRound(diameter) {
-    const d = n(diameter);
-    return d > 0 ? Math.PI * Math.pow(d, 2) / 4 : 0;
-  }
+export function calcPipeArea(diameterM) {
+  const d = toNumber(diameterM);
+  return d > 0 ? Math.PI * d * d / 4 : 0;
+}
 
-  function hydraulicDiameterRect(width, height) {
-    const b = n(width);
-    const h = n(height);
-    return b > 0 && h > 0 ? (2 * b * h) / (b + h) : 0;
-  }
+export function calcHydraulicDiameter(widthM, heightM) {
+  const b = toNumber(widthM);
+  const h = toNumber(heightM);
+  return b > 0 && h > 0 ? (2 * b * h) / (b + h) : 0;
+}
 
-  function velocity(volumeM3h, areaM2) {
-    const q = n(volumeM3h);
-    const a = n(areaM2);
-    return q > 0 && a > 0 ? q / 3600 / a : 0;
-  }
+export function calcVelocity(volumeFlowM3h, areaM2) {
+  const q = toNumber(volumeFlowM3h);
+  const a = toNumber(areaM2);
+  return q > 0 && a > 0 ? q / (3600 * a) : 0;
+}
 
-  function dynamicPressure(v, rho = DEFAULTS.rho) {
-    const speed = n(v);
-    const density = n(rho, DEFAULTS.rho);
-    return speed > 0 ? 0.5 * density * Math.pow(speed, 2) : 0;
-  }
+export function calcDynamicPressure(velocityMs, rho = DEFAULTS.rho) {
+  const v = toNumber(velocityMs);
+  const density = toNumber(rho, DEFAULTS.rho);
+  return v > 0 && density > 0 ? 0.5 * density * v * v : 0;
+}
 
-  function frictionRate(pDyn, diameter, lambda = DEFAULTS.lambda) {
-    const d = n(diameter);
-    const p = n(pDyn);
-    const lmb = n(lambda, DEFAULTS.lambda);
-    return d > 0 && p > 0 ? (lmb / d) * p : 0;
-  }
+export function calcFrictionRate(lambda, hydraulicDiameterM, dynamicPressurePa) {
+  const l = toNumber(lambda, DEFAULTS.lambda);
+  const dh = toNumber(hydraulicDiameterM);
+  const pdyn = toNumber(dynamicPressurePa);
+  return l > 0 && dh > 0 && pdyn > 0 ? (l / dh) * pdyn : 0;
+}
 
-  function calculateSection(section, options = {}) {
-    const opts = Object.assign({}, DEFAULTS, options);
-    const type = section.type || section.kind || 'rect';
-    const q = n(section.volume ?? section.q ?? section.luftmenge);
-    const length = n(section.length ?? section.l ?? section.laenge);
-    const zeta = n(section.zetaSum ?? section.zeta ?? section.sumZeta);
+export function calcZetaLoss(zetaSum, dynamicPressurePa) {
+  return toNumber(zetaSum) * toNumber(dynamicPressurePa);
+}
 
-    let area = 0;
-    let dh = 0;
-    let dimensions = '';
+export function normalizeType(section = {}) {
+  const type = String(section.type || section.kind || '').toLowerCase();
+  if (['special', 'sonder', 'sonderbauteil'].includes(type)) return 'special';
+  if (['pipe', 'rohr', 'round', 'rund'].includes(type)) return 'pipe';
+  if (['duct', 'kanal', 'rect', 'rechteck'].includes(type)) return 'duct';
 
-    if (type === 'round' || type === 'rohr') {
-      const d = n(section.diameter ?? section.d ?? section.durchmesser);
-      area = areaRound(d);
-      dh = d;
-      dimensions = d > 0 ? `Ø${round(d * 1000, 0)} mm` : '';
-    } else {
-      const b = n(section.width ?? section.b ?? section.breite);
-      const h = n(section.height ?? section.h ?? section.hoehe);
-      area = areaRect(b, h);
-      dh = hydraulicDiameterRect(b, h);
-      dimensions = b > 0 && h > 0 ? `${round(b * 1000, 0)}×${round(h * 1000, 0)} mm` : '';
-    }
+  // Praxistaugliche Automatik: Wenn Ø vorhanden ist und Breite/Höhe fehlen,
+  // behandeln wir die Teilstrecke als Rohr.
+  const d = toNumber(section.d ?? section.diameter);
+  const b = toNumber(section.b ?? section.width);
+  const h = toNumber(section.h ?? section.height);
+  if (d > 0 && !(b > 0 && h > 0)) return 'pipe';
+  return 'duct';
+}
 
-    const v = velocity(q, area);
-    const pDyn = dynamicPressure(v, opts.rho);
-    const r = frictionRate(pDyn, dh, opts.lambda);
-    const dpFriction = r * length;
-    const dpZeta = zeta * pDyn;
-    const dpTotal = dpFriction + dpZeta;
+export function sumFormPartZeta(formParts = [], sectionId) {
+  return formParts
+    .filter(part => part && (part.sectionId === sectionId || part.rowId === sectionId || part.targetSectionId === sectionId))
+    .reduce((sum, part) => sum + toNumber(part.zeta), 0);
+}
 
-    return {
-      id: section.id || '',
+export function calculateSection(section = {}, options = {}) {
+  const settings = { ...DEFAULTS, ...(options.settings || options) };
+  const type = normalizeType(section);
+
+  if (type === 'special') {
+    const specialLoss = toNumber(section.pa ?? section.pressureLoss ?? section.dp ?? section.totalLoss);
+    return createResult({
+      id: section.id,
       type,
-      description: section.description || section.beschreibung || dimensions,
-      dimensions,
-      volume: round(q, 3),
-      length: round(length, 3),
-      area: round(area, 4),
-      hydraulicDiameter: round(dh, 4),
-      velocity: round(v, 3),
-      dynamicPressure: round(pDyn, 3),
-      frictionRate: round(r, 4),
-      pressureFriction: round(dpFriction, 3),
-      zetaSum: round(zeta, 4),
-      pressureZeta: round(dpZeta, 3),
-      pressureTotal: round(dpTotal, 3),
-      warnings: getSectionWarnings({ velocity: v, dynamicPressure: pDyn, hydraulicDiameter: dh })
-    };
-  }
-
-  function calculateSpecial(component) {
-    const pressure = n(component.pressure ?? component.dp ?? component.druckverlust);
-    const amount = n(component.amount ?? component.anzahl, 1);
-    return {
-      id: component.id || '',
-      type: 'special',
-      description: component.description || component.name || 'Sonderbauteil',
-      pressure: round(pressure, 3),
-      amount: round(amount, 3),
-      pressureTotal: round(pressure * amount, 3)
-    };
-  }
-
-  function calculateProject(project, options = {}) {
-    const items = project.items || project.sections || [];
-    const results = items.map((item) => {
-      if ((item.type || item.kind) === 'special' || item.kind === 'sonderbauteil') return calculateSpecial(item);
-      return calculateSection(item, options);
+      description: section.desc || section.description || section.name || 'Sonderbauteil',
+      q: toNumber(section.q ?? section.volumeFlow),
+      specialLoss,
+      totalLoss: specialLoss,
+      warnings: [],
     });
-
-    const channelPressure = results
-      .filter((r) => r.type !== 'special')
-      .reduce((sum, r) => sum + r.pressureTotal, 0);
-    const specialPressure = results
-      .filter((r) => r.type === 'special')
-      .reduce((sum, r) => sum + r.pressureTotal, 0);
-
-    return {
-      results,
-      totals: {
-        channelPressure: round(channelPressure, 3),
-        specialPressure: round(specialPressure, 3),
-        totalPressure: round(channelPressure + specialPressure, 3)
-      },
-      warnings: results.flatMap((r) => r.warnings || [])
-    };
   }
 
-  function getSectionWarnings(values) {
-    const warnings = [];
-    if (values.velocity > 8) warnings.push({ level: 'warning', code: 'HIGH_VELOCITY', message: 'Luftgeschwindigkeit über 8 m/s prüfen.' });
-    if (values.velocity > 12) warnings.push({ level: 'critical', code: 'VERY_HIGH_VELOCITY', message: 'Luftgeschwindigkeit sehr hoch.' });
-    if (values.hydraulicDiameter <= 0) warnings.push({ level: 'info', code: 'MISSING_DIMENSIONS', message: 'Abmessungen fehlen oder sind ungültig.' });
-    return warnings;
+  const q = toNumber(section.q ?? section.volumeFlow);
+  const length = toNumber(section.l ?? section.length);
+  const zetaSum = toNumber(options.zetaSum ?? section.zetaSum ?? section.zeta);
+  let area = 0;
+  let hydraulicDiameter = 0;
+  let width = 0;
+  let height = 0;
+  let diameter = 0;
+
+  if (type === 'pipe') {
+    diameter = toNumber(section.d ?? section.diameter);
+    area = calcPipeArea(diameter);
+    hydraulicDiameter = diameter;
+  } else {
+    width = toNumber(section.b ?? section.width);
+    height = toNumber(section.h ?? section.height);
+    area = calcDuctArea(width, height);
+    hydraulicDiameter = calcHydraulicDiameter(width, height);
   }
 
-  const CalculationEngine = {
-    DEFAULTS,
-    round,
-    areaRect,
-    areaRound,
-    hydraulicDiameterRect,
+  const velocity = calcVelocity(q, area);
+  const dynamicPressure = calcDynamicPressure(velocity, settings.rho);
+  const frictionRate = calcFrictionRate(settings.lambda, hydraulicDiameter, dynamicPressure);
+  const frictionLoss = frictionRate * length;
+  const zetaLoss = calcZetaLoss(zetaSum, dynamicPressure);
+  const specialLoss = toNumber(section.pa ?? section.pressureLoss);
+  const totalLoss = frictionLoss + zetaLoss + specialLoss;
+
+  const warnings = [];
+  if (q <= 0) warnings.push('Luftmenge fehlt oder ist 0.');
+  if (area <= 0) warnings.push(type === 'pipe' ? 'Rohrdurchmesser fehlt.' : 'Breite/Höhe fehlen.');
+  if (velocity > 6) warnings.push('Luftgeschwindigkeit über 6 m/s prüfen.');
+  if (velocity > 10) warnings.push('Luftgeschwindigkeit sehr hoch. Dimensionierung prüfen.');
+  if (zetaSum < 0) warnings.push('Σζ ist negativ. Eingabe/Formteil prüfen.');
+
+  return createResult({
+    id: section.id,
+    type,
+    description: section.desc || section.description || '',
+    ts: section.ts || section.sectionNo || '',
+    q,
+    width,
+    height,
+    diameter,
+    length,
+    area,
+    hydraulicDiameter,
     velocity,
     dynamicPressure,
     frictionRate,
-    calculateSection,
-    calculateSpecial,
-    calculateProject
+    frictionLoss,
+    zetaSum,
+    zetaLoss,
+    specialLoss,
+    totalLoss,
+    warnings,
+  });
+}
+
+function createResult(values) {
+  return {
+    id: values.id || '',
+    type: values.type || 'duct',
+    description: values.description || '',
+    ts: values.ts || '',
+    q: values.q || 0,
+    width: values.width || 0,
+    height: values.height || 0,
+    diameter: values.diameter || 0,
+    length: values.length || 0,
+    area: values.area || 0,
+    hydraulicDiameter: values.hydraulicDiameter || 0,
+    velocity: values.velocity || 0,
+    dynamicPressure: values.dynamicPressure || 0,
+    frictionRate: values.frictionRate || 0,
+    frictionLoss: values.frictionLoss || 0,
+    zetaSum: values.zetaSum || 0,
+    zetaLoss: values.zetaLoss || 0,
+    specialLoss: values.specialLoss || 0,
+    totalLoss: values.totalLoss || 0,
+    warnings: values.warnings || [],
   };
+}
 
-  global.DruckverlustPro = global.DruckverlustPro || {};
-  global.DruckverlustPro.CalculationEngine = CalculationEngine;
+export function calculateProject(project = {}) {
+  const settings = project.settings || project.project || {};
+  const sections = project.sections || project.rows || [];
+  const formParts = project.formParts || project.parts || [];
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = CalculationEngine;
-})(typeof window !== 'undefined' ? window : globalThis);
+  const results = sections.map((section, index) => {
+    const zetaFromParts = sumFormPartZeta(formParts, section.id);
+    const manualZeta = toNumber(section.zetaSum ?? section.zeta);
+    const zetaSum = zetaFromParts + manualZeta;
+    const result = calculateSection(section, { settings, zetaSum });
+    return {
+      index,
+      id: section.id || `section-${index + 1}`,
+      input: section,
+      zetaFromParts,
+      manualZeta,
+      result,
+    };
+  });
+
+  const totals = results.reduce((acc, item) => {
+    const r = item.result;
+    acc.friction += r.frictionLoss;
+    acc.formParts += r.zetaLoss;
+    acc.special += r.type === 'special' ? r.specialLoss : 0;
+    acc.total += r.totalLoss;
+    acc.warnings.push(...r.warnings.map(w => ({ sectionId: item.id, message: w })));
+    return acc;
+  }, { friction: 0, formParts: 0, special: 0, total: 0, warnings: [] });
+
+  return { settings: { ...DEFAULTS, ...settings }, results, totals };
+}
+
+export class CalculationEngine {
+  constructor(settings = {}) {
+    this.settings = { ...DEFAULTS, ...settings };
+  }
+
+  setSettings(settings = {}) {
+    this.settings = { ...this.settings, ...settings };
+    return this;
+  }
+
+  calculateSection(section = {}, options = {}) {
+    return calculateSection(section, { ...options, settings: { ...this.settings, ...(options.settings || {}) } });
+  }
+
+  calculateProject(project = {}) {
+    return calculateProject({ ...project, settings: { ...this.settings, ...(project.settings || project.project || {}) } });
+  }
+
+  // Kompatibilität mit älteren Modulversionen
+  rectangleArea(width, height) { return calcDuctArea(width, height); }
+  circularArea(diameter) { return calcPipeArea(diameter); }
+  equivalentDiameterRectangle(width, height) { return calcHydraulicDiameter(width, height); }
+  hydraulicDiameterRectangle(width, height) { return calcHydraulicDiameter(width, height); }
+  velocity(q, area) { return calcVelocity(q, area); }
+  dynamicPressure(v) { return calcDynamicPressure(v, this.settings.rho); }
+  frictionRate(pdyn, dh) { return calcFrictionRate(this.settings.lambda, dh, pdyn); }
+}
+
+CalculationEngine.defaults = DEFAULTS;
+CalculationEngine.number = toNumber;
+CalculationEngine.round = round;
+CalculationEngine.rectangleArea = calcDuctArea;
+CalculationEngine.circularArea = calcPipeArea;
+CalculationEngine.equivalentDiameterRectangle = calcHydraulicDiameter;
+CalculationEngine.hydraulicDiameterRectangle = calcHydraulicDiameter;
+CalculationEngine.velocity = calcVelocity;
+CalculationEngine.dynamicPressure = calcDynamicPressure;
+CalculationEngine.frictionRate = (lambda, dh, pdyn) => calcFrictionRate(lambda, dh, pdyn);
+CalculationEngine.zetaPressureLoss = calcZetaLoss;
+CalculationEngine.calculateSection = calculateSection;
+CalculationEngine.calculateProject = calculateProject;
+
+export default CalculationEngine;

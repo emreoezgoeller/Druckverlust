@@ -2,33 +2,17 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Druckverlust Pro – TEST-001</title>
-  <style>body{font-family:system-ui;margin:32px;line-height:1.5}.ok{color:#147a3c}.fail{color:#b42318}pre{background:#f5f7fb;padding:16px;border-radius:10px}</style>
+  <title>Druckverlust Pro – CalculationEngine Test</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:32px;background:#f7f9fc;color:#0f172a}
+    pre{background:#0f172a;color:#e2e8f0;padding:18px;border-radius:12px;white-space:pre-wrap}
+    .ok{color:#047857}.bad{color:#b91c1c}
+  </style>
 </head>
 <body>
-  <h1>TEST-001 – CalculationEngine</h1>
-  <p id="status">Test läuft…</p>
-  <pre id="output"></pre>
-  <script src="../../src/core/CalculationEngine.js"></script>
-  <script>
-    const project = {
-      settings: { rho: 1.2, lambda: 0.025 },
-      items: [
-        { id:'TS1', kind:'section', type:'rect', volume:900, width:0.45, height:0.45, length:1.25, zetaSum:0 },
-        { id:'TS2', kind:'section', type:'rect', volume:900, width:0.80, height:0.80, length:1.25, zetaSum:0 },
-        { id:'SB1', kind:'sonderbauteil', type:'special', description:'Monoblock', pressure:100, amount:1 },
-        { id:'TS3', kind:'section', type:'round', volume:900, diameter:0.50, length:1.25, zetaSum:0 },
-        { id:'TS4', kind:'section', type:'round', volume:900, diameter:0.30, length:1.25, zetaSum:0 },
-        { id:'TS5', kind:'section', type:'round', volume:900, diameter:0.40, length:1.25, zetaSum:0 }
-      ]
-    };
-    const result = DruckverlustPro.CalculationEngine.calculateProject(project, project.settings);
-    const target = 109.5;
-    const diff = Math.abs(result.totals.totalPressure - target);
-    const ok = diff <= 1.5;
-    document.getElementById('status').className = ok ? 'ok' : 'fail';
-    document.getElementById('status').textContent = ok ? '✔ Bestanden' : '✘ Abweichung prüfen';
-    document.getElementById('output').textContent = JSON.stringify({ target, diff, result }, null, 2);
-  </script>
+  <h1>CalculationEngine – Referenztest</h1>
+  <p>Diese Datei lokal oder über GitHub Pages öffnen.</p>
+  <pre id="out">Starte Test...</pre>
+  <script type="module" src="./calculation-engine.test.js"></script>
 </body>
 </html>

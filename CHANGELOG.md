@@ -1,14 +1,16 @@
 # Changelog
 
-## 0.4.1 – Core-Verknüpfung vorbereitet
+## 0.4.2 – CalculationEngine abgeschlossen
 
 ### Neu
-- `src/core/FormPartEngine.js`
-- `src/core/ProjectEngine.js`
-- stabilisierte `CalculationEngine`
-- TEST-001 als Browser-Test
-- aktualisierte Architektur-, Datenmodell- und Formteil-Dokumentation
+- Zentrale, DOM-unabhängige `CalculationEngine` in `src/core/CalculationEngine.js`.
+- Kompatibilitäts-Exporte für `src/calculation/CalculationEngine.js` und `src/calculation/engine.js`.
+- Berechnung für Rechteckkanal, Rohr und Sonderbauteile.
+- Automatische Berücksichtigung von `zetaSum` und zugeordneten Formteilen.
+- Plausibilitätswarnungen vorbereitet.
+- Browser-Referenztest für TEST-001 ergänzt.
+- Dokumentation `docs/CALCULATION_ENGINE.md` ergänzt.
 
 ### Wichtig
-- Die bestehende Webseite wird durch diesen Patch nicht ersetzt.
-- Die neuen Engines liegen im Hintergrund und werden in den nächsten Versionen schrittweise mit der Oberfläche verbunden.
+- Diese Version ändert die bestehende Oberfläche nicht.
+- Ziel ist ein stabiles Rechenfundament, bevor UI und PDF weiter professionalisiert werden.
