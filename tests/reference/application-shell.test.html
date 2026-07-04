@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Druckverlust Pro – ApplicationShell Test</title>
+  <link rel="stylesheet" href="../../src/ui/ApplicationShell.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import ApplicationShell from '../../src/ui/ApplicationShell.js';
+
+    const shell = new ApplicationShell(document.getElementById('app'));
+    shell.render();
+  </script>
+</body>
+</html>
