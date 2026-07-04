@@ -62,11 +62,12 @@ async function run() {
   const tolerance = fixture.expected.tolerancePa ?? 0.5;
 
   log('');
-  log(`TEST-001 Ergebnis: ${round(result.totals.total, 3)} Pa`);
+  log(`TEST-001 Ergebnis exakt: ${round(result.totals.total, 3)} Pa`);
+log(`TEST-001 Ergebnis Excel-Rundung: ${round(result.totals.totalRounded, 3)} Pa`);
   log(`Excel-Referenz: ca. ${expected} Pa`);
   log(`Toleranz: ±${tolerance} Pa`);
 
-  if (Math.abs(result.totals.total - expected) <= tolerance) {
+  if (Math.abs(result.totals.totalRounded - expected) <= tolerance) {
     log('');
     log('✅ TEST-001 BESTANDEN');
   } else {

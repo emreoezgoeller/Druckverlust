@@ -31,7 +31,6 @@ export function round(value, digits = 3) {
   const factor = 10 ** digits;
   return Math.round((toNumber(value) + Number.EPSILON) * factor) / factor;
 }
-
 export function calcDuctArea(widthM, heightM) {
   const b = toNumber(widthM);
   const h = toNumber(heightM);
@@ -137,6 +136,10 @@ export function calculateSection(section = {}, options = {}) {
   const zetaLoss = calcZetaLoss(zetaSum, dynamicPressure);
   const specialLoss = toNumber(section.pa ?? section.pressureLoss);
   const totalLoss = frictionLoss + zetaLoss + specialLoss;
+  const roundedTotalLoss =
+  type === 'special'
+    ? specialLoss
+    : roundUpToStep(totalLoss, settings.sectionRoundingStep ?? 0.5);
 
   const warnings = [];
   if (q <= 0) warnings.push('Luftmenge fehlt oder ist 0.');
@@ -190,6 +193,7 @@ function createResult(values) {
     zetaLoss: values.zetaLoss || 0,
     specialLoss: values.specialLoss || 0,
     totalLoss: values.totalLoss || 0,
+    roundedTotalLoss: values.roundedTotalLoss ?? values.totalLoss ?? 0,
     warnings: values.warnings || [],
   };
 }
@@ -220,9 +224,10 @@ export function calculateProject(project = {}) {
     acc.formParts += r.zetaLoss;
     acc.special += r.type === 'special' ? r.specialLoss : 0;
     acc.total += r.totalLoss;
+    acc.totalRounded += r.roundedTotalLoss;
     acc.warnings.push(...r.warnings.map(w => ({ sectionId: item.id, message: w })));
     return acc;
-  }, { friction: 0, formParts: 0, special: 0, total: 0, warnings: [] });
+  }, { friction: 0, formParts: 0, special: 0, total: 0, totalRounded: 0, warnings: [] });
 
   return { settings: { ...DEFAULTS, ...settings }, results, totals };
 }
@@ -258,6 +263,7 @@ export class CalculationEngine {
 CalculationEngine.defaults = DEFAULTS;
 CalculationEngine.number = toNumber;
 CalculationEngine.round = round;
+CalculationEngine.roundUpToStep = roundUpToStep;
 CalculationEngine.rectangleArea = calcDuctArea;
 CalculationEngine.circularArea = calcPipeArea;
 CalculationEngine.equivalentDiameterRectangle = calcHydraulicDiameter;
