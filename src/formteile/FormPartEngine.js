@@ -36,6 +36,31 @@ export class FormPartEngine {
     return this.getBySection(sectionId)
       .reduce((sum, part) => sum + Number(part.zeta || 0), 0);
   }
+  getSections() {
+    return [...new Set(this.formParts.map(part => part.sectionId))];
+}
+
+getGroupedBySection() {
+    const groups = {};
+
+    this.formParts.forEach(part => {
+        if (!groups[part.sectionId]) {
+            groups[part.sectionId] = [];
+        }
+
+        groups[part.sectionId].push(part);
+    });
+
+    return groups;
+}
+
+getSummary() {
+    return this.getSections().map(sectionId => ({
+        sectionId,
+        count: this.getBySection(sectionId).length,
+        zeta: this.sumZetaBySection(sectionId)
+    }));
+}
 
   getAll() {
     return this.formParts;
