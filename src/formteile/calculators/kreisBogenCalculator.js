@@ -32,10 +32,14 @@ function lookupApprox(value, table, valueKey) {
   if (!Number.isFinite(v)) return 0;
 
   let best = table[0];
+  let bestDistance = Math.abs(v - best.x);
 
   for (const item of table) {
-    if (v >= item.x) {
+    const distance = Math.abs(v - item.x);
+
+    if (distance < bestDistance) {
       best = item;
+      bestDistance = distance;
     }
   }
 
