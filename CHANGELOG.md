@@ -1,3 +1,14 @@
+
+
+## 0.4.0 – Calculation Core
+
+- Zentrale Berechnungs-Engine stabilisiert.
+- Kanal/Rohr-Geometrie in eigene Funktionen ausgelagert.
+- Dynamischer Druck, Reibungsverlust, Formteilverlust und Sonderbauteile sauber getrennt.
+- TEST-001 verwendet jetzt fünf Teilstrecken mit je 1.25 m.
+- Formteil-Zuweisung aus einer Teilstrecke heraus merkt sich die Ziel-Teilstrecke vor.
+- Erste Plausibilitätswarnungen vorbereitet.
+
 export const PROJECT_SCHEMA_VERSION = '0.3.4';
 
 export function createProject(overrides = {}) {

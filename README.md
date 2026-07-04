@@ -6,7 +6,7 @@ Webbasierte Druckverlustberechnung für Lüftungstechnik.
 
 ## Version
 
-`0.3.1` – Stabiler Arbeitsstand für GitHub Pages
+`0.4.0` – Stabiler Arbeitsstand für GitHub Pages
 
 ## Enthalten
 

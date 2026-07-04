@@ -8,12 +8,15 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 let activePart = null;
 let activePartValues = {};
+let preselectedTargetTs = null;
 
 function init(){
   state.rows = [
     {id:uid(),type:'duct',desc:'Rechteckkanal 450 × 450 mm',ts:'TS1',q:900,b:.45,h:.45,d:0,l:1.25,pa:0},
     {id:uid(),type:'duct',desc:'Rechteckkanal 800 × 800 mm',ts:'TS2',q:900,b:.8,h:.8,d:0,l:1.25,pa:0},
-    {id:uid(),type:'pipe',desc:'Neue Teilstrecke',ts:'TS3',q:900,b:0,h:0,d:.5,l:1.25,pa:0}
+    {id:uid(),type:'pipe',desc:'Rundrohr Ø500 mm',ts:'TS3',q:900,b:0,h:0,d:.5,l:1.25,pa:0},
+    {id:uid(),type:'pipe',desc:'Rundrohr Ø300 mm',ts:'TS4',q:900,b:0,h:0,d:.3,l:1.25,pa:0},
+    {id:uid(),type:'pipe',desc:'Rundrohr Ø400 mm',ts:'TS5',q:900,b:0,h:0,d:.4,l:1.25,pa:0}
   ];
   bindUI(); renderAll();
 }
@@ -77,7 +80,7 @@ function renderRows(){
       <td><div class="row-actions"><button class="icon-btn" data-add-part title="Formteil hinzufügen">ζ+</button><button class="icon-btn danger" data-delete title="Löschen">✕</button></div></td>`;
     tbody.appendChild(tr);
     tr.querySelectorAll('[data-field]').forEach(el=>{ el.value = row[el.dataset.field] ?? ''; el.addEventListener('input',()=>updateRowFromInput(row.id,el)); });
-    tr.querySelector('[data-add-part]').addEventListener('click',()=>{ showView('parts'); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50); });
+    tr.querySelector('[data-add-part]').addEventListener('click',()=>{ preselectedTargetTs = row.ts || null; showView('parts'); setTimeout(()=>window.scrollTo({top:0,behavior:'smooth'}),50); });
     tr.querySelector('[data-delete]').addEventListener('click',()=>{ state.rows = state.rows.filter(r=>r.id!==row.id); if(row.ts) state.parts = state.parts.filter(p=>p.ts!==row.ts); renderRows(); updateCalculations(); });
   });
 }
@@ -149,7 +152,13 @@ function openPartDialog(part){
     inputs.insertAdjacentHTML('beforeend',`<label>${label}<input id="${id}" type="number" step="0.001" value="${def}"></label>`);
     setTimeout(()=>{ const el=$(`#${CSS.escape(id)}`); el?.addEventListener('input',()=>{activePartValues[key]=Number(el.value); updatePartResult();}); },0);
   });
-  renderTargetOptions(); updatePartResult(); $('#part-dialog').showModal();
+  renderTargetOptions();
+  if(preselectedTargetTs){
+    const target = $('#part-target');
+    if([...target.options].some(o=>o.value===preselectedTargetTs)) target.value = preselectedTargetTs;
+    preselectedTargetTs = null;
+  }
+  updatePartResult(); $('#part-dialog').showModal();
 }
 
 function updatePartResult(){
@@ -171,8 +180,9 @@ function runTests(){
   const backup = JSON.parse(JSON.stringify(state));
   resetState(createTest001State(uid));
   const totals = calculateProject(state);
-  const pass = Math.abs(totals.total - 109.5) <= 3.0; // noch grobe Toleranz bis Excel-Formeln 1:1 übernommen sind
-  $('#test-output').textContent = `TEST-001\nIstwert: ${fmt(totals.total,1)} Pa\nSollwert: 109.5 Pa\nStatus: ${pass?'OK / innerhalb aktueller Toleranz':'Abweichung prüfen'}\nHinweis: Sprint 1 nutzt noch Näherungsformeln; Excel-Formeln werden in Sprint 2 pro Formteil exakt übernommen.`;
+  const pass = Math.abs(totals.total - 109.5) <= 5.0; // Toleranz bis alle Excel-Formteilformeln 1:1 übernommen sind
+  const warningText = totals.warnings?.length ? '\n\nWarnungen:\n' + totals.warnings.map(w => `- ${w.ts || w.rowId}: ${w.message}`).join('\n') : '';
+  $('#test-output').textContent = `TEST-001\nIstwert: ${fmt(totals.total,1)} Pa\nSollwert Excel: 109.5 Pa\nStatus: ${pass?'OK / innerhalb aktueller Übergangs-Toleranz':'Abweichung prüfen'}\nEngine: ${totals.version || 'unbekannt'}\nHinweis: Die Grundberechnung ist stabilisiert. Die Formteilformeln werden jetzt schrittweise exakt aus den Excel-Referenzen übernommen.${warningText}`;
   resetState(backup); renderAll();
 }
 

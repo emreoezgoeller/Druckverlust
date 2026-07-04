@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '0.4.0';
 
 export function createEmptyState(){
   return {
@@ -22,7 +22,7 @@ export function uid(){
 }
 
 export function resetState(next){
-  state.project = {...createEmptyState().project, ...(next.project||{})};
-  state.rows = Array.isArray(next.rows) ? next.rows : [];
-  state.parts = Array.isArray(next.parts) ? next.parts : [];
+  state.project = {...createEmptyState().project, ...(next?.project || {})};
+  state.rows = Array.isArray(next?.rows) ? next.rows : [];
+  state.parts = Array.isArray(next?.parts) ? next.parts : [];
 }
