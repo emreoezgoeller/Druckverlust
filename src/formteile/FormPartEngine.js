@@ -7,21 +7,22 @@ export class FormPartEngine {
   }
 
   addFormPart(part = {}) {
-    const formPart = {
-      id: part.id || crypto.randomUUID(),
-      name: part.name || 'Formteil',
-      category: part.category || 'Allgemein',
-      sectionId: part.sectionId || part.targetSectionId || '',
-      zeta: Number(part.zeta ?? 0),
-      parameters: part.parameters || {},
-      image: part.image || '',
-      note: part.note || '',
-      createdAt: new Date().toISOString(),
-    };
+  const formPart = {
+    id: part.id || crypto.randomUUID(),
+    name: part.name || 'Formteil',
+    category: part.category || 'Allgemein',
+    sectionId: part.sectionId || part.targetSectionId || '',
+    zeta: Number(part.zeta ?? 0),
+    parameters: part.parameters || part.input || {},
+    calculation: part.calculation || {},
+    image: part.image || '',
+    note: part.note || '',
+    createdAt: new Date().toISOString(),
+  };
 
-    this.formParts.push(formPart);
-    return formPart;
-  }
+  this.formParts.push(formPart);
+  return formPart;
+}
 
   removeFormPart(id) {
     this.formParts = this.formParts.filter(part => part.id !== id);
