@@ -1,35 +1,43 @@
-/* Druckverlust Pro – ProjectSchema 0.3.2 */
-'use strict';
-
-export const PROJECT_SCHEMA_VERSION = '0.3.2';
+/**
+ * Druckverlust Pro – ProjectSchema
+ * Version 0.3.3
+ *
+ * Einheitliches Projektformat für .dp-Dateien.
+ */
+export const PROJECT_SCHEMA_VERSION = '0.3.3';
 
 export function createEmptyProject() {
   return {
     schemaVersion: PROJECT_SCHEMA_VERSION,
     meta: {
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      application: 'Druckverlust Pro'
+    },
+    project: {
       name: 'Neues Projekt',
       object: '',
       system: 'Lüftungsanlage',
       editor: 'Emre Özgöller',
-      date: new Date().toISOString().slice(0, 10)
-    },
-    settings: {
+      date: new Date().toISOString().slice(0, 10),
       rho: 1.21,
       lambda: 0.025
     },
-    sections: [],
-    formParts: []
+    rows: [],
+    parts: [],
+    specials: []
   };
 }
 
-export function migrateProject(rawProject) {
-  if (!rawProject || typeof rawProject !== 'object') return createEmptyProject();
+export function normalizeProject(raw = {}) {
+  const base = createEmptyProject();
   return {
-    ...createEmptyProject(),
-    ...rawProject,
-    meta: { ...createEmptyProject().meta, ...(rawProject.meta || rawProject.project || {}) },
-    settings: { ...createEmptyProject().settings, ...(rawProject.settings || {}) },
-    sections: Array.isArray(rawProject.sections) ? rawProject.sections : (rawProject.rows || []),
-    formParts: Array.isArray(rawProject.formParts) ? rawProject.formParts : (rawProject.parts || [])
+    ...base,
+    ...raw,
+    meta: { ...base.meta, ...(raw.meta || {}), updatedAt: new Date().toISOString() },
+    project: { ...base.project, ...(raw.project || {}) },
+    rows: Array.isArray(raw.rows) ? raw.rows : [],
+    parts: Array.isArray(raw.parts) ? raw.parts : [],
+    specials: Array.isArray(raw.specials) ? raw.specials : []
   };
 }
