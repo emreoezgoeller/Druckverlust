@@ -1,0 +1,148 @@
+:root {
+  --dp-blue-900: #082f57;
+  --dp-blue-800: #0b477d;
+  --dp-blue-700: #0e5a9c;
+  --dp-bg: #f4f7fb;
+  --dp-panel: #ffffff;
+  --dp-border: #d9e3ef;
+  --dp-text: #0f172a;
+  --dp-muted: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.dp-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr 360px;
+  grid-template-rows: 76px 1fr 36px;
+  grid-template-areas:
+    "ribbon ribbon ribbon"
+    "sidebar workspace properties"
+    "status status status";
+  background: var(--dp-bg);
+  color: var(--dp-text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.dp-ribbon {
+  grid-area: ribbon;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 0 24px;
+  background: linear-gradient(90deg, var(--dp-blue-900), var(--dp-blue-800));
+  color: white;
+  border-bottom: 1px solid #062640;
+}
+
+.dp-brand {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.dp-brand strong {
+  font-size: 22px;
+  letter-spacing: 0.2px;
+}
+
+.dp-brand span {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.dp-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.dp-tabs button {
+  border: 0;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dp-tabs button:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.dp-sidebar,
+.dp-properties,
+.dp-workspace {
+  background: var(--dp-panel);
+  border: 1px solid var(--dp-border);
+}
+
+.dp-sidebar {
+  grid-area: sidebar;
+  padding: 20px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.dp-workspace {
+  grid-area: workspace;
+  padding: 24px;
+  border-top: 0;
+}
+
+.dp-properties {
+  grid-area: properties;
+  padding: 20px;
+  border-right: 0;
+  border-top: 0;
+}
+
+.dp-sidebar h3,
+.dp-properties h3 {
+  margin: 0 0 16px;
+  color: var(--dp-blue-900);
+}
+
+.dp-tree {
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.dp-tree div {
+  padding: 3px 6px;
+  border-radius: 6px;
+}
+
+.dp-tree div:hover {
+  background: #edf5ff;
+}
+
+.indent {
+  margin-left: 14px;
+  color: var(--dp-blue-900);
+  font-weight: 600;
+}
+
+.indent-2 {
+  margin-left: 32px;
+  color: var(--dp-muted);
+}
+
+.dp-workspace h1 {
+  margin-top: 0;
+  color: var(--dp-blue-900);
+}
+
+.dp-status {
+  grid-area: status;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+  background: #0f172a;
+  color: #cbd5e1;
+  font-size: 13px;
+}
