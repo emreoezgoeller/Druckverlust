@@ -31,6 +31,19 @@ export function round(value, digits = 3) {
   const factor = 10 ** digits;
   return Math.round((toNumber(value) + Number.EPSILON) * factor) / factor;
 }
+
+// <<< HIER EINFÜGEN >>>
+
+export function roundUpToStep(value, step = 0.5) {
+  const n = toNumber(value);
+  const s = toNumber(step, 0.5);
+
+  if (n <= 0 || s <= 0) {
+    return 0;
+  }
+
+  return Math.ceil((n - Number.EPSILON) / s) * s;
+}
 export function calcDuctArea(widthM, heightM) {
   const b = toNumber(widthM);
   const h = toNumber(heightM);
@@ -168,6 +181,7 @@ export function calculateSection(section = {}, options = {}) {
     zetaLoss,
     specialLoss,
     totalLoss,
+    roundedTotalLoss,
     warnings,
   });
 }
