@@ -1,15 +1,17 @@
 # Changelog
 
-## 0.3.3 – Professional Core: Datenmodell + Formteil-Manifest
+## 0.3.4 – Professional Core Vorbereitung
 
 ### Neu
-- Einheitliches Datenmodell für Projekt, Teilstrecken und Formteile.
-- `CalculationEngine.js` als DOM-unabhängige Berechnungsbasis.
-- `ProjectSchema.js` für künftige `.dp`-Projektdateien.
-- `FormPartRegistry.js` als Grundlage für eine erweiterbare Formteilbibliothek.
-- `FORMTEILE`-Manifest mit allen aktuell gelieferten Formteilen.
-- Referenzdatei `TEST-001/expected.json`.
-- Erste einfache Testseite für die CalculationEngine.
+- CalculationEngine als zentrale Rechenlogik vorbereitet
+- ProjectSchema als einheitliches Projekt-Datenmodell ergänzt
+- FormPartRegistry für erweiterbare Formteilbibliothek ergänzt
+- StorageEngine für `.dp` Projektdateien vorbereitet
+- PdfReportEngine als künftiger professioneller PDF-Generator vorbereitet
+- TEST-001 als maschinenlesbare Referenzdatei ergänzt
+- Testseite `run-reference-tests.html` ergänzt
+- Architektur- und Formteil-Dokumentation ergänzt
+- GitHub Issue-Vorlagen ergänzt
 
 ### Wichtig
-Dieser Patch verändert die bestehende Oberfläche nicht. Er ergänzt nur die professionelle Grundlage im Hintergrund.
+Die bestehende Web-App wird durch diesen Patch nicht ersetzt. Der Patch legt die professionelle Grundlage für die nächsten Sprints.
