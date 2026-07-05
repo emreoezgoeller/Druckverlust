@@ -354,3 +354,56 @@
   color: #ea580c;
   font-weight: 600;
 }
+.dp-editor-panel{
+
+    margin-bottom:30px;
+
+    padding:22px;
+
+    border:1px solid #dbe4ef;
+
+    border-radius:12px;
+
+    background:white;
+
+}
+
+.dp-editor-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:18px;
+
+}
+
+.dp-editor-grid label{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.dp-editor-grid span{
+
+    font-size:13px;
+
+    font-weight:600;
+
+    margin-bottom:6px;
+
+    color:#64748b;
+
+}
+
+.dp-editor-grid input{
+
+    padding:10px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:8px;
+
+}

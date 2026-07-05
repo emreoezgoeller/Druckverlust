@@ -186,33 +186,85 @@ export default class WorkspaceComponent {
 
   renderSection(section) {
   const calculationItem = this.getCalculationItemBySectionId(section?.id);
-  const result = calculationItem?.result || null;
+  const result = calculationItem?.result || {};
 
   this.root.innerHTML = `
-    <h1>${section?.name ?? section?.id ?? 'Teilstrecke'}</h1>
-    <p>Berechnungsansicht der Teilstrecke.</p>
+    <h1>${section?.name ?? 'Teilstrecke'}</h1>
 
-    <table class="dp-table">
-      <tbody>
-        <tr>
-          <th>Luftmenge</th>
-          <td>${section?.q ?? section?.airVolume ?? section?.volumeFlow ?? 0} m³/h</td>
-        </tr>
-        <tr>
-          <th>Länge</th>
-          <td>${section?.l ?? section?.length ?? 0} m</td>
-        </tr>
-        <tr>
-          <th>Typ</th>
-          <td>${section?.type ?? '-'}</td>
-        </tr>
-      </tbody>
-    </table>
+    <section class="dp-editor-panel">
+
+      <h2>Eingabedaten</h2>
+
+      <div class="dp-editor-grid">
+
+        <label>
+          <span>Luftmenge [m³/h]</span>
+          <input data-field="q"
+                 type="number"
+                 value="${section?.q ?? 0}">
+        </label>
+
+        <label>
+          <span>Länge [m]</span>
+          <input data-field="l"
+                 type="number"
+                 step="0.01"
+                 value="${section?.l ?? 0}">
+        </label>
+
+        <label>
+          <span>Breite [m]</span>
+          <input data-field="b"
+                 type="number"
+                 step="0.001"
+                 value="${section?.b ?? 0}">
+        </label>
+
+        <label>
+          <span>Höhe [m]</span>
+          <input data-field="h"
+                 type="number"
+                 step="0.001"
+                 value="${section?.h ?? 0}">
+        </label>
+
+        <label>
+          <span>Durchmesser [m]</span>
+          <input data-field="d"
+                 type="number"
+                 step="0.001"
+                 value="${section?.d ?? 0}">
+        </label>
+
+      </div>
+
+    </section>
 
     ${this.renderSectionResult(result, calculationItem)}
   `;
-}
 
+  this.bindSectionEditor(section);
+}
+bindSectionEditor(section) {
+
+  this.root.querySelectorAll('[data-field]').forEach(input => {
+
+    input.addEventListener('change', () => {
+
+      const field = input.dataset.field;
+
+      section[field] =
+        input.type === 'number'
+          ? Number(input.value)
+          : input.value;
+
+      this.state.markCalculationDirty();
+
+    });
+
+  });
+
+}
   renderFormPart(formPart) {
     const sectionName = this.getSectionNameById(formPart?.sectionId);
 
