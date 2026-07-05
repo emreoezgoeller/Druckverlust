@@ -34,7 +34,7 @@ export default class SidebarComponent {
       <h3>Projekt</h3>
 
       <button class="dp-tree-item ${this.state.getSelectionType() === 'project' ? 'active' : ''}" data-type="project">
-        ${project.name}
+      ${project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt'}
       </button>
 
       <button class="dp-tree-item ${this.state.isSelected('system', system.id) ? 'active' : ''}" data-type="system" data-id="${system.id}">

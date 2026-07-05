@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>TEST – ProjectCommands</title>
+</head>
+<body>
+  <h1>ProjectCommands Referenztest</h1>
+  <pre id="output"></pre>
+
+  <script type="module">
+    import ApplicationState from '../../src/app/ApplicationState.js';
+    import ProjectCommands from '../../src/app/ProjectCommands.js';
+
+    const output = document.getElementById('output');
+
+    const state = new ApplicationState();
+    const commands = new ProjectCommands(state);
+
+    const project = commands.createProject('Testprojekt');
+    const section = commands.addSection();
+    const formPart = commands.addFormPart();
+
+    const ok =
+      project.name === 'Testprojekt' &&
+      project.systems.length === 1 &&
+      section.name === 'ts1' &&
+      formPart.name === 'Formteil 1' &&
+      state.getSelectionType() === 'formPart';
+
+    output.textContent += JSON.stringify(project, null, 2);
+    output.textContent += '\n\n';
+
+    output.textContent += ok
+      ? '✅ TEST BESTANDEN'
+      : '❌ TEST FEHLGESCHLAGEN';
+  </script>
+</body>
+</html>

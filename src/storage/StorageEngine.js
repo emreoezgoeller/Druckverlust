@@ -22,8 +22,8 @@ export class StorageEngine {
 
   static createFileName(project, fallback = 'Druckverlust-Projekt') {
     const name =
-      project?.project?.name ||
-      project?.project?.object ||
+      project?.name ||
+      project?.object ||
       fallback;
 
     const safeName = String(name)
@@ -34,19 +34,19 @@ export class StorageEngine {
     return `${safeName || fallback}${this.extension}`;
   }
 
-  static download(project, filename = null) {
-    const fileName = filename || this.createFileName(project);
-    const safeName = fileName.endsWith(this.extension)
-      ? fileName
-      : fileName + this.extension;
+  static download(project) {
+    if (!project) {
+      throw new Error('Kein Projekt zum Speichern vorhanden.');
+    }
 
-    const blob = new Blob([this.serialize(project)], {
-      type: 'application/json;charset=utf-8'
+    const json = this.serialize(project);
+    const blob = new Blob([json], {
+      type: 'application/json'
     });
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = safeName;
+    link.download = this.createFileName(project);
     link.click();
 
     URL.revokeObjectURL(link.href);
@@ -72,6 +72,10 @@ export class StorageEngine {
       reader.onerror = () => reject(reader.error);
       reader.readAsText(file, 'utf-8');
     });
+  }
+
+  static readFile(file) {
+    return this.openFile(file);
   }
 }
 

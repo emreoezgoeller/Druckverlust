@@ -1,5 +1,7 @@
 // Druckverlust Pro – RibbonComponent
-// Menüband der Professional-Oberfläche.
+// Rendert das Ribbon und verbindet UI-Befehle mit RibbonActions.
+
+import RibbonActions from '../core/RibbonActions.js';
 
 export default class RibbonComponent {
   constructor(rootElement, state) {
@@ -9,6 +11,7 @@ export default class RibbonComponent {
 
     this.root = rootElement;
     this.state = state;
+    this.actions = new RibbonActions(state);
   }
 
   render() {
@@ -18,32 +21,29 @@ export default class RibbonComponent {
         <span>Professional</span>
       </div>
 
-      <div class="ribbon-groups">
-        <div class="ribbon-group">
-          <div class="ribbon-label">Datei</div>
-          <button data-action="new">Neu</button>
-          <button data-action="open">Öffnen</button>
-          <button data-action="save">Speichern</button>
-        </div>
-
-        <div class="ribbon-group">
-          <div class="ribbon-label">Projekt</div>
-          <button data-action="add-section">+ Teilstrecke</button>
-          <button data-action="add-formpart">+ Formteil</button>
-          <button data-action="add-special">+ Sonderbauteil</button>
-        </div>
-
-        <div class="ribbon-group">
-          <div class="ribbon-label">Berechnung</div>
-          <button data-action="calculate">Berechnen</button>
-          <button data-action="validate">Prüfen</button>
-        </div>
-
-        <div class="ribbon-group">
-          <div class="ribbon-label">Export</div>
-          <button data-action="pdf">PDF</button>
-        </div>
-      </div>
+      <nav class="dp-tabs">
+        <button data-action="newProject">Neu</button>
+        <button data-action="openProject">Öffnen</button>
+        <button data-action="saveProject">Speichern</button>
+        <button data-action="addSection">+ Teilstrecke</button>
+        <button data-action="addFormPart">+ Formteil</button>
+        <button data-action="calculate">Berechnen</button>
+        <button data-action="exportPdf">PDF</button>
+      </nav>
     `;
+
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    this.root.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const actionName = button.dataset.action;
+
+        if (typeof this.actions[actionName] === 'function') {
+          this.actions[actionName]();
+        }
+      });
+    });
   }
 }

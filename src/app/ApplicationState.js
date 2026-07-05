@@ -32,10 +32,14 @@ export default class ApplicationState {
   }
 
   setProject(project) {
-    this.project = project;
-    this.selectedSystem = project?.systems?.[0] ?? null;
-    this.clearSelection(false);
-    this.notify();
+  this.project = {
+    name: project?.name ?? project?.title ?? project?.projectName ?? 'Unbenanntes Projekt',
+    ...project
+  };
+
+  this.selectedSystem = this.project?.systems?.[0] ?? null;
+  this.clearSelection(false);
+  this.notify();
   }
 
   setSelection(type, data = null) {

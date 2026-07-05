@@ -1,5 +1,5 @@
 // Druckverlust Pro – StatusBarComponent
-// Untere Statusleiste der Professional-Oberfläche.
+// Zeigt Statusinformationen der Anwendung.
 
 export default class StatusBarComponent {
   constructor(rootElement, state) {
@@ -11,17 +11,44 @@ export default class StatusBarComponent {
     this.state = state;
 
     this.state.subscribe(() => this.render());
+    this.render();
   }
 
   render() {
-    const projectName = this.state.project?.project?.name || 'Kein Projekt';
-    const selectionType = this.state.getSelectionType();
+    const selection = this.state.getSelection();
+    const label = this.getSelectionLabel(selection);
 
     this.root.innerHTML = `
-      <span>Druckverlust Pro · Version 0.2.0 UI Foundation</span>
-      <span>Projekt: ${projectName}</span>
-      <span>Auswahl: ${selectionType}</span>
-      <span>Status: Bereit</span>
+      <span>Version 0.2.0 UI Foundation</span>
+      <span>Auswahl: ${label}</span>
     `;
+  }
+
+  getSelectionLabel(selection) {
+    if (!selection || selection.type === 'none') {
+      return 'Keine';
+    }
+
+    if (selection.type === 'project') {
+      return `Projekt – ${selection.data?.name ?? '-'}`;
+    }
+
+    if (selection.type === 'system') {
+      return `Anlage – ${selection.data?.name ?? '-'}`;
+    }
+
+    if (selection.type === 'section') {
+      return `Teilstrecke – ${selection.data?.name ?? selection.data?.id ?? '-'}`;
+    }
+
+    if (selection.type === 'formPart') {
+      return `Formteil – ${selection.data?.name ?? '-'}`;
+    }
+
+    if (selection.type === 'specialComponent') {
+      return `Sonderbauteil – ${selection.data?.name ?? '-'}`;
+    }
+
+    return 'Unbekannt';
   }
 }
