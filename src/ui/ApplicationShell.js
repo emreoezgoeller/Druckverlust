@@ -13,48 +13,15 @@ export default class ApplicationShell {
   render() {
     this.root.innerHTML = `
       <div class="dp-shell">
-        <header class="dp-ribbon">
-          <div class="dp-brand">
-            <strong>Druckverlust Pro</strong>
-            <span>Professional</span>
-          </div>
+        <header class="dp-ribbon"></header>
 
-          <nav class="dp-tabs">
-            <button>Datei</button>
-            <button>Projekt</button>
-            <button>Berechnung</button>
-            <button>Bibliothek</button>
-            <button>Export</button>
-          </nav>
-        </header>
+        <aside class="dp-sidebar"></aside>
 
-        <aside class="dp-sidebar">
-          <h3>Projekt</h3>
-          <div class="dp-tree">
-            <div>▼ Anlage 1</div>
-            <div class="indent">▼ Teilstrecken</div>
-            <div class="indent-2">TS1</div>
-            <div class="indent-2">TS2</div>
-            <div class="indent">▼ Formteile</div>
-            <div class="indent-2">Kreisförmiger Bogen</div>
-            <div class="indent">▼ Sonderbauteile</div>
-          </div>
-        </aside>
+        <main class="dp-workspace"></main>
 
-        <main class="dp-workspace">
-          <h1>Arbeitsbereich</h1>
-          <p>Hier entsteht die neue professionelle Druckverlust-Berechnung.</p>
-        </main>
+        <aside class="dp-properties"></aside>
 
-        <aside class="dp-properties">
-          <h3>Eigenschaften</h3>
-          <p>Wähle links ein Element aus.</p>
-        </aside>
-
-        <footer class="dp-status">
-          <span>Version 0.2.0 UI Foundation</span>
-          <span>Bereit</span>
-        </footer>
+        <footer class="dp-status"></footer>
       </div>
     `;
   }

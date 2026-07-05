@@ -276,3 +276,39 @@
     font-weight:600;
 
 }
+.ribbon-groups {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  overflow-x: auto;
+}
+
+.ribbon-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-left: 1px solid rgba(255,255,255,0.18);
+}
+
+.ribbon-label {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.8;
+  margin-right: 4px;
+}
+
+.ribbon-group button {
+  border: 0;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ribbon-group button:hover {
+  background: rgba(255,255,255,0.24);
+}

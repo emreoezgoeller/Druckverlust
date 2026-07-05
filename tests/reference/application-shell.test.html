@@ -15,6 +15,7 @@
     import PropertiesComponent from '../../src/ui/components/PropertiesComponent.js';
     import WorkspaceComponent from '../../src/ui/components/WorkspaceComponent.js';
     import StatusBarComponent from '../../src/ui/components/StatusBarComponent.js';
+    import RibbonComponent from '../../src/ui/components/RibbonComponent.js';
 
     const demoProject = {
       project: {
@@ -82,6 +83,7 @@
     const shell = new ApplicationShell(document.getElementById('app'));
     shell.render();
 
+    new RibbonComponent(document.querySelector('.dp-ribbon'), state).render();
     new SidebarComponent(document.querySelector('.dp-sidebar'), state);
     new PropertiesComponent(document.querySelector('.dp-properties'), state);
     new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
