@@ -337,3 +337,20 @@
   border-radius: 7px;
   font: inherit;
 }
+.dp-status-left {
+  font-weight: 600;
+}
+
+.dp-status-right {
+  margin-left: auto;
+}
+
+.dp-status-ok {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.dp-status-warning {
+  color: #ea580c;
+  font-weight: 600;
+}

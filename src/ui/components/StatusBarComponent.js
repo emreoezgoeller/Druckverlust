@@ -17,10 +17,24 @@ export default class StatusBarComponent {
   render() {
     const selection = this.state.getSelection();
     const label = this.getSelectionLabel(selection);
+    const dirty = this.state.isCalculationDirty;
 
     this.root.innerHTML = `
-      <span>Version 0.2.0 UI Foundation</span>
-      <span>Auswahl: ${label}</span>
+      <div class="dp-status-left">
+        Druckverlust Pro v1.0
+      </div>
+
+      <div class="dp-status-center">
+        Auswahl: ${label}
+      </div>
+
+      <div class="dp-status-right">
+        ${
+          dirty
+            ? '<span class="dp-status-warning">● Berechnung veraltet</span>'
+            : '<span class="dp-status-ok">● Berechnet</span>'
+        }
+      </div>
     `;
   }
 

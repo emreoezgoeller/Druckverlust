@@ -145,7 +145,7 @@ bindSectionInputs(section) {
 
       section[field] = value;
 
-      this.state.notify();
+      this.state.markCalculationDirty();
     });
   });
 }
