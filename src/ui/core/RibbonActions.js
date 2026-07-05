@@ -92,6 +92,7 @@ export default class RibbonActions {
 
       project.calculationResult = result;
 
+      this.state.lastCalculationAt = new Date().toISOString();
       this.state.markCalculationClean();
 
       console.info('RibbonAction: Berechnung abgeschlossen', result);

@@ -407,3 +407,44 @@
     border-radius:8px;
 
 }
+.dp-dirty-hint {
+  margin: 12px 0 18px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 700;
+  border: 1px solid #fed7aa;
+}
+.dp-editor-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dp-editor-actions button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: #0f172a;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dp-editor-actions button:hover {
+  background: #1e293b;
+}
+
+.dp-editor-grid select {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+.dp-result-meta {
+  margin-top: -6px;
+  margin-bottom: 14px;
+  color: #64748b;
+  font-size: 13px;
+}

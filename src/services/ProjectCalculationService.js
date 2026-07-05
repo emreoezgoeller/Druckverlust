@@ -1,6 +1,8 @@
 // Druckverlust Pro – ProjectCalculationService
 // Orchestriert die Berechnung eines vollständigen Projekts.
 
+import ProjectCalculationService from '../../project/ProjectCalculationService.js';
+
 export default class ProjectCalculationService {
   static calculate(project) {
     if (!project) {

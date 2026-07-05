@@ -13,6 +13,8 @@ export default class ApplicationState {
     };
 
     this.isCalculationDirty = false;
+    this.isProjectDirty = false;
+    this.lastCalculationAt = null;
 
     this.listeners = [];
   }
@@ -41,6 +43,8 @@ export default class ApplicationState {
 
     this.selectedSystem = this.project?.systems?.[0] ?? null;
     this.isCalculationDirty = false;
+    this.isProjectDirty = false;
+    this.lastCalculationAt = null;
 
     this.clearSelection(false);
     this.notify();
@@ -56,11 +60,22 @@ export default class ApplicationState {
 
   markCalculationDirty() {
     this.isCalculationDirty = true;
+    this.isProjectDirty = true;
     this.notify();
   }
 
   markCalculationClean() {
     this.isCalculationDirty = false;
+    this.notify();
+  }
+
+  markProjectDirty() {
+    this.isProjectDirty = true;
+    this.notify();
+  }
+
+  markProjectClean() {
+    this.isProjectDirty = false;
     this.notify();
   }
 
