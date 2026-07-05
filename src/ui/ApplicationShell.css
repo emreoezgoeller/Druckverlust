@@ -171,3 +171,73 @@
 .dp-muted {
   color: var(--dp-muted);
 }
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.workspace-header h1 {
+  margin: 0;
+}
+
+.workspace-header p {
+  margin: 6px 0 0;
+  color: var(--dp-muted);
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.workspace-actions button {
+  border: 1px solid var(--dp-border);
+  background: white;
+  color: var(--dp-blue-900);
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.workspace-actions button:hover {
+  background: #edf5ff;
+}
+
+.workspace-card {
+  background: white;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.workspace-card h2 {
+  margin: 0 0 12px;
+  color: var(--dp-blue-900);
+  font-size: 18px;
+}
+
+.dp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.dp-table th,
+.dp-table td {
+  border-bottom: 1px solid var(--dp-border);
+  padding: 10px 8px;
+  text-align: left;
+}
+
+.dp-table th {
+  color: var(--dp-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
