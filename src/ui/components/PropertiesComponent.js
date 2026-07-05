@@ -1,5 +1,5 @@
 // Druckverlust Pro – PropertiesComponent
-// Zeigt Eigenschaften der aktuellen Auswahl aus dem ApplicationState.
+// Zeigt Eigenschaften zur aktuellen Auswahl.
 
 export default class PropertiesComponent {
   constructor(rootElement, state) {
@@ -11,87 +11,134 @@ export default class PropertiesComponent {
     this.state = state;
 
     this.state.subscribe(() => this.render());
+    this.render();
   }
 
   render() {
-    const type = this.state.getSelectionType();
+    const selection = this.state.getSelection();
 
-    if (type === 'section') {
-      return this.renderSection(this.state.selectedSection);
+    if (!selection || selection.type === 'none') {
+      this.root.innerHTML = `
+        <h3>Eigenschaften</h3>
+        <p>Keine Auswahl vorhanden.</p>
+      `;
+      return;
     }
 
-    if (type === 'formPart') {
-      return this.renderFormPart(this.state.selectedFormPart);
+    if (selection.type === 'project') {
+      this.renderProject(selection.data);
+      return;
     }
 
-    if (type === 'specialComponent') {
-      return this.renderSpecialComponent(this.state.selectedSpecialComponent);
+    if (selection.type === 'system') {
+      this.renderSystem(selection.data);
+      return;
     }
 
-    if (type === 'system') {
-      return this.renderSystem(this.state.selectedSystem);
+    if (selection.type === 'section') {
+      this.renderSection(selection.data);
+      return;
+    }
+
+    if (selection.type === 'formPart') {
+      this.renderFormPart(selection.data);
+      return;
+    }
+
+    if (selection.type === 'specialComponent') {
+      this.renderSpecialComponent(selection.data);
+      return;
     }
 
     this.root.innerHTML = `
       <h3>Eigenschaften</h3>
-      <p class="dp-muted">Wähle links ein Element aus.</p>
+      <p>Unbekannte Auswahl.</p>
+    `;
+  }
+
+  renderProject(project) {
+    this.root.innerHTML = `
+      <h3>Projekt</h3>
+      <dl class="dp-properties-list">
+        <dt>Name</dt>
+        <dd>${project?.name ?? '-'}</dd>
+
+        <dt>Anlagen</dt>
+        <dd>${project?.systems?.length ?? 0}</dd>
+      </dl>
     `;
   }
 
   renderSystem(system) {
     this.root.innerHTML = `
       <h3>Anlage</h3>
-      <div class="property-grid">
-        <label>Name</label><div>${system?.name || '-'}</div>
-        <label>Typ</label><div>${system?.type || '-'}</div>
-      </div>
+      <dl class="dp-properties-list">
+        <dt>Name</dt>
+        <dd>${system?.name ?? '-'}</dd>
+
+        <dt>Teilstrecken</dt>
+        <dd>${system?.sections?.length ?? 0}</dd>
+
+        <dt>Formteile</dt>
+        <dd>${system?.formParts?.length ?? 0}</dd>
+
+        <dt>Sonderbauteile</dt>
+        <dd>${system?.specialComponents?.length ?? 0}</dd>
+      </dl>
     `;
   }
 
   renderSection(section) {
     this.root.innerHTML = `
       <h3>Teilstrecke</h3>
-      <div class="property-grid">
-        <label>ID</label><div>${section?.id || '-'}</div>
-        <label>TS</label><div>${section?.ts || '-'}</div>
-        <label>Typ</label><div>${section?.type || '-'}</div>
-        <label>Beschreibung</label><div>${section?.description || '-'}</div>
-        <label>Luftmenge</label><div>${Number(section?.q || 0).toFixed(1)} m³/h</div>
-        <label>Breite</label><div>${Number(section?.b || 0).toFixed(3)} m</div>
-        <label>Höhe</label><div>${Number(section?.h || 0).toFixed(3)} m</div>
-        <label>Durchmesser</label><div>${Number(section?.d || 0).toFixed(3)} m</div>
-        <label>Länge</label><div>${Number(section?.l || 0).toFixed(2)} m</div>
-      </div>
+      <dl class="dp-properties-list">
+        <dt>Name</dt>
+        <dd>${section?.name ?? section?.id ?? '-'}</dd>
+
+        <dt>Typ</dt>
+        <dd>${section?.type ?? '-'}</dd>
+
+        <dt>Luftmenge</dt>
+        <dd>${section?.airVolume ?? 0} m³/h</dd>
+
+        <dt>Länge</dt>
+        <dd>${section?.length ?? 0} m</dd>
+      </dl>
     `;
   }
 
-  renderFormPart(part) {
+  renderFormPart(formPart) {
     this.root.innerHTML = `
       <h3>Formteil</h3>
-      <div class="property-grid">
-        <label>Name</label><div>${part?.name || '-'}</div>
-        <label>Kategorie</label><div>${part?.category || '-'}</div>
-        <label>Teilstrecke</label><div>${part?.sectionId || '-'}</div>
-        <label>ζ-Wert</label><div>${Number(part?.zeta || 0).toFixed(3)}</div>
-      </div>
+      <dl class="dp-properties-list">
+        <dt>Name</dt>
+        <dd>${formPart?.name ?? '-'}</dd>
 
-      <h4>Parameter</h4>
-      <pre class="property-json">${JSON.stringify(part?.parameters || part?.input || {}, null, 2)}</pre>
+        <dt>Teilstrecke</dt>
+        <dd>${formPart?.sectionId ?? '-'}</dd>
 
-      <h4>Rechenweg</h4>
-      <pre class="property-json">${JSON.stringify(part?.calculation || {}, null, 2)}</pre>
+        <dt>Zeta</dt>
+        <dd>${formPart?.zeta ?? '-'}</dd>
+      </dl>
     `;
   }
 
   renderSpecialComponent(component) {
     this.root.innerHTML = `
       <h3>Sonderbauteil</h3>
-      <div class="property-grid">
-        <label>Name</label><div>${component?.name || '-'}</div>
-        <label>Typ</label><div>${component?.type || '-'}</div>
-        <label>Hersteller</label><div>${component?.manufacturer || '-'}</div>
-        <label>Druckverlust</label><div>${Number(component?.pressureLoss || 0).toFixed(1)} Pa</div>
-      </div>
+      <dl class="dp-properties-list">
+        <dt>Name</dt>
+        <dd>${component?.name ?? '-'}</dd>
+
+        <dt>Typ</dt>
+        <dd>${component?.type ?? '-'}</dd>
+
+        <dt>Hersteller</dt>
+        <dd>${component?.manufacturer ?? '-'}</dd>
+
+        <dt>Druckverlust</dt>
+        <dd>${component?.pressureLoss ?? 0} Pa</dd>
+      </dl>
     `;
   }
 }

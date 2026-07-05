@@ -1,5 +1,5 @@
 // Druckverlust Pro – WorkspaceComponent
-// Mittlerer Arbeitsbereich mit Projektübersicht und Teilstrecken.
+// Zeigt den Arbeitsbereich passend zur aktuellen Auswahl.
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -11,93 +11,159 @@ export default class WorkspaceComponent {
     this.state = state;
 
     this.state.subscribe(() => this.render());
+    this.render();
   }
 
   render() {
-    const project = this.state.project;
-    const system = this.state.selectedSystem || project?.systems?.[0];
+    const selection = this.state.getSelection();
 
-    if (!project || !system) {
-      this.root.innerHTML = `
-        <h1>Arbeitsbereich</h1>
-        <p class="dp-muted">Kein Projekt geladen.</p>
-      `;
+    if (!selection || selection.type === 'none') {
+      this.renderEmpty();
       return;
     }
 
+    if (selection.type === 'project') {
+      this.renderProject(selection.data);
+      return;
+    }
+
+    if (selection.type === 'system') {
+      this.renderSystem(selection.data);
+      return;
+    }
+
+    if (selection.type === 'section') {
+      this.renderSection(selection.data);
+      return;
+    }
+
+    if (selection.type === 'formPart') {
+      this.renderFormPart(selection.data);
+      return;
+    }
+
+    if (selection.type === 'specialComponent') {
+      this.renderSpecialComponent(selection.data);
+      return;
+    }
+
+    this.renderEmpty();
+  }
+
+  renderEmpty() {
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
-          <h1>${project.project?.name || 'Unbenanntes Projekt'}</h1>
-          <p>${project.project?.object || '-'} · ${system.name || 'Anlage'}</p>
-        </div>
-
-        <div class="workspace-actions">
-          <button>+ Teilstrecke</button>
-          <button>+ Formteil</button>
-          <button>+ Sonderbauteil</button>
-        </div>
-      </div>
-
-      <section class="workspace-card">
-        <h2>Teilstrecken</h2>
-
-        <table class="dp-table">
-          <thead>
-            <tr>
-              <th>TS</th>
-              <th>Typ</th>
-              <th>Beschreibung</th>
-              <th>Luftmenge</th>
-              <th>Dimension</th>
-              <th>Länge</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(system.sections || []).map(section => `
-              <tr>
-                <td>${section.ts || '-'}</td>
-                <td>${section.type || '-'}</td>
-                <td>${section.description || '-'}</td>
-                <td>${Number(section.q || 0).toFixed(1)} m³/h</td>
-                <td>${this.formatDimension(section)}</td>
-                <td>${Number(section.l || 0).toFixed(2)} m</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </section>
-
-      <section class="workspace-card">
-        <h2>Formteile</h2>
-
-        <table class="dp-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Teilstrecke</th>
-              <th>ζ</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(system.formParts || []).map(part => `
-              <tr>
-                <td>${part.name || '-'}</td>
-                <td>${part.sectionId || '-'}</td>
-                <td>${Number(part.zeta || 0).toFixed(3)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </section>
+      <h1>Arbeitsbereich</h1>
+      <p>Bitte wähle links ein Element aus.</p>
     `;
   }
 
-  formatDimension(section) {
-    if (section.type === 'pipe') {
-      return `Ø ${Number(section.d || 0).toFixed(3)} m`;
-    }
+  renderProject(project) {
+    this.root.innerHTML = `
+      <h1>${project?.name ?? 'Projekt'}</h1>
+      <p>Projektübersicht der Druckverlustberechnung.</p>
 
-    return `${Number(section.b || 0).toFixed(3)} × ${Number(section.h || 0).toFixed(3)} m`;
+      <div class="dp-cards">
+        <div class="dp-card">
+          <strong>Anlagen</strong>
+          <span>${project?.systems?.length ?? 0}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  renderSystem(system) {
+    const sections = system?.sections || [];
+    const formParts = system?.formParts || [];
+    const specialComponents = system?.specialComponents || [];
+
+    this.root.innerHTML = `
+      <h1>${system?.name ?? 'Anlage'}</h1>
+      <p>Übersicht der gewählten Anlage.</p>
+
+      <div class="dp-cards">
+        <div class="dp-card">
+          <strong>Teilstrecken</strong>
+          <span>${sections.length}</span>
+        </div>
+
+        <div class="dp-card">
+          <strong>Formteile</strong>
+          <span>${formParts.length}</span>
+        </div>
+
+        <div class="dp-card">
+          <strong>Sonderbauteile</strong>
+          <span>${specialComponents.length}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  renderSection(section) {
+    this.root.innerHTML = `
+      <h1>${section?.name ?? section?.id ?? 'Teilstrecke'}</h1>
+      <p>Berechnungsansicht der Teilstrecke.</p>
+
+      <table class="dp-table">
+        <tbody>
+          <tr>
+            <th>Luftmenge</th>
+            <td>${section?.airVolume ?? 0} m³/h</td>
+          </tr>
+          <tr>
+            <th>Länge</th>
+            <td>${section?.length ?? 0} m</td>
+          </tr>
+          <tr>
+            <th>Typ</th>
+            <td>${section?.type ?? '-'}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  renderFormPart(formPart) {
+    this.root.innerHTML = `
+      <h1>${formPart?.name ?? 'Formteil'}</h1>
+      <p>Detailansicht des Formteils.</p>
+
+      <table class="dp-table">
+        <tbody>
+          <tr>
+            <th>Teilstrecke</th>
+            <td>${formPart?.sectionId ?? '-'}</td>
+          </tr>
+          <tr>
+            <th>Zeta</th>
+            <td>${formPart?.zeta ?? '-'}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
+  renderSpecialComponent(component) {
+    this.root.innerHTML = `
+      <h1>${component?.name ?? 'Sonderbauteil'}</h1>
+      <p>Detailansicht des Sonderbauteils.</p>
+
+      <table class="dp-table">
+        <tbody>
+          <tr>
+            <th>Typ</th>
+            <td>${component?.type ?? '-'}</td>
+          </tr>
+          <tr>
+            <th>Hersteller</th>
+            <td>${component?.manufacturer ?? '-'}</td>
+          </tr>
+          <tr>
+            <th>Druckverlust</th>
+            <td>${component?.pressureLoss ?? 0} Pa</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
   }
 }

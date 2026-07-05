@@ -5,6 +5,13 @@ export default class ApplicationState {
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+
+    this.selection = {
+      type: 'none',
+      id: null,
+      data: null
+    };
+
     this.listeners = [];
   }
 
@@ -31,9 +38,21 @@ export default class ApplicationState {
     this.notify();
   }
 
+  setSelection(type, data = null) {
+    this.selection = {
+      type,
+      id: data?.id || null,
+      data
+    };
+  }
+
   selectSystem(system) {
     this.selectedSystem = system;
-    this.clearSelection(false);
+    this.selectedSection = null;
+    this.selectedFormPart = null;
+    this.selectedSpecialComponent = null;
+
+    this.setSelection('system', system);
     this.notify();
   }
 
@@ -41,6 +60,8 @@ export default class ApplicationState {
     this.selectedSection = section;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+
+    this.setSelection('section', section);
     this.notify();
   }
 
@@ -48,6 +69,8 @@ export default class ApplicationState {
     this.selectedFormPart = formPart;
     this.selectedSection = null;
     this.selectedSpecialComponent = null;
+
+    this.setSelection('formPart', formPart);
     this.notify();
   }
 
@@ -55,6 +78,8 @@ export default class ApplicationState {
     this.selectedSpecialComponent = component;
     this.selectedSection = null;
     this.selectedFormPart = null;
+
+    this.setSelection('specialComponent', component);
     this.notify();
   }
 
@@ -63,23 +88,33 @@ export default class ApplicationState {
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
 
+    this.selection = {
+      type: this.selectedSystem ? 'system' : 'none',
+      id: this.selectedSystem?.id || null,
+      data: this.selectedSystem || null
+    };
+
     if (notify) {
       this.notify();
     }
   }
 
+  getSelection() {
+    return this.selection;
+  }
+
   getSelectionType() {
-    if (this.selectedSection) return 'section';
-    if (this.selectedFormPart) return 'formPart';
-    if (this.selectedSpecialComponent) return 'specialComponent';
-    if (this.selectedSystem) return 'system';
-    return 'none';
+    return this.selection.type;
   }
 
   isSelected(type, id) {
+    if (type === 'system') return this.selectedSystem?.id === id;
     if (type === 'section') return this.selectedSection?.id === id;
     if (type === 'formPart') return this.selectedFormPart?.id === id;
-    if (type === 'special') return this.selectedSpecialComponent?.id === id;
+    if (type === 'special' || type === 'specialComponent') {
+      return this.selectedSpecialComponent?.id === id;
+    }
+
     return false;
   }
 }
