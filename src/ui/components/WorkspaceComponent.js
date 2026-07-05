@@ -185,28 +185,33 @@ export default class WorkspaceComponent {
   }
 
   renderSection(section) {
-    this.root.innerHTML = `
-      <h1>${section?.name ?? section?.id ?? 'Teilstrecke'}</h1>
-      <p>Berechnungsansicht der Teilstrecke.</p>
+  const calculationItem = this.getCalculationItemBySectionId(section?.id);
+  const result = calculationItem?.result || null;
 
-      <table class="dp-table">
-        <tbody>
-          <tr>
-            <th>Luftmenge</th>
-            <td>${section?.q ?? section?.airVolume ?? section?.volumeFlow ?? 0} m³/h</td>
-          </tr>
-          <tr>
-            <th>Länge</th>
-            <td>${section?.l ?? section?.length ?? 0} m</td>
-          </tr>
-          <tr>
-            <th>Typ</th>
-            <td>${section?.type ?? '-'}</td>
-          </tr>
-        </tbody>
-      </table>
-    `;
-  }
+  this.root.innerHTML = `
+    <h1>${section?.name ?? section?.id ?? 'Teilstrecke'}</h1>
+    <p>Berechnungsansicht der Teilstrecke.</p>
+
+    <table class="dp-table">
+      <tbody>
+        <tr>
+          <th>Luftmenge</th>
+          <td>${section?.q ?? section?.airVolume ?? section?.volumeFlow ?? 0} m³/h</td>
+        </tr>
+        <tr>
+          <th>Länge</th>
+          <td>${section?.l ?? section?.length ?? 0} m</td>
+        </tr>
+        <tr>
+          <th>Typ</th>
+          <td>${section?.type ?? '-'}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    ${this.renderSectionResult(result, calculationItem)}
+  `;
+}
 
   renderFormPart(formPart) {
     const sectionName = this.getSectionNameById(formPart?.sectionId);
@@ -264,6 +269,63 @@ export default class WorkspaceComponent {
 
     return section?.name ?? section?.ts ?? section?.sectionNo ?? section?.id ?? sectionId;
   }
+
+renderSectionResult(result, item) {
+  if (!result) {
+    return `
+      <section class="dp-result-panel">
+        <h2>Berechnung</h2>
+        <p>Noch keine Berechnung für diese Teilstrecke vorhanden.</p>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="dp-result-panel">
+      <h2>Berechnungsergebnis</h2>
+
+      <table class="dp-table">
+        <tbody>
+          <tr>
+            <th>Geschwindigkeit</th>
+            <td>${this.formatNumber(result.velocity)} m/s</td>
+          </tr>
+          <tr>
+            <th>Dynamischer Druck</th>
+            <td>${this.formatNumber(result.dynamicPressure)} Pa</td>
+          </tr>
+          <tr>
+            <th>Reibungsverlust</th>
+            <td>${this.formatNumber(result.frictionLoss)} Pa</td>
+          </tr>
+          <tr>
+            <th>ζ Formteile</th>
+            <td>${this.formatNumber(item?.zetaFromParts)}</td>
+          </tr>
+          <tr>
+            <th>ζ-Verlust</th>
+            <td>${this.formatNumber(result.zetaLoss)} Pa</td>
+          </tr>
+          <tr>
+            <th>Gesamt</th>
+            <td><strong>${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss)} Pa</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
+getCalculationItemBySectionId(sectionId) {
+  if (!sectionId) {
+    return null;
+  }
+
+  const calculation = this.state.project?.calculationResult?.calculation;
+  const results = calculation?.results || [];
+
+  return results.find(item => item.id === sectionId || item.input?.id === sectionId) || null;
+}
 
   formatNumber(value, digits = 2) {
     if (value === null || value === undefined || Number.isNaN(Number(value))) {

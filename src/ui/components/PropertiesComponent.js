@@ -89,23 +89,66 @@ export default class PropertiesComponent {
   }
 
   renderSection(section) {
-    this.root.innerHTML = `
-      <h3>Teilstrecke</h3>
-      <dl class="dp-properties-list">
-        <dt>Name</dt>
-        <dd>${section?.name ?? section?.id ?? '-'}</dd>
+  this.root.innerHTML = `
+    <h3>Teilstrecke</h3>
 
-        <dt>Typ</dt>
-        <dd>${section?.type ?? '-'}</dd>
+    <div class="dp-form">
+      <label>
+        <span>Name</span>
+        <input data-field="name" value="${section?.name ?? section?.id ?? ''}">
+      </label>
 
-        <dt>Luftmenge</dt>
-        <dd>${section?.airVolume ?? 0} m³/h</dd>
+      <label>
+        <span>Typ</span>
+        <select data-field="type">
+          <option value="duct" ${section?.type === 'duct' ? 'selected' : ''}>Rechteckkanal</option>
+          <option value="pipe" ${section?.type === 'pipe' ? 'selected' : ''}>Rundrohr</option>
+        </select>
+      </label>
 
-        <dt>Länge</dt>
-        <dd>${section?.length ?? 0} m</dd>
-      </dl>
-    `;
-  }
+      <label>
+        <span>Luftmenge m³/h</span>
+        <input data-field="q" type="number" step="1" value="${section?.q ?? section?.airVolume ?? section?.volumeFlow ?? 0}">
+      </label>
+
+      <label>
+        <span>Länge m</span>
+        <input data-field="l" type="number" step="0.01" value="${section?.l ?? section?.length ?? 0}">
+      </label>
+
+      <label>
+        <span>Breite m</span>
+        <input data-field="b" type="number" step="0.001" value="${section?.b ?? section?.width ?? 0}">
+      </label>
+
+      <label>
+        <span>Höhe m</span>
+        <input data-field="h" type="number" step="0.001" value="${section?.h ?? section?.height ?? 0}">
+      </label>
+
+      <label>
+        <span>Durchmesser m</span>
+        <input data-field="d" type="number" step="0.001" value="${section?.d ?? section?.diameter ?? 0}">
+      </label>
+    </div>
+  `;
+
+  this.bindSectionInputs(section);
+}
+bindSectionInputs(section) {
+  this.root.querySelectorAll('[data-field]').forEach(input => {
+    input.addEventListener('change', () => {
+      const field = input.dataset.field;
+      const value = input.type === 'number'
+        ? Number(input.value)
+        : input.value;
+
+      section[field] = value;
+
+      this.state.notify();
+    });
+  });
+}
 
   renderFormPart(formPart) {
     this.root.innerHTML = `

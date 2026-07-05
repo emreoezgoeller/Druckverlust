@@ -312,3 +312,28 @@
 .ribbon-group button:hover {
   background: rgba(255,255,255,0.24);
 }
+.dp-form {
+  display: grid;
+  gap: 12px;
+}
+
+.dp-form label {
+  display: grid;
+  gap: 5px;
+}
+
+.dp-form span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.dp-form input,
+.dp-form select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font: inherit;
+}

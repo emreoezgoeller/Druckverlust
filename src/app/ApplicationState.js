@@ -12,6 +12,8 @@ export default class ApplicationState {
       data: null
     };
 
+    this.isCalculationDirty = false;
+
     this.listeners = [];
   }
 
@@ -32,14 +34,16 @@ export default class ApplicationState {
   }
 
   setProject(project) {
-  this.project = {
-    name: project?.name ?? project?.title ?? project?.projectName ?? 'Unbenanntes Projekt',
-    ...project
-  };
+    this.project = {
+      name: project?.name ?? project?.title ?? project?.projectName ?? 'Unbenanntes Projekt',
+      ...project
+    };
 
-  this.selectedSystem = this.project?.systems?.[0] ?? null;
-  this.clearSelection(false);
-  this.notify();
+    this.selectedSystem = this.project?.systems?.[0] ?? null;
+    this.isCalculationDirty = false;
+
+    this.clearSelection(false);
+    this.notify();
   }
 
   setSelection(type, data = null) {
@@ -48,6 +52,16 @@ export default class ApplicationState {
       id: data?.id || null,
       data
     };
+  }
+
+  markCalculationDirty() {
+    this.isCalculationDirty = true;
+    this.notify();
+  }
+
+  markCalculationClean() {
+    this.isCalculationDirty = false;
+    this.notify();
   }
 
   selectSystem(system) {

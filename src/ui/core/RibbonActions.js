@@ -92,7 +92,7 @@ export default class RibbonActions {
 
       project.calculationResult = result;
 
-      this.state.notify();
+      this.state.markCalculationClean();
 
       console.info('RibbonAction: Berechnung abgeschlossen', result);
       alert('Berechnung abgeschlossen.');

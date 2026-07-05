@@ -29,7 +29,7 @@ export default class ProjectCommands {
 
     this.state.setProject(project);
     this.state.setSelection('project', project);
-    this.state.notify();
+    this.state.markCalculationDirty();
 
     return project;
   }
