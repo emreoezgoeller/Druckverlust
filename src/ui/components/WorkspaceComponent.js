@@ -22,30 +22,11 @@ export default class WorkspaceComponent {
       return;
     }
 
-    if (selection.type === 'project') {
-      this.renderProject(selection.data);
-      return;
-    }
-
-    if (selection.type === 'system') {
-      this.renderSystem(selection.data);
-      return;
-    }
-
-    if (selection.type === 'section') {
-      this.renderSection(selection.data);
-      return;
-    }
-
-    if (selection.type === 'formPart') {
-      this.renderFormPart(selection.data);
-      return;
-    }
-
-    if (selection.type === 'specialComponent') {
-      this.renderSpecialComponent(selection.data);
-      return;
-    }
+    if (selection.type === 'project') return this.renderProject(selection.data);
+    if (selection.type === 'system') return this.renderSystem(selection.data);
+    if (selection.type === 'section') return this.renderSection(selection.data);
+    if (selection.type === 'formPart') return this.renderFormPart(selection.data);
+    if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
     this.renderEmpty();
   }
@@ -150,15 +131,53 @@ export default class WorkspaceComponent {
             </tr>
           </thead>
           <tbody>
-            ${results.map(result => `
-              <tr>
-                <td>${result.id ?? result.name ?? '-'}</td>
-                <td>${this.formatNumber(result.airVolume)} m³/h</td>
-                <td>${this.formatNumber(result.velocity)} m/s</td>
-                <td>${this.formatNumber(result.totalPressureLoss ?? result.pressureLoss)} Pa</td>
-                <td>${this.formatNumber(result.zetaFromParts)}</td>
-              </tr>
-            `).join('')}
+            ${results.map(item => {
+              const result = item.result || {};
+              const input = item.input || {};
+
+              const name =
+                input.name ??
+                input.ts ??
+                input.sectionNo ??
+                input.id ??
+                item.id ??
+                '-';
+
+              const volumeFlow =
+                result.q ??
+                result.airVolume ??
+                result.volumeFlow ??
+                input.q ??
+                input.airVolume ??
+                input.volumeFlow;
+
+              const velocity =
+                result.velocity ??
+                result.airVelocity;
+
+              const pressureLoss =
+                result.roundedTotalLoss ??
+                result.totalLoss ??
+                result.totalPressureLoss ??
+                result.pressureLoss ??
+                result.dp;
+
+              const zeta =
+                item.zetaFromParts ??
+                result.zetaSum ??
+                input.zetaSum ??
+                input.zeta;
+
+              return `
+                <tr>
+                  <td>${name}</td>
+                  <td>${this.formatNumber(volumeFlow)} m³/h</td>
+                  <td>${this.formatNumber(velocity)} m/s</td>
+                  <td>${this.formatNumber(pressureLoss)} Pa</td>
+                  <td>${this.formatNumber(zeta)}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       </section>
@@ -174,11 +193,11 @@ export default class WorkspaceComponent {
         <tbody>
           <tr>
             <th>Luftmenge</th>
-            <td>${section?.airVolume ?? 0} m³/h</td>
+            <td>${section?.q ?? section?.airVolume ?? section?.volumeFlow ?? 0} m³/h</td>
           </tr>
           <tr>
             <th>Länge</th>
-            <td>${section?.length ?? 0} m</td>
+            <td>${section?.l ?? section?.length ?? 0} m</td>
           </tr>
           <tr>
             <th>Typ</th>
@@ -190,6 +209,8 @@ export default class WorkspaceComponent {
   }
 
   renderFormPart(formPart) {
+    const sectionName = this.getSectionNameById(formPart?.sectionId);
+
     this.root.innerHTML = `
       <h1>${formPart?.name ?? 'Formteil'}</h1>
       <p>Detailansicht des Formteils.</p>
@@ -198,7 +219,7 @@ export default class WorkspaceComponent {
         <tbody>
           <tr>
             <th>Teilstrecke</th>
-            <td>${formPart?.sectionId ?? '-'}</td>
+            <td>${sectionName}</td>
           </tr>
           <tr>
             <th>Zeta</th>
@@ -226,11 +247,22 @@ export default class WorkspaceComponent {
           </tr>
           <tr>
             <th>Druckverlust</th>
-            <td>${component?.pressureLoss ?? 0} Pa</td>
+            <td>${component?.pressureLoss ?? component?.pa ?? 0} Pa</td>
           </tr>
         </tbody>
       </table>
     `;
+  }
+
+  getSectionNameById(sectionId) {
+    if (!sectionId) {
+      return '-';
+    }
+
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const section = system?.sections?.find(item => item.id === sectionId);
+
+    return section?.name ?? section?.ts ?? section?.sectionNo ?? section?.id ?? sectionId;
   }
 
   formatNumber(value, digits = 2) {
