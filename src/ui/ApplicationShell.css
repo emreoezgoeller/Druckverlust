@@ -241,3 +241,38 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.tree-button{
+
+    width:100%;
+
+    text-align:left;
+
+    border:none;
+
+    background:transparent;
+
+    cursor:pointer;
+
+    padding:6px 8px;
+
+    border-radius:6px;
+
+    transition:.2s;
+
+}
+
+.tree-button:hover{
+
+    background:#edf5ff;
+
+}
+
+.tree-button.selected{
+
+    background:#0e5a9c;
+
+    color:white;
+
+    font-weight:600;
+
+}
