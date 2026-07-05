@@ -116,20 +116,30 @@ export default class PropertiesComponent {
 
 
   renderFormPart(formPart) {
-    this.root.innerHTML = `
-      <h3>Formteil</h3>
-      <dl class="dp-properties-list">
-        <dt>Name</dt>
-        <dd>${formPart?.name ?? '-'}</dd>
+  this.root.innerHTML = `
+    <h3>Formteil</h3>
 
-        <dt>Teilstrecke</dt>
-        <dd>${formPart?.sectionId ?? '-'}</dd>
+    <dl class="dp-properties-list">
+      <dt>Name</dt>
+      <dd>${formPart?.name ?? '-'}</dd>
 
-        <dt>Zeta</dt>
-        <dd>${formPart?.zeta ?? '-'}</dd>
-      </dl>
-    `;
-  }
+      <dt>Interne ID</dt>
+      <dd>${formPart?.id ?? '-'}</dd>
+
+      <dt>Typ</dt>
+      <dd>${formPart?.type ?? '-'}</dd>
+
+      <dt>Teilstrecke</dt>
+      <dd>${this.getSectionNameById(formPart?.sectionId)}</dd>
+
+      <dt>Zeta</dt>
+      <dd>${formPart?.zeta ?? '-'}</dd>
+
+      <dt>Status</dt>
+      <dd>${this.state.isCalculationDirty ? 'Berechnung veraltet' : 'Berechnet'}</dd>
+    </dl>
+  `;
+}
 
   renderSpecialComponent(component) {
     this.root.innerHTML = `
@@ -149,4 +159,15 @@ export default class PropertiesComponent {
       </dl>
     `;
   }
+  
+  getSectionNameById(sectionId) {
+  if (!sectionId) {
+    return '-';
+  }
+
+  const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+  const section = system?.sections?.find(item => item.id === sectionId);
+
+  return section?.name ?? section?.ts ?? section?.sectionNo ?? section?.id ?? sectionId;
+}
 }

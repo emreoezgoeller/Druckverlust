@@ -17,7 +17,9 @@ export default class StatusBarComponent {
   render() {
     const selection = this.state.getSelection();
     const label = this.getSelectionLabel(selection);
-    const dirty = this.state.isCalculationDirty;
+
+    const calculationDirty = this.state.isCalculationDirty;
+    const projectDirty = this.state.isProjectDirty;
 
     this.root.innerHTML = `
       <div class="dp-status-left">
@@ -30,7 +32,13 @@ export default class StatusBarComponent {
 
       <div class="dp-status-right">
         ${
-          dirty
+          projectDirty
+            ? '<span class="dp-status-warning">● Projekt geändert</span>'
+            : '<span class="dp-status-ok">● Projekt gespeichert</span>'
+        }
+
+        ${
+          calculationDirty
             ? '<span class="dp-status-warning">● Berechnung veraltet</span>'
             : '<span class="dp-status-ok">● Berechnet</span>'
         }

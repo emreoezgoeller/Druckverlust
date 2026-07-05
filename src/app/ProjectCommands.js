@@ -58,6 +58,7 @@ export default class ProjectCommands {
 
     system.sections.push(section);
     this.state.selectSection(section);
+    this.state.markCalculationDirty();
 
     return section;
   }
@@ -85,6 +86,7 @@ export default class ProjectCommands {
 
     system.formParts.push(formPart);
     this.state.selectFormPart(formPart);
+    this.state.markCalculationDirty();
 
     return formPart;
   }

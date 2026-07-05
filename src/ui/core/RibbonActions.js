@@ -37,7 +37,7 @@ export default class RibbonActions {
 
         this.state.setProject(project);
         this.state.setSelection('project', project);
-        this.state.notify();
+        this.state.markProjectClean();
 
         console.info('RibbonAction: Projekt geöffnet', project);
       } catch (error) {
@@ -57,6 +57,8 @@ export default class RibbonActions {
     }
 
     StorageEngine.download(project);
+
+    this.state.markProjectClean();
 
     console.info('RibbonAction: Projekt gespeichert', project);
   }
