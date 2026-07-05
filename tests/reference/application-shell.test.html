@@ -9,10 +9,81 @@
   <div id="app"></div>
 
   <script type="module">
+    import ApplicationState from '../../src/app/ApplicationState.js';
     import ApplicationShell from '../../src/ui/ApplicationShell.js';
+    import SidebarComponent from '../../src/ui/components/SidebarComponent.js';
+    import PropertiesComponent from '../../src/ui/components/PropertiesComponent.js';
 
+    const demoProject = {
+      project: {
+        name: 'TEST-001 Druckverlust',
+        object: 'Musteranlage',
+        system: 'Zuluft',
+        editor: 'Emre Özgöller'
+      },
+      systems: [
+        {
+          id: 'anlage-1',
+          name: 'Zuluftanlage',
+          type: 'Zuluft',
+          sections: [
+            {
+              id: 'ts1',
+              ts: 'TS1',
+              type: 'duct',
+              description: 'Rechteckkanal 450 × 450 mm',
+              q: 900,
+              b: 0.45,
+              h: 0.45,
+              l: 1.25
+            },
+            {
+              id: 'ts3',
+              ts: 'TS3',
+              type: 'pipe',
+              description: 'Rundrohr Ø500',
+              q: 900,
+              d: 0.5,
+              l: 1.25
+            }
+          ],
+          formParts: [
+            {
+              id: 'fp1',
+              name: 'Kreisförmiger Bogen / Krümmer',
+              category: 'Rund',
+              sectionId: 'ts1',
+              zeta: 0.21,
+              parameters: { R: 110, d: 125, alpha: 90 },
+              calculation: {
+                ratio: 0.88,
+                rdValue: 0.21,
+                angleFactor: 1,
+                formula: 'ζ = Tabellenwert(R/d) × Tabellenwert(α)'
+              }
+            }
+          ],
+          specialComponents: [
+            {
+              id: 'mb1',
+              name: 'Monoblock',
+              type: 'Lüftungsgerät',
+              manufacturer: 'Muster',
+              pressureLoss: 100
+            }
+          ]
+        }
+      ]
+    };
+
+    const state = new ApplicationState();
     const shell = new ApplicationShell(document.getElementById('app'));
     shell.render();
+
+    new SidebarComponent(document.querySelector('.dp-sidebar'), state);
+    new PropertiesComponent(document.querySelector('.dp-properties'), state);
+
+    state.setProject(demoProject);
   </script>
 </body>
 </html>
