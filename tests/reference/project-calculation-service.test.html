@@ -2,16 +2,61 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Druckverlust Pro – ProjectCalculationService Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Druckverlust Pro – ProjectCalculationService Referenztest</title>
+
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:32px;background:#f7f9fc;color:#0f172a}
-    pre{background:#0f172a;color:#e2e8f0;padding:18px;border-radius:12px;white-space:pre-wrap}
+    :root {
+      --ok: #16a34a;
+      --error: #dc2626;
+      --bg: #f7f9fc;
+      --panel: #0f172a;
+      --text: #e2e8f0;
+    }
+
+    body {
+      margin: 32px;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: #0f172a;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .info {
+      margin-bottom: 20px;
+      color: #475569;
+    }
+
+    pre {
+      background: var(--panel);
+      color: var(--text);
+      padding: 18px;
+      border-radius: 12px;
+      overflow: auto;
+      min-height: 300px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.45;
+    }
   </style>
 </head>
+
 <body>
-  <h1>ProjectCalculationService – Referenztest</h1>
-  <p>Prüft Projektvalidierung + Berechnung über eine zentrale Schnittstelle.</p>
-  <pre id="out">Starte Test...</pre>
-  <script type="module" src="./project-calculation-service.test.js"></script>
+
+<h1>ProjectCalculationService – Referenztest</h1>
+
+<p class="info">
+Prüft die zentrale Projektberechnung über den
+<code>ProjectCalculationService</code>.
+</p>
+
+<pre id="out">Starte Referenztest…</pre>
+
+<script type="module" src="./project-calculation-service.test.js"></script>
+
 </body>
 </html>

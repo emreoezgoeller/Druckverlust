@@ -3,6 +3,7 @@
 
 import ProjectCommands from '../../app/ProjectCommands.js';
 import StorageEngine from '../../storage/StorageEngine.js';
+import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 
 export default class RibbonActions {
   constructor(state) {
@@ -86,11 +87,19 @@ export default class RibbonActions {
       return;
     }
 
-    console.info('RibbonAction: Berechnung gestartet', project);
+    try {
+      const result = ProjectCalculationService.calculate(project);
 
-    alert(
-      'Die Berechnungsfunktion wird im nächsten Sprint mit der CalculationEngine verbunden.'
-    );
+      project.calculationResult = result;
+
+      this.state.notify();
+
+      console.info('RibbonAction: Berechnung abgeschlossen', result);
+      alert('Berechnung abgeschlossen.');
+    } catch (error) {
+      console.error(error);
+      alert(`Berechnung fehlgeschlagen: ${error.message}`);
+    }
   }
 
   exportPdf() {

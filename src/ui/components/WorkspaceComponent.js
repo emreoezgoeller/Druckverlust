@@ -76,6 +76,10 @@ export default class WorkspaceComponent {
     const formParts = system?.formParts || [];
     const specialComponents = system?.specialComponents || [];
 
+    const calculationResult = this.state.project?.calculationResult;
+    const calculation = calculationResult?.calculation || null;
+    const total = calculation?.totals?.totalRounded ?? calculation?.totals?.total ?? null;
+
     this.root.innerHTML = `
       <h1>${system?.name ?? 'Anlage'}</h1>
       <p>Übersicht der gewählten Anlage.</p>
@@ -96,6 +100,68 @@ export default class WorkspaceComponent {
           <span>${specialComponents.length}</span>
         </div>
       </div>
+
+      ${this.renderCalculationSummary(total)}
+      ${this.renderCalculationTable(calculation)}
+    `;
+  }
+
+  renderCalculationSummary(total) {
+    if (total === null || total === undefined) {
+      return `
+        <section class="dp-result-panel">
+          <h2>Berechnung</h2>
+          <p>Noch keine Berechnung durchgeführt.</p>
+        </section>
+      `;
+    }
+
+    return `
+      <section class="dp-result-panel">
+        <h2>Berechnungsergebnis</h2>
+
+        <div class="dp-result-value">
+          <strong>${Number(total).toFixed(1)} Pa</strong>
+          <span>Gesamtdruckverlust</span>
+        </div>
+      </section>
+    `;
+  }
+
+  renderCalculationTable(calculation) {
+    const results = calculation?.results || [];
+
+    if (!results.length) {
+      return '';
+    }
+
+    return `
+      <section class="dp-result-panel">
+        <h2>Teilstrecken-Ergebnisse</h2>
+
+        <table class="dp-table">
+          <thead>
+            <tr>
+              <th>Teilstrecke</th>
+              <th>Luftmenge</th>
+              <th>Geschwindigkeit</th>
+              <th>Druckverlust</th>
+              <th>ζ Formteile</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results.map(result => `
+              <tr>
+                <td>${result.id ?? result.name ?? '-'}</td>
+                <td>${this.formatNumber(result.airVolume)} m³/h</td>
+                <td>${this.formatNumber(result.velocity)} m/s</td>
+                <td>${this.formatNumber(result.totalPressureLoss ?? result.pressureLoss)} Pa</td>
+                <td>${this.formatNumber(result.zetaFromParts)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </section>
     `;
   }
 
@@ -165,5 +231,13 @@ export default class WorkspaceComponent {
         </tbody>
       </table>
     `;
+  }
+
+  formatNumber(value, digits = 2) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) {
+      return '-';
+    }
+
+    return Number(value).toFixed(digits);
   }
 }
