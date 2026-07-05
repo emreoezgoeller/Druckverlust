@@ -146,3 +146,28 @@
   color: #cbd5e1;
   font-size: 13px;
 }
+
+.property-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px 12px;
+  font-size: 14px;
+}
+
+.property-grid label {
+  color: var(--dp-muted);
+  font-weight: 600;
+}
+
+.property-json {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  overflow: auto;
+}
+
+.dp-muted {
+  color: var(--dp-muted);
+}
