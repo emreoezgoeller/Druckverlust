@@ -87,8 +87,8 @@ export function calcZetaLoss(zetaSum, dynamicPressurePa) {
 export function normalizeType(section = {}) {
   const type = String(section.type || section.kind || '').toLowerCase();
   if (['special', 'sonder', 'sonderbauteil'].includes(type)) return 'special';
-  if (['pipe', 'rohr', 'round', 'rund'].includes(type)) return 'pipe';
-  if (['duct', 'kanal', 'rect', 'rechteck'].includes(type)) return 'duct';
+  if (['pipe', 'rohr', 'round', 'rund', 'rundrohr'].includes(type)) return 'pipe';
+  if (['duct', 'kanal', 'rect', 'rechteck', 'rectangular', 'rechteckkanal'].includes(type)) return 'duct';
 
   // Praxistaugliche Automatik: Wenn Ø vorhanden ist und Breite/Höhe fehlen,
   // behandeln wir die Teilstrecke als Rohr.
@@ -115,14 +115,14 @@ export function calculateSection(section = {}, options = {}) {
       id: section.id,
       type,
       description: section.desc || section.description || section.name || 'Sonderbauteil',
-      q: toNumber(section.q ?? section.volumeFlow),
+      q: toNumber(section.q ?? section.volumeFlow ?? section.airVolume ?? section.volumeFlowM3h),
       specialLoss,
       totalLoss: specialLoss,
       warnings: [],
     });
   }
 
-  const q = toNumber(section.q ?? section.volumeFlow);
+  const q = toNumber(section.q ?? section.volumeFlow ?? section.airVolume ?? section.volumeFlowM3h);
   const length = toNumber(section.l ?? section.length);
   const zetaSum = toNumber(options.zetaSum ?? section.zetaSum ?? section.zeta);
   let area = 0;

@@ -1,6 +1,7 @@
 // Druckverlust Pro – Kreisförmiger Bogen / Krümmer
 // Berechnung nach Tabellenlogik aus Excel:
 // ζ = Tabellenwert(R/d) × Tabellenwert(α)
+// Excel-Logik: XLOOKUP(..., match_mode = 1) = exakter oder nächst grösserer Tabellenwert
 
 import LookupEngine from '../../core/LookupEngine.js';
 import FormPartResult from '../FormPartResult.js';
@@ -59,11 +60,11 @@ export function calculateKreisBogen({ R = 0, d = 0, alpha = 90 } = {}) {
   const ratio = radius / diameter;
 
   const rdValue = LookupEngine.lookup(RD_TABLE, ratio, {
-    mode: 'nearest',
+    mode: 'ceil',
   });
 
   const angleFactor = LookupEngine.lookup(ANGLE_TABLE, angle, {
-    mode: 'nearest',
+    mode: 'ceil',
   });
 
   const zeta = rdValue * angleFactor;
@@ -78,7 +79,8 @@ export function calculateKreisBogen({ R = 0, d = 0, alpha = 90 } = {}) {
       rdValue,
       angleFactor,
       formula: 'ζ = Tabellenwert(R/d) × Tabellenwert(α)',
-      lookupMode: 'nearest',
+      lookupMode: 'ceil',
+      lookupModeLabel: 'exakt oder nächst grösserer Tabellenwert gemäss Excel',
     },
     zeta,
     warnings,

@@ -448,3 +448,317 @@
   color: #64748b;
   font-size: 13px;
 }
+/* Sprint 16.2 – professionelle Formteilbibliothek */
+.dp-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.dp-panel-header h2 {
+  margin: 0;
+  color: var(--dp-blue-900);
+}
+
+.dp-panel-header p {
+  margin: 5px 0 0;
+  color: var(--dp-muted);
+  font-size: 14px;
+}
+
+.dp-formpart-overview {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 22px;
+  align-items: stretch;
+  margin: 18px 0 22px;
+  padding: 20px;
+  border: 1px solid var(--dp-border);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+}
+
+.dp-formpart-image {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.dp-formpart-image img {
+  max-width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.dp-formpart-info h2 {
+  margin: 10px 0 8px;
+  color: var(--dp-blue-900);
+}
+
+.dp-formpart-info p {
+  margin: 0 0 14px;
+  color: var(--dp-muted);
+  line-height: 1.5;
+}
+
+.dp-formpart-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dp-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1e3a8a;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dp-chip-soft {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.dp-formpart-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.dp-formpart-kpis div {
+  padding: 12px;
+  border: 1px solid var(--dp-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.dp-formpart-kpis small {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dp-formpart-kpis strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--dp-blue-900);
+  font-size: 20px;
+}
+
+.dp-reference-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.dp-reference-note strong,
+.dp-reference-note span {
+  display: block;
+}
+
+.dp-reference-note strong {
+  color: #1e3a8a;
+  margin-bottom: 3px;
+}
+
+.dp-reference-note span {
+  color: #334155;
+  font-size: 13px;
+}
+
+.dp-reference-note p {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.dp-formpart-main-grid {
+  margin-bottom: 18px;
+}
+
+.dp-parameter-group {
+  margin: 18px 0 0;
+  padding: 18px;
+  border: 1px solid #dbe4ef;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.dp-parameter-group legend {
+  padding: 0 8px;
+  color: var(--dp-blue-900);
+  font-weight: 800;
+}
+
+.dp-parameter-grid {
+  margin-top: 4px;
+}
+
+.dp-param-field input,
+.dp-param-field select {
+  margin-bottom: 6px;
+}
+
+.dp-param-select select {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.dp-field-hint {
+  margin: 0;
+  color: var(--dp-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.dp-field-hint-locked {
+  color: #1e40af;
+}
+
+.dp-warning-list {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.dp-warning-list p {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .dp-formpart-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-formpart-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sprint 16.3 – robuste Formteilbilder und Ergebnis-Hinweise */
+.dp-image-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: var(--dp-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.dp-formpart-image-empty {
+  color: var(--dp-muted);
+  font-size: 14px;
+}
+
+.dp-result-panel .dp-panel-header {
+  margin-bottom: 8px;
+}
+
+/* Sprint 16.4 – integrierte Formteil-Skizzen */
+.dp-formpart-image-sketch {
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+}
+
+.dp-inline-sketch {
+  width: 100%;
+  max-width: 310px;
+  height: auto;
+  display: block;
+}
+
+.dp-inline-sketch path,
+.dp-inline-sketch line,
+.dp-inline-sketch rect {
+  vector-effect: non-scaling-stroke;
+}
+
+.dp-inline-sketch .dp-sketch-pipe {
+  fill: none;
+  stroke: #0b477d;
+  stroke-width: 22;
+  stroke-linecap: round;
+}
+
+.dp-inline-sketch .dp-sketch-line,
+.dp-inline-sketch .dp-sketch-radius,
+.dp-inline-sketch .dp-sketch-alpha,
+.dp-inline-sketch .dp-sketch-measure {
+  fill: none;
+  stroke: #334155;
+  stroke-width: 2.2;
+}
+
+.dp-inline-sketch .dp-sketch-alpha {
+  stroke: #0e5a9c;
+  stroke-width: 3;
+}
+
+.dp-inline-sketch .dp-sketch-measure {
+  stroke-dasharray: 4 4;
+}
+
+.dp-inline-sketch marker path {
+  fill: #334155;
+}
+
+.dp-inline-sketch text {
+  fill: #082f57;
+  font: 700 20px "Segoe UI", system-ui, sans-serif;
+}
+
+.dp-inline-sketch text:last-child {
+  fill: #64748b;
+  font-size: 15px;
+}
+
+.dp-inline-sketch-generic rect,
+.dp-inline-sketch-generic line {
+  fill: #eff6ff;
+  stroke: #0b477d;
+  stroke-width: 3;
+}
+
+/* Sprint 16.5 – Formteilbilder nur noch aus PNG-Dateien */
+.dp-image-missing {
+  width: 100%;
+  min-height: 180px;
+  place-items: center;
+  color: var(--dp-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Sprint 16.10 – berechnete Formteilfelder */
+.dp-param-readonly input[readonly] {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  cursor: default;
+}
+
+.dp-param-readonly .dp-field-hint {
+  color: #2563eb;
+}

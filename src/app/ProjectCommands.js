@@ -49,11 +49,12 @@ export default class ProjectCommands {
     const section = {
       id: `section-${Date.now()}`,
       name: `ts${number}`,
-      type: 'rectangular',
-      airVolume: 0,
-      length: 0,
-      width: 0,
-      height: 0
+      type: 'duct',
+      q: 0,
+      l: 0,
+      b: 0,
+      h: 0,
+      zetaSum: 0
     };
 
     system.sections.push(section);

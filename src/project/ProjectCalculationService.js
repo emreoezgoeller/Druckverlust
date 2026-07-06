@@ -22,9 +22,14 @@ export default class ProjectCalculationService {
       if (!formPart?.type || !registry.exists(formPart.type)) return;
 
       const entry = registry.get(formPart.type);
+      const values = typeof registry.deriveValues === 'function'
+        ? registry.deriveValues(formPart.type, formPart)
+        : registry.normalizeValues(formPart.type, formPart);
+
+      Object.assign(formPart, values);
+
       if (typeof entry?.calculate !== 'function') return;
 
-      const values = registry.normalizeValues(formPart.type, formPart);
       const result = registry.calculate(formPart.type, values);
 
       formPart.zeta = Number(result?.zeta ?? 0);
