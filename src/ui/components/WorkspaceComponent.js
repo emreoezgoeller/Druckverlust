@@ -169,203 +169,290 @@ export default class WorkspaceComponent {
   }
 
   renderFormPart(formPart) {
-  const system = this.state.selectedSystem || this.state.project?.systems?.[0];
-  const sections = system?.sections || [];
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const sections = system?.sections || [];
 
-  this.root.innerHTML = `
-    <h1>${formPart?.name ?? 'Formteil'}</h1>
-    ${this.renderDirtyHint()}
+    this.applyFormPartDefaults(formPart);
+    this.calculateAndStoreFormPart(formPart, { silent: true });
 
-    <section class="dp-editor-panel">
-      <h2>Formteil bearbeiten</h2>
+    this.root.innerHTML = `
+      <h1>${formPart?.name ?? 'Formteil'}</h1>
+      ${this.renderDirtyHint()}
 
-      <div class="dp-editor-grid">
+      <section class="dp-editor-panel">
+        <h2>Formteil bearbeiten</h2>
+
+        <div class="dp-editor-grid">
+          <label>
+            <span>Name</span>
+            <input data-field="name" value="${formPart?.name ?? ''}">
+          </label>
+
+          <label>
+            <span>Formteiltyp</span>
+            <select data-field="type">
+              ${this.renderFormPartTypeOptions(formPart)}
+            </select>
+          </label>
+
+          <label>
+            <span>Teilstrecke</span>
+            <select data-field="sectionId">
+              ${sections.map(section => `
+                <option value="${section.id}" ${formPart?.sectionId === section.id ? 'selected' : ''}>
+                  ${section.name ?? section.ts ?? section.id}
+                </option>
+              `).join('')}
+            </select>
+          </label>
+
+          ${this.renderFormPartParameters(formPart)}
+        </div>
+
+        <div class="dp-editor-actions">
+          <button data-action="calculate-formpart">Übernehmen</button>
+        </div>
+      </section>
+
+      ${this.renderFormPartResult(formPart)}
+    `;
+
+    this.bindFormPartEditor(formPart);
+  }
+
+  bindFormPartEditor(formPart) {
+    this.root.querySelectorAll('[data-field]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.field;
+
+        formPart[field] = this.readFormPartFieldValue(formPart, field, input);
+
+        if (field === 'type') {
+          this.applyFormPartDefaults(formPart, { overwrite: true });
+        }
+
+        this.calculateAndStoreFormPart(formPart, { silent: true });
+        this.state.markCalculationDirty();
+      });
+    });
+
+    const button = this.root.querySelector('[data-action="calculate-formpart"]');
+
+    if (button) {
+      button.addEventListener('click', () => {
+        try {
+          this.calculateAndStoreFormPart(formPart);
+
+          const project = this.state.project;
+          const result = ProjectCalculationService.calculate(project);
+
+          project.calculationResult = result;
+
+          this.state.lastCalculationAt = new Date().toISOString();
+          this.state.markCalculationClean();
+        } catch (error) {
+          alert(`Berechnung fehlgeschlagen: ${error.message}`);
+        }
+      });
+    }
+  }
+
+  renderFormPartResult(formPart) {
+    const sectionResult = this.getCalculationItemBySectionId(formPart?.sectionId);
+    const dynamicPressure = sectionResult?.result?.dynamicPressure ?? null;
+    const zeta = Number(formPart?.zeta ?? formPart?.calculationResult?.zeta ?? 0);
+
+    const pressureLoss =
+      dynamicPressure !== null
+        ? zeta * dynamicPressure
+        : null;
+
+    const formPartResult = formPart?.calculationResult || null;
+    const warnings = formPartResult?.warnings || [];
+
+    return `
+      <section class="dp-result-panel">
+        <h2>Formteil-Ergebnis</h2>
+
+        <table class="dp-table">
+          <tbody>
+            <tr>
+              <th>Teilstrecke</th>
+              <td>${this.getSectionNameById(formPart?.sectionId)}</td>
+            </tr>
+            <tr>
+              <th>Dynamischer Druck</th>
+              <td>${this.formatNumber(dynamicPressure)} Pa</td>
+            </tr>
+            <tr>
+              <th>ζ-Wert</th>
+              <td>${this.formatNumber(zeta, 3)}</td>
+            </tr>
+            <tr>
+              <th>Druckverlust Formteil</th>
+              <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
+            </tr>
+            ${formPartResult?.calculation?.ratio !== undefined ? `
+              <tr>
+                <th>R/d</th>
+                <td>${this.formatNumber(formPartResult.calculation.ratio, 3)}</td>
+              </tr>
+            ` : ''}
+            ${formPartResult?.calculation?.formula ? `
+              <tr>
+                <th>Formel</th>
+                <td>${formPartResult.calculation.formula}</td>
+              </tr>
+            ` : ''}
+          </tbody>
+        </table>
+
+        ${warnings.length ? `
+          <div class="dp-warning-list">
+            ${warnings.map(warning => `<p>⚠ ${warning}</p>`).join('')}
+          </div>
+        ` : ''}
+      </section>
+    `;
+  }
+
+  renderFormPartParameters(formPart) {
+    const entry = this.getRegistryEntry(formPart);
+
+    if (!entry?.parameters?.length) {
+      return `
         <label>
-          <span>Name</span>
-          <input data-field="name" value="${formPart?.name ?? ''}">
+          <span>ζ-Wert</span>
+          <input data-field="zeta" type="number" step="0.001" value="${formPart?.zeta ?? 0}">
         </label>
+      `;
+    }
 
-        <label>
-          <span>Formteiltyp</span>
-          <select data-field="type">
-          ${this.renderFormPartTypeOptions(formPart)}
-          </select>
-        </label>
+    return entry.parameters.map(parameter => this.renderFormPartParameterField(formPart, parameter)).join('');
+  }
 
+  renderFormPartParameterField(formPart, parameter) {
+    const value = formPart?.[parameter.id] ?? parameter.default ?? 0;
+
+    if (parameter.type === 'select') {
+      const options = Array.isArray(parameter.options) ? parameter.options : [];
+
+      return `
         <label>
-          <span>Teilstrecke</span>
-          <select data-field="sectionId">
-            ${sections.map(section => `
-              <option value="${section.id}" ${formPart?.sectionId === section.id ? 'selected' : ''}>
-                ${section.name ?? section.ts ?? section.id}
+          <span>${parameter.label ?? parameter.id}</span>
+          <select data-field="${parameter.id}">
+            ${options.map(option => `
+              <option value="${option}" ${String(value) === String(option) ? 'selected' : ''}>
+                ${option}
               </option>
             `).join('')}
           </select>
         </label>
+      `;
+    }
 
-        ${this.renderFormPartParameters(formPart)}
-
-      <div class="dp-editor-actions">
-        <button data-action="calculate-formpart">Übernehmen</button>
-      </div>
-    </section>
-
-    ${this.renderFormPartResult(formPart)}
-  `;
-
-  this.bindFormPartEditor(formPart);
-}
-
-bindFormPartEditor(formPart) {
-  this.root.querySelectorAll('[data-field]').forEach(input => {
-    input.addEventListener('change', () => {
-      const field = input.dataset.field;
-
-      formPart[field] =
-        input.type === 'number'
-          ? Number(input.value)
-          : input.value;
-
-      this.state.markCalculationDirty();
-    });
-  });
-
-  const button = this.root.querySelector('[data-action="calculate-formpart"]');
-
-  if (button) {
-    button.addEventListener('click', () => {
-      try {
-        const project = this.state.project;
-        const result = ProjectCalculationService.calculate(project);
-
-        project.calculationResult = result;
-
-        this.state.lastCalculationAt = new Date().toISOString();
-        this.state.markCalculationClean();
-      } catch (error) {
-        alert(`Berechnung fehlgeschlagen: ${error.message}`);
-      }
-    });
-  }
-}
-
-renderFormPartResult(formPart) {
-  const sectionResult = this.getCalculationItemBySectionId(formPart?.sectionId);
-  const dynamicPressure = sectionResult?.result?.dynamicPressure ?? null;
-  const zeta = Number(formPart?.zeta ?? 0);
-
-  const pressureLoss =
-    dynamicPressure !== null
-      ? zeta * dynamicPressure
-      : null;
-
-  return `
-    <section class="dp-result-panel">
-      <h2>Formteil-Ergebnis</h2>
-
-      <table class="dp-table">
-        <tbody>
-          <tr>
-            <th>Teilstrecke</th>
-            <td>${this.getSectionNameById(formPart?.sectionId)}</td>
-          </tr>
-          <tr>
-            <th>Dynamischer Druck</th>
-            <td>${this.formatNumber(dynamicPressure)} Pa</td>
-          </tr>
-          <tr>
-            <th>ζ-Wert</th>
-            <td>${this.formatNumber(zeta, 3)}</td>
-          </tr>
-          <tr>
-            <th>Druckverlust Formteil</th>
-            <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  `;
-}
-
-renderFormPartParameters(formPart) {
-  const entry = this.getRegistryEntry(formPart);
-
-  if (!entry?.parameters?.length) {
     return `
       <label>
-        <span>ζ-Wert</span>
-        <input data-field="zeta" type="number" step="0.001" value="${formPart?.zeta ?? 0}">
+        <span>${parameter.label ?? parameter.id}</span>
+        <input
+          data-field="${parameter.id}"
+          type="number"
+          step="${parameter.step ?? 0.001}"
+          value="${value}">
       </label>
     `;
   }
 
-  return entry.parameters.map(parameter => `
-    <label>
-      <span>${this.getParameterLabel(parameter)}</span>
-      <input
-        data-field="${parameter}"
-        type="number"
-        step="0.001"
-        value="${formPart?.[parameter] ?? this.getDefaultParameterValue(parameter)}">
-    </label>
-  `).join('');
-}
+  readFormPartFieldValue(formPart, field, input) {
+    const parameter = this.getFormPartParameter(formPart, field);
 
-getParameterLabel(parameter) {
-  const labels = {
-    R: 'Radius R [mm]',
-    d: 'Durchmesser d [mm]',
-    alpha: 'Winkel α [°]',
-    a: 'Breite a [mm]',
-    b: 'Höhe b [mm]',
-    A1: 'Fläche A1 [m²]',
-    A2: 'Fläche A2 [m²]',
-    LE: 'Länge LE [mm]',
-    WD: 'Volumenstrom Durchgang',
-    WA: 'Volumenstrom Abzweig',
-    W: 'Volumenstrom Gesamt',
-    wA: 'Geschwindigkeit Abzweig',
-    w: 'Geschwindigkeit Hauptkanal'
-  };
+    if (input.type === 'number' || parameter?.type === 'number' || this.hasNumericOptions(parameter)) {
+      return Number(input.value);
+    }
 
-  return labels[parameter] ?? parameter;
-}
-
-getDefaultParameterValue(parameter) {
-  const defaults = {
-    R: 110,
-    d: 125,
-    alpha: 90,
-    a: 500,
-    b: 300,
-    A1: 0,
-    A2: 0,
-    LE: 0,
-    WD: 0,
-    WA: 0,
-    W: 0,
-    wA: 0,
-    w: 0
-  };
-
-  return defaults[parameter] ?? 0;
-}
-
-getRegistryEntry(formPart) {
-  if (!formPart?.type) {
-    return null;
+    return input.value;
   }
 
-  return this.registry.get(formPart.type);
-}
+  hasNumericOptions(parameter) {
+    return Array.isArray(parameter?.options) && parameter.options.every(option => Number.isFinite(Number(option)));
+  }
 
-renderFormPartTypeOptions(formPart) {
-  return this.registry.all().map(item => `
-    <option value="${item.id}" ${formPart?.type === item.id ? 'selected' : ''}>
-      ${item.name}
-    </option>
-  `).join('');
-}
+  applyFormPartDefaults(formPart, options = {}) {
+    const entry = this.getRegistryEntry(formPart);
+
+    if (!formPart || !entry?.parameters?.length) return;
+
+    entry.parameters.forEach(parameter => {
+      const hasValue = formPart[parameter.id] !== undefined && formPart[parameter.id] !== null && formPart[parameter.id] !== '';
+
+      if (options.overwrite || !hasValue) {
+        formPart[parameter.id] = parameter.default ?? 0;
+      }
+    });
+  }
+
+  calculateAndStoreFormPart(formPart, options = {}) {
+    const entry = this.getRegistryEntry(formPart);
+
+    if (!formPart || !entry || typeof entry.calculate !== 'function') {
+      return null;
+    }
+
+    try {
+      const values = this.getFormPartParameterValues(formPart);
+      const result = this.registry.calculate(entry.id, values);
+
+      formPart.zeta = Number(result?.zeta ?? 0);
+      formPart.calculationResult = result;
+
+      return result;
+    } catch (error) {
+      if (!options.silent) throw error;
+
+      formPart.calculationResult = {
+        id: entry.id,
+        name: entry.name,
+        category: entry.category,
+        input: this.getFormPartParameterValues(formPart),
+        calculation: {},
+        zeta: Number(formPart?.zeta ?? 0),
+        warnings: [error.message],
+      };
+
+      return null;
+    }
+  }
+
+  getFormPartParameterValues(formPart) {
+    const entry = this.getRegistryEntry(formPart);
+
+    return (entry?.parameters || []).reduce((values, parameter) => {
+      values[parameter.id] = formPart?.[parameter.id] ?? parameter.default ?? 0;
+      return values;
+    }, {});
+  }
+
+  getFormPartParameter(formPart, parameterId) {
+    const entry = this.getRegistryEntry(formPart);
+
+    return entry?.parameters?.find(parameter => parameter.id === parameterId) || null;
+  }
+
+  getRegistryEntry(formPart) {
+    if (!formPart?.type) {
+      return null;
+    }
+
+    return this.registry.get(formPart.type);
+  }
+
+  renderFormPartTypeOptions(formPart) {
+    return this.registry.all().map(item => `
+      <option value="${item.id}" ${formPart?.type === item.id ? 'selected' : ''}>
+        ${item.name}
+      </option>
+    `).join('');
+  }
 
   renderSpecialComponent(component) {
     this.root.innerHTML = `
