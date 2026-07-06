@@ -288,36 +288,67 @@ renderFormPartResult(formPart) {
 }
 
 renderFormPartParameters(formPart) {
-  switch (formPart?.type) {
-    case 'bend':
-      return `
-        <label>
-          <span>Radius [m]</span>
-          <input data-field="radius" type="number" step="0.01" value="${formPart?.radius ?? 0.75}">
-        </label>
+  const entry = this.getRegistryEntry(formPart);
 
-        <label>
-          <span>Winkel [°]</span>
-          <input data-field="angle" type="number" step="1" value="${formPart?.angle ?? 90}">
-        </label>
-      `;
-
-    case 'transition':
-      return `
-        <label>
-          <span>Länge [m]</span>
-          <input data-field="length" type="number" step="0.01" value="${formPart?.length ?? 1}">
-        </label>
-      `;
-
-    default:
-      return `
-        <label>
-          <span>ζ-Wert</span>
-          <input data-field="zeta" type="number" step="0.001" value="${formPart?.zeta ?? 0}">
-        </label>
-      `;
+  if (!entry?.parameters?.length) {
+    return `
+      <label>
+        <span>ζ-Wert</span>
+        <input data-field="zeta" type="number" step="0.001" value="${formPart?.zeta ?? 0}">
+      </label>
+    `;
   }
+
+  return entry.parameters.map(parameter => `
+    <label>
+      <span>${this.getParameterLabel(parameter)}</span>
+      <input
+        data-field="${parameter}"
+        type="number"
+        step="0.001"
+        value="${formPart?.[parameter] ?? this.getDefaultParameterValue(parameter)}">
+    </label>
+  `).join('');
+}
+
+getParameterLabel(parameter) {
+  const labels = {
+    R: 'Radius R [mm]',
+    d: 'Durchmesser d [mm]',
+    alpha: 'Winkel α [°]',
+    a: 'Breite a [mm]',
+    b: 'Höhe b [mm]',
+    A1: 'Fläche A1 [m²]',
+    A2: 'Fläche A2 [m²]',
+    LE: 'Länge LE [mm]',
+    WD: 'Volumenstrom Durchgang',
+    WA: 'Volumenstrom Abzweig',
+    W: 'Volumenstrom Gesamt',
+    wA: 'Geschwindigkeit Abzweig',
+    w: 'Geschwindigkeit Hauptkanal'
+  };
+
+  return labels[parameter] ?? parameter;
+}
+
+getDefaultParameterValue(parameter) {
+  const defaults = {
+    R: 110,
+    d: 125,
+    alpha: 90,
+    a: 500,
+    b: 300,
+    A1: 0,
+    A2: 0,
+    LE: 0,
+    WD: 0,
+    WA: 0,
+    W: 0,
+    wA: 0,
+    w: 0
+  };
+
+  return defaults[parameter] ?? 0;
 }
 
 getRegistryEntry(formPart) {

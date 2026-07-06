@@ -77,12 +77,14 @@ export default class ProjectCommands {
     const selectedSection = this.state.selectedSection || system.sections?.[0] || null;
 
     const formPart = {
-      id: `formpart-${Date.now()}`,
-      name: `Formteil ${number}`,
-      type: 'bend',
-      sectionId: selectedSection?.id || null,
-      zeta: 0
-    };
+  id: `formpart-${Date.now()}`,
+  name: `Formteil ${number}`,
+  type: 'kreis_bogen',
+  sectionId: selectedSection?.id || null,
+  radius: 0.75,
+  angle: 90,
+  zeta: 0.21
+};
 
     system.formParts.push(formPart);
     this.state.selectFormPart(formPart);

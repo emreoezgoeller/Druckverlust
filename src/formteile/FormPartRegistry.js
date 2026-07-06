@@ -84,7 +84,27 @@ export const defaultFormParts = [
   category: 'Rund',
   name: 'Kreisförmiger Bogen / Krümmer',
   image: 'assets/formteile/kreis_bogen.png',
-  parameters: ['R', 'd', 'alpha'],
+  parameters: [
+  {
+    id: 'R',
+    label: 'Radius R [mm]',
+    type: 'number',
+    default: 110
+  },
+  {
+    id: 'd',
+    label: 'Durchmesser d [mm]',
+    type: 'number',
+    default: 125
+  },
+  {
+    id: 'alpha',
+    label: 'Winkel α',
+    type: 'select',
+    options: [15, 30, 45, 60, 90],
+    default: 90
+  }
+],
   calculate: calculateKreisBogen
 },
   { id: 'eckiger_bogen', category: 'Rechteck', name: 'Eckiger Kanalbogen', image: 'assets/formteile/eckiger_bogen.png', parameters: ['R', 'a', 'b'] },
