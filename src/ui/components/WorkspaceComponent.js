@@ -2,6 +2,7 @@
 // Zeigt den Arbeitsbereich passend zur aktuellen Auswahl.
 
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -11,6 +12,7 @@ export default class WorkspaceComponent {
 
     this.root = rootElement;
     this.state = state;
+    this.registry = createDefaultFormPartRegistry();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -167,26 +169,172 @@ export default class WorkspaceComponent {
   }
 
   renderFormPart(formPart) {
-    const sectionName = this.getSectionNameById(formPart?.sectionId);
+  const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+  const sections = system?.sections || [];
 
-    this.root.innerHTML = `
-      <h1>${formPart?.name ?? 'Formteil'}</h1>
-      <p>Detailansicht des Formteils.</p>
+  this.root.innerHTML = `
+    <h1>${formPart?.name ?? 'Formteil'}</h1>
+    ${this.renderDirtyHint()}
+
+    <section class="dp-editor-panel">
+      <h2>Formteil bearbeiten</h2>
+
+      <div class="dp-editor-grid">
+        <label>
+          <span>Name</span>
+          <input data-field="name" value="${formPart?.name ?? ''}">
+        </label>
+
+        <label>
+          <span>Formteiltyp</span>
+          <select data-field="type">
+          ${this.renderFormPartTypeOptions(formPart)}
+          </select>
+        </label>
+
+        <label>
+          <span>Teilstrecke</span>
+          <select data-field="sectionId">
+            ${sections.map(section => `
+              <option value="${section.id}" ${formPart?.sectionId === section.id ? 'selected' : ''}>
+                ${section.name ?? section.ts ?? section.id}
+              </option>
+            `).join('')}
+          </select>
+        </label>
+
+        ${this.renderFormPartParameters(formPart)}
+
+      <div class="dp-editor-actions">
+        <button data-action="calculate-formpart">Übernehmen</button>
+      </div>
+    </section>
+
+    ${this.renderFormPartResult(formPart)}
+  `;
+
+  this.bindFormPartEditor(formPart);
+}
+
+bindFormPartEditor(formPart) {
+  this.root.querySelectorAll('[data-field]').forEach(input => {
+    input.addEventListener('change', () => {
+      const field = input.dataset.field;
+
+      formPart[field] =
+        input.type === 'number'
+          ? Number(input.value)
+          : input.value;
+
+      this.state.markCalculationDirty();
+    });
+  });
+
+  const button = this.root.querySelector('[data-action="calculate-formpart"]');
+
+  if (button) {
+    button.addEventListener('click', () => {
+      try {
+        const project = this.state.project;
+        const result = ProjectCalculationService.calculate(project);
+
+        project.calculationResult = result;
+
+        this.state.lastCalculationAt = new Date().toISOString();
+        this.state.markCalculationClean();
+      } catch (error) {
+        alert(`Berechnung fehlgeschlagen: ${error.message}`);
+      }
+    });
+  }
+}
+
+renderFormPartResult(formPart) {
+  const sectionResult = this.getCalculationItemBySectionId(formPart?.sectionId);
+  const dynamicPressure = sectionResult?.result?.dynamicPressure ?? null;
+  const zeta = Number(formPart?.zeta ?? 0);
+
+  const pressureLoss =
+    dynamicPressure !== null
+      ? zeta * dynamicPressure
+      : null;
+
+  return `
+    <section class="dp-result-panel">
+      <h2>Formteil-Ergebnis</h2>
 
       <table class="dp-table">
         <tbody>
           <tr>
             <th>Teilstrecke</th>
-            <td>${sectionName}</td>
+            <td>${this.getSectionNameById(formPart?.sectionId)}</td>
           </tr>
           <tr>
-            <th>Zeta</th>
-            <td>${formPart?.zeta ?? '-'}</td>
+            <th>Dynamischer Druck</th>
+            <td>${this.formatNumber(dynamicPressure)} Pa</td>
+          </tr>
+          <tr>
+            <th>ζ-Wert</th>
+            <td>${this.formatNumber(zeta, 3)}</td>
+          </tr>
+          <tr>
+            <th>Druckverlust Formteil</th>
+            <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
           </tr>
         </tbody>
       </table>
-    `;
+    </section>
+  `;
+}
+
+renderFormPartParameters(formPart) {
+  switch (formPart?.type) {
+    case 'bend':
+      return `
+        <label>
+          <span>Radius [m]</span>
+          <input data-field="radius" type="number" step="0.01" value="${formPart?.radius ?? 0.75}">
+        </label>
+
+        <label>
+          <span>Winkel [°]</span>
+          <input data-field="angle" type="number" step="1" value="${formPart?.angle ?? 90}">
+        </label>
+      `;
+
+    case 'transition':
+      return `
+        <label>
+          <span>Länge [m]</span>
+          <input data-field="length" type="number" step="0.01" value="${formPart?.length ?? 1}">
+        </label>
+      `;
+
+    default:
+      return `
+        <label>
+          <span>ζ-Wert</span>
+          <input data-field="zeta" type="number" step="0.001" value="${formPart?.zeta ?? 0}">
+        </label>
+      `;
   }
+}
+
+getRegistryEntry(formPart) {
+  if (!formPart?.type) {
+    return null;
+  }
+
+  return this.registry.get(formPart.type);
+}
+
+renderFormPartTypeOptions(formPart) {
+  return this.registry.all().map(item => `
+    <option value="${item.id}" ${formPart?.type === item.id ? 'selected' : ''}>
+      ${item.name}
+    </option>
+  `).join('');
+}
 
   renderSpecialComponent(component) {
     this.root.innerHTML = `
