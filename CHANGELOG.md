@@ -100,3 +100,26 @@
 - Bei Bauform `Kanal` werden für Hauptanschluss und Abzweig je Breite/Höhe abgefragt.
 - Bei Bauform `Rohr` werden für Hauptanschluss und Abzweig je Durchmesser abgefragt.
 - Geschwindigkeit `w` und `wA` sind vorbereitet, damit später das Tabellenverhältnis `wA/w` berechnet werden kann.
+
+## Sprint 16.11 – Hosenstück-Calculator
+
+- Hosenstück erhält einen eigenen Calculator auf Basis der Tabelle ζA bezogen auf wA.
+- Berechnung von wA/w aus automatisch berechneten Geschwindigkeiten w und wA.
+- Tabellenlookup für α und wA/w mit exakt oder nächst grösserem Tabellenwert.
+- Dynamischer Druck und Druckverlust beim Hosenstück werden bezogen auf wA berechnet.
+- Direktdruckverlust wird in der Projektberechnung separat berücksichtigt und nicht zusätzlich über Σζ der Teilstrecke falsch mit dem Teilstrecken-pdyn verrechnet.
+
+## Sprint 16.12 – Hosenstück Ergebnisanzeige
+
+- Hosenstück-Ergebnis zeigt jetzt Hauptluftmenge W und Hauptgeschwindigkeit w.
+- Hosenstück-Ergebnis zeigt jetzt Abzweigluftmenge WA und Abzweiggeschwindigkeit wA.
+- Bei direkter Druckverlustberechnung wird die allgemeine Teilstrecken-Luftmenge/Geschwindigkeit nicht mehr angezeigt, damit keine falschen 0-Werte erscheinen.
+- Dynamischer Druck wird beim Hosenstück sichtbar auf wA bezogen dargestellt.
+
+## Sprint 16.13 – Rechteckbogen-Calculatoren
+
+- `eckiger_bogen` erhält einen eigenen Calculator mit Tabellenlogik über `R/b` und `a/b`.
+- `kanal_bogen_winkel` erhält einen eigenen Calculator mit Tabellenlogik über `α` und `a/b`.
+- Beide Calculatoren verwenden exakt oder nächst grösserer Tabellenwert, passend zur bisherigen Excel-Logik.
+- Workspace kann jetzt allgemeine Calculator-Detailzeilen über `displayRows` anzeigen, damit neue Formteil-Calculatoren ihre Tabellenwerte sauber ausgeben können.
+- Projektberechnung übernimmt die berechneten ζ-Werte automatisch wie bei Kreis-Bogen.

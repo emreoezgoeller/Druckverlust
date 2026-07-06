@@ -99,10 +99,29 @@ export function normalizeType(section = {}) {
   return 'duct';
 }
 
+function isFormPartAssignedToSection(part, sectionId) {
+  return part && (part.sectionId === sectionId || part.rowId === sectionId || part.targetSectionId === sectionId);
+}
+
+function getFormPartDirectLoss(part = {}) {
+  const lossMode = part.lossMode || part.calculationResult?.calculation?.lossMode;
+
+  if (lossMode !== 'direct') return 0;
+
+  return toNumber(part.pressureLossPa ?? part.calculationResult?.calculation?.pressureLossPa);
+}
+
 export function sumFormPartZeta(formParts = [], sectionId) {
   return formParts
-    .filter(part => part && (part.sectionId === sectionId || part.rowId === sectionId || part.targetSectionId === sectionId))
+    .filter(part => isFormPartAssignedToSection(part, sectionId))
+    .filter(part => getFormPartDirectLoss(part) <= 0)
     .reduce((sum, part) => sum + toNumber(part.zeta), 0);
+}
+
+export function sumFormPartDirectLoss(formParts = [], sectionId) {
+  return formParts
+    .filter(part => isFormPartAssignedToSection(part, sectionId))
+    .reduce((sum, part) => sum + getFormPartDirectLoss(part), 0);
 }
 
 export function calculateSection(section = {}, options = {}) {
@@ -219,14 +238,23 @@ export function calculateProject(project = {}) {
 
   const results = sections.map((section, index) => {
     const zetaFromParts = sumFormPartZeta(formParts, section.id);
+    const directFormPartLoss = sumFormPartDirectLoss(formParts, section.id);
     const manualZeta = toNumber(section.zetaSum ?? section.zeta);
     const zetaSum = zetaFromParts + manualZeta;
     const result = calculateSection(section, { settings, zetaSum });
+
+    if (directFormPartLoss > 0) {
+      result.directFormPartLoss = directFormPartLoss;
+      result.totalLoss += directFormPartLoss;
+      result.roundedTotalLoss = roundUpToStep(result.totalLoss, settings.sectionRoundingStep ?? 0.5);
+    }
+
     return {
       index,
       id: section.id || `section-${index + 1}`,
       input: section,
       zetaFromParts,
+      directFormPartLoss,
       manualZeta,
       result,
     };
@@ -235,7 +263,7 @@ export function calculateProject(project = {}) {
   const totals = results.reduce((acc, item) => {
     const r = item.result;
     acc.friction += r.frictionLoss;
-    acc.formParts += r.zetaLoss;
+    acc.formParts += r.zetaLoss + toNumber(r.directFormPartLoss);
     acc.special += r.type === 'special' ? r.specialLoss : 0;
     acc.total += r.totalLoss;
     acc.totalRounded += r.roundedTotalLoss;

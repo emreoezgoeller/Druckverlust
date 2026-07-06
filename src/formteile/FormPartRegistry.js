@@ -1,4 +1,8 @@
 import { calculateKreisBogen } from './calculators/kreisBogenCalculator.js';
+import { calculateEckigerBogen } from './calculators/eckigerBogenCalculator.js';
+import { calculateKanalBogenWinkel } from './calculators/kanalBogenWinkelCalculator.js';
+import { calculateHosenstueck } from './calculators/hosenstueckCalculator.js';
+import { calculateUebergangGrossKlein, calculateUebergangKleinGross } from './calculators/uebergangCalculator.js';
 
 function cleanAssetPath(path) {
   return String(path || '')
@@ -98,6 +102,28 @@ function calculateHosenstueckGeometry(values = {}) {
   };
 }
 
+function transitionAreaByShape(values = {}, prefix = 'A1') {
+  const shape = String(values[`${prefix}_bauform`] || 'Kanal');
+
+  if (shape === 'Rohr') {
+    return circleAreaMm(values[`${prefix}_d`]);
+  }
+
+  return rectangleAreaMm(values[`${prefix}_breite`], values[`${prefix}_hoehe`]);
+}
+
+function calculateTransitionGeometry(values = {}) {
+  const area1 = transitionAreaByShape(values, 'A1');
+  const area2 = transitionAreaByShape(values, 'A2');
+  const ratio = area2 > 0 ? area1 / area2 : 0;
+
+  return {
+    A1: roundTo(area1, 6),
+    A2: roundTo(area2, 6),
+    A1_A2: roundTo(ratio, 3),
+  };
+}
+
 const PARAMETER_PRESETS = Object.freeze({
   R: {
     label: 'Radius R [mm]',
@@ -155,6 +181,102 @@ const PARAMETER_PRESETS = Object.freeze({
     step: 1,
     min: 0,
   },
+  A1_bauform: {
+    label: 'Kleiner Anschluss A1 – Bauform',
+    type: 'select',
+    group: 'Kleiner Anschluss A1',
+    options: ['Kanal', 'Rohr'],
+    default: 'Kanal',
+    locked: true,
+    help: 'Kanal oder Rohr für den kleineren Anschluss auswählen.',
+  },
+  A1_breite: {
+    label: 'Kleiner Anschluss A1 – Breite [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Kleiner Anschluss A1',
+    default: 300,
+    step: 1,
+    min: 0,
+  },
+  A1_hoehe: {
+    label: 'Kleiner Anschluss A1 – Höhe [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Kleiner Anschluss A1',
+    default: 200,
+    step: 1,
+    min: 0,
+  },
+  A1_d: {
+    label: 'Kleiner Anschluss A1 – Durchmesser [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Kleiner Anschluss A1',
+    default: 250,
+    step: 1,
+    min: 0,
+  },
+  A2_bauform: {
+    label: 'Grosser Anschluss A2 – Bauform',
+    type: 'select',
+    group: 'Grosser Anschluss A2',
+    options: ['Kanal', 'Rohr'],
+    default: 'Kanal',
+    locked: true,
+    help: 'Kanal oder Rohr für den grösseren Anschluss auswählen. Damit ist auch Kanal → Rohr bzw. Rohr → Kanal möglich.',
+  },
+  A2_breite: {
+    label: 'Grosser Anschluss A2 – Breite [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Grosser Anschluss A2',
+    default: 500,
+    step: 1,
+    min: 0,
+  },
+  A2_hoehe: {
+    label: 'Grosser Anschluss A2 – Höhe [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Grosser Anschluss A2',
+    default: 300,
+    step: 1,
+    min: 0,
+  },
+  A2_d: {
+    label: 'Grosser Anschluss A2 – Durchmesser [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Grosser Anschluss A2',
+    default: 400,
+    step: 1,
+    min: 0,
+  },
+  berechnungsart: {
+    label: 'Berechnungsart',
+    type: 'select',
+    group: 'Ausführung',
+    options: ['Winkel β', 'Kanalkante'],
+    default: 'Winkel β',
+    locked: true,
+    help: 'Winkel β = Übergangstabelle. Kanalkante = Kanten-/Abrundungstabelle für gross → klein.',
+  },
+  kanalkante: {
+    label: 'Kanalkante / Abrundung',
+    type: 'select',
+    group: 'Ausführung',
+    options: [1, 2, 3, 4],
+    optionLabels: {
+      1: '1 – scharfe Kante / ohne Abrundung',
+      2: '2 – gebrochene Kante / gefaste Kante',
+      3: '3 – gerundete Kante',
+      4: '4 – glatte, gute Abrundung',
+    },
+    default: 1,
+    locked: true,
+    help: 'Kantenwahl: 1 = scharfe Kante / ohne Abrundung; 2 = gebrochene bzw. gefaste Kante; 3 = gerundete Kante; 4 = glatte, gute Abrundung.',
+  },
   A_breite: {
     label: 'Hauptanschluss A – Breite [mm]',
     type: 'number',
@@ -210,22 +332,30 @@ const PARAMETER_PRESETS = Object.freeze({
     min: 0,
   },
   A1: {
-    label: 'Fläche A1 [m²]',
+    label: 'Berechneter kleiner Querschnitt A1 [m²]',
     type: 'number',
     unit: 'm²',
-    group: 'Geometrie',
+    group: 'Berechnete Werte',
     default: 0,
     step: 0.001,
     min: 0,
+    readOnly: true,
+    derived: true,
+    precision: 6,
+    help: 'Wird automatisch aus der gewählten Bauform und Grösse berechnet.',
   },
   A2: {
-    label: 'Fläche A2 [m²]',
+    label: 'Berechneter grosser Querschnitt A2 [m²]',
     type: 'number',
     unit: 'm²',
-    group: 'Geometrie',
+    group: 'Berechnete Werte',
     default: 0,
     step: 0.001,
     min: 0,
+    readOnly: true,
+    derived: true,
+    precision: 6,
+    help: 'Wird automatisch aus der gewählten Bauform und Grösse berechnet.',
   },
   LE: {
     label: 'Länge LE [mm]',
@@ -325,6 +455,7 @@ const PARAMETER_META_FIELDS = [
   'min',
   'max',
   'options',
+  'optionLabels',
   'help',
   'locked',
   'placeholder',
@@ -576,7 +707,28 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('eckiger_bogen'),
     referenceFile: formPartExcel('eckiger_bogen'),
     keywords: ['bogen', 'rechteck', 'kanal'],
-    parameters: ['R', 'a', 'b'],
+    description: 'Eckiger Kanalbogen mit ζ-Wert aus R/b und a/b.',
+    calculate: calculateEckigerBogen,
+    parameters: [
+      {
+        id: 'R',
+        label: 'Radius R [mm]',
+        group: 'Geometrie',
+        help: 'Radius des eckigen Kanalbogens gemäss Skizze.',
+      },
+      {
+        id: 'a',
+        label: 'Breite a [mm]',
+        group: 'Geometrie',
+        help: 'Breite des rechteckigen Kanals.',
+      },
+      {
+        id: 'b',
+        label: 'Höhe b [mm]',
+        group: 'Geometrie',
+        help: 'Höhe des rechteckigen Kanals. Grundlage für R/b und a/b.',
+      },
+    ],
   },
   {
     id: 'kanal_bogen_winkel',
@@ -586,14 +738,28 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('kanal_bogen_winkel'),
     referenceFile: formPartExcel('kanal_bogen_winkel'),
     keywords: ['bogen', 'winkel', 'rechteck'],
+    description: 'Kanal-Bogen mit Winkel α und ζ-Wert aus α und a/b.',
+    calculate: calculateKanalBogenWinkel,
     parameters: [
       {
         id: 'alpha',
+        group: 'Auswahl',
         options: [20, 30, 45, 60, 75, 90],
         default: 90,
+        help: 'Winkel α gemäss Tabelle auswählen. Freie Eingabe ist gesperrt.',
       },
-      'a',
-      'b',
+      {
+        id: 'a',
+        label: 'Breite a [mm]',
+        group: 'Geometrie',
+        help: 'Breite des rechteckigen Kanals.',
+      },
+      {
+        id: 'b',
+        label: 'Höhe b [mm]',
+        group: 'Geometrie',
+        help: 'Höhe des rechteckigen Kanals. Grundlage für a/b.',
+      },
     ],
   },
   {
@@ -606,12 +772,60 @@ export const defaultFormParts = [
       'assets/formteile/uebergang_gross_klein.png',
     ]),
     referenceFile: formPartExcel('uebergang_gross_klein'),
-    keywords: ['übergang', 'gross', 'klein', 'reduzierung'],
+    keywords: ['übergang', 'gross', 'klein', 'reduzierung', 'kanal', 'rohr', 'kanalkante'],
+    description: 'Übergang von grossem auf kleinen Querschnitt. A1/A2 wird automatisch aus Kanal-/Rohrgrössen berechnet. Winkel β und Kanalkante werden gemeinsam berücksichtigt.',
+    derive: calculateTransitionGeometry,
+    calculate: calculateUebergangGrossKlein,
     parameters: [
       {
         id: 'beta',
+        group: 'Ausführung',
         options: [10, 20, 30, 40, 50, 60],
         default: 30,
+        help: 'Winkel β gemäss Tabelle auswählen. ≤ 10° wird als Tabellenwert 10° geführt.',
+      },
+      {
+        id: 'kanalkante',
+        group: 'Ausführung',
+        help: 'Kantenwahl: 1 = scharfe Kante / ohne Abrundung; 2 = gebrochene bzw. gefaste Kante; 3 = gerundete Kante; 4 = glatte, gute Abrundung. Dieser Wert wird zusätzlich zum Winkel β berücksichtigt.',
+      },
+      {
+        id: 'A2_bauform',
+        group: 'Grosser Anschluss A2',
+      },
+      {
+        id: 'A2_breite',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Kanal' },
+      },
+      {
+        id: 'A2_hoehe',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Kanal' },
+      },
+      {
+        id: 'A2_d',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Rohr' },
+      },
+      {
+        id: 'A1_bauform',
+        group: 'Kleiner Anschluss A1',
+      },
+      {
+        id: 'A1_breite',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Kanal' },
+      },
+      {
+        id: 'A1_hoehe',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Kanal' },
+      },
+      {
+        id: 'A1_d',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Rohr' },
       },
       'A1',
       'A2',
@@ -627,12 +841,55 @@ export const defaultFormParts = [
       'assets/formteile/uebergang_klein_gross.png',
     ]),
     referenceFile: formPartExcel('uebergang_klein_gross'),
-    keywords: ['übergang', 'klein', 'gross', 'erweiterung'],
+    keywords: ['übergang', 'klein', 'gross', 'erweiterung', 'kanal', 'rohr'],
+    description: 'Übergang von kleinem auf grossen Querschnitt. A1/A2 wird automatisch aus Kanal-/Rohrgrössen berechnet.',
+    derive: calculateTransitionGeometry,
+    calculate: calculateUebergangKleinGross,
     parameters: [
       {
         id: 'beta',
-        options: [3, 6, 8, 10, 12, 14, 16, 20, 24, 30, 40, 60],
+        group: 'Ausführung',
+        options: [3, 6, 8, 10, 12, 14, 16, 20, 24, 30, 40, 60, 90, 180],
         default: 30,
+        help: 'Winkel β gemäss Tabelle auswählen.',
+      },
+      {
+        id: 'A1_bauform',
+        group: 'Kleiner Anschluss A1',
+      },
+      {
+        id: 'A1_breite',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Kanal' },
+      },
+      {
+        id: 'A1_hoehe',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Kanal' },
+      },
+      {
+        id: 'A1_d',
+        group: 'Kleiner Anschluss A1',
+        showWhen: { A1_bauform: 'Rohr' },
+      },
+      {
+        id: 'A2_bauform',
+        group: 'Grosser Anschluss A2',
+      },
+      {
+        id: 'A2_breite',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Kanal' },
+      },
+      {
+        id: 'A2_hoehe',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Kanal' },
+      },
+      {
+        id: 'A2_d',
+        group: 'Grosser Anschluss A2',
+        showWhen: { A2_bauform: 'Rohr' },
       },
       'A1',
       'A2',
@@ -658,6 +915,7 @@ export const defaultFormParts = [
     keywords: ['hosenstück', 'abzweig', 'verteiler', 'kanal', 'rohr'],
     description: 'Hosenstück mit Hauptanschluss A/W/w und Abzweig AA/WA/wA. Die Geschwindigkeiten werden aus Luftmenge und Grösse automatisch berechnet.',
     derive: calculateHosenstueckGeometry,
+    calculate: calculateHosenstueck,
     parameters: [
       {
         id: 'bauform',

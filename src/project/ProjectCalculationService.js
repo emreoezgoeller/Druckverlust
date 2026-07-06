@@ -34,6 +34,17 @@ export default class ProjectCalculationService {
 
       formPart.zeta = Number(result?.zeta ?? 0);
       formPart.calculationResult = result;
+
+      const calculation = result?.calculation || {};
+      const pressureLossPa = Number(calculation.pressureLossPa ?? 0);
+
+      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa > 0) {
+        formPart.lossMode = 'direct';
+        formPart.pressureLossPa = pressureLossPa;
+      } else {
+        delete formPart.lossMode;
+        delete formPart.pressureLossPa;
+      }
     });
 
     return formParts;

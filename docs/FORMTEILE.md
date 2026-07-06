@@ -74,3 +74,62 @@ Eingabewerte → ζ aus Excel → ζ aus Web-App → bestanden/nicht bestanden
 - Dynamischer Druck und Druckverlust Formteil werden live aus der zugewiesenen Teilstrecke berechnet. Eine globale Projektberechnung ist für die Anzeige nicht mehr zwingend nötig.
 - `kreis_bogen` nutzt die Excel-Logik `XLOOKUP(..., match_mode = 1)`, also exakter oder nächst grösserer Tabellenwert.
 
+
+## Hosenstück
+
+Das Hosenstück verwendet die Tabellenlogik `ζA` bezogen auf `wA`.
+
+Eingaben:
+- Bauform: Kanal oder Rohr
+- Hauptanschluss `A`, Luftmenge `W`, daraus Geschwindigkeit `w`
+- Abzweig `AA`, Luftmenge `WA`, daraus Geschwindigkeit `wA`
+- Winkel `α`
+
+Berechnung:
+
+```text
+wA/w = Geschwindigkeit Abzweig / Geschwindigkeit Hauptanschluss
+ζA = Tabellenwert(α, wA/w)
+Δp = ζA × pdyn(wA)
+```
+
+Der Druckverlust wird als Direktdruckverlust geführt, weil der Tabellenwert auf `wA` bezogen ist und nicht auf die Geschwindigkeit der zugewiesenen Teilstrecke.
+
+## Eckiger Kanalbogen
+
+Aktiv angebunden ab Sprint 16.13:
+
+- ID: `eckiger_bogen`
+- Calculator: `calculateEckigerBogen`
+- Eingaben:
+  - `R` Radius in mm
+  - `a` Breite in mm
+  - `b` Höhe in mm
+- Tabellenlogik:
+
+```text
+R/b = Radius / Höhe
+a/b = Breite / Höhe
+ζ = Tabellenwert(R/b, a/b)
+```
+
+Der Lookup verwendet exakt oder nächst grösserer Tabellenwert.
+
+## Kanal-Bogen mit Winkel
+
+Aktiv angebunden ab Sprint 16.13:
+
+- ID: `kanal_bogen_winkel`
+- Calculator: `calculateKanalBogenWinkel`
+- Eingaben:
+  - `alpha` Winkel in Grad als Dropdown
+  - `a` Breite in mm
+  - `b` Höhe in mm
+- Tabellenlogik:
+
+```text
+a/b = Breite / Höhe
+ζ = Tabellenwert(α, a/b)
+```
+
+Der Lookup verwendet exakt oder nächst grösserer Tabellenwert.

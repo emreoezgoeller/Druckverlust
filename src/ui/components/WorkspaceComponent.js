@@ -274,15 +274,20 @@ export default class WorkspaceComponent {
     const sectionInfo = this.getFormPartSectionCalculation(formPart);
     const sectionResult = sectionInfo?.result || null;
     const sectionName = sectionInfo?.sectionName || this.getSectionNameById(formPart?.sectionId);
-    const dynamicPressure = sectionResult?.dynamicPressure ?? null;
-    const zeta = Number(formPart?.zeta ?? formPart?.calculationResult?.zeta ?? 0);
+    const formPartResult = formPart?.calculationResult || null;
+    const formPartCalculation = formPartResult?.calculation || {};
+    const isDirectLoss = formPartCalculation.lossMode === 'direct';
+    const dynamicPressure = isDirectLoss
+      ? formPartCalculation.dynamicPressurePa ?? null
+      : sectionResult?.dynamicPressure ?? null;
+    const zeta = Number(formPart?.zeta ?? formPartResult?.zeta ?? 0);
 
-    const pressureLoss =
-      dynamicPressure !== null
+    const pressureLoss = isDirectLoss
+      ? formPartCalculation.pressureLossPa ?? null
+      : dynamicPressure !== null
         ? zeta * dynamicPressure
         : null;
 
-    const formPartResult = formPart?.calculationResult || null;
     const warnings = [
       ...(formPartResult?.warnings || []),
       ...(sectionInfo?.warnings || []),
@@ -303,7 +308,7 @@ export default class WorkspaceComponent {
               <th>Teilstrecke</th>
               <td>${this.escapeHtml(sectionName)}</td>
             </tr>
-            ${sectionResult ? `
+            ${sectionResult && !isDirectLoss ? `
               <tr>
                 <th>Luftmenge</th>
                 <td>${this.formatAirflow(sectionResult.q)} m³/h</td>
@@ -313,10 +318,17 @@ export default class WorkspaceComponent {
                 <td>${this.formatNumber(sectionResult.velocity)} m/s</td>
               </tr>
             ` : ''}
+            ${this.renderHosenstueckReferenceRows(formPart, formPartResult)}
             <tr>
-              <th>Dynamischer Druck</th>
+              <th>${isDirectLoss && formPartCalculation.pressureReference ? `Dynamischer Druck ${this.escapeHtml(formPartCalculation.pressureReference)}` : 'Dynamischer Druck'}</th>
               <td>${this.formatNumber(dynamicPressure)} Pa</td>
             </tr>
+            ${isDirectLoss && formPartCalculation.pressureReference ? `
+              <tr>
+                <th>Bezugsgrösse</th>
+                <td>bezogen auf ${this.escapeHtml(formPartCalculation.pressureReference)}</td>
+              </tr>
+            ` : ''}
             <tr>
               <th>ζ-Wert</th>
               <td>${this.formatNumber(zeta, 3)}</td>
@@ -325,31 +337,6 @@ export default class WorkspaceComponent {
               <th>Druckverlust Formteil</th>
               <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
             </tr>
-            ${this.renderHosenstueckDerivedRows(formPart)}
-            ${formPartResult?.calculation?.ratio !== undefined ? `
-              <tr>
-                <th>R/d</th>
-                <td>${this.formatNumber(formPartResult.calculation.ratio, 3)}</td>
-              </tr>
-            ` : ''}
-            ${formPartResult?.calculation?.rdValue !== undefined ? `
-              <tr>
-                <th>Tabellenwert R/d</th>
-                <td>${this.formatNumber(formPartResult.calculation.rdValue, 3)}</td>
-              </tr>
-            ` : ''}
-            ${formPartResult?.calculation?.angleFactor !== undefined ? `
-              <tr>
-                <th>Tabellenwert α</th>
-                <td>${this.formatNumber(formPartResult.calculation.angleFactor, 3)}</td>
-              </tr>
-            ` : ''}
-            ${formPartResult?.calculation?.formula ? `
-              <tr>
-                <th>Formel</th>
-                <td>${this.escapeHtml(formPartResult.calculation.formula)}</td>
-              </tr>
-            ` : ''}
           </tbody>
         </table>
 
@@ -420,11 +407,16 @@ export default class WorkspaceComponent {
         <label class="dp-param-field dp-param-select">
           <span>${label}</span>
           <select data-field="${fieldId}">
-            ${options.map(option => `
-              <option value="${this.escapeAttribute(option)}" ${String(value) === String(option) ? 'selected' : ''}>
-                ${this.escapeHtml(option)}${parameter.unit ? ` ${this.escapeHtml(parameter.unit)}` : ''}
-              </option>
-            `).join('')}
+            ${options.map(option => {
+              const optionValue = this.getSelectOptionValue(option);
+              const optionLabel = this.getSelectOptionLabel(parameter, option);
+
+              return `
+                <option value="${this.escapeAttribute(optionValue)}" ${String(value) === String(optionValue) ? 'selected' : ''}>
+                  ${this.escapeHtml(optionLabel)}${parameter.unit ? ` ${this.escapeHtml(parameter.unit)}` : ''}
+                </option>
+              `;
+            }).join('')}
           </select>
           ${this.renderParameterHelp(parameter, 'Auswahlwert – freie Eingabe gesperrt.')}
         </label>
@@ -455,6 +447,28 @@ export default class WorkspaceComponent {
     `;
   }
 
+  getSelectOptionValue(option) {
+    if (option && typeof option === 'object' && 'value' in option) {
+      return option.value;
+    }
+
+    return option;
+  }
+
+  getSelectOptionLabel(parameter, option) {
+    const value = this.getSelectOptionValue(option);
+
+    if (option && typeof option === 'object' && 'label' in option) {
+      return option.label;
+    }
+
+    if (parameter?.optionLabels && parameter.optionLabels[value] !== undefined) {
+      return parameter.optionLabels[value];
+    }
+
+    return value;
+  }
+
   readFormPartFieldValue(formPart, field, input) {
     const parameter = this.getFormPartParameter(formPart, field);
 
@@ -470,7 +484,8 @@ export default class WorkspaceComponent {
   }
 
   hasNumericOptions(parameter) {
-    return Array.isArray(parameter?.options) && parameter.options.every(option => Number.isFinite(Number(option)));
+    return Array.isArray(parameter?.options)
+      && parameter.options.every(option => Number.isFinite(Number(this.getSelectOptionValue(option))));
   }
 
   applyFormPartDefaults(formPart, options = {}) {
@@ -519,6 +534,17 @@ export default class WorkspaceComponent {
       Object.assign(formPart, values);
       formPart.zeta = Number(result?.zeta ?? 0);
       formPart.calculationResult = result;
+
+      const calculation = result?.calculation || {};
+      const pressureLossPa = Number(calculation.pressureLossPa ?? 0);
+
+      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa > 0) {
+        formPart.lossMode = 'direct';
+        formPart.pressureLossPa = pressureLossPa;
+      } else {
+        delete formPart.lossMode;
+        delete formPart.pressureLossPa;
+      }
 
       return result;
     } catch (error) {
@@ -702,6 +728,36 @@ export default class WorkspaceComponent {
     return value;
   }
 
+  renderHosenstueckReferenceRows(formPart, formPartResult) {
+    if (formPart?.type !== 'hosenstueck' && formPartResult?.id !== 'hosenstueck') return '';
+
+    const calculation = formPartResult?.calculation || {};
+
+    const W = formPart?.W ?? formPartResult?.input?.W;
+    const WA = formPart?.WA ?? formPartResult?.input?.WA;
+    const w = calculation.w ?? formPart?.w;
+    const wA = calculation.wA ?? formPart?.wA;
+
+    return `
+      <tr>
+        <th>Hauptluftmenge W</th>
+        <td>${this.formatAirflow(W)} m³/h</td>
+      </tr>
+      <tr>
+        <th>Hauptgeschwindigkeit w</th>
+        <td>${this.formatNumber(w)} m/s</td>
+      </tr>
+      <tr>
+        <th>Abzweigluftmenge WA</th>
+        <td><strong>${this.formatAirflow(WA)} m³/h</strong></td>
+      </tr>
+      <tr>
+        <th>Abzweiggeschwindigkeit wA</th>
+        <td><strong>${this.formatNumber(wA)} m/s</strong></td>
+      </tr>
+    `;
+  }
+
   renderHosenstueckDerivedRows(formPart) {
     if (formPart?.type !== 'hosenstueck') return '';
 
@@ -719,6 +775,57 @@ export default class WorkspaceComponent {
         <td>${this.formatNumber(formPart?.wA_w, 3)}</td>
       </tr>
     `;
+  }
+
+  renderHosenstueckCalculationRows(formPartResult) {
+    if (formPartResult?.id !== 'hosenstueck') return '';
+
+    const calculation = formPartResult?.calculation || {};
+
+    return `
+      ${calculation.ratioLookup !== undefined ? `
+        <tr>
+          <th>Tabellenwert wA/w</th>
+          <td>${this.formatNumber(calculation.ratioLookup, 3)}</td>
+        </tr>
+      ` : ''}
+      ${calculation.alphaLookup !== undefined ? `
+        <tr>
+          <th>Tabellenwert α</th>
+          <td>${this.formatNumber(calculation.alphaLookup, 0)}°</td>
+        </tr>
+      ` : ''}
+      ${calculation.pressureLossPa !== undefined ? `
+        <tr>
+          <th>Δp Hosenstück</th>
+          <td>${this.formatNumber(calculation.pressureLossPa, 1)} Pa</td>
+        </tr>
+      ` : ''}
+    `;
+  }
+
+
+  renderFormPartDisplayRows(formPartResult) {
+    const rows = formPartResult?.calculation?.displayRows;
+
+    if (!Array.isArray(rows) || rows.length === 0) return '';
+
+    return rows.map(row => {
+      const label = this.escapeHtml(row?.label ?? 'Wert');
+      const digits = Number.isInteger(row?.digits) ? row.digits : 3;
+      const suffix = row?.suffix ? ` ${this.escapeHtml(row.suffix)}` : '';
+      const rawValue = row?.value;
+      const value = Number.isFinite(Number(rawValue))
+        ? this.formatNumber(rawValue, digits)
+        : this.escapeHtml(rawValue ?? '');
+
+      return `
+        <tr>
+          <th>${label}</th>
+          <td>${value}${suffix}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   renderParameterHelp(parameter, fallback = '') {
@@ -938,6 +1045,12 @@ export default class WorkspaceComponent {
               <th>ζ-Verlust</th>
               <td>${this.formatNumber(result.zetaLoss)} Pa</td>
             </tr>
+            ${result.directFormPartLoss ? `
+              <tr>
+                <th>Formteil-Direktverlust</th>
+                <td>${this.formatNumber(result.directFormPartLoss)} Pa</td>
+              </tr>
+            ` : ''}
             <tr>
               <th>Gesamt</th>
               <td><strong>${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss)} Pa</strong></td>
