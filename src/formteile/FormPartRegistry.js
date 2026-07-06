@@ -2,6 +2,7 @@ import { calculateKreisBogen } from './calculators/kreisBogenCalculator.js';
 import { calculateEckigerBogen } from './calculators/eckigerBogenCalculator.js';
 import { calculateKanalBogenWinkel } from './calculators/kanalBogenWinkelCalculator.js';
 import { calculateHosenstueck } from './calculators/hosenstueckCalculator.js';
+import { calculateEtage45 } from './calculators/etage45Calculator.js';
 import { calculateUebergangGrossKlein, calculateUebergangKleinGross } from './calculators/uebergangCalculator.js';
 
 function cleanAssetPath(path) {
@@ -121,6 +122,27 @@ function calculateTransitionGeometry(values = {}) {
     A1: roundTo(area1, 6),
     A2: roundTo(area2, 6),
     A1_A2: roundTo(ratio, 3),
+  };
+}
+
+function hydraulicDiameterRectangleMm(widthMm, heightMm) {
+  const width = toNumber(widthMm);
+  const height = toNumber(heightMm);
+
+  return width > 0 && height > 0 ? (2 * width * height) / (width + height) : 0;
+}
+
+function calculateEtage45Geometry(values = {}) {
+  const bauform = String(values.bauform || 'Rohr');
+  const isPipe = bauform === 'Rohr';
+  const diameter = isPipe
+    ? toNumber(values.d)
+    : hydraulicDiameterRectangleMm(values.a, values.b);
+  const ratio = diameter > 0 ? toNumber(values.LE) / diameter : 0;
+
+  return {
+    dh: roundTo(diameter, 3),
+    LE_dh: roundTo(ratio, 3),
   };
 }
 
@@ -902,8 +924,92 @@ export const defaultFormParts = [
     image: formPartImage('etage_45'),
     imageFallbacks: formPartImageSources('etage_45'),
     referenceFile: formPartExcel('etage_45'),
-    keywords: ['etage', 'versatz', '45'],
-    parameters: ['LE', 'd'],
+    keywords: ['etage', 'versatz', '45', 'kanal', 'rohr'],
+    description: 'Etage mit 45° Versatz. Der Bezugsdurchmesser wird je nach Bauform als Rohrdurchmesser d oder hydraulischer Durchmesser dh berechnet.',
+    derive: calculateEtage45Geometry,
+    calculate: calculateEtage45,
+    parameters: [
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
+        help: 'Rohr = Durchmesser d. Kanal = Breite a und Höhe b; daraus wird der hydraulische Durchmesser dh berechnet.',
+      },
+      {
+        id: 'LE',
+        label: 'Länge LE [mm]',
+        type: 'number',
+        group: 'Geometrie',
+        unit: 'mm',
+        default: 450,
+        step: 1,
+        min: 0,
+        help: 'Länge des Versatzes gemäss Skizze.',
+      },
+      {
+        id: 'd',
+        label: 'Durchmesser d [mm]',
+        type: 'number',
+        group: 'Rohr',
+        unit: 'mm',
+        default: 250,
+        step: 1,
+        min: 0,
+        showWhen: { bauform: 'Rohr' },
+        help: 'Innendurchmesser des runden Kanals/Rohrs.',
+      },
+      {
+        id: 'a',
+        label: 'Breite a [mm]',
+        type: 'number',
+        group: 'Kanal',
+        unit: 'mm',
+        default: 500,
+        step: 1,
+        min: 0,
+        showWhen: { bauform: 'Kanal' },
+        help: 'Kanalbreite für die Berechnung des hydraulischen Durchmessers dh.',
+      },
+      {
+        id: 'b',
+        label: 'Höhe b [mm]',
+        type: 'number',
+        group: 'Kanal',
+        unit: 'mm',
+        default: 300,
+        step: 1,
+        min: 0,
+        showWhen: { bauform: 'Kanal' },
+        help: 'Kanalhöhe für die Berechnung des hydraulischen Durchmessers dh.',
+      },
+      {
+        id: 'dh',
+        label: 'Bezugsdurchmesser d/dh [mm]',
+        type: 'number',
+        group: 'Berechnete Werte',
+        unit: 'mm',
+        default: 250,
+        readOnly: true,
+        derived: true,
+        precision: 1,
+        help: 'Wird automatisch berechnet. Bei Rohr = d, bei Kanal = hydraulischer Durchmesser dh.',
+      },
+      {
+        id: 'LE_dh',
+        label: 'Verhältnis LE/d(dh)',
+        type: 'number',
+        group: 'Berechnete Werte',
+        default: 1.8,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus LE und d/dh berechnet und für die Tabelle verwendet.',
+      },
+    ],
   },
   {
     id: 'hosenstueck',
