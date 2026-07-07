@@ -46,17 +46,200 @@ export default class WorkspaceComponent {
   }
 
   renderProject(project) {
-    this.root.innerHTML = `
-      <h1>${project?.name ?? 'Projekt'}</h1>
-      <p>Projektübersicht der Druckverlustberechnung.</p>
+    const meta = this.ensureProjectMeta(project);
+    const systems = project?.systems || [];
+    const activeSystem = this.state.selectedSystem || systems[0] || null;
+    const sections = activeSystem?.sections || [];
+    const formParts = activeSystem?.formParts || [];
+    const specialComponents = activeSystem?.specialComponents || [];
 
-      <div class="dp-cards">
-        <div class="dp-card">
-          <strong>Anlagen</strong>
-          <span>${project?.systems?.length ?? 0}</span>
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <h1>${this.escapeHtml(project?.name ?? 'Projekt')}</h1>
+          <p>Projektangaben und Grunddaten für Berechnung, Speicherung und Bericht.</p>
         </div>
       </div>
+
+      <section class="dp-editor-panel dp-project-meta-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Projektangaben</h2>
+            <p>Diese Angaben werden zentral gespeichert und für Bericht, Export und Dateinamen verwendet.</p>
+          </div>
+          <span class="dp-chip">Phase 18</span>
+        </div>
+
+        <div class="dp-editor-grid dp-project-meta-grid">
+          <label>
+            <span>Projektname</span>
+            <input data-project-field="name" value="${this.escapeAttribute(meta.name)}">
+          </label>
+
+          <label>
+            <span>Objekt</span>
+            <input data-project-field="object" value="${this.escapeAttribute(meta.object)}">
+          </label>
+
+          <label>
+            <span>Anlage</span>
+            <input data-project-field="anlage" value="${this.escapeAttribute(meta.anlage)}">
+          </label>
+
+          <label>
+            <span>Anlagennummer</span>
+            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
+          </label>
+
+          <label>
+            <span>Bearbeiter</span>
+            <input data-project-field="bearbeiter" value="${this.escapeAttribute(meta.bearbeiter)}">
+          </label>
+
+          <label>
+            <span>Firma</span>
+            <input data-project-field="company" value="${this.escapeAttribute(meta.company)}">
+          </label>
+
+          <label class="dp-project-meta-wide">
+            <span>Adresse / Standort</span>
+            <input data-project-field="address" value="${this.escapeAttribute(meta.address)}">
+          </label>
+
+          <label class="dp-project-meta-wide">
+            <span>Bemerkungen</span>
+            <textarea data-project-field="note" rows="3">${this.escapeHtml(meta.note)}</textarea>
+          </label>
+        </div>
+
+        <p class="dp-auto-save-hint">Änderungen werden automatisch im Projekt und Bericht übernommen.</p>
+      </section>
+
+      <section class="dp-result-panel">
+        <h2>Projektstatus</h2>
+        <div class="dp-result-cards">
+          <div class="dp-result-card">
+            <span>Anlagen</span>
+            <strong>${systems.length}</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>Teilstrecken</span>
+            <strong>${sections.length}</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>Formteile</span>
+            <strong>${formParts.length}</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>Sonderbauteile</span>
+            <strong>${specialComponents.length}</strong>
+          </div>
+        </div>
+      </section>
     `;
+
+    this.bindProjectMetaEditor(project, activeSystem);
+  }
+
+  ensureProjectMeta(project = null, system = null) {
+    if (!project) return {};
+
+    const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+    const report = project.report && typeof project.report === 'object' ? project.report : {};
+    project.report = report;
+
+    const meta = project.meta && typeof project.meta === 'object' ? project.meta : {};
+    project.meta = meta;
+
+    meta.name = meta.name ?? project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt';
+    meta.object = meta.object ?? project.object ?? project.objekt ?? report.object ?? '';
+    meta.anlage = meta.anlage ?? activeSystem?.name ?? project.anlage ?? report.anlage ?? 'Anlage';
+    meta.anlageNumber = meta.anlageNumber ?? project.anlageNumber ?? project.systemNumber ?? report.anlageNumber ?? '';
+    meta.bearbeiter = meta.bearbeiter ?? project.author ?? project.bearbeiter ?? report.bearbeiter ?? '';
+    meta.company = meta.company ?? project.company ?? project.firma ?? report.company ?? '';
+    meta.address = meta.address ?? project.address ?? project.adresse ?? report.address ?? '';
+    meta.note = meta.note ?? project.note ?? report.hinweis ?? '';
+
+    project.name = meta.name || 'Unbenanntes Projekt';
+    project.object = meta.object;
+    project.anlageNumber = meta.anlageNumber;
+    project.author = meta.bearbeiter;
+    project.company = meta.company;
+    project.address = meta.address;
+    project.note = meta.note;
+
+    if (activeSystem && meta.anlage) {
+      activeSystem.name = meta.anlage;
+    }
+
+    report.project = report.project ?? meta.name;
+    report.object = report.object ?? meta.object;
+    report.anlage = report.anlage ?? meta.anlage;
+    report.bearbeiter = report.bearbeiter ?? meta.bearbeiter;
+    report.company = report.company ?? meta.company;
+    report.address = report.address ?? meta.address;
+    report.anlageNumber = report.anlageNumber ?? meta.anlageNumber;
+    report.hinweis = report.hinweis ?? meta.note;
+
+    return meta;
+  }
+
+  bindProjectMetaEditor(project = null, system = null) {
+    if (!project) return;
+
+    this.root.querySelectorAll('[data-project-field]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.projectField;
+        const value = input.value;
+        const meta = this.ensureProjectMeta(project, system);
+
+        meta[field] = value;
+
+        if (field === 'name') {
+          project.name = value || 'Unbenanntes Projekt';
+          project.report.project = project.name;
+        }
+
+        if (field === 'object') {
+          project.object = value;
+          project.report.object = value;
+        }
+
+        if (field === 'anlage') {
+          project.anlage = value;
+          project.report.anlage = value;
+          if (system) system.name = value || 'Anlage';
+        }
+
+        if (field === 'anlageNumber') {
+          project.anlageNumber = value;
+          project.report.anlageNumber = value;
+        }
+
+        if (field === 'bearbeiter') {
+          project.author = value;
+          project.report.bearbeiter = value;
+        }
+
+        if (field === 'company') {
+          project.company = value;
+          project.report.company = value;
+        }
+
+        if (field === 'address') {
+          project.address = value;
+          project.report.address = value;
+        }
+
+        if (field === 'note') {
+          project.note = value;
+          project.report.hinweis = value;
+        }
+
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
   }
 
   renderSystem(system) {
@@ -95,20 +278,37 @@ export default class WorkspaceComponent {
         </div>
       </div>
 
+      ${this.renderSectionManagement(system)}
       ${this.renderCalculationSummary(total)}
       ${this.renderCalculationBreakdown(calculation)}
       ${this.renderCalculationAudit(calculation)}
       ${this.renderProjectValidationOverview(system)}
       ${this.renderCalculationTable(calculation)}
     `;
+
+    this.bindSectionManagement();
   }
 
   renderSection(section) {
     const calculationItem = this.getCalculationItemBySectionId(section?.id);
     const result = calculationItem?.result || null;
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const sections = system?.sections || [];
+    const index = sections.findIndex(item => item.id === section?.id);
 
     this.root.innerHTML = `
-      <h1>${section?.name ?? 'Teilstrecke'}</h1>
+      <div class="workspace-header">
+        <div>
+          <h1>${this.escapeHtml(section?.name ?? 'Teilstrecke')}</h1>
+          <p>Teilstrecke bearbeiten, duplizieren, löschen oder innerhalb der Anlage verschieben.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-section-action="duplicate" data-section-id="${this.escapeAttribute(section?.id)}">Duplizieren</button>
+          <button type="button" data-section-action="up" data-section-id="${this.escapeAttribute(section?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-section-action="down" data-section-id="${this.escapeAttribute(section?.id)}" ${index < 0 || index >= sections.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="danger" data-section-action="delete" data-section-id="${this.escapeAttribute(section?.id)}">Löschen</button>
+        </div>
+      </div>
       ${this.renderDirtyHint()}
       ${this.renderValidationMessages(this.getSectionValidationWarnings(section))}
 
@@ -117,6 +317,11 @@ export default class WorkspaceComponent {
 
         <div class="dp-editor-grid">
           <label>
+            <span>Name / Nummer</span>
+            <input data-field="name" value="${this.escapeAttribute(section?.name ?? '')}">
+          </label>
+
+          <label>
             <span>Luftmenge [m³/h]</span>
             <input data-field="q" type="number" step="1" value="${this.formatAirflowInput(section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0)}">
           </label>
@@ -124,8 +329,8 @@ export default class WorkspaceComponent {
           <label>
             <span>Typ</span>
             <select data-field="type">
-            <option value="duct" ${this.isDuctSection(section) ? 'selected' : ''}>Rechteckkanal</option>
-            <option value="pipe" ${this.isPipeSection(section) ? 'selected' : ''}>Rundrohr</option>
+              <option value="duct" ${this.isDuctSection(section) ? 'selected' : ''}>Rechteckkanal</option>
+              <option value="pipe" ${this.isPipeSection(section) ? 'selected' : ''}>Rundrohr</option>
             </select>
           </label>
 
@@ -136,6 +341,12 @@ export default class WorkspaceComponent {
 
           ${this.renderGeometryFields(section)}
 
+          <label class="dp-project-meta-wide">
+            <span>Beschreibung / Hinweis</span>
+            <input data-field="description" value="${this.escapeAttribute(section?.description ?? section?.note ?? '')}">
+          </label>
+        </div>
+
         <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
       </section>
 
@@ -144,6 +355,7 @@ export default class WorkspaceComponent {
     `;
 
     this.bindSectionEditor(section);
+    this.bindSectionManagement();
   }
 
   bindSectionEditor(section) {
@@ -155,7 +367,116 @@ export default class WorkspaceComponent {
           ? Number(input.value)
           : input.value;
 
+        if (field === 'description') {
+          section.note = input.value;
+        }
+
         this.autoCalculateProject();
+      });
+    });
+  }
+
+  renderSectionManagement(system = {}) {
+    const sections = system?.sections || [];
+
+    return `
+      <section class="dp-editor-panel dp-section-management-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Teilstreckenverwaltung</h2>
+            <p>Teilstrecken duplizieren, löschen, sortieren und automatisch nummerieren.</p>
+          </div>
+          <div class="dp-panel-actions">
+            <button type="button" data-section-action="add">+ Teilstrecke</button>
+            <button type="button" data-section-action="renumber">TS neu nummerieren</button>
+          </div>
+        </div>
+
+        ${sections.length ? `
+          <div class="dp-section-list">
+            ${sections.map((section, index) => this.renderSectionManagementRow(section, index, sections.length)).join('')}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch keine Teilstrecke vorhanden. Lege oben eine erste Teilstrecke an.
+          </div>
+        `}
+      </section>
+    `;
+  }
+
+  renderSectionManagementRow(section = {}, index = 0, total = 0) {
+    const calculationItem = this.getCalculationItemBySectionId(section?.id);
+    const result = calculationItem?.result || null;
+    const typeLabel = this.isPipeSection(section) ? 'Rundrohr' : 'Rechteckkanal';
+    const q = section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0;
+    const totalLoss = result?.roundedTotalLoss ?? result?.totalLoss ?? null;
+
+    return `
+      <div class="dp-section-row ${this.state.isSelected('section', section?.id) ? 'active' : ''}">
+        <button type="button" class="dp-section-row-main" data-section-action="select" data-section-id="${this.escapeAttribute(section?.id)}">
+          <strong>${this.escapeHtml(section?.name ?? section?.id ?? `TS ${index + 1}`)}</strong>
+          <span>${this.escapeHtml(typeLabel)} · ${this.formatAirflow(q)} m³/h${totalLoss !== null ? ` · ${this.formatNumber(totalLoss)} Pa` : ''}</span>
+        </button>
+        <div class="dp-section-row-actions">
+          <button type="button" data-section-action="up" data-section-id="${this.escapeAttribute(section?.id)}" ${index === 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-section-action="down" data-section-id="${this.escapeAttribute(section?.id)}" ${index === total - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-section-action="duplicate" data-section-id="${this.escapeAttribute(section?.id)}">Duplizieren</button>
+          <button type="button" class="danger" data-section-action="delete" data-section-id="${this.escapeAttribute(section?.id)}">Löschen</button>
+        </div>
+      </div>
+    `;
+  }
+
+  bindSectionManagement() {
+    this.root.querySelectorAll('[data-section-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.sectionAction;
+        const sectionId = button.dataset.sectionId;
+        const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+
+        try {
+          if (action === 'add') {
+            this.commands.addSection();
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'select') {
+            const section = system?.sections?.find(item => item.id === sectionId);
+            if (section) this.state.selectSection(section);
+            return;
+          }
+
+          if (action === 'duplicate') {
+            this.commands.duplicateSection(sectionId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'delete') {
+            const section = system?.sections?.find(item => item.id === sectionId);
+            const name = section?.name || 'diese Teilstrecke';
+            if (!confirm(`Teilstrecke „${name}“ wirklich löschen? Zugeordnete Formteile werden der nächsten verfügbaren Teilstrecke zugewiesen.`)) return;
+            this.commands.deleteSection(sectionId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'up' || action === 'down') {
+            this.commands.moveSection(sectionId, action === 'up' ? -1 : 1);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'renumber') {
+            if (!confirm('Alle Teilstrecken neu als ts1, ts2, ts3 ... nummerieren? Manuelle Namen werden überschrieben.')) return;
+            this.commands.renumberSections({ force: true });
+            this.autoCalculateProject();
+          }
+        } catch (error) {
+          alert(error.message);
+        }
       });
     });
   }
@@ -1123,6 +1444,51 @@ export default class WorkspaceComponent {
     `;
   }
 
+
+  renderReportCompletionSummary(model) {
+    const completion = ReportEngine.createReportCompletionSummary(model);
+    const statusLabel = completion.status === 'ok'
+      ? 'Phase 17 abgeschlossen'
+      : completion.status === 'error'
+        ? 'Abschluss blockiert'
+        : 'Abschluss mit Hinweisen';
+
+    return `
+      <section class="dp-editor-panel dp-report-completion no-print">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Berichtsabschluss</h2>
+            <p>Finale Kontrolle für PDF, HTML und CSV vor der Abgabe.</p>
+          </div>
+          <span class="dp-report-export-status ${this.escapeAttribute(completion.status)}">${this.escapeHtml(statusLabel)}</span>
+        </div>
+
+        <div class="dp-report-completion-grid">
+          <div>
+            <span>PDF-Seiten</span>
+            <strong>${this.escapeHtml(completion.totalPages)}</strong>
+          </div>
+          <div>
+            <span>Inhaltsbereiche</span>
+            <strong>${this.escapeHtml(completion.activeSections)}</strong>
+          </div>
+          <div>
+            <span>Ausgeblendete leere Einträge</span>
+            <strong>${this.escapeHtml(completion.hiddenSections + completion.hiddenFormParts + completion.hiddenSpecialComponents)}</strong>
+          </div>
+          <div>
+            <span>Dateibasis</span>
+            <strong>${this.escapeHtml(completion.fileBaseName)}</strong>
+          </div>
+        </div>
+
+        <p class="dp-report-completion-note">
+          Aktive Seiten: ${this.escapeHtml(completion.activeSectionNames.join(' · ') || 'Deckblatt')}
+        </p>
+      </section>
+    `;
+  }
+
   renderReport() {
     const project = this.state.project;
     const system = this.state.selectedSystem || project?.systems?.[0] || null;
@@ -1160,6 +1526,7 @@ export default class WorkspaceComponent {
 
       ${this.renderReportSettingsEditor(project, system)}
       ${this.renderReportExportCheck(model)}
+      ${this.renderReportCompletionSummary(model)}
 
       <article class="dp-report-preview">
         ${ReportEngine.renderReportBody(model, { generatedLabel })}
@@ -1189,6 +1556,16 @@ export default class WorkspaceComponent {
     report.checkedBy = report.checkedBy ?? report.geprueftVon ?? project.checkedBy ?? project.geprueftVon ?? '';
     report.approvedBy = report.approvedBy ?? report.freigegebenVon ?? project.approvedBy ?? project.freigegebenVon ?? '';
     report.approvalDate = report.approvalDate ?? report.freigabeDatum ?? project.approvalDate ?? project.freigabeDatum ?? '';
+    if (!Array.isArray(report.revisionHistory)) {
+      report.revisionHistory = Array.isArray(project.revisionHistory)
+        ? project.revisionHistory
+        : [{
+            revision: report.revision ?? '0',
+            date: report.datum ?? report.date ?? new Date().toLocaleDateString('de-CH'),
+            author: report.bearbeiter ?? report.author ?? project.author ?? '',
+            change: 'Erstausgabe',
+          }];
+    }
 
     if (!project.settings || typeof project.settings !== 'object') {
       project.settings = {};
@@ -1338,6 +1715,53 @@ export default class WorkspaceComponent {
     `;
   }
 
+
+  getReportRevisionHistoryRows(report = {}) {
+    const rows = Array.isArray(report.revisionHistory) ? report.revisionHistory : [];
+    const normalized = rows.map(row => ({
+      revision: row?.revision ?? row?.rev ?? '',
+      date: row?.date ?? row?.datum ?? '',
+      author: row?.author ?? row?.bearbeiter ?? '',
+      change: row?.change ?? row?.description ?? row?.comment ?? '',
+    }));
+
+    while (normalized.length < 4) {
+      normalized.push({ revision: '', date: '', author: '', change: '' });
+    }
+
+    return normalized.slice(0, 6);
+  }
+
+  renderRevisionHistoryEditor(report = {}) {
+    const rows = this.getReportRevisionHistoryRows(report);
+
+    return `
+      <div class="dp-report-revision-editor">
+        <div class="dp-report-revision-head">
+          <strong>Revisionsverlauf</strong>
+          <span>Diese Tabelle erscheint auf der Seite „Prüfung / Freigabe“.</span>
+        </div>
+        <div class="dp-report-revision-table-wrap">
+          <table class="dp-report-revision-table">
+            <thead>
+              <tr><th>Revision</th><th>Datum</th><th>Bearbeiter</th><th>Änderung / Bemerkung</th></tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, index) => `
+                <tr>
+                  <td><input data-report-revision-index="${index}" data-report-revision-field="revision" value="${this.escapeAttribute(row.revision)}"></td>
+                  <td><input data-report-revision-index="${index}" data-report-revision-field="date" value="${this.escapeAttribute(row.date)}"></td>
+                  <td><input data-report-revision-index="${index}" data-report-revision-field="author" value="${this.escapeAttribute(row.author)}"></td>
+                  <td><input data-report-revision-index="${index}" data-report-revision-field="change" value="${this.escapeAttribute(row.change)}"></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
   renderReportSettingsEditor(project, system = null) {
     const report = this.ensureReportData(project, system);
     const settings = project.settings || {};
@@ -1409,6 +1833,7 @@ export default class WorkspaceComponent {
               <input data-report-field="approvalDate" value="${this.escapeAttribute(report.approvalDate)}">
             </label>
           </div>
+          ${this.renderRevisionHistoryEditor(report)}
         </div>
 
         <div class="dp-report-settings-group">
@@ -1468,6 +1893,29 @@ export default class WorkspaceComponent {
         if (field === 'approvedBy') project.approvedBy = value;
         if (field === 'approvalDate') project.approvalDate = value;
 
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-report-revision-index]').forEach(input => {
+      input.addEventListener('change', () => {
+        const index = Number(input.dataset.reportRevisionIndex);
+        const field = input.dataset.reportRevisionField;
+
+        if (!Number.isInteger(index) || !field) return;
+        if (!project.report || typeof project.report !== 'object') project.report = {};
+        if (!Array.isArray(project.report.revisionHistory)) project.report.revisionHistory = [];
+        if (!project.report.revisionHistory[index]) {
+          project.report.revisionHistory[index] = { revision: '', date: '', author: '', change: '' };
+        }
+
+        project.report.revisionHistory[index][field] = input.value;
+        project.report.revisionHistory = project.report.revisionHistory.filter(row =>
+          ['revision', 'date', 'author', 'change'].some(key => String(row?.[key] ?? '').trim())
+        );
+
+        project.revisionHistory = project.report.revisionHistory;
         this.state.markProjectDirty();
         this.render();
       });

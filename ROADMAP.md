@@ -35,3 +35,35 @@ Nächster empfohlener Block:
 - Sprint 17: Bericht / Druckansicht / Export
 - Sprint 18: Projekt- und Systemverwaltung vertiefen
 - Sprint 19: Referenz-/Excel-Testpaket erweitern
+
+## Abgeschlossen: Sprint 17 – Bericht / Export
+
+- Professioneller A4-Bericht
+- PDF-/Druckansicht
+- HTML-Export mit eingebetteten Bildern
+- CSV-Datenexport
+- Dynamische Seitenzahlen und Inhaltsverzeichnis
+- Berichtsumfang und Berichtsvorlagen
+- QS-Prüfprotokoll
+- Prüfung / Freigabe und Revisionsverlauf
+
+## Nächster Fokus: Sprint 18
+
+- Sonderbauteile als eigenes professionelles Modul
+- Projekt-/Anlagenstammdaten erweitern
+- Bedienkomfort und Fehlerführung weiter verbessern
+- Import-/Exportstrategie für Projektdaten vertiefen
+
+
+## Sprint 18 – Projektkomfort / Benutzerführung
+
+### Sprint 18.1/18.2 – Projektangaben + Teilstreckenverwaltung ✅
+
+- Projektangaben bearbeiten
+- Berichtsdaten synchronisieren
+- Teilstrecken duplizieren/löschen/verschieben
+- automatische Nummerierung
+
+### Nächster Schritt
+
+Sprint 18.3/18.5: Formteilverwaltung und Projektbaum weiter professionalisieren.

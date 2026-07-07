@@ -1693,3 +1693,368 @@
   font-size: 12px;
   line-height: 1.45;
 }
+
+/* Sprint 17.23 – Revisionsverlauf im Bericht */
+.dp-report-revision-editor {
+  margin-top: 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.dp-report-revision-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  padding: 11px 13px;
+  background: #f8fbff;
+  border-bottom: 1px solid var(--dp-border);
+}
+
+.dp-report-revision-head strong {
+  color: var(--dp-text);
+  font-size: 13px;
+}
+
+.dp-report-revision-head span {
+  color: var(--dp-muted);
+  font-size: 12px;
+}
+
+.dp-report-revision-table-wrap {
+  overflow-x: auto;
+}
+
+.dp-report-revision-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dp-report-revision-table th,
+.dp-report-revision-table td {
+  padding: 8px;
+  border-bottom: 1px solid #edf2f7;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.dp-report-revision-table th {
+  color: var(--dp-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  background: #fbfdff;
+}
+
+.dp-report-revision-table input {
+  width: 100%;
+  min-width: 90px;
+  border: 1px solid #d8e4f2;
+  border-radius: 8px;
+  padding: 8px 9px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.dp-report-revision-table td:nth-child(4) input {
+  min-width: 240px;
+}
+
+/* Sprint 17 Abschluss – Berichtsabschluss */
+.dp-report-completion-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dp-report-completion-grid div {
+  padding: 11px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #f7fbff);
+}
+
+.dp-report-completion-grid span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.dp-report-completion-grid strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--dp-text);
+  font-size: 15px;
+}
+
+.dp-report-completion-note {
+  margin: 10px 0 0;
+  color: #4b647e;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .dp-report-completion-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-report-completion-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sprint 18.1/18.2 – Projektangaben und Teilstreckenverwaltung */
+.dp-project-meta-panel {
+  border-color: #cfe0f4;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+}
+
+.dp-project-meta-grid textarea,
+.dp-editor-grid textarea {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.dp-project-meta-wide,
+.dp-report-settings-wide {
+  grid-column: 1 / -1;
+}
+
+.dp-auto-save-hint {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dp-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.dp-panel-actions button,
+.dp-section-row-actions button,
+.workspace-actions button.danger {
+  border: 1px solid var(--dp-border);
+  background: #ffffff;
+  color: var(--dp-blue-900);
+  padding: 8px 11px;
+  border-radius: 9px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-panel-actions button:hover,
+.dp-section-row-actions button:hover,
+.workspace-actions button:hover {
+  background: #edf5ff;
+}
+
+.dp-section-row-actions button.danger,
+.workspace-actions button.danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.dp-section-row-actions button.danger:hover,
+.workspace-actions button.danger:hover {
+  background: #fef2f2;
+}
+
+.dp-section-row-actions button:disabled,
+.workspace-actions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.dp-section-management-panel {
+  background: #ffffff;
+}
+
+.dp-section-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dp-section-row {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.dp-section-row.active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.dp-section-row-main {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dp-section-row-main strong {
+  color: var(--dp-blue-900);
+  font-size: 15px;
+}
+
+.dp-section-row-main span {
+  color: var(--dp-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dp-section-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.dp-empty-state {
+  padding: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: var(--dp-muted);
+  font-weight: 700;
+}
+
+@media (max-width: 980px) {
+  .dp-section-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-section-row-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Sprint 18.1/18.2 – Sidebar-Zähler */
+.dp-tree-group {
+  margin-top: 14px;
+}
+
+.dp-tree-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-tree-heading span {
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #edf5ff;
+  color: var(--dp-blue-900);
+  text-align: center;
+}
+
+.dp-tree-item {
+  width: 100%;
+  display: block;
+  margin: 3px 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--dp-text);
+  cursor: pointer;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+}
+
+.dp-tree-item:hover {
+  background: #edf5ff;
+}
+
+.dp-tree-item.active {
+  background: #0e5a9c;
+  color: white;
+  font-weight: 800;
+}
+
+.dp-tree-empty {
+  margin: 4px 0 4px 14px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dp-cards,
+.dp-card {
+  box-sizing: border-box;
+}
+
+.dp-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 16px 0 22px;
+}
+
+.dp-card {
+  padding: 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.dp-card strong,
+.dp-card span {
+  display: block;
+}
+
+.dp-card strong {
+  color: var(--dp-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-card span {
+  margin-top: 6px;
+  color: var(--dp-blue-900);
+  font-size: 20px;
+  font-weight: 900;
+}

@@ -42,21 +42,21 @@ export default class SidebarComponent {
       </button>
 
       <div class="dp-tree-group">
-        <div class="dp-tree-heading">▼ Teilstrecken</div>
-        ${sections.map(section => `
+        <div class="dp-tree-heading">▼ Teilstrecken <span>${sections.length}</span></div>
+        ${sections.length ? sections.map(section => `
           <button class="dp-tree-item indent ${this.state.isSelected('section', section.id) ? 'active' : ''}" data-type="section" data-id="${section.id}">
             ${section.name || section.id}
           </button>
-        `).join('')}
+        `).join('') : '<div class="dp-tree-empty">Keine Teilstrecke</div>'}
       </div>
 
       <div class="dp-tree-group">
-        <div class="dp-tree-heading">▼ Formteile</div>
-        ${formParts.map(formPart => `
+        <div class="dp-tree-heading">▼ Formteile <span>${formParts.length}</span></div>
+        ${formParts.length ? formParts.map(formPart => `
           <button class="dp-tree-item indent ${this.state.isSelected('formPart', formPart.id) ? 'active' : ''}" data-type="formPart" data-id="${formPart.id}">
             ${formPart.name}
           </button>
-        `).join('')}
+        `).join('') : '<div class="dp-tree-empty">Keine Formteile</div>'}
       </div>
 
 
@@ -69,12 +69,12 @@ export default class SidebarComponent {
       </div>
 
       <div class="dp-tree-group">
-        <div class="dp-tree-heading">▼ Sonderbauteile</div>
-        ${specialComponents.map(component => `
+        <div class="dp-tree-heading">▼ Sonderbauteile <span>${specialComponents.length}</span></div>
+        ${specialComponents.length ? specialComponents.map(component => `
           <button class="dp-tree-item indent ${this.state.isSelected('specialComponent', component.id) ? 'active' : ''}" data-type="specialComponent" data-id="${component.id}">
             ${component.name} · ${component.pressureLoss?.toFixed?.(1) ?? component.pressureLoss ?? 0} Pa
           </button>
-        `).join('')}
+        `).join('') : '<div class="dp-tree-empty">Keine Sonderbauteile</div>'}
       </div>
     `;
 

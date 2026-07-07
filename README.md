@@ -37,3 +37,18 @@ tests/sprint16-final.html
 ```
 
 Die Datei im Browser öffnen, um Registry, Calculatoren, Projektberechnung, QS-Status und Speichern zu prüfen.
+
+## Sprint 17 – Bericht und Export
+
+Sprint 17 stellt die Berichtsausgabe bereit: A4-Bericht, PDF/Druckansicht, HTML-Bericht mit eingebetteten Bildern, CSV-Datenexport, Berichtsumfang, Vorlagen, QS-Protokoll, Revisionsverlauf und Prüfung/Freigabe.
+
+Abschluss-Test:
+
+```text
+tests/sprint17-final.html
+```
+
+
+### Sprint 18 – Bedienkomfort
+
+Sprint 18 startet mit Projektangaben und Teilstreckenverwaltung. Projektname, Objekt, Anlage, Bearbeiter, Firma, Adresse und Bemerkungen können direkt in der Oberfläche gepflegt werden. Teilstrecken lassen sich duplizieren, löschen, verschieben und automatisch neu nummerieren.

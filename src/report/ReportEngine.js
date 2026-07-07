@@ -288,16 +288,20 @@ function toAbsoluteAssetUrl(path = '') {
 }
 
 function getProjectMeta(project = {}) {
-  const report = project.report || project.meta || {};
+  const report = project.report || {};
+  const meta = project.meta || {};
   const today = new Date().toLocaleDateString('de-CH');
 
   return {
-    name: report.project ?? project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt',
-    object: report.object ?? report.objekt ?? project.object ?? project.objekt ?? '-',
-    plant: report.plant ?? report.anlage ?? project.plant ?? project.anlage ?? null,
-    author: report.author ?? report.bearbeiter ?? project.author ?? project.bearbeiter ?? '-',
+    name: report.project ?? meta.name ?? project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt',
+    object: report.object ?? report.objekt ?? meta.object ?? project.object ?? project.objekt ?? '-',
+    plant: report.plant ?? report.anlage ?? meta.anlage ?? project.plant ?? project.anlage ?? null,
+    plantNumber: report.anlageNumber ?? meta.anlageNumber ?? project.anlageNumber ?? project.systemNumber ?? '',
+    author: report.author ?? report.bearbeiter ?? meta.bearbeiter ?? project.author ?? project.bearbeiter ?? '-',
+    company: report.company ?? meta.company ?? project.company ?? project.firma ?? '',
+    address: report.address ?? meta.address ?? project.address ?? project.adresse ?? '',
     date: report.date ?? report.datum ?? project.date ?? project.datum ?? today,
-    note: report.note ?? report.hinweis ?? project.note ?? '',
+    note: report.note ?? report.hinweis ?? meta.note ?? project.note ?? '',
     reportNumber: report.reportNumber ?? report.berichtNr ?? report.berichtNummer ?? project.reportNumber ?? project.berichtNr ?? '-',
     revision: report.revision ?? report.rev ?? project.revision ?? project.rev ?? '0',
     checkedBy: report.checkedBy ?? report.geprueftVon ?? project.checkedBy ?? project.geprueftVon ?? '-',
@@ -306,6 +310,34 @@ function getProjectMeta(project = {}) {
     software: report.software ?? 'Druckverlust Pro',
     version: report.version ?? project.version ?? '1.0.0',
   };
+}
+
+
+function normalizeRevisionHistory(project = {}, meta = {}) {
+  const report = project.report || project.meta || {};
+  const rawRows = Array.isArray(report.revisionHistory)
+    ? report.revisionHistory
+    : Array.isArray(report.revisions)
+      ? report.revisions
+      : Array.isArray(project.revisionHistory)
+        ? project.revisionHistory
+        : [];
+
+  const rows = rawRows.map((row = {}) => ({
+    revision: row.revision ?? row.rev ?? row.version ?? '',
+    date: row.date ?? row.datum ?? '',
+    author: row.author ?? row.bearbeiter ?? row.createdBy ?? '',
+    change: row.change ?? row.description ?? row.text ?? row.comment ?? row.aenderung ?? '',
+  })).filter(row => [row.revision, row.date, row.author, row.change].some(value => String(value ?? '').trim()));
+
+  if (rows.length) return rows;
+
+  return [{
+    revision: meta.revision ?? '0',
+    date: meta.date ?? new Date().toLocaleDateString('de-CH'),
+    author: meta.author ?? '-',
+    change: 'Erstausgabe',
+  }];
 }
 
 function makeDuctIllustration() {
@@ -471,6 +503,9 @@ export class ReportEngine {
         , name: meta.name
         , object: meta.object
         , author: meta.author
+        , company: meta.company
+        , address: meta.address
+        , plantNumber: meta.plantNumber
         , date: meta.date
         , software: meta.software
         , version: meta.version
@@ -480,6 +515,7 @@ export class ReportEngine {
         , checkedBy: meta.checkedBy
         , approvedBy: meta.approvedBy
         , approvalDate: meta.approvalDate
+        , revisionHistory: normalizeRevisionHistory(project, meta)
       },
       system: {
         id: system?.id ?? '-',
@@ -742,6 +778,47 @@ export class ReportEngine {
     };
   }
 
+
+  static createReportCompletionSummary(model = {}) {
+    const plan = this.createPagePlan(model);
+    const checklist = this.createExportChecklist(model);
+    const visibleEntries = (plan.entries || []).filter(entry => entry.key !== 'cover');
+    const hidden = model.reportScope || {};
+
+    return {
+      status: checklist.status,
+      statusLabel: checklist.status === 'ok'
+        ? 'Abschlussbereit'
+        : checklist.status === 'error'
+          ? 'Nicht abgabebereit'
+          : 'Mit Hinweisen abgabebereit',
+      totalPages: plan.totalPages,
+      contentPages: Math.max(0, plan.totalPages - 1),
+      activeSections: visibleEntries.length,
+      activeSectionNames: visibleEntries.map(entry => entry.title),
+      hiddenSections: Number(hidden.hiddenSections || 0),
+      hiddenFormParts: Number(hidden.hiddenFormParts || 0),
+      hiddenSpecialComponents: Number(hidden.hiddenSpecialComponents || 0),
+      fileBaseName: checklist.fileBaseName,
+      errorCount: checklist.errorCount,
+      warningCount: checklist.warningCount,
+    };
+  }
+
+  static createReportCompletionRows(model = {}) {
+    const completion = this.createReportCompletionSummary(model);
+
+    return [
+      ['Berichtsstatus', completion.statusLabel],
+      ['PDF-Seiten gesamt', completion.totalPages],
+      ['Aktive Inhaltsbereiche', completion.activeSections],
+      ['Ausgeblendete leere Teilstrecken', completion.hiddenSections],
+      ['Ausgeblendete leere Formteile', completion.hiddenFormParts],
+      ['Ausgeblendete leere Sonderbauteile', completion.hiddenSpecialComponents],
+      ['Export-Dateiname', completion.fileBaseName],
+    ];
+  }
+
   static createStandaloneHtml(model) {
     const generatedDate = new Date(model.generatedAt);
     const generatedLabel = Number.isNaN(generatedDate.getTime())
@@ -754,6 +831,7 @@ export class ReportEngine {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(this.createDocumentTitle(model))}</title>
+  <meta name="generator" content="Druckverlust Pro – Sprint 17 Abschluss">
   <style>${this.getReportCss()}</style>
 </head>
 <body class="report-print-body">
@@ -972,7 +1050,10 @@ export class ReportEngine {
               ['Projekt', model.project.name],
               ['Objekt', model.project.object],
               ['Anlage', model.system.name],
+              ['Anlagennummer', model.project.plantNumber || '-'],
               ['Bearbeiter', model.project.author],
+              ['Firma', model.project.company || '-'],
+              ['Standort', model.project.address || '-'],
               ['Datum', model.project.date],
               ['Bericht-Nr.', model.project.reportNumber],
               ['Revision', model.project.revision],
@@ -1369,6 +1450,34 @@ export class ReportEngine {
   }
 
 
+
+  static renderRevisionHistoryTable(model) {
+    const rows = Array.isArray(model.project?.revisionHistory) ? model.project.revisionHistory : [];
+
+    if (!rows.length) return '';
+
+    return `
+      <div class="report-info-box report-revision-history">
+        <h3>Revisionsverlauf</h3>
+        <table class="report-table small report-revision-table">
+          <thead>
+            <tr><th>Revision</th><th>Datum</th><th>Bearbeiter</th><th>Änderung / Bemerkung</th></tr>
+          </thead>
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                <td>${escapeHtml(row.revision || '-')}</td>
+                <td>${escapeHtml(row.date || '-')}</td>
+                <td class="left">${escapeHtml(row.author || '-')}</td>
+                <td class="left">${escapeHtml(row.change || '-')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
   static renderApprovalPage(model, page, totalPages = 6, generatedLabel = '') {
     const statusLabel = qualityStatusLabel(model.quality.status);
     const statusClass = qualityStatusClass(model.quality.status);
@@ -1393,6 +1502,8 @@ export class ReportEngine {
           <small>Details siehe QS-Prüfprotokoll.</small>
         </div>
       </div>
+
+      ${this.renderRevisionHistoryTable(model)}
 
       <table class="report-table report-approval-table">
         <thead><tr><th>Schritt</th><th>Name</th><th>Datum</th><th>Unterschrift</th></tr></thead>
@@ -1614,6 +1725,9 @@ export class ReportEngine {
       .report-approval-table{margin-top:10px}
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
+      .report-revision-history{margin:8mm 0 6mm}
+      .report-revision-table th,.report-revision-table td{font-size:8px}
+      .report-revision-table td.left{font-size:8.5px}
       .report-toc-layout{display:grid;grid-template-columns:1.45fr .9fr;gap:20px;align-items:start}
       .report-toc-card{border:1px solid var(--report-line);border-radius:10px;background:white;overflow:hidden}
       .report-toc-card h3{margin:0;background:linear-gradient(135deg,#05316a,#0b5eb0);color:white;padding:12px 16px;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
@@ -1796,10 +1910,19 @@ export class ReportEngine {
       rows.push(this.csvRow([issue.type, issue.source, issue.message]));
     });
 
+    addSection('Revisionsverlauf');
+    rows.push(this.csvRow(['Revision', 'Datum', 'Bearbeiter', 'Aenderung / Bemerkung']));
+    (model.project.revisionHistory || []).forEach(row => {
+      rows.push(this.csvRow([row.revision, row.date, row.author, row.change]));
+    });
+
     addSection('Pruefung / Freigabe');
     rows.push(this.csvRow(['Erstellt', model.project.author, model.project.date]));
     rows.push(this.csvRow(['Geprueft', model.project.checkedBy, '']));
     rows.push(this.csvRow(['Freigegeben', model.project.approvedBy, model.project.approvalDate || '']));
+
+    addSection('Berichtsabschluss');
+    this.createReportCompletionRows(model).forEach(row => rows.push(this.csvRow(row)));
 
     return `\ufeff${rows.join('\r\n')}`;
   }
