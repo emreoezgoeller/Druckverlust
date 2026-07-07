@@ -3,7 +3,15 @@ import { calculateEckigerBogen } from './calculators/eckigerBogenCalculator.js';
 import { calculateKanalBogenWinkel } from './calculators/kanalBogenWinkelCalculator.js';
 import { calculateHosenstueck } from './calculators/hosenstueckCalculator.js';
 import { calculateEtage45 } from './calculators/etage45Calculator.js';
+import { calculateTStueck90, calculateTStueck90Variante2 } from './calculators/tStueck90Calculator.js';
+import {
+  calculateTAbzweigDurchgangRund1,
+  calculateTAbzweigDurchgangRund2,
+  calculateTAbzweigRund1,
+  calculateTAbzweigRund2,
+} from './calculators/tAbzweigCalculator.js';
 import { calculateUebergangGrossKlein, calculateUebergangKleinGross } from './calculators/uebergangCalculator.js';
+import { calculateSattelstueckMitEinstroemkonus } from './calculators/sattelstueckMitEinstroemkonusCalculator.js';
 
 function cleanAssetPath(path) {
   return String(path || '')
@@ -93,6 +101,7 @@ function calculateHosenstueckGeometry(values = {}) {
   const w = velocityFromAirflow(values.W, mainArea);
   const wA = velocityFromAirflow(values.WA, branchArea);
   const velocityRatio = w > 0 ? wA / w : 0;
+  const areaRatio = mainArea > 0 ? branchArea / mainArea : 0;
 
   return {
     w: roundTo(w, 3),
@@ -100,7 +109,12 @@ function calculateHosenstueckGeometry(values = {}) {
     A_area: roundTo(mainArea, 6),
     AA_area: roundTo(branchArea, 6),
     wA_w: roundTo(velocityRatio, 3),
+    AA_A: roundTo(areaRatio, 3),
   };
+}
+
+function calculateSattelstueckGeometry(values = {}) {
+  return calculateHosenstueckGeometry(values);
 }
 
 function transitionAreaByShape(values = {}, prefix = 'A1') {
@@ -111,6 +125,56 @@ function transitionAreaByShape(values = {}, prefix = 'A1') {
   }
 
   return rectangleAreaMm(values[`${prefix}_breite`], values[`${prefix}_hoehe`]);
+}
+
+
+function calculateTAbzweigGeometry(values = {}) {
+  const bauform = String(values.bauform || 'Rohr');
+  const isPipe = bauform === 'Rohr';
+
+  const mainArea = isPipe
+    ? circleAreaMm(values.A_d)
+    : rectangleAreaMm(values.A_breite, values.A_hoehe);
+
+  const branchArea = isPipe
+    ? circleAreaMm(values.AA_d)
+    : rectangleAreaMm(values.AA_breite, values.AA_hoehe);
+
+  const throughArea = isPipe
+    ? circleAreaMm(values.AD_d || values.A_d)
+    : rectangleAreaMm(values.AD_breite || values.A_breite, values.AD_hoehe || values.A_hoehe);
+
+  let W = toNumber(values.W);
+  let WA = toNumber(values.WA);
+  let WD = toNumber(values.WD);
+
+  if (W > 0 && WA > 0 && WD <= 0) WD = Math.max(W - WA, 0);
+  if (W > 0 && WD > 0 && WA <= 0) WA = Math.max(W - WD, 0);
+  if (W <= 0 && (WA > 0 || WD > 0)) W = WA + WD;
+
+  const w = velocityFromAirflow(W, mainArea);
+  const wA = velocityFromAirflow(WA, branchArea);
+  const wD = velocityFromAirflow(WD, throughArea);
+  const velocityRatio = w > 0 ? wA / w : 0;
+  const wdRatio = W > 0 ? WD / W : 0;
+  const areaRatio = mainArea > 0 ? branchArea / mainArea : 0;
+  const throughAreaRatio = mainArea > 0 ? throughArea / mainArea : 0;
+
+  return {
+    W: roundTo(W, 0),
+    WA: roundTo(WA, 0),
+    WD: roundTo(WD, 0),
+    w: roundTo(w, 3),
+    wA: roundTo(wA, 3),
+    wD: roundTo(wD, 3),
+    A_area: roundTo(mainArea, 6),
+    AA_area: roundTo(branchArea, 6),
+    AD_area: roundTo(throughArea, 6),
+    wA_w: roundTo(velocityRatio, 3),
+    WD_W: roundTo(wdRatio, 3),
+    AA_A: roundTo(areaRatio, 3),
+    AD_A: roundTo(throughAreaRatio, 3),
+  };
 }
 
 function calculateTransitionGeometry(values = {}) {
@@ -326,6 +390,33 @@ const PARAMETER_PRESETS = Object.freeze({
     step: 1,
     min: 0,
   },
+  AD_breite: {
+    label: 'Durchgang AD – Breite [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Durchgang AD / WD / wD',
+    default: 500,
+    step: 1,
+    min: 0,
+  },
+  AD_hoehe: {
+    label: 'Durchgang AD – Höhe [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Durchgang AD / WD / wD',
+    default: 300,
+    step: 1,
+    min: 0,
+  },
+  AD_d: {
+    label: 'Durchgang AD – Durchmesser [mm]',
+    type: 'number',
+    unit: 'mm',
+    group: 'Durchgang AD / WD / wD',
+    default: 400,
+    step: 1,
+    min: 0,
+  },
   AA_breite: {
     label: 'Abzweig AA – Breite [mm]',
     type: 'number',
@@ -389,12 +480,40 @@ const PARAMETER_PRESETS = Object.freeze({
     min: 0,
   },
   WD: {
-    label: 'Volumenstrom Durchgang WD [m³/h]',
+    label: 'Durchgang WD – Luftmenge [m³/h]',
     type: 'number',
     unit: 'm³/h',
-    group: 'Volumenstrom',
-    default: 0,
+    group: 'Durchgang AD / WD / wD',
+    default: 450,
     step: 1,
+    min: 0,
+    help: 'Luftmenge im Durchgang. Falls leer, wird WD aus W - WA berechnet.',
+  },
+  wD: {
+    label: 'Durchgang wD – Geschwindigkeit [m/s]',
+    type: 'number',
+    unit: 'm/s',
+    group: 'Durchgang AD / WD / wD',
+    default: 0,
+    step: 0.001,
+    min: 0,
+  },
+  WD_W: {
+    label: 'Verhältnis WD/W',
+    type: 'number',
+    unit: '',
+    group: 'Berechnete Werte',
+    default: 0,
+    step: 0.001,
+    min: 0,
+  },
+  wA_w: {
+    label: 'Verhältnis wA/w',
+    type: 'number',
+    unit: '',
+    group: 'Berechnete Werte',
+    default: 0,
+    step: 0.001,
     min: 0,
   },
   WA: {
@@ -452,6 +571,30 @@ const PARAMETER_PRESETS = Object.freeze({
     step: 0.001,
     min: 0,
   },
+  bezug: {
+    label: 'Berechnung bezogen auf',
+    type: 'select',
+    group: 'Ausführung',
+    options: [
+      { value: 'abzweig', label: 'Abzweig ζA – bezogen auf wA' },
+      { value: 'durchgang', label: 'Durchgang ζ – bezogen auf w' },
+    ],
+    default: 'abzweig',
+    locked: true,
+    help: 'Für den Abzweig wird ζA mit pdyn(wA) gerechnet; für den Durchgang ζ mit pdyn(w).',
+  },
+  bedingung: {
+    label: 'Bedingung der Strömungsaufteilung',
+    type: 'select',
+    group: 'Ausführung',
+    options: [
+      { value: 'ueber', label: 'AA + AD > A; AD = A' },
+      { value: 'gleich', label: 'AA + AD = A' },
+    ],
+    default: 'ueber',
+    locked: true,
+    help: 'Auswahl der Tabellenbedingung gemäss Skizze/Referenztabelle.',
+  },
   curve: {
     label: 'Kurve / Ausführung',
     type: 'select',
@@ -492,10 +635,18 @@ function hasValue(value) {
   return value !== undefined && value !== null && value !== '';
 }
 
+function getOptionValue(option) {
+  if (option && typeof option === 'object' && 'value' in option) {
+    return option.value;
+  }
+
+  return option;
+}
+
 function isNumericOptions(parameter) {
   return Array.isArray(parameter?.options)
     && parameter.options.length > 0
-    && parameter.options.every(option => Number.isFinite(Number(option)));
+    && parameter.options.every(option => Number.isFinite(Number(getOptionValue(option))));
 }
 
 function coerceParameterValue(parameter, value) {
@@ -504,8 +655,8 @@ function coerceParameterValue(parameter, value) {
   if (!hasValue(value)) return fallback;
 
   if (parameter.type === 'select' && Array.isArray(parameter.options) && parameter.options.length) {
-    const match = parameter.options.find(option => String(option) === String(value));
-    return match ?? fallback;
+    const match = parameter.options.find(option => String(getOptionValue(option)) === String(value));
+    return match !== undefined ? getOptionValue(match) : fallback;
   }
 
   if (parameter.type === 'number' || isNumericOptions(parameter)) {
@@ -1122,7 +1273,87 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_abzweig_durchgang_rund1'),
     referenceFile: formPartExcel('t_abzweig_durchgang_rund1'),
     keywords: ['t', 'abzweig', 'durchgang', 'rund'],
-    parameters: ['WD', 'W'],
+    description: 'T-Abzweig Durchgang mit ζD aus WD/W. Die Geschwindigkeiten werden aus Luftmengen und Anschlussgrössen automatisch berechnet.',
+    derive: calculateTAbzweigGeometry,
+    calculate: calculateTAbzweigDurchgangRund1,
+    parameters: [
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
+        help: 'Rohr = Durchmesser für A/AD/AA. Kanal = Breite/Höhe für A/AD/AA.',
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        label: 'Hauptanschluss W – Luftmenge [m³/h]',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+        step: 1,
+      },
+      {
+        id: 'w',
+        label: 'Hauptanschluss w – Geschwindigkeit [m/s]',
+        group: 'Hauptanschluss A / W / w',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AD_breite',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_hoehe',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_d',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WD',
+        group: 'Durchgang AD / WD / wD',
+        default: 450,
+        step: 1,
+      },
+      {
+        id: 'wD',
+        group: 'Durchgang AD / WD / wD',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'WD_W',
+        label: 'Verhältnis WD/W',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+    ],
   },
   {
     id: 't_abzweig_durchgang_rund2',
@@ -1132,18 +1363,122 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_abzweig_durchgang_rund2'),
     referenceFile: formPartExcel('t_abzweig_durchgang_rund2'),
     keywords: ['t', 'abzweig', 'durchgang', 'rund'],
+    description: 'T-Abzweig Durchgang mit ζD aus AA/A, α und wA/w. Die Geschwindigkeiten werden automatisch berechnet.',
+    derive: calculateTAbzweigGeometry,
+    calculate: calculateTAbzweigDurchgangRund2,
     parameters: [
-      'wA',
-      'w',
       {
-        id: 'AA_A',
-        options: [0.1, 0.3, 0.5, 0.7, 1],
-        default: 0.5,
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
       },
+      'bedingung',
       {
         id: 'alpha',
         options: [15, 30, 45, 60, 90],
         default: 90,
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+      },
+      {
+        id: 'w',
+        group: 'Hauptanschluss A / W / w',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AD_breite',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_hoehe',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_d',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WD',
+        group: 'Durchgang AD / WD / wD',
+        default: 450,
+      },
+      {
+        id: 'wD',
+        group: 'Durchgang AD / WD / wD',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WA',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+      },
+      {
+        id: 'wA',
+        group: 'Abzweig AA / WA / wA',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'wA_w',
+        label: 'Verhältnis wA/w',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_A',
+        label: 'Flächenverhältnis AA/A',
+        type: 'number',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
       },
     ],
   },
@@ -1155,13 +1490,113 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_abzweig_rund1'),
     referenceFile: formPartExcel('t_abzweig_rund1'),
     keywords: ['t', 'abzweig', 'rund'],
+    description: 'T-Abzweig mit ζA aus α und WD/W. Die Geschwindigkeiten werden automatisch berechnet.',
+    derive: calculateTAbzweigGeometry,
+    calculate: calculateTAbzweigRund1,
     parameters: [
-      'WD',
-      'W',
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
+      },
+      'bedingung',
       {
         id: 'alpha',
         options: [15, 30, 45, 60, 90],
         default: 90,
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+      },
+      {
+        id: 'w',
+        group: 'Hauptanschluss A / W / w',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AD_breite',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_hoehe',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_d',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WD',
+        group: 'Durchgang AD / WD / wD',
+        default: 450,
+      },
+      {
+        id: 'wD',
+        group: 'Durchgang AD / WD / wD',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WA',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+      },
+      {
+        id: 'wA',
+        group: 'Abzweig AA / WA / wA',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'WD_W',
+        label: 'Verhältnis WD/W',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
       },
     ],
   },
@@ -1173,18 +1608,122 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_abzweig_rund2'),
     referenceFile: formPartExcel('t_abzweig_rund2'),
     keywords: ['t', 'abzweig', 'rund'],
+    description: 'T-Abzweig mit ζA aus AA/A, α und wA/w. Die Geschwindigkeiten werden automatisch berechnet.',
+    derive: calculateTAbzweigGeometry,
+    calculate: calculateTAbzweigRund2,
     parameters: [
-      'wA',
-      'w',
       {
-        id: 'AA_A',
-        options: [0.1, 0.3, 0.5, 0.7, 1],
-        default: 0.5,
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
       },
+      'bedingung',
       {
         id: 'alpha',
         options: [15, 30, 45, 60, 90],
         default: 90,
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+      },
+      {
+        id: 'w',
+        group: 'Hauptanschluss A / W / w',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AD_breite',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_hoehe',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AD_d',
+        group: 'Durchgang AD / WD / wD',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WD',
+        group: 'Durchgang AD / WD / wD',
+        default: 450,
+      },
+      {
+        id: 'wD',
+        group: 'Durchgang AD / WD / wD',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WA',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+      },
+      {
+        id: 'wA',
+        group: 'Abzweig AA / WA / wA',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'wA_w',
+        label: 'Verhältnis wA/w',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_A',
+        label: 'Flächenverhältnis AA/A',
+        type: 'number',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
       },
     ],
   },
@@ -1196,7 +1735,94 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_stueck_90'),
     referenceFile: formPartExcel('t_stueck_90'),
     keywords: ['t', 'stück', '90', 'abzweig'],
-    parameters: ['wA', 'w'],
+    description: '90° T-Stück mit ζ oder ζA aus wA/w. Die Geschwindigkeiten werden aus Luftmenge und Anschlussgrössen automatisch berechnet.',
+    derive: calculateHosenstueckGeometry,
+    calculate: calculateTStueck90,
+    parameters: [
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Kanal', 'Rohr'],
+        default: 'Kanal',
+        locked: true,
+        help: 'Kanal = Breite/Höhe für Hauptanschluss A und Abzweig AA. Rohr = Durchmesser für A und AA.',
+      },
+      'bezug',
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+        help: 'Breite des Hauptanschlusses A.',
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+        help: 'Höhe des Hauptanschlusses A.',
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+        help: 'Durchmesser des Hauptanschlusses A.',
+      },
+      {
+        id: 'W',
+        label: 'Hauptanschluss W – Luftmenge [m³/h]',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+        step: 1,
+        help: 'Luftmenge im Hauptanschluss. Daraus wird w automatisch berechnet.',
+      },
+      {
+        id: 'w',
+        label: 'Hauptanschluss w – Geschwindigkeit [m/s]',
+        group: 'Hauptanschluss A / W / w',
+        default: 0,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus W und der Hauptanschlussgrösse A berechnet.',
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+        help: 'Breite des Abzweigs AA.',
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+        help: 'Höhe des Abzweigs AA.',
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+        help: 'Durchmesser des Abzweigs AA.',
+      },
+      {
+        id: 'WA',
+        label: 'Abzweig WA – Luftmenge [m³/h]',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+        step: 1,
+        help: 'Luftmenge im Abzweig. Daraus wird wA automatisch berechnet.',
+      },
+      {
+        id: 'wA',
+        label: 'Abzweig wA – Geschwindigkeit [m/s]',
+        group: 'Abzweig AA / WA / wA',
+        default: 0,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus WA und der Abzweiggrösse AA berechnet.',
+      },
+    ],
   },
   {
     id: 't_stueck_90_2',
@@ -1206,13 +1832,92 @@ export const defaultFormParts = [
     imageFallbacks: formPartImageSources('t_stueck_90_2'),
     referenceFile: formPartExcel('t_stueck_90_2'),
     keywords: ['t', 'stück', '90', 'variante'],
+    description: '90° T-Stück Variante 2 mit ζA aus AA/A und wA/w. Die Geschwindigkeiten und das Flächenverhältnis werden automatisch aus den Grössen berechnet.',
+    derive: calculateHosenstueckGeometry,
+    calculate: calculateTStueck90Variante2,
     parameters: [
-      'wA',
-      'w',
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Kanal', 'Rohr'],
+        default: 'Kanal',
+        locked: true,
+        help: 'Kanal = Breite/Höhe für Hauptanschluss A und Abzweig AA. Rohr = Durchmesser für A und AA.',
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        label: 'Hauptanschluss W – Luftmenge [m³/h]',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+        step: 1,
+      },
+      {
+        id: 'w',
+        label: 'Hauptanschluss w – Geschwindigkeit [m/s]',
+        group: 'Hauptanschluss A / W / w',
+        default: 0,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WA',
+        label: 'Abzweig WA – Luftmenge [m³/h]',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+        step: 1,
+      },
+      {
+        id: 'wA',
+        label: 'Abzweig wA – Geschwindigkeit [m/s]',
+        group: 'Abzweig AA / WA / wA',
+        default: 0,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+      },
       {
         id: 'AA_A',
-        options: [0.5, 0.75, 1],
-        default: 1,
+        label: 'Flächenverhältnis AA/A',
+        type: 'number',
+        group: 'Berechnete Werte',
+        default: 0.5,
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus Hauptanschluss A und Abzweig AA berechnet.',
       },
     ],
   },
@@ -1226,15 +1931,105 @@ export const defaultFormParts = [
       'assets/formteile/sattelstueck_mit_einstroemkonus.png',
     ]),
     referenceFile: formPartExcel('sattelstueck_mit_einstroemkonus'),
-    keywords: ['sattelstück', 'einströmkonus', 'abzweig'],
+    keywords: ['sattelstück', 'einströmkonus', 'abzweig', 'sattel', 'konus'],
+    description: 'Sattelstück mit Einströmkonus. Der ζ-Wert ist auf die Hauptgeschwindigkeit w bezogen; w und wA werden aus Luftmenge und Anschlussgrössen automatisch berechnet.',
+    derive: calculateSattelstueckGeometry,
+    calculate: calculateSattelstueckMitEinstroemkonus,
     parameters: [
-      'wA',
-      'w',
+      {
+        id: 'bauform',
+        label: 'Bauform',
+        type: 'select',
+        group: 'Ausführung',
+        options: ['Rohr', 'Kanal'],
+        default: 'Rohr',
+        locked: true,
+        help: 'Rohr = Durchmesser für Hauptanschluss A und Abzweig AA. Kanal = Breite/Höhe für A und AA.',
+      },
       {
         id: 'curve',
-        options: ['a', 'b'],
+        label: 'Einströmkonus / Höhe h',
+        type: 'select',
+        group: 'Ausführung',
+        options: [
+          { value: 'a', label: 'Kurve a – h ≈ dA/2' },
+          { value: 'b', label: 'Kurve b – h ≈ 2dA' },
+        ],
         default: 'a',
-        help: 'Kurve a oder b gemäss Ausführung auswählen.',
+        locked: true,
+        help: 'Ausführung des Einströmkonus gemäss Skizze auswählen.',
+      },
+      {
+        id: 'A_breite',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_hoehe',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'A_d',
+        group: 'Hauptanschluss A / W / w',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'W',
+        label: 'Hauptanschluss W – Luftmenge [m³/h]',
+        group: 'Hauptanschluss A / W / w',
+        default: 900,
+        step: 1,
+        help: 'Luftmenge im Hauptanschluss. Daraus wird w automatisch berechnet.',
+      },
+      {
+        id: 'w',
+        label: 'Hauptanschluss w – Geschwindigkeit [m/s]',
+        group: 'Hauptanschluss A / W / w',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus W und der Hauptanschlussgrösse A berechnet.',
+      },
+      {
+        id: 'AA_breite',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_hoehe',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Kanal' },
+      },
+      {
+        id: 'AA_d',
+        group: 'Abzweig AA / WA / wA',
+        showWhen: { bauform: 'Rohr' },
+      },
+      {
+        id: 'WA',
+        label: 'Abzweig WA – Luftmenge [m³/h]',
+        group: 'Abzweig AA / WA / wA',
+        default: 450,
+        step: 1,
+        help: 'Luftmenge im Abzweig. Daraus wird wA automatisch berechnet.',
+      },
+      {
+        id: 'wA',
+        label: 'Abzweig wA – Geschwindigkeit [m/s]',
+        group: 'Abzweig AA / WA / wA',
+        readOnly: true,
+        derived: true,
+        precision: 3,
+        help: 'Wird automatisch aus WA und der Abzweiggrösse AA berechnet.',
+      },
+      {
+        id: 'wA_w',
+        label: 'Verhältnis wA/w',
+        group: 'Berechnete Werte',
+        readOnly: true,
+        derived: true,
+        precision: 3,
       },
     ],
   },

@@ -38,7 +38,7 @@ export default class ProjectCalculationService {
       const calculation = result?.calculation || {};
       const pressureLossPa = Number(calculation.pressureLossPa ?? 0);
 
-      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa > 0) {
+      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa !== 0) {
         formPart.lossMode = 'direct';
         formPart.pressureLossPa = pressureLossPa;
       } else {

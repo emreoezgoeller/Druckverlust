@@ -58,6 +58,8 @@ export default class WorkspaceComponent {
     const sections = system?.sections || [];
     const formParts = system?.formParts || [];
     const specialComponents = system?.specialComponents || [];
+    const libraryItems = this.registry.all();
+    const activeCalculators = libraryItems.filter(item => typeof item.calculate === 'function').length;
 
     const calculation = this.state.project?.calculationResult?.calculation || null;
     const total = calculation?.totals?.totalRounded ?? calculation?.totals?.total ?? null;
@@ -80,6 +82,11 @@ export default class WorkspaceComponent {
         <div class="dp-card">
           <strong>Sonderbauteile</strong>
           <span>${specialComponents.length}</span>
+        </div>
+
+        <div class="dp-card">
+          <strong>Formteilbibliothek</strong>
+          <span>${activeCalculators}/${libraryItems.length} aktiv</span>
         </div>
       </div>
 
@@ -318,7 +325,7 @@ export default class WorkspaceComponent {
                 <td>${this.formatNumber(sectionResult.velocity)} m/s</td>
               </tr>
             ` : ''}
-            ${this.renderHosenstueckReferenceRows(formPart, formPartResult)}
+            ${this.renderFormPartReferenceRows(formPart, formPartResult)}
             <tr>
               <th>${isDirectLoss && formPartCalculation.pressureReference ? `Dynamischer Druck ${this.escapeHtml(formPartCalculation.pressureReference)}` : 'Dynamischer Druck'}</th>
               <td>${this.formatNumber(dynamicPressure)} Pa</td>
@@ -728,6 +735,31 @@ export default class WorkspaceComponent {
     return value;
   }
 
+  renderFormPartReferenceRows(formPart, formPartResult) {
+    const rows = formPartResult?.calculation?.referenceRows;
+
+    if (Array.isArray(rows) && rows.length) {
+      return rows.map(row => {
+        const label = this.escapeHtml(row?.label ?? 'Wert');
+        const digits = Number.isInteger(row?.digits) ? row.digits : 2;
+        const suffix = row?.suffix ? ` ${this.escapeHtml(row.suffix)}` : '';
+        const rawValue = row?.value;
+        const value = Number.isFinite(Number(rawValue))
+          ? this.formatNumber(rawValue, digits)
+          : this.escapeHtml(rawValue ?? '');
+
+        return `
+          <tr>
+            <th>${label}</th>
+            <td>${value}${suffix}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    return this.renderHosenstueckReferenceRows(formPart, formPartResult);
+  }
+
   renderHosenstueckReferenceRows(formPart, formPartResult) {
     if (formPart?.type !== 'hosenstueck' && formPartResult?.id !== 'hosenstueck') return '';
 
@@ -852,10 +884,28 @@ export default class WorkspaceComponent {
   }
 
   renderFormPartTypeOptions(formPart) {
-    return this.registry.all().map(item => `
-      <option value="${this.escapeAttribute(item.id)}" ${formPart?.type === item.id ? 'selected' : ''}>
-        ${this.escapeHtml(item.name)}
-      </option>
+    const groups = [];
+
+    this.registry.all().forEach(item => {
+      const category = item.category || 'Weitere';
+      let group = groups.find(entry => entry.category === category);
+
+      if (!group) {
+        group = { category, items: [] };
+        groups.push(group);
+      }
+
+      group.items.push(item);
+    });
+
+    return groups.map(group => `
+      <optgroup label="${this.escapeAttribute(group.category)}">
+        ${group.items.map(item => `
+          <option value="${this.escapeAttribute(item.id)}" ${formPart?.type === item.id ? 'selected' : ''}>
+            ${this.escapeHtml(item.name)}
+          </option>
+        `).join('')}
+      </optgroup>
     `).join('');
   }
 

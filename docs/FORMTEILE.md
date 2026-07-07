@@ -133,3 +133,121 @@ a/b = Breite / Höhe
 ```
 
 Der Lookup verwendet exakt oder nächst grösserer Tabellenwert.
+
+## Sprint 16.14 – Übergänge
+
+### Übergang gross → klein
+
+Eingaben:
+
+- Winkel β [°]
+- kleiner Querschnitt A1 [m²]
+- grosser Querschnitt A2 [m²]
+
+Berechnung:
+
+- Verhältnis A1/A2
+- ζ-Wert über Tabellenlogik aus β und A1/A2
+
+### Übergang klein → gross
+
+Eingaben:
+
+- Winkel β [°]
+- kleiner Querschnitt A1 [m²]
+- grosser Querschnitt A2 [m²]
+
+Berechnung:
+
+- Verhältnis A1/A2
+- ζ-Wert über Tabellenlogik aus β und A1/A2
+
+### Ergebnisanzeige
+
+Die Workspace-Ergebnisanzeige ist bewusst auf die praxisrelevanten Werte reduziert. Interne Tabellenwerte, Formeln und Lookup-Werte werden nicht mehr angezeigt.
+
+## Sprint 16.15 – Übergänge mit Kanal-/Rohrgrössen
+
+Bei den Übergängen werden A1 und A2 nicht mehr direkt als Fläche eingegeben. Der Benutzer wählt pro Anschluss die Bauform und trägt die Abmessungen ein.
+
+### Kleiner Anschluss A1
+
+- Bauform: Kanal oder Rohr
+- Kanal: Breite/Höhe in mm
+- Rohr: Durchmesser in mm
+- A1 wird automatisch in m² berechnet
+
+### Grosser Anschluss A2
+
+- Bauform: Kanal oder Rohr
+- Kanal: Breite/Höhe in mm
+- Rohr: Durchmesser in mm
+- A2 wird automatisch in m² berechnet
+
+Damit sind auch Mischübergänge möglich, zum Beispiel Kanal → Rohr oder Rohr → Kanal.
+
+### Übergang gross → klein
+
+Beim Übergang gross → klein werden Winkel β und Kanalkante gemeinsam berücksichtigt, weil beide Ausführungsarten den ζ-Wert beeinflussen.
+
+- Winkel β: klassische Übergangstabelle über β und A1/A2
+- Kanalkante: Kantentabelle mit Auswahl 1–4
+
+Kanalkanten:
+
+```text
+1 = scharfe Kante
+2 = gebrochene Kante
+3 = gerundete Kante
+4 = glatte, gute Abrundung
+```
+
+Berechnung:
+
+```text
+ζ = Tabellenwert(β, A1/A2) + Tabellenwert(Kanalkante, A1/A2) × (1 - A1/A2)
+```
+
+## Sprint 16.18 – Etage 45°
+
+Die Etage 45° ist jetzt rechenfähig.
+
+Eingaben:
+
+- Bauform: Rohr oder Kanal
+- Länge `LE` in mm
+- Bei Rohr: Durchmesser `d` in mm
+- Bei Kanal: Breite `a` und Höhe `b` in mm
+
+Berechnete Werte:
+
+- Bezugsdurchmesser `d/dh`
+- Verhältnis `LE/d(dh)`
+
+Berechnung:
+
+```text
+ζ = Tabellenwert(LE/d(dh))
+```
+
+Wichtig: Die Excel-Referenz verwendet `XLOOKUP(..., match_mode = -1)`. Deshalb verwendet die App bei der Etage 45° exakt oder den nächst kleineren Tabellenwert.
+## Sprint 16.22 – Abschluss-QS der Formteilbibliothek
+
+Die Formteilbibliothek ist jetzt in der Oberfläche besser gegliedert. Die Auswahl des Formteiltyps wird im Workspace nach Kategorien gruppiert, damit die Liste bei vielen Formteilen übersichtlicher bleibt.
+
+Zusätzlich gibt es einen Smoke-Test:
+
+```text
+tests/formpart-library-smoke.html
+```
+
+Der Test prüft:
+
+- alle registrierten Formteile
+- ob ein Calculator vorhanden ist
+- ob eine Bildreferenz vorhanden ist
+- ob die Berechnung mit Defaultwerten ein numerisches Ergebnis liefert
+- ob Direktdruckverlust-Formteile einen numerischen Druckverlust liefern
+
+Damit können spätere Erweiterungen schneller geprüft werden, ohne jedes Formteil manuell durchzuklicken.
+

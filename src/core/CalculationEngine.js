@@ -103,10 +103,13 @@ function isFormPartAssignedToSection(part, sectionId) {
   return part && (part.sectionId === sectionId || part.rowId === sectionId || part.targetSectionId === sectionId);
 }
 
-function getFormPartDirectLoss(part = {}) {
+function isDirectLossFormPart(part = {}) {
   const lossMode = part.lossMode || part.calculationResult?.calculation?.lossMode;
+  return lossMode === 'direct';
+}
 
-  if (lossMode !== 'direct') return 0;
+function getFormPartDirectLoss(part = {}) {
+  if (!isDirectLossFormPart(part)) return 0;
 
   return toNumber(part.pressureLossPa ?? part.calculationResult?.calculation?.pressureLossPa);
 }
@@ -114,7 +117,7 @@ function getFormPartDirectLoss(part = {}) {
 export function sumFormPartZeta(formParts = [], sectionId) {
   return formParts
     .filter(part => isFormPartAssignedToSection(part, sectionId))
-    .filter(part => getFormPartDirectLoss(part) <= 0)
+    .filter(part => !isDirectLossFormPart(part))
     .reduce((sum, part) => sum + toNumber(part.zeta), 0);
 }
 
@@ -243,7 +246,7 @@ export function calculateProject(project = {}) {
     const zetaSum = zetaFromParts + manualZeta;
     const result = calculateSection(section, { settings, zetaSum });
 
-    if (directFormPartLoss > 0) {
+    if (directFormPartLoss !== 0) {
       result.directFormPartLoss = directFormPartLoss;
       result.totalLoss += directFormPartLoss;
       result.roundedTotalLoss = roundUpToStep(result.totalLoss, settings.sectionRoundingStep ?? 0.5);

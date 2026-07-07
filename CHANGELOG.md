@@ -1,3 +1,46 @@
+# Changelog
+
+## 0.4.22 – Sprint 16.22 Formteilbibliothek Abschluss-QS
+
+### Neu
+- Formteil-Auswahl im Workspace ist jetzt nach Kategorien gruppiert.
+- Systemübersicht zeigt den Status der Formteilbibliothek als `aktive Calculatoren / registrierte Formteile`.
+- Neuer Smoke-Test für die Formteilbibliothek prüft alle registrierten Formteile mit Defaultwerten.
+
+### Dateien
+- Erweitert: `src/ui/components/WorkspaceComponent.js`
+- Neu: `tests/formpart-library-smoke.html`
+- Neu: `tests/formpart-library-smoke.test.js`
+
+## 0.4.18 – Sprint 16.18 Etage 45° Calculator
+
+### Neu
+- `etage_45` ist jetzt rechenfähig.
+- Die Etage 45° unterstützt Bauform `Rohr` und `Kanal`.
+- Bei Rohr wird der Durchmesser `d` verwendet.
+- Bei Kanal werden Breite `a` und Höhe `b` eingetragen; daraus wird automatisch der hydraulische Durchmesser `dh` berechnet.
+- Das Verhältnis `LE/d(dh)` wird automatisch berechnet.
+- Die Tabellenlogik verwendet wie die Excel-Referenz `XLOOKUP(..., match_mode = -1)`, also exakt oder nächst kleinerer Tabellenwert.
+
+### Dateien
+- Neu: `src/formteile/calculators/etage45Calculator.js`
+- Erweitert: `src/formteile/FormPartRegistry.js`
+
+## Sprint 16.17 – Kanalkanten-Auswahl verständlicher
+
+- Dropdown für `Kanalkante / Abrundung` zeigt jetzt beschreibende Auswahltexte statt nur Zahlen.
+- Hinweistext erklärt die Werte 1–4 direkt unter der Auswahl.
+- Werte bleiben intern unverändert numerisch, damit die Berechnung weiter mit der Tabelle funktioniert.
+
+
+## Sprint 16.16 – Übergang gross → klein mit Winkel und Kanalkante
+
+- Übergang gross → klein verwendet jetzt Winkel β und Kanalkante gemeinsam.
+- Die bisherige Auswahl `Berechnungsart` wurde entfernt, weil beide Einflussgrössen fachlich zusammengehören.
+- ζ-Wert wird kombiniert aus `ζ(β, A1/A2)` plus `ζ(Kanalkante, A1/A2)`.
+- Kanal-/Rohr-Auswahl und automatische Flächenberechnung A1/A2 bleiben unverändert.
+
+
 ## Sprint 16.10 – Hosenstück Luftmenge und automatische Geschwindigkeit
 
 - Hosenstück fachlich auf `A / W / w` und `AA / WA / wA` erweitert.
@@ -123,3 +166,23 @@
 - Beide Calculatoren verwenden exakt oder nächst grösserer Tabellenwert, passend zur bisherigen Excel-Logik.
 - Workspace kann jetzt allgemeine Calculator-Detailzeilen über `displayRows` anzeigen, damit neue Formteil-Calculatoren ihre Tabellenwerte sauber ausgeben können.
 - Projektberechnung übernimmt die berechneten ζ-Werte automatisch wie bei Kreis-Bogen.
+
+## Sprint 16.14 – Ergebnisanzeige vereinfacht + Übergänge
+
+- Formteil-Ergebnisanzeige bereinigt: technische Tabellenwerte, Formelzeilen und interne Lookup-Werte werden im Workspace nicht mehr angezeigt.
+- Hosenstück-Ergebnis bleibt auf WA / wA bezogen und zeigt weiterhin Haupt-/Abzweigluftmenge sowie Haupt-/Abzweiggeschwindigkeit.
+- Neue Calculator-Datei `uebergangCalculator.js` ergänzt.
+- `uebergang_gross_klein` rechnet jetzt ζ aus β und A1/A2.
+- `uebergang_klein_gross` rechnet jetzt ζ aus β und A1/A2.
+- Lookup-Logik weiterhin: exakter oder nächst grösserer Tabellenwert.
+
+## Sprint 16.15 – Übergänge mit Kanal-/Rohrgrössen und Kanalkante
+
+- Übergang gross → klein und Übergang klein → gross fragen A1/A2 nicht mehr als manuelle Flächen ab.
+- Für kleinen Anschluss A1 und grossen Anschluss A2 kann jeweils `Kanal` oder `Rohr` gewählt werden.
+- Kanalgrössen werden über Breite/Höhe eingegeben, Rohrgrössen über Durchmesser.
+- Die Flächen A1/A2 werden automatisch aus den eingegebenen Grössen berechnet und nur noch als berechnete Werte angezeigt.
+- Kombinationen wie Kanal → Rohr und Rohr → Kanal sind dadurch möglich.
+- Beim Übergang gross → klein kann neu zwischen `Winkel β` und `Kanalkante` gewählt werden.
+- Kanalkanten 1–4 sind eingebaut: scharfe Kante, gebrochene Kante, gerundete Kante, glatte/gute Abrundung.
+- Für Kanalkante wird die Excel-Logik `ζ = Tabellenwert(Kante, A1/A2) × (1 - A1/A2)` verwendet.
