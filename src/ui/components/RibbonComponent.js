@@ -28,7 +28,7 @@ export default class RibbonComponent {
         <button data-action="addSection">+ Teilstrecke</button>
         <button data-action="addFormPart">+ Formteil</button>
         <button data-action="calculate">Neu berechnen</button>
-        <button data-action="exportPdf">PDF</button>
+        <button data-action="showReport">Bericht</button>
       </nav>
     `;
 

@@ -1136,3 +1136,243 @@
 .dp-quality-item-error span {
   color: #991b1b;
 }
+
+/* Sprint 17 – Bericht / Druckansicht */
+.dp-report-toolbar {
+  align-items: center;
+}
+
+.dp-report-preview {
+  background: #ffffff;
+  border: 1px solid var(--dp-border);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 18px 45px rgba(8, 47, 87, 0.08);
+}
+
+.dp-report-preview header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 3px solid var(--dp-blue-900);
+  padding-bottom: 18px;
+  margin-bottom: 24px;
+}
+
+.dp-report-preview h1 {
+  font-size: 30px;
+  margin: 0;
+}
+
+.dp-report-preview h2 {
+  color: var(--dp-blue-900);
+  margin: 28px 0 12px;
+  font-size: 20px;
+}
+
+.dp-report-preview p {
+  color: var(--dp-muted);
+}
+
+.dp-report-preview .meta {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 8px 14px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.dp-report-preview .meta strong {
+  color: var(--dp-muted);
+}
+
+.dp-report-preview .cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.dp-report-preview .card {
+  background: #f8fafc;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.dp-report-preview .card span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.dp-report-preview .card strong {
+  color: var(--dp-blue-900);
+  font-size: 20px;
+}
+
+.dp-report-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 20px;
+  font-size: 13px;
+}
+
+.dp-report-preview th,
+.dp-report-preview td {
+  border-bottom: 1px solid var(--dp-border);
+  padding: 9px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dp-report-preview th {
+  color: var(--dp-muted);
+  background: #f8fafc;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dp-report-preview .right {
+  text-align: right;
+}
+
+.dp-report-preview .small,
+.dp-report-preview .footer {
+  color: var(--dp-muted);
+  font-size: 12px;
+}
+
+.dp-report-preview .footer {
+  border-top: 1px solid var(--dp-border);
+  margin-top: 28px;
+  padding-top: 12px;
+}
+
+.dp-report-preview .ok {
+  color: #047857;
+  font-weight: 700;
+}
+
+.dp-report-preview .warn {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.dp-report-preview .negative {
+  color: #b91c1c;
+}
+
+.dp-report-preview .formpart-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: var(--dp-muted);
+  font-size: 12px;
+}
+
+@media print {
+  .dp-ribbon,
+  .dp-sidebar,
+  .dp-properties,
+  .dp-status,
+  .no-print {
+    display: none !important;
+  }
+
+  .dp-shell {
+    display: block;
+    min-height: auto;
+    background: white;
+  }
+
+  .dp-workspace {
+    border: 0;
+    padding: 0;
+  }
+
+  .dp-report-preview {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .dp-report-preview h2 {
+    page-break-after: avoid;
+  }
+
+  .dp-report-preview table {
+    page-break-inside: auto;
+  }
+
+  .dp-report-preview tr {
+    page-break-inside: avoid;
+  }
+}
+
+
+/* Sprint 17.2 – robustere Kachelbilder und saubere Kartenbeschriftung */
+.dp-formpart-card {
+  grid-template-rows: 210px auto;
+}
+
+.dp-formpart-card-image {
+  height: 210px;
+  overflow: hidden;
+}
+
+.dp-formpart-card-image img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+  display: block;
+}
+
+.dp-formpart-card-body {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+  border-top: 1px solid var(--dp-border);
+}
+
+.dp-formpart-image img {
+  display: block;
+}
+
+/* Sprint 17.6 – Berichtsangaben editierbar */
+.dp-report-settings {
+  margin-bottom: 18px;
+}
+
+.dp-report-settings-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dp-report-settings-grid textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 82px;
+  border: 1px solid var(--dp-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--dp-text);
+  background: #ffffff;
+}
+
+.dp-report-settings-wide {
+  grid-column: 1 / -1;
+}
+
+.dp-auto-save-hint {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  color: #166534;
+  background: #f0fdf4;
+  font-weight: 700;
+}

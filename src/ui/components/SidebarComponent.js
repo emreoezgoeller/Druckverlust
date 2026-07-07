@@ -59,6 +59,15 @@ export default class SidebarComponent {
         `).join('')}
       </div>
 
+
+
+      <div class="dp-tree-group">
+        <div class="dp-tree-heading">▼ Auswertung</div>
+        <button class="dp-tree-item indent ${this.state.getSelectionType() === 'report' ? 'active' : ''}" data-type="report" data-id="report">
+          Bericht / Druckansicht
+        </button>
+      </div>
+
       <div class="dp-tree-group">
         <div class="dp-tree-heading">▼ Sonderbauteile</div>
         ${specialComponents.map(component => `
@@ -98,6 +107,16 @@ export default class SidebarComponent {
         if (type === 'formPart') {
           const formPart = system.formParts?.find(item => item.id === id);
           this.state.selectFormPart(formPart);
+          return;
+        }
+
+        if (type === 'report') {
+          if (typeof this.state.selectReport === 'function') {
+            this.state.selectReport(system);
+          } else {
+            this.state.setSelection('report', system);
+            this.state.notify();
+          }
           return;
         }
 

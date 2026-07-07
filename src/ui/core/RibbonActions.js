@@ -131,11 +131,28 @@ export default class RibbonActions {
     }
   }
 
-  exportPdf() {
-    console.info('RibbonAction: PDF Export');
 
-    alert(
-      'Der PDF-Export wird im späteren Sprint über eine eigene PDFEngine umgesetzt.'
-    );
+  showReport() {
+    const project = this.state.project;
+
+    if (!project) {
+      alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.calculate({ silent: true, keepDirty: true });
+
+    if (typeof this.state.selectReport === 'function') {
+      this.state.selectReport(this.state.selectedSystem || project.systems?.[0] || project);
+    } else {
+      this.state.setSelection('report', this.state.selectedSystem || project.systems?.[0] || project);
+      this.state.notify();
+    }
+
+    console.info('RibbonAction: Bericht geöffnet');
+  }
+
+  exportPdf() {
+    this.showReport();
   }
 }

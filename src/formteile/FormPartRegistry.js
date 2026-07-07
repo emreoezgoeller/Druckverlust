@@ -24,6 +24,22 @@ function assetPath(path) {
   return cleanAssetPath(path);
 }
 
+function lookupText(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replaceAll('ä', 'ae')
+    .replaceAll('ö', 'oe')
+    .replaceAll('ü', 'ue')
+    .replaceAll('ß', 'ss')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function isUsefulLookupValue(value) {
+  const text = String(value ?? '').trim();
+  return text && text !== '-' && text.toLowerCase() !== 'undefined' && text.toLowerCase() !== 'null';
+}
+
 function formPartImage(id, fileName = `${id}.png`) {
   return assetPath(`assets/formteile/${id}/${fileName}`);
 }
@@ -734,6 +750,73 @@ export class FormPartRegistry {
 
   get(id) {
     return this.items.get(id) || null;
+  }
+
+
+  resolveId(input) {
+    if (!input) return null;
+
+    const candidates = typeof input === 'string'
+      ? [input]
+      : [
+          input.type,
+          input.formPartType,
+          input.formpartType,
+          input.formType,
+          input.libraryId,
+          input.definitionId,
+          input.partType,
+          input.partId,
+          input.key,
+          input.variant,
+        ];
+
+    for (const candidate of candidates) {
+      if (!isUsefulLookupValue(candidate)) continue;
+
+      const value = String(candidate).trim();
+      if (this.items.has(value)) return value;
+
+      const normalized = cleanAssetPath(value).replace(/\.png$|\.xlsx$/i, '');
+      if (this.items.has(normalized)) return normalized;
+    }
+
+    if (typeof input === 'object') {
+      const texts = [input.name, input.title, input.label, input.description]
+        .filter(isUsefulLookupValue)
+        .map(lookupText)
+        .filter(Boolean);
+
+      if (texts.length) {
+        const entry = this.all().find(item => {
+          const itemTexts = [item.id, item.name, ...(item.keywords || [])]
+            .filter(isUsefulLookupValue)
+            .map(lookupText)
+            .filter(Boolean);
+
+          return itemTexts.some(itemText => texts.some(text => text === itemText || text.includes(itemText) || itemText.includes(text)));
+        });
+
+        if (entry) return entry.id;
+      }
+    }
+
+    return null;
+  }
+
+  resolve(input) {
+    const id = this.resolveId(input);
+    return id ? this.get(id) : null;
+  }
+
+  normalizeFormPart(formPart = {}) {
+    const entry = this.resolve(formPart);
+
+    if (formPart && entry) {
+      formPart.type = entry.id;
+    }
+
+    return entry;
   }
 
   getById(id) {

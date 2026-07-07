@@ -113,6 +113,10 @@ export default class StatusBarComponent {
       return `Formteil – ${selection.data?.name ?? '-'}`;
     }
 
+    if (selection.type === 'report') {
+      return `Bericht – ${selection.data?.name ?? this.state.selectedSystem?.name ?? '-'}`;
+    }
+
     if (selection.type === 'specialComponent') {
       return `Sonderbauteil – ${selection.data?.name ?? '-'}`;
     }

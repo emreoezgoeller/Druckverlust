@@ -1,5 +1,24 @@
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js';
+
 // Druckverlust Pro – ValidationEngine
 // Prüft Eingaben, Berechnungsergebnisse und Projektstruktur.
+
+
+let cachedRegistry = null;
+
+function getRegistry() {
+  if (!cachedRegistry) cachedRegistry = createDefaultFormPartRegistry();
+  return cachedRegistry;
+}
+
+function normalizeFormPartType(part = {}) {
+  const registry = getRegistry();
+  if (typeof registry.normalizeFormPart === 'function') {
+    return registry.normalizeFormPart(part);
+  }
+
+  return part?.type ? registry.get(part.type) : null;
+}
 
 function toNumber(value, fallback = 0) {
   if (value === null || value === undefined || value === '') return fallback;
@@ -52,7 +71,9 @@ export class ValidationEngine {
     const errors = [];
     const name = part.name || part.type || part.id || 'Formteil';
 
-    if (!part.type) errors.push(`${name}: Formteiltyp fehlt.`);
+    const entry = normalizeFormPartType(part);
+
+    if (!entry) errors.push(`${name}: Formteiltyp fehlt oder ist nicht in der Bibliothek vorhanden.`);
     if (!part.sectionId) {
       warnings.push(`${name}: ist keiner Teilstrecke zugeordnet.`);
     } else if (sections.length && !sections.some(section => section.id === part.sectionId)) {

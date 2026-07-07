@@ -5,6 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
+import ReportEngine from '../../report/ReportEngine.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -30,6 +31,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'system') return this.renderSystem(selection.data);
     if (selection.type === 'section') return this.renderSection(selection.data);
     if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
+    if (selection.type === 'report') return this.renderReport();
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -337,7 +339,12 @@ export default class WorkspaceComponent {
         formPart[field] = this.readFormPartFieldValue(formPart, field, input);
 
         if (field === 'type') {
+          const entry = this.getRegistryEntry(formPart);
           this.applyFormPartDefaults(formPart, { overwrite: true });
+
+          if (entry && (!formPart.name || /^Formteil\s+\d+$/i.test(String(formPart.name)))) {
+            formPart.name = entry.name;
+          }
         }
 
         this.deriveAndStoreFormPart(formPart);
@@ -696,9 +703,13 @@ export default class WorkspaceComponent {
   }
 
   getRegistryEntry(formPart) {
-    if (!formPart?.type) {
-      return null;
+    if (!formPart) return null;
+
+    if (typeof this.registry.normalizeFormPart === 'function') {
+      return this.registry.normalizeFormPart(formPart);
     }
+
+    if (!formPart?.type) return null;
 
     return this.registry.get(formPart.type);
   }
@@ -771,12 +782,17 @@ export default class WorkspaceComponent {
     const sources = [];
     const add = source => {
       if (!source) return;
-      const normalized = String(source).replaceAll('\\', '/');
-      if (!sources.includes(normalized)) sources.push(normalized);
-      if (!normalized.startsWith('./') && !normalized.startsWith('/') && !normalized.startsWith('data:')) {
-        const relative = `./${normalized}`;
-        if (!sources.includes(relative)) sources.push(relative);
-      }
+
+      const normalized = String(source)
+        .replaceAll('\\', '/')
+        .replace(/^\.\//, '')
+        .replace(/^\//, '');
+
+      if (!normalized || sources.includes(normalized)) return;
+
+      this.getAssetSourceCandidates(normalized).forEach(candidate => {
+        if (candidate && !sources.includes(candidate)) sources.push(candidate);
+      });
     };
 
     add(entry?.image);
@@ -788,6 +804,38 @@ export default class WorkspaceComponent {
     }
 
     return sources;
+  }
+
+  getAssetSourceCandidates(path) {
+    const cleanPath = String(path || '')
+      .replaceAll('\\', '/')
+      .replace(/^\.\//, '')
+      .replace(/^\//, '');
+
+    if (!cleanPath) return [];
+    if (/^(data:|https?:|blob:)/i.test(cleanPath)) return [cleanPath];
+
+    const candidates = [];
+    const add = candidate => {
+      if (candidate && !candidates.includes(candidate)) candidates.push(candidate);
+    };
+
+    const pathname = window?.location?.pathname || '';
+
+    if (pathname.includes('/tests/reference/')) {
+      add(`../../${cleanPath}`);
+    } else if (pathname.includes('/tests/')) {
+      add(`../${cleanPath}`);
+    } else {
+      add(cleanPath);
+      add(`./${cleanPath}`);
+    }
+
+    add(`/${cleanPath}`);
+    add(cleanPath);
+    add(`./${cleanPath}`);
+
+    return candidates;
   }
 
   bindFormPartImageFallbacks() {
@@ -1015,6 +1063,195 @@ export default class WorkspaceComponent {
         `).join('')}
       </optgroup>
     `).join('');
+  }
+
+
+  renderReport() {
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0] || null;
+
+    if (!project || !system) {
+      this.root.innerHTML = `
+        <h1>Bericht</h1>
+        <p>Kein Projekt oder keine Anlage vorhanden.</p>
+      `;
+      return;
+    }
+
+    if (!project.calculationResult || this.state.isCalculationDirty) {
+      this.autoCalculateProject({ notify: false });
+    }
+
+    const model = ReportEngine.createReportModel(project, { system, registry: this.registry });
+    const generatedAt = new Date(model.generatedAt);
+    const generatedLabel = Number.isNaN(generatedAt.getTime())
+      ? '-'
+      : generatedAt.toLocaleString('de-CH');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-report-toolbar no-print">
+        <div>
+          <h1>Bericht / Druckansicht</h1>
+          <p>Zusammenfassung der Anlage mit Teilstrecken, Formteilen, Sonderbauteilen und QS-Status.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-report-action="print">Drucken / PDF</button>
+          <button type="button" data-report-action="html">HTML speichern</button>
+        </div>
+      </div>
+
+      ${this.renderReportSettingsEditor(project, system)}
+
+      <article class="dp-report-preview">
+        ${ReportEngine.renderReportBody(model, { generatedLabel })}
+      </article>
+    `;
+
+    this.bindReportSettingsEditor(project);
+    this.bindReportActions(model);
+  }
+
+  ensureReportData(project, system = null) {
+    if (!project.report || typeof project.report !== 'object') {
+      project.report = {};
+    }
+
+    const report = project.report;
+    report.project = report.project ?? project.name ?? 'Unbenanntes Projekt';
+    report.object = report.object ?? project.object ?? project.objekt ?? '-';
+    report.anlage = report.anlage ?? system?.name ?? project.plant ?? project.anlage ?? 'Anlage';
+    report.bearbeiter = report.bearbeiter ?? project.author ?? project.bearbeiter ?? '-';
+    report.datum = report.datum ?? project.date ?? project.datum ?? new Date().toLocaleDateString('de-CH');
+    report.hinweis = report.hinweis ?? project.note ?? '';
+
+    if (!project.settings || typeof project.settings !== 'object') {
+      project.settings = {};
+    }
+
+    project.settings.rho = project.settings.rho ?? 1.21;
+    project.settings.lambda = project.settings.lambda ?? 0.025;
+
+    return report;
+  }
+
+  renderReportSettingsEditor(project, system = null) {
+    const report = this.ensureReportData(project, system);
+    const settings = project.settings || {};
+
+    return `
+      <section class="dp-editor-panel dp-report-settings no-print">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Berichtsangaben</h2>
+            <p>Diese Angaben erscheinen auf dem Deckblatt und in den Anlageninformationen.</p>
+          </div>
+        </div>
+
+        <div class="dp-editor-grid dp-report-settings-grid">
+          <label>
+            <span>Projekt</span>
+            <input data-report-field="project" value="${this.escapeAttribute(report.project)}">
+          </label>
+
+          <label>
+            <span>Objekt</span>
+            <input data-report-field="object" value="${this.escapeAttribute(report.object)}">
+          </label>
+
+          <label>
+            <span>Anlage</span>
+            <input data-report-field="anlage" value="${this.escapeAttribute(report.anlage)}">
+          </label>
+
+          <label>
+            <span>Bearbeiter</span>
+            <input data-report-field="bearbeiter" value="${this.escapeAttribute(report.bearbeiter)}">
+          </label>
+
+          <label>
+            <span>Datum</span>
+            <input data-report-field="datum" value="${this.escapeAttribute(report.datum)}">
+          </label>
+
+          <label>
+            <span>Luftdichte ρ [kg/m³]</span>
+            <input data-report-setting="rho" type="number" step="0.01" value="${this.escapeAttribute(settings.rho ?? 1.21)}">
+          </label>
+
+          <label>
+            <span>Reibungszahl λ [-]</span>
+            <input data-report-setting="lambda" type="number" step="0.001" value="${this.escapeAttribute(settings.lambda ?? 0.025)}">
+          </label>
+
+          <label class="dp-report-settings-wide">
+            <span>Bemerkung / Hinweis</span>
+            <textarea data-report-field="hinweis" rows="3">${this.escapeHtml(report.hinweis)}</textarea>
+          </label>
+        </div>
+
+        <p class="dp-auto-save-hint">Änderungen werden automatisch gespeichert und im Bericht aktualisiert.</p>
+      </section>
+    `;
+  }
+
+  bindReportSettingsEditor(project) {
+    if (!project) return;
+
+    this.root.querySelectorAll('[data-report-field]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.reportField;
+        const value = input.value;
+
+        if (!project.report || typeof project.report !== 'object') project.report = {};
+        project.report[field] = value;
+
+        if (field === 'project') project.name = value || 'Unbenanntes Projekt';
+        if (field === 'object') project.object = value;
+        if (field === 'anlage' && this.state.selectedSystem) this.state.selectedSystem.name = value || 'Anlage';
+        if (field === 'bearbeiter') project.author = value;
+        if (field === 'datum') project.date = value;
+        if (field === 'hinweis') project.note = value;
+
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-report-setting]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.reportSetting;
+        const number = Number(String(input.value).replace(',', '.'));
+
+        if (!Number.isFinite(number)) return;
+        if (!project.settings || typeof project.settings !== 'object') project.settings = {};
+
+        project.settings[field] = number;
+        this.autoCalculateProject({ notify: false });
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
+  }
+
+  bindReportActions(model) {
+    this.root.querySelectorAll('[data-report-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.reportAction;
+
+        try {
+          if (action === 'print') {
+            ReportEngine.openPrintWindow(model);
+            return;
+          }
+
+          if (action === 'html') {
+            ReportEngine.downloadHtml(model);
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    });
   }
 
   renderSpecialComponent(component) {

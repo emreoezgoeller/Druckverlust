@@ -19,32 +19,46 @@ export default class ProjectCalculationService {
     return ProjectCalculationService.formPartRegistry;
   }
 
+
+  static normalizeProjectFormPartTypes(project = {}) {
+    const registry = ProjectCalculationService.getFormPartRegistry();
+
+    (project.systems || []).forEach(system => {
+      (system.formParts || []).forEach(formPart => {
+        if (typeof registry.normalizeFormPart === 'function') {
+          registry.normalizeFormPart(formPart);
+        }
+      });
+    });
+
+    return project;
+  }
+
   static updateFormPartZetas(formParts = []) {
     const registry = ProjectCalculationService.getFormPartRegistry();
     const warnings = [];
     const errors = [];
 
     formParts.forEach(formPart => {
-      if (!formPart?.type) {
-        warnings.push(`Formteil "${formPart?.name || formPart?.id || '-'}" hat keinen Typ.`);
-        return;
-      }
+      const entry = typeof registry.normalizeFormPart === 'function'
+        ? registry.normalizeFormPart(formPart)
+        : registry.get(formPart?.type);
 
-      if (!registry.exists(formPart.type)) {
-        errors.push(`Formteiltyp nicht gefunden: ${formPart.type}`);
+      if (!entry) {
+        const label = formPart?.name || formPart?.type || formPart?.id || '-';
+        errors.push(`Formteiltyp nicht gefunden: ${label}`);
         formPart.calculationResult = {
-          id: formPart.type,
-          name: formPart.name || formPart.type,
-          zeta: Number(formPart.zeta ?? 0),
-          warnings: [`Formteiltyp nicht gefunden: ${formPart.type}`],
+          id: formPart?.type || null,
+          name: label,
+          zeta: Number(formPart?.zeta ?? 0),
+          warnings: [`Formteiltyp nicht gefunden: ${label}`],
         };
         return;
       }
 
-      const entry = registry.get(formPart.type);
       const values = typeof registry.deriveValues === 'function'
-        ? registry.deriveValues(formPart.type, formPart)
-        : registry.normalizeValues(formPart.type, formPart);
+        ? registry.deriveValues(entry.id, formPart)
+        : registry.normalizeValues(entry.id, formPart);
 
       Object.assign(formPart, values);
 
@@ -54,7 +68,7 @@ export default class ProjectCalculationService {
       }
 
       try {
-        const result = registry.calculate(formPart.type, values);
+        const result = registry.calculate(entry.id, values);
 
         formPart.zeta = Number(result?.zeta ?? 0);
         formPart.calculationResult = result;
@@ -119,6 +133,8 @@ export default class ProjectCalculationService {
   }
 
   static calculate(project = {}, systemId = null) {
+    ProjectCalculationService.normalizeProjectFormPartTypes(project);
+
     const validation = ValidationEngine.validateProject(project);
 
     const system = systemId

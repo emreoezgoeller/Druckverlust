@@ -5,6 +5,7 @@ export default class ApplicationState {
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.selection = {
       type: 'none',
@@ -101,6 +102,7 @@ export default class ApplicationState {
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.setSelection('system', system);
     this.notify();
@@ -110,6 +112,7 @@ export default class ApplicationState {
     this.selectedSection = section;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.setSelection('section', section);
     this.notify();
@@ -119,6 +122,7 @@ export default class ApplicationState {
     this.selectedFormPart = formPart;
     this.selectedSection = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.setSelection('formPart', formPart);
     this.notify();
@@ -128,6 +132,7 @@ export default class ApplicationState {
     this.selectedSpecialComponent = component;
     this.selectedSection = null;
     this.selectedFormPart = null;
+    this.selectedReport = null;
 
     this.setSelection('specialComponent', component);
     this.notify();
@@ -137,8 +142,20 @@ export default class ApplicationState {
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.setSelection('formPartPicker', data || this.selectedSystem);
+    this.notify();
+  }
+
+
+  selectReport(data = null) {
+    this.selectedSection = null;
+    this.selectedFormPart = null;
+    this.selectedSpecialComponent = null;
+    this.selectedReport = data || this.selectedSystem || this.project?.systems?.[0] || this.project || null;
+
+    this.setSelection('report', this.selectedReport);
     this.notify();
   }
 
@@ -146,6 +163,7 @@ export default class ApplicationState {
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
+    this.selectedReport = null;
 
     this.selection = {
       type: this.selectedSystem ? 'system' : 'none',
@@ -170,6 +188,7 @@ export default class ApplicationState {
     if (type === 'system') return this.selectedSystem?.id === id;
     if (type === 'section') return this.selectedSection?.id === id;
     if (type === 'formPart') return this.selectedFormPart?.id === id;
+    if (type === 'report') return this.selection?.type === 'report';
     if (type === 'special' || type === 'specialComponent') {
       return this.selectedSpecialComponent?.id === id;
     }

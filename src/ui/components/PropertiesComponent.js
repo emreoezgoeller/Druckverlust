@@ -1,3 +1,5 @@
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
+
 // Druckverlust Pro – PropertiesComponent
 // Zeigt Eigenschaften zur aktuellen Auswahl.
 
@@ -9,6 +11,7 @@ export default class PropertiesComponent {
 
     this.root = rootElement;
     this.state = state;
+    this.registry = createDefaultFormPartRegistry();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -116,18 +119,26 @@ export default class PropertiesComponent {
 
 
   renderFormPart(formPart) {
+  const entry = typeof this.registry.normalizeFormPart === 'function'
+    ? this.registry.normalizeFormPart(formPart)
+    : this.registry.get(formPart?.type);
+
+  const typeLabel = entry
+    ? `${entry.name} (${entry.id})`
+    : formPart?.type ?? '-';
+
   this.root.innerHTML = `
     <h3>Formteil</h3>
 
     <dl class="dp-properties-list">
       <dt>Name</dt>
-      <dd>${formPart?.name ?? '-'}</dd>
+      <dd>${formPart?.name ?? entry?.name ?? '-'}</dd>
 
       <dt>Interne ID</dt>
       <dd>${formPart?.id ?? '-'}</dd>
 
       <dt>Typ</dt>
-      <dd>${formPart?.type ?? '-'}</dd>
+      <dd>${typeLabel}</dd>
 
       <dt>Teilstrecke</dt>
       <dd>${this.getSectionNameById(formPart?.sectionId)}</dd>
