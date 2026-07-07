@@ -1452,3 +1452,244 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Sprint 17.19 – Berichtsvorlagen */
+.dp-report-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.dp-report-preset {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 92px;
+  padding: 12px 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--dp-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.dp-report-preset strong {
+  font-size: 14px;
+}
+
+.dp-report-preset span {
+  color: var(--dp-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.dp-report-preset:hover {
+  border-color: #9ec5ff;
+  background: #f8fbff;
+  box-shadow: 0 10px 24px rgba(20, 78, 140, .08);
+  transform: translateY(-1px);
+}
+
+.dp-report-preset.active {
+  border-color: var(--dp-primary);
+  background: #eef6ff;
+  box-shadow: inset 0 0 0 1px rgba(30, 94, 168, .18);
+}
+
+.dp-report-preset-custom {
+  cursor: default;
+}
+
+.dp-report-preset-custom:hover {
+  transform: none;
+}
+
+@media (max-width: 1200px) {
+  .dp-report-preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-report-preset-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sprint 17.20 – Exportprüfung / Dateinamen */
+.dp-report-export-check {
+  margin-bottom: 18px;
+}
+
+.dp-report-export-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-report-export-status.ok {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.dp-report-export-status.warning {
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+}
+
+.dp-report-export-status.error {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
+
+.dp-report-export-recommendation {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--dp-border);
+  background: #f8fbff;
+}
+
+.dp-report-export-recommendation strong {
+  color: var(--dp-text);
+  font-size: 14px;
+}
+
+.dp-report-export-recommendation span {
+  color: var(--dp-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.dp-report-export-recommendation.ok {
+  border-color: #bbf7d0;
+  background: #f7fef9;
+}
+
+.dp-report-export-recommendation.warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.dp-report-export-recommendation.error {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.dp-report-export-recommendation.ok strong { color: #166534; }
+.dp-report-export-recommendation.warning strong { color: #92400e; }
+.dp-report-export-recommendation.error strong { color: #991b1b; }
+
+.dp-report-export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dp-report-export-item {
+  min-height: 86px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--dp-border);
+  background: #ffffff;
+}
+
+.dp-report-export-item strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--dp-text);
+  font-size: 13px;
+}
+
+.dp-report-export-item span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.dp-report-export-item.ok {
+  border-color: #bbf7d0;
+  background: #f7fef9;
+}
+
+.dp-report-export-item.warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.dp-report-export-item.error {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.dp-report-file-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dp-report-file-preview div {
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.dp-report-file-preview span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dp-report-file-preview strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--dp-text);
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .dp-report-export-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-report-export-grid,
+  .dp-report-file-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sprint 17.22 – selbstständiger HTML-Bericht */
+.dp-report-export-note {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #d7e4f4;
+  border-radius: 10px;
+  background: #f8fbff;
+  color: #4b647e;
+  font-size: 12px;
+  line-height: 1.45;
+}

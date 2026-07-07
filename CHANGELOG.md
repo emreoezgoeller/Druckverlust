@@ -1,27 +1,16 @@
-# CHANGELOG
+# CHANGELOG – Sprint 17.22
 
-## Sprint 17.18 – Berichtsumfang auswählbar
+## Sprint 17.22 – HTML-Bericht eigenständig speicherbar
 
 ### Neu
-- Berichtansicht um Abschnitt „Berichtsumfang“ erweitert.
-- PDF-/HTML-Bericht kann jetzt abschnittsweise zusammengestellt werden.
-- Deckblatt bleibt immer aktiv; weitere Abschnitte können ein- oder ausgeblendet werden:
-  - Inhaltsverzeichnis
-  - Hauptberechnung – Luftnetz
-  - Zugeordnete Formteile
-  - Sonderbauteile
-  - Gesamtzusammenfassung
-  - QS-Prüfprotokoll
-  - Anhang – Formteilübersicht
-  - Prüfung / Freigabe
-  - Anlageninformationen / Hinweise
+- HTML-Berichte werden beim Speichern jetzt mit eingebetteten Bildern erzeugt.
+- Logo, Deckblattbild und Formteilbilder werden vor dem Download in Data-URLs umgewandelt.
+- Der gespeicherte HTML-Bericht kann dadurch auch ausserhalb des Projektordners geöffnet oder weitergegeben werden.
 
-### Verbessert
-- Inhaltsverzeichnis und dynamische Seitenzahlen berücksichtigen den gewählten Berichtsumfang.
-- Deaktivierte Berichtsteile erscheinen nicht im Druckfenster, PDF, HTML-Bericht und in der Seitenzählung.
-- Berichtsumfang wird im Projekt gespeichert.
+### Geändert
+- Der HTML-Export läuft asynchron und zeigt während der Erstellung kurz „HTML wird erstellt…“.
+- Die Exportprüfung zeigt einen Hinweis, dass der HTML-Bericht eigenständig gespeichert wird.
 
-### Dateien
-- src/report/ReportEngine.js
-- src/ui/components/WorkspaceComponent.js
-- src/ui/ApplicationShell.css
+### Unverändert
+- PDF/Druck verwendet weiterhin das Druckfenster mit den bestehenden Berichtsdaten.
+- CSV-Export bleibt unverändert.

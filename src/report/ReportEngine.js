@@ -41,6 +41,12 @@ function safeFileName(value = 'Druckverlustbericht') {
     .replace(/^_|_$/g, '') || 'Druckverlustbericht';
 }
 
+function compactFileToken(value = '') {
+  return safeFileName(value)
+    .replace(/_{2,}/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
 
 const MAIN_NETWORK_ROWS_PER_PAGE = 30;
 const SPECIAL_ROWS_PER_PAGE = 24;
@@ -153,6 +159,59 @@ function createPrintWaitScript() {
       })();
     <\/script>
   `;
+}
+
+function collectImageSources(html = '') {
+  const sources = new Set();
+  const pattern = /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi;
+  let match;
+
+  while ((match = pattern.exec(html))) {
+    const source = match[1];
+    if (source && !/^(data:|blob:)/i.test(source)) sources.add(source);
+  }
+
+  return [...sources];
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function fetchAsDataUrl(source) {
+  if (typeof fetch !== 'function' || typeof FileReader === 'undefined') return null;
+
+  try {
+    const response = await fetch(source, { cache: 'force-cache' });
+    if (!response.ok) return null;
+
+    const blob = await response.blob();
+    if (!blob || !blob.size) return null;
+
+    return await blobToDataUrl(blob);
+  } catch {
+    return null;
+  }
+}
+
+async function inlineHtmlImages(html = '') {
+  const sources = collectImageSources(html);
+  if (!sources.length) return html;
+
+  const replacements = await Promise.all(sources.map(async source => [source, await fetchAsDataUrl(source)]));
+  let output = html;
+
+  replacements.forEach(([source, dataUrl]) => {
+    if (!dataUrl) return;
+    output = output.split(source).join(dataUrl);
+  });
+
+  return output;
 }
 
 function sectionName(section = {}) {
@@ -580,6 +639,109 @@ export class ReportEngine {
     return toAbsoluteAssetUrl(candidates[0] || '');
   }
 
+  static createExportBaseName(model = {}) {
+    const project = model.project || {};
+    const system = model.system || {};
+    const dateToken = compactFileToken(project.date || new Date().toISOString().slice(0, 10));
+    const reportToken = compactFileToken(project.reportNumber || 'DP');
+    const revisionToken = compactFileToken(project.revision ? `Rev${project.revision}` : 'Rev0');
+    const projectToken = compactFileToken(project.name || 'Projekt');
+    const plantToken = compactFileToken(system.name || project.plant || 'Anlage');
+
+    return [reportToken, revisionToken, projectToken, plantToken, dateToken]
+      .filter(Boolean)
+      .join('_') || 'Druckverlustbericht';
+  }
+
+  static createDocumentTitle(model = {}) {
+    const project = model.project || {};
+    const system = model.system || {};
+    const reportNumber = project.reportNumber && project.reportNumber !== '-' ? project.reportNumber : 'Druckverlust Pro';
+    const revision = project.revision ? `Rev. ${project.revision}` : 'Rev. 0';
+    const plant = system.name || project.plant || 'Anlage';
+
+    return `${reportNumber} – ${plant} – ${revision}`;
+  }
+
+  static createExportChecklist(model = {}) {
+    const project = model.project || {};
+    const reportOptions = normalizeReportOptions(model.reportOptions || {});
+    const contentOptions = [
+      reportOptions.includeMainNetwork,
+      reportOptions.includeAssignedFormParts,
+      reportOptions.includeSpecialComponents,
+      reportOptions.includeSummary,
+      reportOptions.includeQualityProtocol,
+      reportOptions.includeFormPartCatalog,
+      reportOptions.includeApproval,
+      reportOptions.includeInfo,
+    ];
+
+    const requiredProjectFields = [project.name, project.object, project.plant || model.system?.name, project.author, project.date];
+    const requiredReleaseFields = [project.reportNumber, project.revision];
+    const approvalFields = [project.checkedBy, project.approvedBy, project.approvalDate];
+    const qualityOk = model.quality?.status === 'ok';
+    const hasContent = contentOptions.some(Boolean);
+    const hasCalculatedTotal = Number.isFinite(Number(model.totals?.total));
+
+    const items = [
+      {
+        id: 'project-data',
+        label: 'Projekt- und Anlagenangaben',
+        status: requiredProjectFields.every(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
+        message: 'Projekt, Objekt, Anlage, Bearbeiter und Datum sind gepflegt.',
+        warning: 'Projekt, Objekt, Anlage, Bearbeiter oder Datum fehlen noch.',
+      },
+      {
+        id: 'release-data',
+        label: 'Bericht-Nr. und Revision',
+        status: requiredReleaseFields.every(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
+        message: 'Bericht-Nr. und Revision sind gesetzt.',
+        warning: 'Bericht-Nr. oder Revision fehlen noch.',
+      },
+      {
+        id: 'approval-data',
+        label: 'Prüf- und Freigabeangaben',
+        status: approvalFields.some(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
+        message: 'Prüf-/Freigabeangaben sind teilweise oder vollständig gepflegt.',
+        warning: 'Geprüft von, freigegeben von oder Freigabedatum sind noch leer.',
+      },
+      {
+        id: 'quality-status',
+        label: 'QS-Status',
+        status: qualityOk ? 'ok' : 'warning',
+        message: 'QS-Status ist OK.',
+        warning: 'QS-Status ist nicht OK. Hinweise im Prüfprotokoll kontrollieren.',
+      },
+      {
+        id: 'calculation-total',
+        label: 'Berechnung',
+        status: hasCalculatedTotal ? 'ok' : 'error',
+        message: 'Berechnungsergebnis ist vorhanden.',
+        warning: 'Berechnungsergebnis fehlt oder ist ungültig.',
+      },
+      {
+        id: 'report-scope',
+        label: 'Berichtsumfang',
+        status: hasContent ? 'ok' : 'error',
+        message: 'Mindestens eine Inhaltsseite ist aktiviert.',
+        warning: 'Es ist keine Inhaltsseite aktiviert. Deckblatt alleine ist für die Abgabe zu wenig.',
+      },
+    ];
+
+    const errorCount = items.filter(item => item.status === 'error').length;
+    const warningCount = items.filter(item => item.status === 'warning').length;
+
+    return {
+      status: errorCount ? 'error' : warningCount ? 'warning' : 'ok',
+      errorCount,
+      warningCount,
+      items,
+      fileBaseName: this.createExportBaseName(model),
+      documentTitle: this.createDocumentTitle(model),
+    };
+  }
+
   static createStandaloneHtml(model) {
     const generatedDate = new Date(model.generatedAt);
     const generatedLabel = Number.isNaN(generatedDate.getTime())
@@ -591,7 +753,7 @@ export class ReportEngine {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(model.project.name)} – Druckverlustbericht</title>
+  <title>${escapeHtml(this.createDocumentTitle(model))}</title>
   <style>${this.getReportCss()}</style>
 </head>
 <body class="report-print-body">
@@ -599,6 +761,12 @@ export class ReportEngine {
   ${createPrintWaitScript()}
 </body>
 </html>`;
+  }
+
+
+  static async createStandaloneHtmlWithEmbeddedAssets(model) {
+    const html = this.createStandaloneHtml(model);
+    return inlineHtmlImages(html);
   }
 
   static createPagePlan(model) {
@@ -1641,17 +1809,17 @@ export class ReportEngine {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${safeFileName(model.project.name)}_Druckverlust_Datenexport.csv`;
+    link.download = `${this.createExportBaseName(model)}_Datenexport.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
   }
 
-  static downloadHtml(model) {
-    const html = this.createStandaloneHtml(model);
+  static async downloadHtml(model) {
+    const html = await this.createStandaloneHtmlWithEmbeddedAssets(model);
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${safeFileName(model.project.name)}_Druckverlustbericht.html`;
+    link.download = `${this.createExportBaseName(model)}_Bericht.html`;
     link.click();
     URL.revokeObjectURL(link.href);
   }

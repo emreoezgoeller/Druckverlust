@@ -1066,6 +1066,63 @@ export default class WorkspaceComponent {
   }
 
 
+  renderReportExportCheck(model) {
+    const checklist = ReportEngine.createExportChecklist(model);
+    const statusLabel = checklist.status === 'ok'
+      ? 'Bereit'
+      : checklist.status === 'error'
+        ? 'Gesperrt'
+        : 'Mit Hinweisen';
+    const recommendationTitle = checklist.status === 'ok'
+      ? 'Export bereit'
+      : checklist.status === 'error'
+        ? 'Export nicht bereit'
+        : 'Export möglich, aber prüfen';
+    const recommendationText = checklist.status === 'ok'
+      ? 'Alle Pflichtpunkte sind erfüllt. PDF, HTML und CSV können ohne Rückfrage erstellt werden.'
+      : checklist.status === 'error'
+        ? 'Mindestens ein Pflichtpunkt ist fehlerhaft. Der Export wird gesperrt, bis die roten Punkte korrigiert sind.'
+        : 'Es gibt gelbe Hinweise. Der Export bleibt möglich, aber vor der Ausgabe erscheint eine Bestätigung.';
+
+    return `
+      <section class="dp-editor-panel dp-report-export-check no-print">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Exportprüfung</h2>
+            <p>Kontrolle vor PDF-, HTML- und CSV-Ausgabe.</p>
+          </div>
+          <span class="dp-report-export-status ${this.escapeAttribute(checklist.status)}">${this.escapeHtml(statusLabel)}</span>
+        </div>
+
+        <div class="dp-report-export-recommendation ${this.escapeAttribute(checklist.status)}">
+          <strong>${this.escapeHtml(recommendationTitle)}</strong>
+          <span>${this.escapeHtml(recommendationText)}</span>
+        </div>
+
+        <div class="dp-report-export-grid">
+          ${checklist.items.map(item => `
+            <div class="dp-report-export-item ${this.escapeAttribute(item.status)}">
+              <strong>${this.escapeHtml(item.label)}</strong>
+              <span>${this.escapeHtml(item.status === 'ok' ? item.message : item.warning)}</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="dp-report-file-preview">
+          <div>
+            <span>Dateiname Bericht</span>
+            <strong>${this.escapeHtml(checklist.fileBaseName)}_Bericht.html</strong>
+          </div>
+          <div>
+            <span>Dateiname Datenexport</span>
+            <strong>${this.escapeHtml(checklist.fileBaseName)}_Datenexport.csv</strong>
+          </div>
+        </div>
+        <p class="dp-report-export-note">HTML-Berichte werden mit eingebetteten Bildern gespeichert und können dadurch auch ausserhalb des Projektordners geöffnet werden.</p>
+      </section>
+    `;
+  }
+
   renderReport() {
     const project = this.state.project;
     const system = this.state.selectedSystem || project?.systems?.[0] || null;
@@ -1102,6 +1159,7 @@ export default class WorkspaceComponent {
       </div>
 
       ${this.renderReportSettingsEditor(project, system)}
+      ${this.renderReportExportCheck(model)}
 
       <article class="dp-report-preview">
         ${ReportEngine.renderReportBody(model, { generatedLabel })}
@@ -1162,6 +1220,111 @@ export default class WorkspaceComponent {
       { id: 'includeApproval', label: 'Prüfung / Freigabe', default: true },
       { id: 'includeInfo', label: 'Anlageninformationen / Hinweise', default: true },
     ];
+  }
+
+
+  getReportOptionPresets() {
+    return [
+      {
+        id: 'full',
+        title: 'Vollbericht',
+        description: 'Alle Seiten inkl. QS, Anhang und Freigabe.',
+        options: {
+          includeToc: true,
+          includeMainNetwork: true,
+          includeAssignedFormParts: true,
+          includeSpecialComponents: true,
+          includeSummary: true,
+          includeQualityProtocol: true,
+          includeFormPartCatalog: true,
+          includeApproval: true,
+          includeInfo: true,
+        },
+      },
+      {
+        id: 'calculation',
+        title: 'Berechnungsnachweis',
+        description: 'Technischer Nachweis mit Haupttabellen und Zusammenfassung.',
+        options: {
+          includeToc: true,
+          includeMainNetwork: true,
+          includeAssignedFormParts: true,
+          includeSpecialComponents: true,
+          includeSummary: true,
+          includeQualityProtocol: false,
+          includeFormPartCatalog: false,
+          includeApproval: false,
+          includeInfo: true,
+        },
+      },
+      {
+        id: 'short',
+        title: 'Kurzbericht',
+        description: 'Kompakte Abgabe mit Deckblatt, Zusammenfassung und Freigabe.',
+        options: {
+          includeToc: false,
+          includeMainNetwork: false,
+          includeAssignedFormParts: false,
+          includeSpecialComponents: false,
+          includeSummary: true,
+          includeQualityProtocol: false,
+          includeFormPartCatalog: false,
+          includeApproval: true,
+          includeInfo: true,
+        },
+      },
+      {
+        id: 'qs',
+        title: 'QS intern',
+        description: 'Für interne Kontrolle mit Prüfprotokoll und Anhang.',
+        options: {
+          includeToc: true,
+          includeMainNetwork: true,
+          includeAssignedFormParts: true,
+          includeSpecialComponents: true,
+          includeSummary: true,
+          includeQualityProtocol: true,
+          includeFormPartCatalog: true,
+          includeApproval: false,
+          includeInfo: false,
+        },
+      },
+    ];
+  }
+
+  getActiveReportPreset(project) {
+    const options = this.getDefaultReportOptions().reduce((result, option) => {
+      result[option.id] = project?.reportOptions?.[option.id] !== false;
+      return result;
+    }, {});
+
+    return this.getReportOptionPresets().find(preset =>
+      Object.entries(preset.options).every(([key, value]) => Boolean(options[key]) === Boolean(value))
+    )?.id || 'custom';
+  }
+
+  renderReportPresetButtons(project) {
+    const activePreset = this.getActiveReportPreset(project);
+
+    return `
+      <div class="dp-report-preset-grid">
+        ${this.getReportOptionPresets().map(preset => `
+          <button
+            type="button"
+            class="dp-report-preset ${activePreset === preset.id ? 'active' : ''}"
+            data-report-preset="${this.escapeAttribute(preset.id)}">
+            <strong>${this.escapeHtml(preset.title)}</strong>
+            <span>${this.escapeHtml(preset.description)}</span>
+          </button>
+        `).join('')}
+        ${activePreset === 'custom' ? `
+          <div class="dp-report-preset dp-report-preset-custom active">
+            <strong>Benutzerdefiniert</strong>
+            <span>Der Berichtsumfang wurde manuell angepasst.</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
   renderReportOptionCheckbox(option, project) {
@@ -1270,7 +1433,8 @@ export default class WorkspaceComponent {
 
         <div class="dp-report-settings-group">
           <h3>Berichtsumfang</h3>
-          <p class="dp-report-settings-note">Wähle, welche Abschnitte im PDF-Bericht ausgegeben werden sollen. Das Deckblatt bleibt immer aktiv.</p>
+          <p class="dp-report-settings-note">Wähle eine Vorlage oder stelle die Seiten manuell zusammen. Das Deckblatt bleibt immer aktiv.</p>
+          ${this.renderReportPresetButtons(project)}
           <div class="dp-report-options-grid">
             ${this.getDefaultReportOptions().map(option => this.renderReportOptionCheckbox(option, project)).join('')}
           </div>
@@ -1309,6 +1473,26 @@ export default class WorkspaceComponent {
       });
     });
 
+    this.root.querySelectorAll('[data-report-preset]').forEach(button => {
+      button.addEventListener('click', () => {
+        const presetId = button.dataset.reportPreset;
+        const preset = this.getReportOptionPresets().find(item => item.id === presetId);
+
+        if (!preset) return;
+        if (!project.reportOptions || typeof project.reportOptions !== 'object') {
+          project.reportOptions = {};
+        }
+
+        this.getDefaultReportOptions().forEach(option => {
+          project.reportOptions[option.id] = preset.options[option.id] !== false;
+        });
+
+        project.reportPreset = preset.id;
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
+
     this.root.querySelectorAll('[data-report-option]').forEach(input => {
       input.addEventListener('change', () => {
         const field = input.dataset.reportOption;
@@ -1318,6 +1502,7 @@ export default class WorkspaceComponent {
         }
 
         project.reportOptions[field] = input.checked;
+        project.reportPreset = this.getActiveReportPreset(project);
         this.state.markProjectDirty();
         this.render();
       });
@@ -1339,10 +1524,42 @@ export default class WorkspaceComponent {
     });
   }
 
+  getReportActionLabel(action) {
+    if (action === 'print') return 'PDF/Druck';
+    if (action === 'html') return 'HTML-Bericht';
+    if (action === 'csv') return 'CSV-Datenexport';
+    return 'Export';
+  }
+
+  confirmReportExport(model, action) {
+    const checklist = ReportEngine.createExportChecklist(model);
+    const actionLabel = this.getReportActionLabel(action);
+
+    if (checklist.status === 'ok') return true;
+
+    const failedItems = checklist.items
+      .filter(item => item.status !== 'ok')
+      .map(item => `• ${item.label}: ${item.warning}`)
+      .join('\n');
+
+    if (checklist.status === 'error') {
+      alert(`Der Export „${actionLabel}“ wurde gesperrt.\n\nBitte zuerst korrigieren:\n${failedItems}`);
+      return false;
+    }
+
+    return confirm(`Der Export „${actionLabel}“ enthält noch Hinweise.\n\n${failedItems}\n\nTrotzdem fortfahren?`);
+  }
+
   bindReportActions(model) {
     this.root.querySelectorAll('[data-report-action]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.reportAction;
+
+        if (!this.confirmReportExport(model, action)) return;
+
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = action === 'html' ? 'HTML wird erstellt…' : originalText;
 
         try {
           if (action === 'print') {
@@ -1351,7 +1568,7 @@ export default class WorkspaceComponent {
           }
 
           if (action === 'html') {
-            ReportEngine.downloadHtml(model);
+            await ReportEngine.downloadHtml(model);
             return;
           }
 
@@ -1360,6 +1577,9 @@ export default class WorkspaceComponent {
           }
         } catch (error) {
           alert(error.message);
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
         }
       });
     });
