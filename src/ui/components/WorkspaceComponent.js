@@ -1139,7 +1139,40 @@ export default class WorkspaceComponent {
     project.settings.rho = project.settings.rho ?? 1.21;
     project.settings.lambda = project.settings.lambda ?? 0.025;
 
+    if (!project.reportOptions || typeof project.reportOptions !== 'object') {
+      project.reportOptions = {};
+    }
+
+    this.getDefaultReportOptions().forEach(option => {
+      project.reportOptions[option.id] = project.reportOptions[option.id] ?? option.default;
+    });
+
     return report;
+  }
+
+  getDefaultReportOptions() {
+    return [
+      { id: 'includeToc', label: 'Inhaltsverzeichnis', default: true },
+      { id: 'includeMainNetwork', label: 'Hauptberechnung – Luftnetz', default: true },
+      { id: 'includeAssignedFormParts', label: 'Zugeordnete Formteile', default: true },
+      { id: 'includeSpecialComponents', label: 'Sonderbauteile', default: true },
+      { id: 'includeSummary', label: 'Gesamtzusammenfassung', default: true },
+      { id: 'includeQualityProtocol', label: 'QS-Prüfprotokoll', default: true },
+      { id: 'includeFormPartCatalog', label: 'Anhang – Formteilübersicht', default: true },
+      { id: 'includeApproval', label: 'Prüfung / Freigabe', default: true },
+      { id: 'includeInfo', label: 'Anlageninformationen / Hinweise', default: true },
+    ];
+  }
+
+  renderReportOptionCheckbox(option, project) {
+    const checked = project.reportOptions?.[option.id] !== false;
+
+    return `
+      <label class="dp-report-option">
+        <input type="checkbox" data-report-option="${this.escapeAttribute(option.id)}" ${checked ? 'checked' : ''}>
+        <span>${this.escapeHtml(option.label)}</span>
+      </label>
+    `;
   }
 
   renderReportSettingsEditor(project, system = null) {
@@ -1235,6 +1268,14 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
+        <div class="dp-report-settings-group">
+          <h3>Berichtsumfang</h3>
+          <p class="dp-report-settings-note">Wähle, welche Abschnitte im PDF-Bericht ausgegeben werden sollen. Das Deckblatt bleibt immer aktiv.</p>
+          <div class="dp-report-options-grid">
+            ${this.getDefaultReportOptions().map(option => this.renderReportOptionCheckbox(option, project)).join('')}
+          </div>
+        </div>
+
         <p class="dp-auto-save-hint">Änderungen werden automatisch gespeichert und im Bericht aktualisiert.</p>
       </section>
     `;
@@ -1263,6 +1304,20 @@ export default class WorkspaceComponent {
         if (field === 'approvedBy') project.approvedBy = value;
         if (field === 'approvalDate') project.approvalDate = value;
 
+        this.state.markProjectDirty();
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-report-option]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.reportOption;
+
+        if (!project.reportOptions || typeof project.reportOptions !== 'object') {
+          project.reportOptions = {};
+        }
+
+        project.reportOptions[field] = input.checked;
         this.state.markProjectDirty();
         this.render();
       });

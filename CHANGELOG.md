@@ -1,23 +1,27 @@
-# CHANGELOG – Sprint 17.17
+# CHANGELOG
 
-## Bericht – Freigabeangaben editierbar
+## Sprint 17.18 – Berichtsumfang auswählbar
 
-- Berichtsangaben im Workspace in drei Gruppen strukturiert:
-  - Projekt / Anlage
+### Neu
+- Berichtansicht um Abschnitt „Berichtsumfang“ erweitert.
+- PDF-/HTML-Bericht kann jetzt abschnittsweise zusammengestellt werden.
+- Deckblatt bleibt immer aktiv; weitere Abschnitte können ein- oder ausgeblendet werden:
+  - Inhaltsverzeichnis
+  - Hauptberechnung – Luftnetz
+  - Zugeordnete Formteile
+  - Sonderbauteile
+  - Gesamtzusammenfassung
+  - QS-Prüfprotokoll
+  - Anhang – Formteilübersicht
   - Prüfung / Freigabe
-  - Berechnungsgrundlagen / Hinweis
-- Neue editierbare Felder ergänzt:
-  - Bericht-Nr.
-  - Revision
-  - Geprüft von
-  - Freigegeben von
-  - Freigabedatum
-- Die Werte werden automatisch im Projekt gespeichert und im PDF-Bericht verwendet.
-- Bericht-Nr. erhält automatisch einen Vorschlag im Format `DP-JJJJMMTT-001`.
-- Optik der Berichtsangaben leicht verbessert.
+  - Anlageninformationen / Hinweise
 
-## Geänderte Dateien
+### Verbessert
+- Inhaltsverzeichnis und dynamische Seitenzahlen berücksichtigen den gewählten Berichtsumfang.
+- Deaktivierte Berichtsteile erscheinen nicht im Druckfenster, PDF, HTML-Bericht und in der Seitenzählung.
+- Berichtsumfang wird im Projekt gespeichert.
 
-- `src/ui/components/WorkspaceComponent.js`
-- `src/ui/ApplicationShell.css`
-- `CHANGELOG.md`
+### Dateien
+- src/report/ReportEngine.js
+- src/ui/components/WorkspaceComponent.js
+- src/ui/ApplicationShell.css

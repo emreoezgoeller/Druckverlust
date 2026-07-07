@@ -49,6 +49,27 @@ const FORMPART_ROWS_PER_BOX = 5;
 const FORMPART_CATALOG_ROWS_PER_PAGE = 8;
 const QUALITY_ROWS_PER_PAGE = 16;
 
+const DEFAULT_REPORT_OPTIONS = Object.freeze({
+  includeToc: true,
+  includeMainNetwork: true,
+  includeAssignedFormParts: true,
+  includeSpecialComponents: true,
+  includeSummary: true,
+  includeQualityProtocol: true,
+  includeFormPartCatalog: true,
+  includeApproval: true,
+  includeInfo: true,
+});
+
+function normalizeReportOptions(options = {}) {
+  const source = options && typeof options === 'object' ? options : {};
+
+  return Object.entries(DEFAULT_REPORT_OPTIONS).reduce((normalized, [key, defaultValue]) => {
+    normalized[key] = source[key] === undefined ? defaultValue : Boolean(source[key]);
+    return normalized;
+  }, {});
+}
+
 function chunkArray(items = [], size = 1) {
   const chunks = [];
   const safeSize = Math.max(1, Number(size) || 1);
@@ -302,6 +323,7 @@ export class ReportEngine {
     const results = calculation?.results || [];
     const specialResults = calculation?.specialComponentResults || [];
     const meta = getProjectMeta(project);
+    const reportOptions = normalizeReportOptions(project?.reportOptions || project?.report?.options || {});
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -383,6 +405,7 @@ export class ReportEngine {
 
     return {
       title: 'Druckverlustbericht',
+      reportOptions,
       generatedAt: new Date().toISOString(),
       project: {
         id: project?.id ?? '-'
@@ -579,79 +602,77 @@ export class ReportEngine {
   }
 
   static createPagePlan(model) {
-    const mainPageCount = chunkArray(model.sections || [], MAIN_NETWORK_ROWS_PER_PAGE).length;
+    const reportOptions = normalizeReportOptions(model.reportOptions || {});
+    const mainPageCount = reportOptions.includeMainNetwork
+      ? chunkArray(model.sections || [], MAIN_NETWORK_ROWS_PER_PAGE).length
+      : 0;
     const formPartGroupCount = this.splitFormPartGroupsForReport(model.formPartsBySection || []).length;
-    const formPartPageCount = chunkArray(new Array(formPartGroupCount).fill(null), FORMPART_BOXES_PER_PAGE).length;
-    const specialPageCount = chunkArray(model.specialComponents || [], SPECIAL_ROWS_PER_PAGE).length;
-    const catalogPageCount = chunkArray(model.formPartCatalog || [], FORMPART_CATALOG_ROWS_PER_PAGE).length;
+    const formPartPageCount = reportOptions.includeAssignedFormParts
+      ? chunkArray(new Array(formPartGroupCount).fill(null), FORMPART_BOXES_PER_PAGE).length
+      : 0;
+    const specialPageCount = reportOptions.includeSpecialComponents
+      ? chunkArray(model.specialComponents || [], SPECIAL_ROWS_PER_PAGE).length
+      : 0;
+    const catalogPageCount = reportOptions.includeFormPartCatalog
+      ? chunkArray(model.formPartCatalog || [], FORMPART_CATALOG_ROWS_PER_PAGE).length
+      : 0;
     const qualityIssues = normalizeQualityIssues(model);
-    const qualityPageCount = chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length;
+    const qualityPageCount = reportOptions.includeQualityProtocol
+      ? chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length
+      : 0;
 
-    const coverPage = 1;
-    const tocPage = 2;
-    const mainStart = 3;
-    const formPartsStart = mainStart + mainPageCount;
-    const specialsStart = formPartsStart + formPartPageCount;
-    const summaryPage = specialsStart + specialPageCount;
-    const qualityStart = summaryPage + 1;
-    const catalogStart = qualityStart + qualityPageCount;
-    const approvalPage = catalogStart + catalogPageCount;
-    const infoPage = approvalPage + 1;
+    const entries = [
+      {
+        key: 'cover',
+        title: 'Deckblatt / Zusammenfassung',
+        description: 'Projektangaben und Druckverlust-Kennwerte',
+        page: 1,
+      },
+    ];
+
+    let currentPage = 1;
+    let tocPage = null;
+
+    if (reportOptions.includeToc) {
+      currentPage += 1;
+      tocPage = currentPage;
+    }
+
+    const addEntry = (key, title, description, pageCount = 1) => {
+      const safePageCount = Math.max(0, Number(pageCount) || 0);
+      if (!safePageCount) return null;
+
+      const page = currentPage + 1;
+      currentPage += safePageCount;
+      const entry = { key, title, description, page, pageCount: safePageCount };
+      entries.push(entry);
+      return entry;
+    };
+
+    addEntry('mainNetwork', 'Hauptberechnung – Luftnetz', `${model.counts.sections} berechnungsrelevante Teilstrecken`, mainPageCount);
+    addEntry('assignedFormParts', 'Zugeordnete Formteile', `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`, formPartPageCount);
+    addEntry('specialComponents', 'Sonderbauteile', `${model.counts.specialComponents} Komponenten`, specialPageCount);
+
+    if (reportOptions.includeSummary) {
+      addEntry('summary', 'Gesamtzusammenfassung', 'Summen, Berechnungsgrundlagen und QS-Status', 1);
+    }
+
+    addEntry('qualityProtocol', 'QS-Prüfprotokoll', `${qualityIssues.length} Hinweise / Fehler`, qualityPageCount);
+    addEntry('formPartCatalog', 'Anhang – Formteilübersicht', `${model.formPartCatalog?.length || 0} verwendete Formteiltypen`, catalogPageCount);
+
+    if (reportOptions.includeApproval) {
+      addEntry('approval', 'Prüfung / Freigabe', 'Revisionsstand, Prüffelder und Unterschriften', 1);
+    }
+
+    if (reportOptions.includeInfo) {
+      addEntry('info', 'Anlageninformationen / Hinweise', 'Projekt- und Berichtsdaten', 1);
+    }
 
     return {
-      totalPages: infoPage,
-      entries: [
-        {
-          title: 'Deckblatt / Zusammenfassung',
-          description: 'Projektangaben und Druckverlust-Kennwerte',
-          page: coverPage,
-        },
-        {
-          title: 'Hauptberechnung – Luftnetz',
-          description: `${model.counts.sections} berechnungsrelevante Teilstrecken`,
-          page: mainStart,
-          pageCount: mainPageCount,
-        },
-        {
-          title: 'Zugeordnete Formteile',
-          description: `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`,
-          page: formPartsStart,
-          pageCount: formPartPageCount,
-        },
-        {
-          title: 'Sonderbauteile',
-          description: `${model.counts.specialComponents} Komponenten`,
-          page: specialsStart,
-          pageCount: specialPageCount,
-        },
-        {
-          title: 'Gesamtzusammenfassung',
-          description: 'Summen, Berechnungsgrundlagen und QS-Status',
-          page: summaryPage,
-        },
-        {
-          title: 'QS-Prüfprotokoll',
-          description: `${qualityIssues.length} Hinweise / Fehler`,
-          page: qualityStart,
-          pageCount: qualityPageCount,
-        },
-        {
-          title: 'Anhang – Formteilübersicht',
-          description: `${model.formPartCatalog?.length || 0} verwendete Formteiltypen`,
-          page: catalogStart,
-          pageCount: catalogPageCount,
-        },
-        {
-          title: 'Prüfung / Freigabe',
-          description: 'Revisionsstand, Prüffelder und Unterschriften',
-          page: approvalPage,
-        },
-        {
-          title: 'Anlageninformationen / Hinweise',
-          description: 'Projekt- und Berichtsdaten',
-          page: infoPage,
-        },
-      ],
+      totalPages: currentPage,
+      tocPage,
+      reportOptions,
+      entries,
     };
   }
 
@@ -708,16 +729,18 @@ export class ReportEngine {
     let pageNumber = 1;
     const nextPage = () => pageNumber++;
 
+    const reportOptions = pagePlan.reportOptions || normalizeReportOptions(model.reportOptions || {});
+
     pages.push(this.renderCoverPage(model, generatedLabel, nextPage(), totalPlaceholder));
-    pages.push(this.renderTocPage(model, nextPage(), totalPlaceholder, pagePlan));
-    pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
-    pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
-    pages.push(...this.renderSpecialComponentsPages(model, nextPage, totalPlaceholder));
-    pages.push(this.renderSummaryPage(model, nextPage(), totalPlaceholder));
-    pages.push(...this.renderQualityProtocolPages(model, nextPage, totalPlaceholder));
-    pages.push(...this.renderFormPartCatalogPages(model, nextPage, totalPlaceholder));
-    pages.push(this.renderApprovalPage(model, nextPage(), totalPlaceholder, generatedLabel));
-    pages.push(this.renderInfoPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeToc) pages.push(this.renderTocPage(model, nextPage(), totalPlaceholder, pagePlan));
+    if (reportOptions.includeMainNetwork) pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeAssignedFormParts) pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeSpecialComponents) pages.push(...this.renderSpecialComponentsPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeSummary) pages.push(this.renderSummaryPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeQualityProtocol) pages.push(...this.renderQualityProtocolPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeFormPartCatalog) pages.push(...this.renderFormPartCatalogPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeApproval) pages.push(this.renderApprovalPage(model, nextPage(), totalPlaceholder, generatedLabel));
+    if (reportOptions.includeInfo) pages.push(this.renderInfoPage(model, nextPage(), totalPlaceholder));
 
     const body = `
       ${includeStyle ? `<style>${this.getReportCss()}</style>` : ''}
