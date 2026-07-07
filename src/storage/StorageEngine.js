@@ -2,12 +2,26 @@ export class StorageEngine {
   static extension = '.dvp';
 
   static serialize(project) {
-    return JSON.stringify({
+    const seen = new WeakSet();
+    const payload = {
       fileType: 'DruckverlustPro',
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
       project
-    }, null, 2);
+    };
+
+    return JSON.stringify(payload, (key, value) => {
+      if (key === 'project' && value?.calculation && value?.validation) {
+        return undefined;
+      }
+
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) return undefined;
+        seen.add(value);
+      }
+
+      return value;
+    }, 2);
   }
 
   static parse(text) {

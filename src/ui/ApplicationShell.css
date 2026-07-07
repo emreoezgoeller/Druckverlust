@@ -762,3 +762,377 @@
 .dp-param-readonly .dp-field-hint {
   color: #2563eb;
 }
+
+/* Sprint 16.23 – Formteil-Kachelauswahl und automatische Berechnung */
+.dp-formpart-library {
+  display: grid;
+  gap: 28px;
+}
+
+.dp-formpart-library-group {
+  display: grid;
+  gap: 12px;
+}
+
+.dp-formpart-library-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--dp-border);
+  padding-bottom: 8px;
+}
+
+.dp-formpart-library-heading h2 {
+  margin: 0;
+  color: var(--dp-blue-900);
+  font-size: 20px;
+}
+
+.dp-formpart-library-heading span {
+  color: var(--dp-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dp-formpart-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.dp-formpart-card {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 190px auto;
+  min-height: 280px;
+  padding: 0;
+  border: 1px solid var(--dp-border);
+  border-radius: 16px;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.dp-formpart-card:hover {
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+}
+
+.dp-formpart-card:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.dp-formpart-card-image {
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--dp-border);
+}
+
+.dp-formpart-card-image img {
+  max-width: 100%;
+  max-height: 165px;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.dp-formpart-card-body {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.dp-formpart-card-body span {
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dp-formpart-card-body strong {
+  color: var(--dp-blue-900);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.dp-auto-calc-note {
+  margin: 18px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Sprint 16.24 – Plausibilitätsprüfung */
+.dp-validation-panel {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.dp-validation-panel strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #7c2d12;
+  font-size: 14px;
+}
+
+.dp-validation-panel p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Sprint 16.25 – Berechnungsaufteilung und Formteil-Zuordnung */
+.dp-total-panel {
+  border-color: #bfdbfe;
+  background: linear-gradient(135deg, #ffffff, #eff6ff);
+}
+
+.dp-result-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.dp-result-card {
+  padding: 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.dp-result-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dp-result-card strong {
+  display: block;
+  color: var(--dp-blue-900);
+  font-size: 20px;
+}
+
+.dp-result-card-total {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.dp-result-card-negative strong,
+.dp-negative-value {
+  color: #b45309;
+}
+
+.dp-calculation-table .dp-detail-row td {
+  padding: 0 8px 14px;
+  background: #f8fafc;
+}
+
+.dp-assigned-formparts {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+.dp-assigned-formpart-item {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(70px, auto) minmax(120px, auto) minmax(130px, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.dp-assigned-formpart-item > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.dp-assigned-formpart-item strong {
+  color: var(--dp-blue-900);
+}
+
+.dp-assigned-formpart-item span,
+.dp-assigned-formpart-item small,
+.dp-assigned-formpart-item em {
+  color: var(--dp-muted);
+  font-size: 12px;
+}
+
+.dp-assigned-formpart-item small {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dp-assigned-formpart-item em {
+  font-style: normal;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .dp-assigned-formpart-item {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .dp-assigned-formpart-item em {
+    text-align: left;
+  }
+}
+
+/* Sprint 16.26 – QS-Ampel und Berechnungsprüfung */
+.dp-audit-panel,
+.dp-quality-panel {
+  border-color: #dbeafe;
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+}
+
+.dp-audit-ok,
+.dp-quality-ok {
+  border-color: #bbf7d0;
+  background: linear-gradient(135deg, #ffffff, #f0fdf4);
+}
+
+.dp-audit-warning,
+.dp-quality-warning {
+  border-color: #fed7aa;
+  background: linear-gradient(135deg, #ffffff, #fff7ed);
+}
+
+.dp-audit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 74px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dp-audit-ok .dp-audit-badge,
+.dp-quality-ok .dp-audit-badge {
+  background: #16a34a;
+}
+
+.dp-audit-warning .dp-audit-badge,
+.dp-quality-warning .dp-audit-badge {
+  background: #f97316;
+}
+
+.dp-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.dp-audit-grid > div {
+  padding: 13px 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.dp-audit-grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dp-audit-grid strong {
+  color: var(--dp-blue-900);
+  font-size: 18px;
+}
+
+.dp-audit-note {
+  margin: 12px 0 0;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dp-quality-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dp-quality-item {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.dp-quality-item strong {
+  color: var(--dp-blue-900);
+}
+
+.dp-quality-item span {
+  color: #7c2d12;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Sprint 16 Abschluss – QS-Status und Fehlermeldungen */
+.dp-status-muted {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+}
+
+.dp-status-danger {
+  color: #fecaca;
+  font-weight: 800;
+}
+
+.dp-quality-error {
+  border-color: #fecaca;
+  background: linear-gradient(135deg, #ffffff, #fef2f2);
+}
+
+.dp-quality-error .dp-audit-badge {
+  background: #dc2626;
+}
+
+.dp-quality-item-error {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.dp-quality-item-error span {
+  color: #991b1b;
+}

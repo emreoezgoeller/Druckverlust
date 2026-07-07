@@ -238,6 +238,7 @@ export function calculateProject(project = {}) {
   const settings = project.settings || project.project || {};
   const sections = project.sections || project.rows || [];
   const formParts = project.formParts || project.parts || [];
+  const specialComponents = project.specialComponents || project.components || [];
 
   const results = sections.map((section, index) => {
     const zetaFromParts = sumFormPartZeta(formParts, section.id);
@@ -263,18 +264,78 @@ export function calculateProject(project = {}) {
     };
   });
 
+  const specialComponentResults = specialComponents.map((component, index) => {
+    const pressureLoss = toNumber(component.pressureLoss ?? component.pa ?? component.dp ?? component.totalLoss);
+
+    return {
+      index,
+      id: component.id || `special-${index + 1}`,
+      input: component,
+      name: component.name || component.type || `Sonderbauteil ${index + 1}`,
+      pressureLoss,
+      warnings: pressureLoss <= 0 ? ['Sonderbauteil hat keinen Druckverlust.'] : [],
+    };
+  });
+
   const totals = results.reduce((acc, item) => {
     const r = item.result;
+    const directFormPartLoss = toNumber(r.directFormPartLoss);
+    const sectionSpecialLoss = r.type === 'special' ? r.specialLoss : 0;
+
+    acc.sectionCount += 1;
     acc.friction += r.frictionLoss;
-    acc.formParts += r.zetaLoss + toNumber(r.directFormPartLoss);
-    acc.special += r.type === 'special' ? r.specialLoss : 0;
+    acc.zetaLoss += r.zetaLoss;
+    acc.directFormPartLoss += directFormPartLoss;
+    acc.formParts += r.zetaLoss + directFormPartLoss;
+    acc.special += sectionSpecialLoss;
     acc.total += r.totalLoss;
     acc.totalRounded += r.roundedTotalLoss;
+
+    if (directFormPartLoss < 0) {
+      acc.negativeDirectLoss += directFormPartLoss;
+    }
+
     acc.warnings.push(...r.warnings.map(w => ({ sectionId: item.id, message: w })));
     return acc;
-  }, { friction: 0, formParts: 0, special: 0, total: 0, totalRounded: 0, warnings: [] });
+  }, {
+    sectionCount: 0,
+    formPartCount: formParts.length,
+    specialComponentCount: specialComponentResults.length,
+    friction: 0,
+    zetaLoss: 0,
+    directFormPartLoss: 0,
+    formParts: 0,
+    special: 0,
+    total: 0,
+    totalRounded: 0,
+    negativeDirectLoss: 0,
+    warnings: [],
+  });
 
-  return { settings: { ...DEFAULTS, ...settings }, results, totals };
+  specialComponentResults.forEach(item => {
+    totals.special += item.pressureLoss;
+    totals.total += item.pressureLoss;
+    totals.totalRounded += roundUpToStep(item.pressureLoss, settings.sectionRoundingStep ?? 0.5);
+    totals.warnings.push(...item.warnings.map(w => ({ specialComponentId: item.id, message: w })));
+  });
+
+  const componentTotal = totals.friction + totals.zetaLoss + totals.directFormPartLoss + totals.special;
+  const auditDifference = totals.total - componentTotal;
+
+  totals.audit = {
+    componentTotal,
+    rawTotal: totals.total,
+    roundedTotal: totals.totalRounded,
+    difference: auditDifference,
+    ok: Math.abs(auditDifference) <= 0.05,
+  };
+
+  return {
+    settings: { ...DEFAULTS, ...settings },
+    results,
+    specialComponentResults,
+    totals,
+  };
 }
 
 export class CalculationEngine {

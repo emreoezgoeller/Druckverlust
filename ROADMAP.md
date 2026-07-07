@@ -24,3 +24,14 @@
 - [ ] Excel-Referenztests bestanden
 - [ ] alle Kernfunktionen stabil
 - [ ] GitHub Pages produktiv nutzbar
+
+
+## Sprint 16 abgeschlossen
+
+Die Formteilbibliothek 2.0 ist abgeschlossen. Alle aktuellen Formteile sind eingebunden, berechenbar und in der Projektberechnung berücksichtigt.
+
+Nächster empfohlener Block:
+
+- Sprint 17: Bericht / Druckansicht / Export
+- Sprint 18: Projekt- und Systemverwaltung vertiefen
+- Sprint 19: Referenz-/Excel-Testpaket erweitern

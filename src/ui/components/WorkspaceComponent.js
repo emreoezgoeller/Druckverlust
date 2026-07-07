@@ -4,6 +4,7 @@
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
+import ProjectCommands from '../../app/ProjectCommands.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -14,6 +15,7 @@ export default class WorkspaceComponent {
     this.root = rootElement;
     this.state = state;
     this.registry = createDefaultFormPartRegistry();
+    this.commands = new ProjectCommands(state);
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -27,6 +29,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'project') return this.renderProject(selection.data);
     if (selection.type === 'system') return this.renderSystem(selection.data);
     if (selection.type === 'section') return this.renderSection(selection.data);
+    if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -91,6 +94,9 @@ export default class WorkspaceComponent {
       </div>
 
       ${this.renderCalculationSummary(total)}
+      ${this.renderCalculationBreakdown(calculation)}
+      ${this.renderCalculationAudit(calculation)}
+      ${this.renderProjectValidationOverview(system)}
       ${this.renderCalculationTable(calculation)}
     `;
   }
@@ -102,6 +108,7 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <h1>${section?.name ?? 'Teilstrecke'}</h1>
       ${this.renderDirtyHint()}
+      ${this.renderValidationMessages(this.getSectionValidationWarnings(section))}
 
       <section class="dp-editor-panel">
         <h2>Eingabedaten</h2>
@@ -127,12 +134,11 @@ export default class WorkspaceComponent {
 
           ${this.renderGeometryFields(section)}
 
-        <div class="dp-editor-actions">
-          <button data-action="calculate-section">Berechnen</button>
-        </div>
+        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
       </section>
 
-      ${this.renderSectionResult(result, calculationItem)}
+      ${this.renderSectionResult(result, calculationItem, section)}
+      ${this.renderSectionFormParts(section)}
     `;
 
     this.bindSectionEditor(section);
@@ -143,37 +149,124 @@ export default class WorkspaceComponent {
       input.addEventListener('change', () => {
         const field = input.dataset.field;
 
-        section[field] =
-          input.type === 'number'
+        section[field] = input.type === 'number'
           ? Number(input.value)
           : input.value;
 
-        if (field === 'type') {
-            this.state.markCalculationDirty();
-            return;
-}
-
-        this.state.markCalculationDirty();
+        this.autoCalculateProject();
       });
     });
+  }
 
-    const calculateButton = this.root.querySelector('[data-action="calculate-section"]');
+  renderFormPartPicker() {
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const groups = this.getFormPartLibraryGroups();
 
-    if (calculateButton) {
-      calculateButton.addEventListener('click', () => {
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <h1>Formteil auswählen</h1>
+          <p>Wähle zuerst ein Formteil aus der Bibliothek. Danach öffnet sich automatisch der passende Editor.</p>
+        </div>
+      </div>
+
+      ${!system?.sections?.length ? `
+        <div class="dp-dirty-hint">
+          Hinweis: Es ist noch keine Teilstrecke vorhanden. Das Formteil kann trotzdem erstellt werden, die Zuordnung erfolgt danach.
+        </div>
+      ` : ''}
+
+      <section class="dp-formpart-library">
+        ${groups.map(group => `
+          <div class="dp-formpart-library-group">
+            <div class="dp-formpart-library-heading">
+              <h2>${this.escapeHtml(group.category)}</h2>
+              <span>${group.items.length} Formteil${group.items.length === 1 ? '' : 'e'}</span>
+            </div>
+
+            <div class="dp-formpart-card-grid">
+              ${group.items.map(item => this.renderFormPartPickerCard(item)).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </section>
+    `;
+
+    this.bindFormPartPicker();
+    this.bindFormPartImageFallbacks();
+  }
+
+  renderFormPartPickerCard(item) {
+    return `
+      <button class="dp-formpart-card" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
+        <div class="dp-formpart-card-image">
+          ${this.renderFormPartCardImage(item)}
+        </div>
+        <div class="dp-formpart-card-body">
+          <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
+          <strong>${this.escapeHtml(item.name)}</strong>
+        </div>
+      </button>
+    `;
+  }
+
+  renderFormPartCardImage(item) {
+    const sources = this.getFormPartImageSources(item);
+
+    if (!sources.length) {
+      return '<div class="dp-image-missing">Keine Skizze vorhanden</div>';
+    }
+
+    const [src, ...fallbacks] = sources;
+
+    return `
+      <img
+        src="${this.escapeAttribute(src)}"
+        alt="${this.escapeAttribute(item.name)}"
+        data-fallbacks="${this.escapeAttribute(fallbacks.join('|'))}">
+      <div class="dp-image-missing" style="display:none;">Skizze fehlt</div>
+    `;
+  }
+
+  bindFormPartPicker() {
+    this.root.querySelectorAll('[data-formpart-type]').forEach(button => {
+      button.addEventListener('click', () => {
         try {
-          const project = this.state.project;
-          const result = ProjectCalculationService.calculate(project);
-
-          project.calculationResult = result;
-
-          this.state.lastCalculationAt = new Date().toISOString();
-          this.state.markCalculationClean();
+          const type = button.dataset.formpartType;
+          this.commands.createFormPart(type);
+          this.autoCalculateProject();
         } catch (error) {
-          alert(`Berechnung fehlgeschlagen: ${error.message}`);
+          alert(`Formteil konnte nicht erstellt werden: ${error.message}`);
         }
       });
-    }
+    });
+  }
+
+  getFormPartLibraryGroups() {
+    const order = ['Rund', 'Rechteck', 'Übergänge', 'Spezial', 'Abzweige'];
+    const groups = new Map();
+
+    this.registry.all().forEach(item => {
+      const category = item.category || 'Weitere';
+      if (!groups.has(category)) groups.set(category, []);
+      groups.get(category).push(item);
+    });
+
+    return [...groups.entries()]
+      .sort(([a], [b]) => {
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+
+        if (indexA !== -1 || indexB !== -1) {
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        }
+
+        return a.localeCompare(b, 'de-CH');
+      })
+      .map(([category, items]) => ({
+        category,
+        items: items.sort((a, b) => String(a.name).localeCompare(String(b.name), 'de-CH')),
+      }));
   }
 
   renderFormPart(formPart) {
@@ -188,6 +281,7 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <h1>${this.escapeHtml(formPart?.name ?? 'Formteil')}</h1>
       ${this.renderDirtyHint()}
+      ${this.renderValidationMessages(this.getFormPartValidationWarnings(formPart))}
       ${this.renderFormPartOverview(formPart)}
 
       <section class="dp-editor-panel">
@@ -225,9 +319,7 @@ export default class WorkspaceComponent {
 
         ${this.renderFormPartParameters(formPart)}
 
-        <div class="dp-editor-actions">
-          <button data-action="calculate-formpart">Übernehmen und Projekt berechnen</button>
-        </div>
+        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
       </section>
 
       ${this.renderFormPartResult(formPart)}
@@ -250,30 +342,46 @@ export default class WorkspaceComponent {
 
         this.deriveAndStoreFormPart(formPart);
         this.calculateAndStoreFormPart(formPart, { silent: true });
-        this.state.markCalculationDirty();
-        this.renderFormPart(formPart);
+        this.autoCalculateProject();
       });
     });
+  }
 
-    const button = this.root.querySelector('[data-action="calculate-formpart"]');
+  autoCalculateProject(options = {}) {
+    const project = this.state.project;
 
-    if (button) {
-      button.addEventListener('click', () => {
-        try {
-          this.deriveAndStoreFormPart(formPart);
-          this.calculateAndStoreFormPart(formPart);
+    if (!project) return null;
 
-          const project = this.state.project;
-          const result = ProjectCalculationService.calculate(project);
+    try {
+      const result = ProjectCalculationService.calculate(project);
+      project.calculationResult = result;
 
-          project.calculationResult = result;
+      if (options.notify === false) {
+        this.state.isCalculationDirty = false;
+        this.state.isProjectDirty = true;
+        this.state.lastCalculationAt = new Date().toISOString();
+      } else if (typeof this.state.markAutoCalculated === 'function') {
+        this.state.markAutoCalculated();
+      } else {
+        this.state.lastCalculationAt = new Date().toISOString();
+        this.state.markCalculationClean();
+        this.state.markProjectDirty();
+      }
 
-          this.state.lastCalculationAt = new Date().toISOString();
-          this.state.markCalculationClean();
-        } catch (error) {
-          alert(`Berechnung fehlgeschlagen: ${error.message}`);
-        }
-      });
+      return result;
+    } catch (error) {
+      console.warn('Automatische Berechnung fehlgeschlagen:', error);
+
+      if (options.notify === false) {
+        this.state.isCalculationDirty = true;
+        this.state.isProjectDirty = true;
+      } else if (typeof this.state.markAutoCalculationFailed === 'function') {
+        this.state.markAutoCalculationFailed(error);
+      } else {
+        this.state.markCalculationDirty();
+      }
+
+      return null;
     }
   }
 
@@ -545,7 +653,7 @@ export default class WorkspaceComponent {
       const calculation = result?.calculation || {};
       const pressureLossPa = Number(calculation.pressureLossPa ?? 0);
 
-      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa > 0) {
+      if (calculation.lossMode === 'direct' && Number.isFinite(pressureLossPa) && pressureLossPa !== 0) {
         formPart.lossMode = 'direct';
         formPart.pressureLossPa = pressureLossPa;
       } else {
@@ -944,12 +1052,217 @@ export default class WorkspaceComponent {
     }
 
     return `
-      <section class="dp-result-panel">
+      <section class="dp-result-panel dp-total-panel">
         <h2>Berechnungsergebnis</h2>
 
         <div class="dp-result-value">
-          <strong>${Number(total).toFixed(1)} Pa</strong>
+          <strong>${this.formatNumber(total, 1)} Pa</strong>
           <span>Gesamtdruckverlust</span>
+        </div>
+      </section>
+    `;
+  }
+
+  renderCalculationBreakdown(calculation) {
+    const results = calculation?.results || [];
+
+    if (!results.length) return '';
+
+    const totals = calculation?.totals || {};
+    const frictionLoss = Number(totals.friction ?? 0);
+    const zetaLoss = Number(totals.zetaLoss ?? results.reduce((sum, item) => sum + Number(item?.result?.zetaLoss ?? 0), 0));
+    const directLoss = Number(totals.directFormPartLoss ?? results.reduce((sum, item) => sum + Number(item?.result?.directFormPartLoss ?? 0), 0));
+    const specialLoss = Number(totals.special ?? 0);
+    const totalLoss = Number(totals.totalRounded ?? totals.total ?? 0);
+
+    return `
+      <section class="dp-result-panel">
+        <h2>Aufteilung Druckverlust</h2>
+
+        <div class="dp-result-cards">
+          <div class="dp-result-card">
+            <span>Reibungsverlust</span>
+            <strong>${this.formatNumber(frictionLoss)} Pa</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>ζ-Verlust Formteile</span>
+            <strong>${this.formatNumber(zetaLoss)} Pa</strong>
+          </div>
+          <div class="dp-result-card ${directLoss < 0 ? 'dp-result-card-negative' : ''}">
+            <span>Direktverlust Formteile</span>
+            <strong>${this.formatNumber(directLoss)} Pa</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>Sonderbauteile</span>
+            <strong>${this.formatNumber(specialLoss)} Pa</strong>
+          </div>
+          <div class="dp-result-card dp-result-card-total">
+            <span>Gesamt gerundet</span>
+            <strong>${this.formatNumber(totalLoss, 1)} Pa</strong>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  renderCalculationAudit(calculation) {
+    const results = calculation?.results || [];
+
+    if (!results.length && !(calculation?.specialComponentResults || []).length) return '';
+
+    const totals = calculation?.totals || {};
+    const audit = totals.audit || {};
+    const frictionLoss = Number(totals.friction ?? 0);
+    const zetaLoss = Number(totals.zetaLoss ?? results.reduce((sum, item) => sum + Number(item?.result?.zetaLoss ?? 0), 0));
+    const directLoss = Number(totals.directFormPartLoss ?? results.reduce((sum, item) => sum + Number(item?.result?.directFormPartLoss ?? 0), 0));
+    const specialLoss = Number(totals.special ?? 0);
+    const componentTotal = Number(audit.componentTotal ?? frictionLoss + zetaLoss + directLoss + specialLoss);
+    const rawTotal = Number(audit.rawTotal ?? totals.total ?? componentTotal);
+    const roundedTotal = Number(audit.roundedTotal ?? totals.totalRounded ?? rawTotal);
+    const difference = Number(audit.difference ?? rawTotal - componentTotal);
+    const isOk = audit.ok !== undefined ? Boolean(audit.ok) : Math.abs(difference) <= 0.05;
+    const hasNegativeDirectLoss = directLoss < 0 || Number(totals.negativeDirectLoss ?? 0) < 0;
+
+    return `
+      <section class="dp-result-panel dp-audit-panel ${isOk ? 'dp-audit-ok' : 'dp-audit-warning'}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Berechnungsprüfung</h2>
+            <p>Kontrolle, ob die Summe der Teilwerte mit dem Systemtotal übereinstimmt.</p>
+          </div>
+          <span class="dp-audit-badge">${isOk ? 'OK' : 'Prüfen'}</span>
+        </div>
+
+        <div class="dp-audit-grid">
+          <div>
+            <span>Summe aus Teilwerten</span>
+            <strong>${this.formatNumber(componentTotal)} Pa</strong>
+          </div>
+          <div>
+            <span>Systemtotal ungerundet</span>
+            <strong>${this.formatNumber(rawTotal)} Pa</strong>
+          </div>
+          <div>
+            <span>Differenz</span>
+            <strong class="${!isOk ? 'dp-negative-value' : ''}">${this.formatNumber(difference, 3)} Pa</strong>
+          </div>
+          <div>
+            <span>Systemtotal gerundet</span>
+            <strong>${this.formatNumber(roundedTotal, 1)} Pa</strong>
+          </div>
+        </div>
+
+        ${hasNegativeDirectLoss ? `
+          <p class="dp-audit-note">Hinweis: Negative Direktverluste sind vorhanden. Das kann bei Druckrückgewinnung aus T-Abzweigen fachlich korrekt sein.</p>
+        ` : ''}
+      </section>
+    `;
+  }
+
+  renderProjectValidationOverview(system = {}) {
+    const result = this.state.project?.calculationResult || null;
+    const quality = result?.quality || null;
+
+    if (quality) {
+      const errors = quality.errors || [];
+      const warnings = quality.warnings || [];
+      const hasProblems = errors.length || warnings.length;
+
+      if (!hasProblems) {
+        return `
+          <section class="dp-result-panel dp-quality-panel dp-quality-ok">
+            <div class="dp-panel-header">
+              <div>
+                <h2>Plausibilitätsstatus</h2>
+                <p>Projektstruktur, Formteile und Berechnung sind ohne QS-Hinweis.</p>
+              </div>
+              <span class="dp-audit-badge">OK</span>
+            </div>
+          </section>
+        `;
+      }
+
+      return `
+        <section class="dp-result-panel dp-quality-panel ${errors.length ? 'dp-quality-error' : 'dp-quality-warning'}">
+          <div class="dp-panel-header">
+            <div>
+              <h2>Plausibilitätsstatus</h2>
+              <p>${errors.length} Fehler und ${warnings.length} Hinweis${warnings.length === 1 ? '' : 'e'} gefunden.</p>
+            </div>
+            <span class="dp-audit-badge">${errors.length ? 'Fehler' : 'Prüfen'}</span>
+          </div>
+
+          <div class="dp-quality-list">
+            ${errors.map(error => `
+              <div class="dp-quality-item dp-quality-item-error">
+                <strong>Fehler</strong>
+                <span>⛔ ${this.escapeHtml(error)}</span>
+              </div>
+            `).join('')}
+            ${warnings.map(warning => `
+              <div class="dp-quality-item">
+                <strong>Hinweis</strong>
+                <span>⚠ ${this.escapeHtml(warning)}</span>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    const sections = system?.sections || [];
+    const formParts = system?.formParts || [];
+
+    const sectionItems = sections
+      .map(section => ({
+        type: 'Teilstrecke',
+        name: section?.name ?? section?.ts ?? section?.id ?? 'Teilstrecke',
+        warnings: this.getSectionValidationWarnings(section),
+      }))
+      .filter(item => item.warnings.length);
+
+    const formPartItems = formParts
+      .map(formPart => ({
+        type: 'Formteil',
+        name: formPart?.name ?? this.getRegistryEntry(formPart)?.name ?? formPart?.type ?? 'Formteil',
+        warnings: this.getFormPartValidationWarnings(formPart),
+      }))
+      .filter(item => item.warnings.length);
+
+    const items = [...sectionItems, ...formPartItems];
+    const warningCount = items.reduce((sum, item) => sum + item.warnings.length, 0);
+
+    if (!items.length) {
+      return `
+        <section class="dp-result-panel dp-quality-panel dp-quality-ok">
+          <div class="dp-panel-header">
+            <div>
+              <h2>Plausibilitätsstatus</h2>
+              <p>Alle aktuell sichtbaren Teilstrecken und Formteile sind ohne Plausibilitätswarnung.</p>
+            </div>
+            <span class="dp-audit-badge">OK</span>
+          </div>
+        </section>
+      `;
+    }
+
+    return `
+      <section class="dp-result-panel dp-quality-panel dp-quality-warning">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Plausibilitätsstatus</h2>
+            <p>${warningCount} Hinweis${warningCount === 1 ? '' : 'e'} in ${items.length} Element${items.length === 1 ? '' : 'en'} gefunden.</p>
+          </div>
+          <span class="dp-audit-badge">Prüfen</span>
+        </div>
+
+        <div class="dp-quality-list">
+          ${items.map(item => `
+            <div class="dp-quality-item">
+              <strong>${this.escapeHtml(item.type)}: ${this.escapeHtml(item.name)}</strong>
+              ${item.warnings.map(warning => `<span>⚠ ${this.escapeHtml(warning)}</span>`).join('')}
+            </div>
+          `).join('')}
         </div>
       </section>
     `;
@@ -964,20 +1277,23 @@ export default class WorkspaceComponent {
       <section class="dp-result-panel">
         <h2>Teilstrecken-Ergebnisse</h2>
 
-        <table class="dp-table">
+        <table class="dp-table dp-calculation-table">
           <thead>
             <tr>
               <th>Teilstrecke</th>
               <th>Luftmenge</th>
               <th>Geschwindigkeit</th>
-              <th>Druckverlust</th>
-              <th>ζ Formteile</th>
+              <th>Reibung</th>
+              <th>ζ-Verlust</th>
+              <th>Direktverlust</th>
+              <th>Gesamt</th>
             </tr>
           </thead>
           <tbody>
             ${results.map(item => {
               const result = item.result || {};
               const input = item.input || {};
+              const sectionId = input.id || item.id;
 
               const name =
                 input.name ??
@@ -993,10 +1309,7 @@ export default class WorkspaceComponent {
                 input.airVolume ??
                 input.volumeFlow;
 
-              const velocity =
-                result.velocity ??
-                result.airVelocity;
-
+              const directLoss = Number(result.directFormPartLoss ?? item.directFormPartLoss ?? 0);
               const pressureLoss =
                 result.roundedTotalLoss ??
                 result.totalLoss ??
@@ -1004,26 +1317,109 @@ export default class WorkspaceComponent {
                 result.pressureLoss ??
                 result.dp;
 
-              const zeta =
-                item.zetaFromParts ??
-                result.zetaSum ??
-                input.zetaSum ??
-                input.zeta;
+              const assignedDetails = this.renderAssignedFormPartsCompact(sectionId, result);
 
               return `
                 <tr>
-                  <td>${name}</td>
+                  <td><strong>${this.escapeHtml(name)}</strong></td>
                   <td>${this.formatAirflow(volumeFlow)} m³/h</td>
-                  <td>${this.formatNumber(velocity)} m/s</td>
-                  <td>${this.formatNumber(pressureLoss)} Pa</td>
-                  <td>${this.formatNumber(zeta)}</td>
+                  <td>${this.formatNumber(result.velocity)} m/s</td>
+                  <td>${this.formatNumber(result.frictionLoss)} Pa</td>
+                  <td>${this.formatNumber(result.zetaLoss)} Pa</td>
+                  <td class="${directLoss < 0 ? 'dp-negative-value' : ''}">${this.formatNumber(directLoss)} Pa</td>
+                  <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
                 </tr>
+                ${assignedDetails ? `
+                  <tr class="dp-detail-row">
+                    <td colspan="7">${assignedDetails}</td>
+                  </tr>
+                ` : ''}
               `;
             }).join('')}
           </tbody>
         </table>
       </section>
     `;
+  }
+
+  renderSectionFormParts(section = {}) {
+    const formParts = this.getAssignedFormParts(section?.id);
+
+    if (!formParts.length) return '';
+
+    const calculationItem = this.getCalculationItemBySectionId(section?.id);
+
+    return `
+      <section class="dp-result-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Zugeordnete Formteile</h2>
+            <p>Diese Formteile fliessen in die Berechnung dieser Teilstrecke ein.</p>
+          </div>
+        </div>
+
+        ${this.renderAssignedFormPartsCompact(section?.id, calculationItem?.result || null)}
+      </section>
+    `;
+  }
+
+  renderAssignedFormPartsCompact(sectionId, sectionResult = null) {
+    const formParts = this.getAssignedFormParts(sectionId);
+
+    if (!formParts.length) return '';
+
+    return `
+      <div class="dp-assigned-formparts">
+        ${formParts.map(part => this.renderAssignedFormPartItem(part, sectionResult)).join('')}
+      </div>
+    `;
+  }
+
+  renderAssignedFormPartItem(formPart = {}, sectionResult = null) {
+    const entry = this.getRegistryEntry(formPart);
+    const calculation = formPart?.calculationResult?.calculation || {};
+    const isDirectLoss = formPart.lossMode === 'direct' || calculation.lossMode === 'direct';
+    const zeta = Number(formPart?.zeta ?? formPart?.calculationResult?.zeta ?? 0);
+    const dynamicPressure = isDirectLoss
+      ? Number(calculation.dynamicPressurePa ?? 0)
+      : Number(sectionResult?.dynamicPressure ?? 0);
+    const pressureLoss = isDirectLoss
+      ? Number(formPart.pressureLossPa ?? calculation.pressureLossPa ?? 0)
+      : zeta * dynamicPressure;
+    const reference = isDirectLoss && calculation.pressureReference
+      ? `bezogen auf ${calculation.pressureReference}`
+      : 'bezogen auf Teilstrecke';
+
+    return `
+      <div class="dp-assigned-formpart-item">
+        <div>
+          <strong>${this.escapeHtml(formPart?.name ?? entry?.name ?? 'Formteil')}</strong>
+          <span>${this.escapeHtml(entry?.category ?? formPart?.type ?? 'Formteil')}</span>
+        </div>
+        <div>
+          <small>ζ</small>
+          <strong>${this.formatNumber(zeta, 3)}</strong>
+        </div>
+        <div>
+          <small>Druckverlust</small>
+          <strong class="${pressureLoss < 0 ? 'dp-negative-value' : ''}">${this.formatNumber(pressureLoss)} Pa</strong>
+        </div>
+        <em>${this.escapeHtml(reference)}</em>
+      </div>
+    `;
+  }
+
+  getAssignedFormParts(sectionId) {
+    if (!sectionId) return [];
+
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const formParts = system?.formParts || [];
+
+    return formParts.filter(part =>
+      part?.sectionId === sectionId ||
+      part?.rowId === sectionId ||
+      part?.targetSectionId === sectionId
+    );
   }
 
   isPipeSection(section = {}) {
@@ -1058,7 +1454,7 @@ export default class WorkspaceComponent {
   `;
 }
 
-  renderSectionResult(result, item) {
+  renderSectionResult(result, item, section = null) {
     if (!result) {
       return `
         <section class="dp-result-panel">
@@ -1107,8 +1503,166 @@ export default class WorkspaceComponent {
             </tr>
           </tbody>
         </table>
+
+        ${this.renderValidationMessages(result?.warnings || [])}
       </section>
     `;
+  }
+
+  renderValidationMessages(warnings = []) {
+    const uniqueWarnings = [...new Set((warnings || [])
+      .map(warning => String(warning || '').trim())
+      .filter(Boolean))];
+
+    if (!uniqueWarnings.length) return '';
+
+    return `
+      <div class="dp-validation-panel">
+        <strong>Bitte Eingaben prüfen</strong>
+        ${uniqueWarnings.map(warning => `<p>⚠ ${this.escapeHtml(warning)}</p>`).join('')}
+      </div>
+    `;
+  }
+
+  getSectionValidationWarnings(section = {}) {
+    if (!section) return [];
+
+    const warnings = [];
+    const q = Number(section.q ?? section.volumeFlow ?? section.airVolume ?? 0);
+    const length = Number(section.l ?? section.length ?? 0);
+
+    if (!Number.isFinite(q) || q <= 0) {
+      warnings.push('Luftmenge der Teilstrecke fehlt oder ist 0 m³/h.');
+    }
+
+    if (!Number.isFinite(length) || length < 0) {
+      warnings.push('Länge der Teilstrecke darf nicht negativ sein.');
+    }
+
+    if (this.isPipeSection(section)) {
+      const diameter = Number(section.d ?? section.diameter ?? 0);
+      if (!Number.isFinite(diameter) || diameter <= 0) {
+        warnings.push('Durchmesser der Rundrohr-Teilstrecke fehlt oder ist 0 m.');
+      }
+    } else {
+      const width = Number(section.b ?? section.width ?? 0);
+      const height = Number(section.h ?? section.height ?? 0);
+
+      if (!Number.isFinite(width) || width <= 0) {
+        warnings.push('Breite der Rechteckkanal-Teilstrecke fehlt oder ist 0 m.');
+      }
+
+      if (!Number.isFinite(height) || height <= 0) {
+        warnings.push('Höhe der Rechteckkanal-Teilstrecke fehlt oder ist 0 m.');
+      }
+    }
+
+    return warnings;
+  }
+
+  getFormPartValidationWarnings(formPart = {}) {
+    if (!formPart) return [];
+
+    const warnings = [];
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const sections = system?.sections || [];
+    const sectionValid = formPart.sectionId && sections.some(section => section.id === formPart.sectionId);
+
+    if (!sectionValid) {
+      warnings.push('Dem Formteil ist noch keine gültige Teilstrecke zugewiesen.');
+    }
+
+    const entry = this.getRegistryEntry(formPart);
+
+    if (!entry) {
+      warnings.push('Formteiltyp ist nicht in der Bibliothek vorhanden.');
+      return warnings;
+    }
+
+    const visibleParameters = (entry.parameters || []).filter(parameter => this.isFormPartParameterVisible(formPart, parameter));
+
+    visibleParameters.forEach(parameter => {
+      if (parameter.readOnly || parameter.derived) return;
+
+      const value = formPart?.[parameter.id];
+      const label = parameter.label || parameter.id;
+
+      if (parameter.type === 'number') {
+        const number = Number(value);
+
+        if (!Number.isFinite(number)) {
+          warnings.push(`${label} ist keine gültige Zahl.`);
+          return;
+        }
+
+        const min = parameter.min !== undefined ? Number(parameter.min) : null;
+        const max = parameter.max !== undefined ? Number(parameter.max) : null;
+
+        if (min !== null && Number.isFinite(min) && number < min) {
+          warnings.push(`${label} muss mindestens ${min} sein.`);
+        }
+
+        if (max !== null && Number.isFinite(max) && number > max) {
+          warnings.push(`${label} darf maximal ${max} sein.`);
+        }
+
+        if ((parameter.unit === 'mm' || /\[mm\]/i.test(label)) && number <= 0) {
+          warnings.push(`${label} fehlt oder ist 0 mm.`);
+        }
+
+        if ((parameter.unit === 'm³/h' || /Luftmenge/i.test(label)) && number < 0) {
+          warnings.push(`${label} darf nicht negativ sein.`);
+        }
+      }
+    });
+
+    this.addFormPartRelationWarnings(formPart, warnings);
+
+    return warnings;
+  }
+
+  addFormPartRelationWarnings(formPart = {}, warnings = []) {
+    const type = String(formPart?.type || '');
+    const W = Number(formPart?.W ?? 0);
+    const WA = Number(formPart?.WA ?? 0);
+    const WD = Number(formPart?.WD ?? 0);
+    const w = Number(formPart?.w ?? 0);
+    const wA = Number(formPart?.wA ?? 0);
+
+    if ([
+      'hosenstueck',
+      'sattelstueck_mit_einstroemkonus',
+      't_stueck_90',
+      't_stueck_90_2',
+      't_abzweig_durchgang_rund1',
+      't_abzweig_durchgang_rund2',
+      't_abzweig_rund1',
+      't_abzweig_rund2',
+    ].includes(type)) {
+      if (W <= 0) warnings.push('Hauptluftmenge W fehlt oder ist 0 m³/h.');
+      if (WA < 0) warnings.push('Abzweigluftmenge WA darf nicht negativ sein.');
+      if (WA > W && W > 0) warnings.push('Abzweigluftmenge WA ist grösser als Hauptluftmenge W. Bitte Strömungsaufteilung prüfen.');
+      if (w <= 0 && W > 0) warnings.push('Hauptgeschwindigkeit w konnte nicht berechnet werden. Bitte Hauptanschluss-Grösse prüfen.');
+      if (wA <= 0 && WA > 0) warnings.push('Abzweiggeschwindigkeit wA konnte nicht berechnet werden. Bitte Abzweig-Grösse prüfen.');
+    }
+
+    if (type.startsWith('t_abzweig') && W > 0 && WA > 0 && WD > 0) {
+      const balance = Math.abs(W - (WA + WD));
+      if (balance > Math.max(1, W * 0.02)) {
+        warnings.push('Bei diesem T-Abzweig sollte W ungefähr WA + WD entsprechen. Bitte Luftmengen prüfen.');
+      }
+    }
+
+    if (type === 'uebergang_gross_klein' || type === 'uebergang_klein_gross') {
+      const A1 = Number(formPart?.A1 ?? 0);
+      const A2 = Number(formPart?.A2 ?? 0);
+
+      if (A1 <= 0) warnings.push('Kleiner Querschnitt A1 konnte nicht berechnet werden. Bitte Anschlussgrösse prüfen.');
+      if (A2 <= 0) warnings.push('Grosser Querschnitt A2 konnte nicht berechnet werden. Bitte Anschlussgrösse prüfen.');
+      if (A1 > A2 && A2 > 0) warnings.push('A1 ist grösser als A2. Für die Übergangstabellen muss A1 der kleinere Querschnitt sein.');
+    }
+
+    return warnings;
   }
 
   renderDirtyHint() {
@@ -1116,7 +1670,7 @@ export default class WorkspaceComponent {
 
     return `
       <div class="dp-dirty-hint">
-        ● Berechnung veraltet – bitte neu berechnen
+        ● Automatische Berechnung konnte nicht vollständig aktualisiert werden – bitte Eingaben prüfen
       </div>
     `;
   }

@@ -15,6 +15,7 @@ export default class ApplicationState {
     this.isCalculationDirty = false;
     this.isProjectDirty = false;
     this.lastCalculationAt = null;
+    this.lastAutoCalculationError = null;
 
     this.listeners = [];
   }
@@ -45,6 +46,7 @@ export default class ApplicationState {
     this.isCalculationDirty = false;
     this.isProjectDirty = false;
     this.lastCalculationAt = null;
+    this.lastAutoCalculationError = null;
 
     this.clearSelection(false);
     this.notify();
@@ -66,6 +68,21 @@ export default class ApplicationState {
 
   markCalculationClean() {
     this.isCalculationDirty = false;
+    this.notify();
+  }
+
+  markAutoCalculated(timestamp = new Date().toISOString()) {
+    this.isCalculationDirty = false;
+    this.isProjectDirty = true;
+    this.lastCalculationAt = timestamp;
+    this.lastAutoCalculationError = null;
+    this.notify();
+  }
+
+  markAutoCalculationFailed(error = null) {
+    this.isCalculationDirty = true;
+    this.isProjectDirty = true;
+    this.lastAutoCalculationError = error?.message || String(error || 'Automatische Berechnung fehlgeschlagen.');
     this.notify();
   }
 
@@ -113,6 +130,15 @@ export default class ApplicationState {
     this.selectedFormPart = null;
 
     this.setSelection('specialComponent', component);
+    this.notify();
+  }
+
+  selectFormPartPicker(data = null) {
+    this.selectedSection = null;
+    this.selectedFormPart = null;
+    this.selectedSpecialComponent = null;
+
+    this.setSelection('formPartPicker', data || this.selectedSystem);
     this.notify();
   }
 

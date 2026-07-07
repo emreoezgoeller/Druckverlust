@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.4.27 – Sprint 16 Abschluss / Phase 16 final
+
+- Sprint 16 als geschlossene Formteilbibliothek-Phase finalisiert.
+- ProjectCalculationService gegen einzelne fehlerhafte Formteile gehärtet, damit nicht mehr die komplette Projektberechnung abbricht.
+- CalculationEngine rechnet Sonderbauteile jetzt sauber in die Systemsumme ein.
+- Berechnungs-Audit wird direkt im Kern mit `componentTotal`, `rawTotal`, `roundedTotal`, `difference` und `ok` ausgegeben.
+- QS-Zusammenfassung ergänzt: Status `ok`, `warning` oder `error` mit Fehler-/Hinweislisten.
+- Statusbar zeigt QS-Status und letzte automatische Berechnung an.
+- Speichern `.dvp` gegen zyklische Berechnungsreferenzen abgesichert.
+- Neuer Abschluss-Test `tests/sprint16-final.html` ergänzt.
+- Abschlussdokumentation `docs/SPRINT16_ABSCHLUSS.md` ergänzt.
+
+## 0.4.26 – Sprint 16.26 QS-Ampel und Kern-Totals
+
+### Neu
+- Systemübersicht zeigt eine Berechnungsprüfung mit Summe aus Teilwerten, Systemtotal und Differenz.
+- Systemübersicht zeigt einen Plausibilitätsstatus über alle Teilstrecken und Formteile.
+- Negative Direktverluste werden in der Berechnungsprüfung ausdrücklich als mögliche Druckrückgewinnung markiert.
+
+### Korrektur
+- `CalculationEngine` liefert die Summen für ζ-Verlust und Direktverlust jetzt direkt im `totals`-Block.
+- Die UI muss diese Werte nicht mehr vollständig selbst aus den Einzelresultaten zusammensuchen.
+
+### Dateien
+- Erweitert: `src/core/CalculationEngine.js`
+- Erweitert: `src/ui/components/WorkspaceComponent.js`
+- Erweitert: `src/ui/ApplicationShell.css`
+
+## 0.4.25 – Sprint 16.25 Berechnungsaufteilung und Formteil-Zuordnung
+
+### Neu
+- Systemübersicht zeigt eine Aufteilung des Gesamtdruckverlusts nach Reibung, ζ-Formteilverlusten, Direktverlusten und Sonderbauteilen.
+- Teilstrecken-Ergebnistabelle zeigt Reibung, ζ-Verlust, Direktverlust und Gesamtverlust getrennt.
+- Zugeordnete Formteile werden direkt unter der jeweiligen Teilstrecke angezeigt.
+- Teilstrecken-Editor zeigt ebenfalls die zugeordneten Formteile mit ζ-Wert und Druckverlust.
+
+### Korrektur
+- Direktverluste dürfen jetzt auch negativ sein, damit Druckrückgewinnungen aus Abzweig-/T-Stück-Tabellen nicht verloren gehen.
+
+### Dateien
+- Erweitert: `src/ui/components/WorkspaceComponent.js`
+- Erweitert: `src/ui/ApplicationShell.css`
+
+## 0.4.24 – Sprint 16.24 Plausibilitätsprüfung
+
+### Neu
+- Teilstrecken zeigen Warnungen, wenn Luftmenge, Länge oder Geometrie fehlen bzw. ungültig sind.
+- Formteile zeigen Warnungen bei fehlender Teilstrecke, ungültigen Parametern und unplausiblen Luftmengenverhältnissen.
+- Übergänge prüfen, ob A1/A2 fachlich passend ist.
+- Abzweige prüfen Luftmengenaufteilung `W ≈ WA + WD`.
+
+### Dateien
+- Erweitert: `src/ui/components/WorkspaceComponent.js`
+- Erweitert: `src/ui/ApplicationShell.css`
+
 ## 0.4.22 – Sprint 16.22 Formteilbibliothek Abschluss-QS
 
 ### Neu
@@ -186,3 +241,10 @@
 - Beim Übergang gross → klein kann neu zwischen `Winkel β` und `Kanalkante` gewählt werden.
 - Kanalkanten 1–4 sind eingebaut: scharfe Kante, gebrochene Kante, gerundete Kante, glatte/gute Abrundung.
 - Für Kanalkante wird die Excel-Logik `ζ = Tabellenwert(Kante, A1/A2) × (1 - A1/A2)` verwendet.
+
+## Sprint 16.23 – Formteil-Auswahl & automatische Berechnung
+
+- `+ Formteil` öffnet jetzt zuerst eine kategorisierte Kachelansicht der Formteilbibliothek.
+- Ein Formteil wird erst nach Auswahl einer Kachel erstellt und danach direkt im Editor geöffnet.
+- Teilstrecken- und Formteiländerungen werden automatisch übernommen und berechnet.
+- Die manuellen Berechnen-Buttons in Teilstrecken- und Formteil-Editor wurden durch einen Auto-Berechnungs-Hinweis ersetzt.

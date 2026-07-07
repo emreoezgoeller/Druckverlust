@@ -26,3 +26,14 @@ Die App läuft als statische Webseite. Startdatei: `index.html`.
 ## Wichtig
 
 Die aktuell hinterlegten Zeta-Formeln sind weiterhin Arbeitslogik. Die Formeln werden in Sprint 3 je Formteil gegen die Excel-Dateien geprüft und schrittweise 1:1 ersetzt.
+
+
+## Sprint 16 Abschluss-Test
+
+Der finale QS-Test für die Formteilbibliothek liegt unter:
+
+```text
+tests/sprint16-final.html
+```
+
+Die Datei im Browser öffnen, um Registry, Calculatoren, Projektberechnung, QS-Status und Speichern zu prüfen.

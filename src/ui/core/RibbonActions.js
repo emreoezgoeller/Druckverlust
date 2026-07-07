@@ -17,6 +17,7 @@ export default class RibbonActions {
 
   newProject() {
     this.commands.createProject('Neues Projekt');
+    this.calculate({ silent: true, keepDirty: true });
     console.info('RibbonAction: Neues Projekt erstellt');
   }
 
@@ -37,6 +38,7 @@ export default class RibbonActions {
 
         this.state.setProject(project);
         this.state.setSelection('project', project);
+        this.calculate({ silent: true, keepDirty: false });
         this.state.markProjectClean();
 
         console.info('RibbonAction: Projekt geöffnet', project);
@@ -56,16 +58,20 @@ export default class RibbonActions {
       return;
     }
 
-    StorageEngine.download(project);
-
-    this.state.markProjectClean();
-
-    console.info('RibbonAction: Projekt gespeichert', project);
+    try {
+      this.calculate({ silent: true, keepDirty: true });
+      StorageEngine.download(project);
+      this.state.markProjectClean();
+      console.info('RibbonAction: Projekt gespeichert', project);
+    } catch (error) {
+      alert(`Projekt konnte nicht gespeichert werden: ${error.message}`);
+    }
   }
 
   addSection() {
     try {
       const section = this.commands.addSection();
+      this.calculate({ silent: true, keepDirty: true });
       console.info('RibbonAction: Teilstrecke hinzugefügt', section);
     } catch (error) {
       alert(error.message);
@@ -75,33 +81,53 @@ export default class RibbonActions {
   addFormPart() {
     try {
       const formPart = this.commands.addFormPart();
-      console.info('RibbonAction: Formteil hinzugefügt', formPart);
+      console.info('RibbonAction: Formteil-Auswahl geöffnet', formPart);
     } catch (error) {
       alert(error.message);
     }
   }
 
-  calculate() {
+  calculate(options = {}) {
     const project = this.state.project;
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
-      return;
+      if (!options.silent) alert('Kein Projekt vorhanden.');
+      return null;
     }
 
     try {
       const result = ProjectCalculationService.calculate(project);
-
       project.calculationResult = result;
 
-      this.state.lastCalculationAt = new Date().toISOString();
-      this.state.markCalculationClean();
+      const timestamp = result.timestamp || new Date().toISOString();
+      this.state.lastCalculationAt = timestamp;
 
-      console.info('RibbonAction: Berechnung abgeschlossen', result);
-      alert('Berechnung abgeschlossen.');
+      if (typeof this.state.markAutoCalculated === 'function') {
+        this.state.markAutoCalculated(timestamp);
+      } else {
+        this.state.markCalculationClean();
+      }
+
+      if (options.keepDirty === false) {
+        this.state.markProjectClean();
+      }
+
+      console.info('RibbonAction: Berechnung aktualisiert', result);
+      return result;
     } catch (error) {
       console.error(error);
-      alert(`Berechnung fehlgeschlagen: ${error.message}`);
+
+      if (typeof this.state.markAutoCalculationFailed === 'function') {
+        this.state.markAutoCalculationFailed(error);
+      } else {
+        this.state.markCalculationDirty();
+      }
+
+      if (!options.silent) {
+        alert(`Berechnung fehlgeschlagen: ${error.message}`);
+      }
+
+      return null;
     }
   }
 

@@ -251,3 +251,18 @@ Der Test prüft:
 
 Damit können spätere Erweiterungen schneller geprüft werden, ohne jedes Formteil manuell durchzuklicken.
 
+
+
+## Sprint 16 Abschluss
+
+Die Formteilbibliothek 2.0 ist abgeschlossen. Alle 14 Formteile besitzen aktive Calculatoren, flexible Parameterdefinitionen, Bildreferenzen und werden in der Projektberechnung berücksichtigt.
+
+Ergänzt wurden ausserdem:
+
+- automatische Berechnung nach Eingabeänderung
+- QS-/Plausibilitätsstatus
+- getrennte Aufteilung von Reibung, ζ-Verlusten, Direktverlusten und Sonderbauteilen
+- Berechnungsprüfung mit Differenzkontrolle
+- Abschluss-Test `tests/sprint16-final.html`
+
+Details siehe `docs/SPRINT16_ABSCHLUSS.md`.
