@@ -41,6 +41,99 @@ function safeFileName(value = 'Druckverlustbericht') {
     .replace(/^_|_$/g, '') || 'Druckverlustbericht';
 }
 
+
+const MAIN_NETWORK_ROWS_PER_PAGE = 30;
+const SPECIAL_ROWS_PER_PAGE = 24;
+const FORMPART_BOXES_PER_PAGE = 4;
+const FORMPART_ROWS_PER_BOX = 5;
+const FORMPART_CATALOG_ROWS_PER_PAGE = 8;
+const QUALITY_ROWS_PER_PAGE = 16;
+
+function chunkArray(items = [], size = 1) {
+  const chunks = [];
+  const safeSize = Math.max(1, Number(size) || 1);
+
+  for (let index = 0; index < items.length; index += safeSize) {
+    chunks.push(items.slice(index, index + safeSize));
+  }
+
+  return chunks.length ? chunks : [[]];
+}
+
+function rangeLabel(startIndex, count, total) {
+  if (!total) return 'keine Einträge';
+  const start = startIndex + 1;
+  const end = Math.min(startIndex + count, total);
+  return `${start}–${end} von ${total}`;
+}
+
+function normalizeQualityIssue(item, type = 'Hinweis', severity = 'warning', index = 0) {
+  if (typeof item === 'object' && item !== null) {
+    return {
+      position: index + 1,
+      type: item.type || type,
+      severity: item.severity || severity,
+      source: item.source || item.scope || item.target || item.id || '-',
+      message: item.message || item.text || item.label || JSON.stringify(item),
+    };
+  }
+
+  return {
+    position: index + 1,
+    type,
+    severity,
+    source: '-',
+    message: String(item ?? ''),
+  };
+}
+
+function normalizeQualityIssues(model = {}) {
+  const errors = (model.quality?.errors || []).map((item, index) => normalizeQualityIssue(item, 'Fehler', 'error', index));
+  const warnings = (model.quality?.warnings || []).map((item, index) => normalizeQualityIssue(item, 'Hinweis', 'warning', errors.length + index));
+
+  return [...errors, ...warnings];
+}
+
+function qualityStatusLabel(status = 'ok') {
+  if (status === 'error') return 'Fehler';
+  if (status === 'warning') return 'Prüfen';
+  return 'OK';
+}
+
+function qualityStatusClass(status = 'ok') {
+  if (status === 'error') return 'error';
+  if (status === 'warning') return 'warn';
+  return 'ok';
+}
+
+function createPrintWaitScript() {
+  return `
+    <script>
+      (function(){
+        function waitForImages(){
+          var images = Array.prototype.slice.call(document.images || []);
+          if (!images.length) return Promise.resolve();
+
+          return Promise.all(images.map(function(img){
+            if (img.complete) return Promise.resolve();
+            return new Promise(function(resolve){
+              img.addEventListener('load', resolve, { once:true });
+              img.addEventListener('error', resolve, { once:true });
+              setTimeout(resolve, 2500);
+            });
+          }));
+        }
+
+        window.__druckverlustPrintReady = function(){
+          return waitForImages().then(function(){
+            return new Promise(function(resolve){ setTimeout(resolve, 250); });
+          });
+        };
+      })();
+    <\/script>
+  `;
+}
+
 function sectionName(section = {}) {
   return section.name ?? section.ts ?? section.sectionNo ?? section.id ?? '-';
 }
@@ -51,6 +144,44 @@ function formPartName(formPart = {}, registryEntry = null) {
 
 function componentName(component = {}) {
   return component.name ?? component.type ?? component.description ?? 'Sonderbauteil';
+}
+
+function hasNonZero(value, tolerance = 0.000001) {
+  return Math.abs(toNumber(value)) > tolerance;
+}
+
+function isEmptyLabel(value = '') {
+  const text = String(value ?? '').trim().toLowerCase();
+  return !text || text === '-' || /^ts\d+$/.test(text) || text === 'teilstrecke';
+}
+
+function isReportRelevantSection(row = {}) {
+  const hasFormParts = Array.isArray(row.formParts) && row.formParts.length > 0;
+  const hasLoss = hasNonZero(row.frictionLoss) || hasNonZero(row.zetaLoss) || hasNonZero(row.directLoss) || hasNonZero(row.totalLoss);
+  const hasAirAndGeometry = hasNonZero(row.airflow)
+    && (hasNonZero(row.area) || hasNonZero(row.width) || hasNonZero(row.height) || hasNonZero(row.diameter) || hasNonZero(row.length));
+  const hasMeaningfulDescription = !isEmptyLabel(row.description) && row.description !== row.name;
+
+  return hasFormParts || hasLoss || hasAirAndGeometry || hasMeaningfulDescription;
+}
+
+function isReportRelevantFormPart(row = {}) {
+  return hasNonZero(row.zeta)
+    || hasNonZero(row.pressureLoss)
+    || !isEmptyLabel(row.name)
+    || !isEmptyLabel(row.type);
+}
+
+function isReportRelevantSpecial(component = {}) {
+  const name = String(component.name ?? '').trim();
+  const type = String(component.type ?? '').trim();
+  const manufacturer = String(component.manufacturer ?? '').trim();
+
+  return hasNonZero(component.pressureLoss)
+    || hasNonZero(component.airflow)
+    || (!!name && name !== 'Sonderbauteil')
+    || (!!type && type !== '-')
+    || (!!manufacturer && manufacturer !== '-');
 }
 
 function getFormPartResult(formPart = {}) {
@@ -87,6 +218,11 @@ function getProjectMeta(project = {}) {
     author: report.author ?? report.bearbeiter ?? project.author ?? project.bearbeiter ?? '-',
     date: report.date ?? report.datum ?? project.date ?? project.datum ?? today,
     note: report.note ?? report.hinweis ?? project.note ?? '',
+    reportNumber: report.reportNumber ?? report.berichtNr ?? report.berichtNummer ?? project.reportNumber ?? project.berichtNr ?? '-',
+    revision: report.revision ?? report.rev ?? project.revision ?? project.rev ?? '0',
+    checkedBy: report.checkedBy ?? report.geprueftVon ?? project.checkedBy ?? project.geprueftVon ?? '-',
+    approvedBy: report.approvedBy ?? report.freigegebenVon ?? project.approvedBy ?? project.freigegebenVon ?? '-',
+    approvalDate: report.approvalDate ?? report.freigabeDatum ?? project.approvalDate ?? project.freigabeDatum ?? '',
     software: report.software ?? 'Druckverlust Pro',
     version: report.version ?? project.version ?? '1.0.0',
   };
@@ -179,15 +315,17 @@ export class ReportEngine {
       if (id) specialResultById.set(id, item);
     });
 
-    const sectionRows = sections.map((section, index) => {
+    const allSectionRows = sections.map((section, index) => {
       const calculationItem = resultBySectionId.get(section.id) || null;
       const result = calculationItem?.result || {};
       const assignedFormParts = formParts
         .filter(part => part.sectionId === section.id || part.rowId === section.id || part.targetSectionId === section.id)
-        .map(part => this.createFormPartRow(part, result, registry));
+        .map(part => this.createFormPartRow(part, result, registry))
+        .filter(part => isReportRelevantFormPart(part));
 
       return {
         position: index + 1,
+        originalPosition: index + 1,
         id: section.id,
         name: sectionName(section),
         description: section.description ?? section.desc ?? sectionName(section),
@@ -210,11 +348,18 @@ export class ReportEngine {
       };
     });
 
-    const formPartRows = formParts.map(part => this.createFormPartRow(part, null, registry));
-    const specialRows = specialComponents.map((component, index) => {
+    const sectionRows = allSectionRows
+      .filter(row => isReportRelevantSection(row))
+      .map((row, index) => ({ ...row, position: index + 1 }));
+
+    const formPartRows = formParts
+      .map(part => this.createFormPartRow(part, null, registry))
+      .filter(part => isReportRelevantFormPart(part));
+    const allSpecialRows = specialComponents.map((component, index) => {
       const result = specialResultById.get(component.id) || {};
       return {
         position: index + 1,
+        originalPosition: index + 1,
         id: component.id,
         name: componentName(component),
         type: component.type ?? component.description ?? '-',
@@ -224,11 +369,17 @@ export class ReportEngine {
       };
     });
 
+    const specialRows = allSpecialRows
+      .filter(row => isReportRelevantSpecial(row))
+      .map((row, index) => ({ ...row, position: index + 1 }));
+
     const formPartsBySection = sectionRows.map(section => ({
       section,
       formParts: section.formParts || [],
       sum: (section.formParts || []).reduce((total, part) => total + toNumber(part.pressureLoss), 0),
     }));
+
+    const formPartCatalog = this.createFormPartCatalogRows(formPartsBySection);
 
     return {
       title: 'Druckverlustbericht',
@@ -242,6 +393,11 @@ export class ReportEngine {
         , software: meta.software
         , version: meta.version
         , note: meta.note
+        , reportNumber: meta.reportNumber
+        , revision: meta.revision
+        , checkedBy: meta.checkedBy
+        , approvedBy: meta.approvedBy
+        , approvalDate: meta.approvalDate
       },
       system: {
         id: system?.id ?? '-',
@@ -253,9 +409,17 @@ export class ReportEngine {
         sectionRoundingStep: toNumber(settings.sectionRoundingStep, 0.5),
       },
       counts: {
-        sections: sections.length,
-        formParts: formParts.length,
-        specialComponents: specialComponents.length,
+        sections: sectionRows.length,
+        formParts: formPartRows.length,
+        specialComponents: specialRows.length,
+      },
+      reportScope: {
+        totalSections: sections.length,
+        hiddenSections: Math.max(0, sections.length - sectionRows.length),
+        totalFormParts: formParts.length,
+        hiddenFormParts: Math.max(0, formParts.length - formPartRows.length),
+        totalSpecialComponents: specialComponents.length,
+        hiddenSpecialComponents: Math.max(0, specialComponents.length - specialRows.length),
       },
       totals: {
         friction: toNumber(totals.friction),
@@ -277,12 +441,52 @@ export class ReportEngine {
       sections: sectionRows,
       formParts: formPartRows,
       formPartsBySection,
+      formPartCatalog,
       specialComponents: specialRows,
       assets: {
         logo: toAbsoluteAssetUrl('assets/logo/eo-logo.png'),
         reportHero: toAbsoluteAssetUrl('assets/report/duct-network-hero.png'),
       },
     };
+  }
+
+  static createFormPartCatalogRows(groups = []) {
+    const catalog = new Map();
+
+    (groups || []).forEach(group => {
+      const sectionNameValue = group.section?.name || group.section?.description || '-';
+
+      (group.formParts || []).forEach(part => {
+        const key = part.type || part.name || part.id || 'formteil';
+        const existing = catalog.get(key) || {
+          key,
+          name: part.type || part.name || 'Formteil',
+          category: part.category || '-',
+          image: part.image || '',
+          reference: part.reference || '-',
+          count: 0,
+          zetaValues: [],
+          pressureLoss: 0,
+          sections: new Set(),
+        };
+
+        existing.count += 1;
+        existing.pressureLoss += toNumber(part.pressureLoss);
+        if (Number.isFinite(Number(part.zeta))) existing.zetaValues.push(toNumber(part.zeta));
+        if (sectionNameValue && sectionNameValue !== '-') existing.sections.add(sectionNameValue);
+        if (!existing.image && part.image) existing.image = part.image;
+        catalog.set(key, existing);
+      });
+    });
+
+    return [...catalog.values()]
+      .map(item => ({
+        ...item,
+        zetaMin: item.zetaValues.length ? Math.min(...item.zetaValues) : null,
+        zetaMax: item.zetaValues.length ? Math.max(...item.zetaValues) : null,
+        sections: [...item.sections],
+      }))
+      .sort((a, b) => String(a.category).localeCompare(String(b.category), 'de') || String(a.name).localeCompare(String(b.name), 'de'));
   }
 
   static createFormPartRow(formPart = {}, sectionResult = null, registry = null) {
@@ -369,28 +573,163 @@ export class ReportEngine {
 </head>
 <body class="report-print-body">
   ${this.renderReportBody(model, { standalone: true, generatedLabel, includeStyle: false })}
+  ${createPrintWaitScript()}
 </body>
 </html>`;
+  }
+
+  static createPagePlan(model) {
+    const mainPageCount = chunkArray(model.sections || [], MAIN_NETWORK_ROWS_PER_PAGE).length;
+    const formPartGroupCount = this.splitFormPartGroupsForReport(model.formPartsBySection || []).length;
+    const formPartPageCount = chunkArray(new Array(formPartGroupCount).fill(null), FORMPART_BOXES_PER_PAGE).length;
+    const specialPageCount = chunkArray(model.specialComponents || [], SPECIAL_ROWS_PER_PAGE).length;
+    const catalogPageCount = chunkArray(model.formPartCatalog || [], FORMPART_CATALOG_ROWS_PER_PAGE).length;
+    const qualityIssues = normalizeQualityIssues(model);
+    const qualityPageCount = chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length;
+
+    const coverPage = 1;
+    const tocPage = 2;
+    const mainStart = 3;
+    const formPartsStart = mainStart + mainPageCount;
+    const specialsStart = formPartsStart + formPartPageCount;
+    const summaryPage = specialsStart + specialPageCount;
+    const qualityStart = summaryPage + 1;
+    const catalogStart = qualityStart + qualityPageCount;
+    const approvalPage = catalogStart + catalogPageCount;
+    const infoPage = approvalPage + 1;
+
+    return {
+      totalPages: infoPage,
+      entries: [
+        {
+          title: 'Deckblatt / Zusammenfassung',
+          description: 'Projektangaben und Druckverlust-Kennwerte',
+          page: coverPage,
+        },
+        {
+          title: 'Hauptberechnung – Luftnetz',
+          description: `${model.counts.sections} berechnungsrelevante Teilstrecken`,
+          page: mainStart,
+          pageCount: mainPageCount,
+        },
+        {
+          title: 'Zugeordnete Formteile',
+          description: `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`,
+          page: formPartsStart,
+          pageCount: formPartPageCount,
+        },
+        {
+          title: 'Sonderbauteile',
+          description: `${model.counts.specialComponents} Komponenten`,
+          page: specialsStart,
+          pageCount: specialPageCount,
+        },
+        {
+          title: 'Gesamtzusammenfassung',
+          description: 'Summen, Berechnungsgrundlagen und QS-Status',
+          page: summaryPage,
+        },
+        {
+          title: 'QS-Prüfprotokoll',
+          description: `${qualityIssues.length} Hinweise / Fehler`,
+          page: qualityStart,
+          pageCount: qualityPageCount,
+        },
+        {
+          title: 'Anhang – Formteilübersicht',
+          description: `${model.formPartCatalog?.length || 0} verwendete Formteiltypen`,
+          page: catalogStart,
+          pageCount: catalogPageCount,
+        },
+        {
+          title: 'Prüfung / Freigabe',
+          description: 'Revisionsstand, Prüffelder und Unterschriften',
+          page: approvalPage,
+        },
+        {
+          title: 'Anlageninformationen / Hinweise',
+          description: 'Projekt- und Berichtsdaten',
+          page: infoPage,
+        },
+      ],
+    };
+  }
+
+  static renderTocPage(model, page = 2, totalPages = 7, pagePlan = null) {
+    const plan = pagePlan || this.createPagePlan(model);
+    const content = `
+      <div class="report-toc-layout">
+        <div class="report-toc-card">
+          <h3>Inhaltsverzeichnis</h3>
+          <p>Der Bericht wird automatisch aus der aktuellen Projektberechnung erzeugt. Leere oder nicht berechnungsrelevante Einträge werden im Bericht ausgeblendet.</p>
+          <table class="report-toc-table">
+            <tbody>
+              ${plan.entries.filter(entry => entry.page !== 1).map(entry => `
+                <tr>
+                  <td>
+                    <strong>${escapeHtml(entry.title)}</strong>
+                    <span>${escapeHtml(entry.description || '')}</span>
+                  </td>
+                  <td>${entry.pageCount && entry.pageCount > 1 ? `${entry.page}–${entry.page + entry.pageCount - 1}` : entry.page}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="report-toc-side">
+          <div class="report-info-box compact">
+            <h3>Berichtsumfang</h3>
+            ${this.renderDefinitionList([
+              ['Teilstrecken', model.counts.sections],
+              ['Formteile', model.counts.formParts],
+              ['Sonderbauteile', model.counts.specialComponents],
+              ['QS-Status', model.quality.status === 'ok' ? 'OK' : 'Prüfen'],
+              ['Gesamtdruckverlust', `${formatNumber(model.totals.total, 1)} Pa`],
+            ])}
+          </div>
+          <div class="report-info-box compact muted">
+            <h3>Hinweis</h3>
+            <p>Für die PDF-Erstellung bitte im Browserdialog „Hintergrundgrafiken“ aktivieren, damit Farben und Tabellenköpfe korrekt gedruckt werden.</p>
+          </div>
+        </div>
+      </div>
+    `;
+
+    return this.renderPage(model, page, 'Inhaltsverzeichnis', 'Struktur des Druckverlustberichts', content, totalPages);
   }
 
   static renderReportBody(model, options = {}) {
     const generatedLabel = options.generatedLabel || new Date(model.generatedAt).toLocaleString('de-CH');
     const includeStyle = options.includeStyle !== false;
+    const totalPlaceholder = '__REPORT_TOTAL_PAGES__';
+    const pagePlan = this.createPagePlan(model);
+    const pages = [];
+    let pageNumber = 1;
+    const nextPage = () => pageNumber++;
 
-    return `
+    pages.push(this.renderCoverPage(model, generatedLabel, nextPage(), totalPlaceholder));
+    pages.push(this.renderTocPage(model, nextPage(), totalPlaceholder, pagePlan));
+    pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
+    pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
+    pages.push(...this.renderSpecialComponentsPages(model, nextPage, totalPlaceholder));
+    pages.push(this.renderSummaryPage(model, nextPage(), totalPlaceholder));
+    pages.push(...this.renderQualityProtocolPages(model, nextPage, totalPlaceholder));
+    pages.push(...this.renderFormPartCatalogPages(model, nextPage, totalPlaceholder));
+    pages.push(this.renderApprovalPage(model, nextPage(), totalPlaceholder, generatedLabel));
+    pages.push(this.renderInfoPage(model, nextPage(), totalPlaceholder));
+
+    const body = `
       ${includeStyle ? `<style>${this.getReportCss()}</style>` : ''}
       <div class="dp-professional-report">
-        ${this.renderCoverPage(model, generatedLabel)}
-        ${this.renderMainNetworkPage(model)}
-        ${this.renderAssignedFormPartsPage(model)}
-        ${this.renderSpecialComponentsPage(model)}
-        ${this.renderSummaryPage(model)}
-        ${this.renderInfoPage(model)}
+        ${pages.join('')}
       </div>
     `;
+
+    return body.replaceAll(totalPlaceholder, String(pages.length));
   }
 
-  static renderPage(model, page, title, subtitle, content) {
+  static renderPage(model, page, title, subtitle, content, totalPages = 6) {
     return `
       <section class="report-page">
         <header class="report-page-head">
@@ -403,7 +742,7 @@ export class ReportEngine {
           </div>
         </header>
         <div class="report-page-content">${content}</div>
-        ${this.renderFooter(page, 6)}
+        ${this.renderFooter(page, totalPages)}
       </section>
     `;
   }
@@ -417,7 +756,7 @@ export class ReportEngine {
     `;
   }
 
-  static renderCoverPage(model, generatedLabel) {
+  static renderCoverPage(model, generatedLabel, page = 1, totalPages = 6) {
     return `
       <section class="report-page report-cover-page">
         <header class="report-cover-topbar">
@@ -444,6 +783,8 @@ export class ReportEngine {
               ['Anlage', model.system.name],
               ['Bearbeiter', model.project.author],
               ['Datum', model.project.date],
+              ['Bericht-Nr.', model.project.reportNumber],
+              ['Revision', model.project.revision],
             ])}
           </div>
           <div class="report-illustration-card">${model.assets.reportHero ? `<img class="report-hero-image" src="${escapeHtml(model.assets.reportHero)}" alt="Technische Lüftungskanal-Grafik">` : makeDuctIllustration()}</div>
@@ -460,13 +801,44 @@ export class ReportEngine {
             ${this.renderSummaryCard('Gesamtdruckverlust', 'Σ Druckverlust', model.totals.total, 'Pa', true)}
           </div>
         </section>
-        ${this.renderFooter(1, 6)}
+        ${this.renderFooter(page, totalPages)}
       </section>
     `;
   }
 
-  static renderMainNetworkPage(model) {
-    const rows = model.sections.map(section => `
+  static renderMainNetworkPages(model, nextPage, totalPages) {
+    const sections = model.sections || [];
+    const chunks = chunkArray(sections, MAIN_NETWORK_ROWS_PER_PAGE);
+    const totalCount = sections.length;
+
+    return chunks.map((chunk, chunkIndex) => {
+      const startIndex = chunkIndex * MAIN_NETWORK_ROWS_PER_PAGE;
+      const rows = chunk.map(section => this.renderMainNetworkRow(section)).join('');
+      const isLastChunk = chunkIndex === chunks.length - 1;
+      const subtitle = totalCount > MAIN_NETWORK_ROWS_PER_PAGE
+        ? `Übersicht aller Teilstrecken (${rangeLabel(startIndex, chunk.length, totalCount)})`
+        : 'Übersicht aller Teilstrecken';
+
+      const content = `
+        <table class="report-table compact report-table-network">
+          <thead>
+            <tr>
+              <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>Fläche<br>m²</th><th>v<br>m/s</th><th>Δp<br>Pa</th>
+            </tr>
+          </thead>
+          <tbody>${rows || '<tr><td colspan="12">Keine Teilstrecken vorhanden.</td></tr>'}</tbody>
+          ${isLastChunk ? `<tfoot><tr><td colspan="11" class="left"><strong>Summe Kanäle / Teilstrecken</strong></td><td><strong>${formatNumber(model.totals.friction, 1)} Pa</strong></td></tr></tfoot>` : ''}
+        </table>
+
+        ${isLastChunk ? `${this.renderMainNetworkLegend()}${this.renderHiddenEntriesNote(model.reportScope?.hiddenSections, 'leere Teilstrecken')}` : '<p class="report-continuation-note">Fortsetzung der Teilstrecken auf der nächsten Seite.</p>'}
+      `;
+
+      return this.renderPage(model, nextPage(), chunkIndex ? 'Hauptberechnung – Luftnetz Fortsetzung' : 'Hauptberechnung – Luftnetz', subtitle, content, totalPages);
+    });
+  }
+
+  static renderMainNetworkRow(section) {
+    return `
       <tr>
         <td>${section.position}</td>
         <td>${escapeHtml(section.type)}</td>
@@ -481,19 +853,11 @@ export class ReportEngine {
         <td>${formatNumber(section.velocity, 2)}</td>
         <td>${formatNumber(section.frictionLoss + section.zetaLoss + section.directLoss, 3)}</td>
       </tr>
-    `).join('');
+    `;
+  }
 
-    const content = `
-      <table class="report-table compact">
-        <thead>
-          <tr>
-            <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>Fläche<br>m²</th><th>v<br>m/s</th><th>Δp<br>Pa</th>
-          </tr>
-        </thead>
-        <tbody>${rows || '<tr><td colspan="12">Keine Teilstrecken vorhanden.</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="11" class="left"><strong>Summe Kanäle / Teilstrecken</strong></td><td><strong>${formatNumber(model.totals.friction, 1)} Pa</strong></td></tr></tfoot>
-      </table>
-
+  static renderMainNetworkLegend() {
+    return `
       <div class="report-legend">
         <span><strong>TS</strong> = Teilstrecke</span>
         <span><strong>v</strong> = Luftgeschwindigkeit</span>
@@ -503,34 +867,60 @@ export class ReportEngine {
         <span><strong>ρ</strong> = Luftdichte</span>
       </div>
     `;
-
-    return this.renderPage(model, 2, 'Hauptberechnung – Luftnetz', 'Übersicht aller Teilstrecken', content);
   }
 
-  static renderAssignedFormPartsPage(model) {
-    const groups = model.formPartsBySection
-      .filter(group => group.formParts.length)
-      .map(group => this.renderFormPartSectionBox(group))
-      .join('');
+  static renderAssignedFormPartsPages(model, nextPage, totalPages) {
+    const allGroups = this.splitFormPartGroupsForReport(model.formPartsBySection || []);
+    const pageGroups = chunkArray(allGroups, FORMPART_BOXES_PER_PAGE);
+    const totalBoxes = allGroups.length;
 
-    const content = `
-      <div class="report-formpart-grid">
-        ${groups || '<div class="report-empty">Keine Formteile vorhanden.</div>'}
-      </div>
-      <div class="report-total-line">
-        <span>Summe Formteile (alle Teilstrecken)</span>
-        <strong>${formatNumber(model.totals.formParts, 1)} Pa</strong>
-      </div>
-    `;
+    return pageGroups.map((groups, chunkIndex) => {
+      const startIndex = chunkIndex * FORMPART_BOXES_PER_PAGE;
+      const isLastChunk = chunkIndex === pageGroups.length - 1;
+      const subtitle = totalBoxes > FORMPART_BOXES_PER_PAGE
+        ? `Übersicht aller Formteile pro Teilstrecke (${rangeLabel(startIndex, groups.length, totalBoxes)})`
+        : 'Übersicht aller Formteile pro Teilstrecke';
 
-    return this.renderPage(model, 3, 'Zugeordnete Formteile', 'Übersicht aller Formteile pro Teilstrecke', content);
+      const content = `
+        <div class="report-formpart-grid">
+          ${groups.length ? groups.map(group => this.renderFormPartSectionBox(group)).join('') : '<div class="report-empty">Keine Formteile vorhanden.</div>'}
+        </div>
+        ${isLastChunk ? `<div class="report-total-line"><span>Summe Formteile (alle Teilstrecken)</span><strong>${formatNumber(model.totals.formParts, 1)} Pa</strong></div>${this.renderHiddenEntriesNote(model.reportScope?.hiddenFormParts, 'leere Formteile')}` : '<p class="report-continuation-note">Fortsetzung der Formteile auf der nächsten Seite.</p>'}
+      `;
+
+      return this.renderPage(model, nextPage(), chunkIndex ? 'Zugeordnete Formteile Fortsetzung' : 'Zugeordnete Formteile', subtitle, content, totalPages);
+    });
+  }
+
+  static splitFormPartGroupsForReport(groups = []) {
+    const reportGroups = [];
+
+    groups
+      .filter(group => group.formParts?.length)
+      .forEach(group => {
+        const chunks = chunkArray(group.formParts, FORMPART_ROWS_PER_BOX);
+
+        chunks.forEach((formParts, index) => {
+          reportGroups.push({
+            ...group,
+            formParts,
+            continuation: index > 0,
+            sum: formParts.reduce((total, part) => total + toNumber(part.pressureLoss), 0),
+            totalSectionSum: group.sum,
+          });
+        });
+      });
+
+    return reportGroups;
   }
 
   static renderFormPartSectionBox(group) {
     const section = group.section;
+    const title = `${section.name} – ${this.describeSection(section)}${group.continuation ? ' (Fortsetzung)' : ''}`;
+
     return `
       <div class="report-formpart-box">
-        <h3>${escapeHtml(section.name)} – ${escapeHtml(this.describeSection(section))}</h3>
+        <h3>${escapeHtml(title)}</h3>
         <table class="report-table small">
           <thead><tr><th>Formteil</th><th>Skizze</th><th>ζ</th><th>Δp</th></tr></thead>
           <tbody>
@@ -543,14 +933,91 @@ export class ReportEngine {
               </tr>
             `).join('')}
           </tbody>
-          <tfoot><tr><td colspan="3" class="left"><strong>Summe ${escapeHtml(section.name)}</strong></td><td><strong>${formatNumber(group.sum, 2)}</strong></td></tr></tfoot>
+          <tfoot><tr><td colspan="3" class="left"><strong>${group.continuation ? 'Zwischensumme' : `Summe ${escapeHtml(section.name)}`}</strong></td><td><strong>${formatNumber(group.sum, 2)}</strong></td></tr></tfoot>
         </table>
       </div>
     `;
   }
 
-  static renderSpecialComponentsPage(model) {
-    const rows = model.specialComponents.map(component => `
+  static renderFormPartCatalogPages(model, nextPage, totalPages) {
+    const rows = model.formPartCatalog || [];
+    const chunks = chunkArray(rows, FORMPART_CATALOG_ROWS_PER_PAGE);
+    const totalCount = rows.length;
+
+    return chunks.map((chunk, chunkIndex) => {
+      const startIndex = chunkIndex * FORMPART_CATALOG_ROWS_PER_PAGE;
+      const subtitle = totalCount > FORMPART_CATALOG_ROWS_PER_PAGE
+        ? `Verwendete Formteiltypen im Projekt (${rangeLabel(startIndex, chunk.length, totalCount)})`
+        : 'Verwendete Formteiltypen im Projekt';
+
+      const content = `
+        <div class="report-catalog-list">
+          ${chunk.length ? chunk.map(row => this.renderFormPartCatalogCard(row)).join('') : '<div class="report-empty">Keine Formteile vorhanden.</div>'}
+        </div>
+        ${chunkIndex < chunks.length - 1 ? '<p class="report-continuation-note">Fortsetzung der Formteilübersicht auf der nächsten Seite.</p>' : ''}
+      `;
+
+      return this.renderPage(model, nextPage(), chunkIndex ? 'Anhang – Formteilübersicht Fortsetzung' : 'Anhang – Formteilübersicht', subtitle, content, totalPages);
+    });
+  }
+
+  static renderFormPartCatalogCard(row = {}) {
+    const zetaLabel = row.zetaValues?.length
+      ? (row.zetaMin === row.zetaMax ? formatNumber(row.zetaMin, 3) : `${formatNumber(row.zetaMin, 3)} – ${formatNumber(row.zetaMax, 3)}`)
+      : '-';
+    const sections = (row.sections || []).slice(0, 5).join(', ');
+    const moreSections = (row.sections || []).length > 5 ? ` +${row.sections.length - 5}` : '';
+
+    return `
+      <article class="report-catalog-card">
+        <div class="report-catalog-image">
+          ${row.image ? `<img src="${escapeHtml(row.image)}" alt="${escapeHtml(row.name)}">` : '<span>Keine Skizze</span>'}
+        </div>
+        <div class="report-catalog-body">
+          <div class="report-catalog-head">
+            <strong>${escapeHtml(row.name)}</strong>
+            <span>${escapeHtml(row.category)}</span>
+          </div>
+          <dl>
+            <dt>Anzahl</dt><dd>${row.count}</dd>
+            <dt>ζ-Bereich</dt><dd>${zetaLabel}</dd>
+            <dt>Summe Δp</dt><dd>${formatNumber(row.pressureLoss, 2)} Pa</dd>
+            <dt>Bezug</dt><dd>${escapeHtml(row.reference || '-')}</dd>
+          </dl>
+          <p><strong>Verwendet in:</strong> ${escapeHtml(sections || '-')}${escapeHtml(moreSections)}</p>
+        </div>
+      </article>
+    `;
+  }
+
+  static renderSpecialComponentsPages(model, nextPage, totalPages) {
+    const components = model.specialComponents || [];
+    const chunks = chunkArray(components, SPECIAL_ROWS_PER_PAGE);
+    const totalCount = components.length;
+
+    return chunks.map((chunk, chunkIndex) => {
+      const startIndex = chunkIndex * SPECIAL_ROWS_PER_PAGE;
+      const isLastChunk = chunkIndex === chunks.length - 1;
+      const rows = chunk.map(component => this.renderSpecialComponentRow(component)).join('');
+      const subtitle = totalCount > SPECIAL_ROWS_PER_PAGE
+        ? `Übersicht aller Sonderbauteile (${rangeLabel(startIndex, chunk.length, totalCount)})`
+        : 'Übersicht aller Sonderbauteile';
+
+      const content = `
+        <table class="report-table">
+          <thead><tr><th>Pos.</th><th>Bezeichnung</th><th>Typ / Beschreibung</th><th>Luftmenge<br>m³/h</th><th>Druckverlust<br>Pa</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="5">Keine Sonderbauteile vorhanden.</td></tr>'}</tbody>
+          ${isLastChunk ? `<tfoot><tr><td colspan="4" class="left"><strong>Summe Sonderbauteile</strong></td><td><strong>${formatNumber(model.totals.special, 1)} Pa</strong></td></tr></tfoot>` : ''}
+        </table>
+        ${!isLastChunk ? '<p class="report-continuation-note">Fortsetzung der Sonderbauteile auf der nächsten Seite.</p>' : this.renderHiddenEntriesNote(model.reportScope?.hiddenSpecialComponents, 'leere Sonderbauteile')}
+      `;
+
+      return this.renderPage(model, nextPage(), chunkIndex ? 'Sonderbauteile Fortsetzung' : 'Sonderbauteile', subtitle, content, totalPages);
+    });
+  }
+
+  static renderSpecialComponentRow(component) {
+    return `
       <tr>
         <td>${component.position}</td>
         <td class="left">${escapeHtml(component.name)}</td>
@@ -558,20 +1025,137 @@ export class ReportEngine {
         <td>${component.airflow === '-' ? '-' : `${formatAirflow(component.airflow)}`}</td>
         <td>${formatNumber(component.pressureLoss, 1)}</td>
       </tr>
-    `).join('');
-
-    const content = `
-      <table class="report-table">
-        <thead><tr><th>Pos.</th><th>Bezeichnung</th><th>Typ / Beschreibung</th><th>Luftmenge<br>m³/h</th><th>Druckverlust<br>Pa</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="5">Keine Sonderbauteile vorhanden.</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="4" class="left"><strong>Summe Sonderbauteile</strong></td><td><strong>${formatNumber(model.totals.special, 1)} Pa</strong></td></tr></tfoot>
-      </table>
     `;
-
-    return this.renderPage(model, 4, 'Sonderbauteile', 'Übersicht aller Sonderbauteile', content);
   }
 
-  static renderSummaryPage(model) {
+  static renderHiddenEntriesNote(count = 0, label = 'leere Einträge') {
+    const hiddenCount = Number(count || 0);
+    if (!hiddenCount) return '';
+
+    return `<p class="report-filter-note">${hiddenCount} ${escapeHtml(label)} im Bericht ausgeblendet.</p>`;
+  }
+
+  static renderReportScopeBlock(model) {
+    const scope = model.reportScope || {};
+    const hiddenTotal = Number(scope.hiddenSections || 0)
+      + Number(scope.hiddenFormParts || 0)
+      + Number(scope.hiddenSpecialComponents || 0);
+
+    if (!hiddenTotal) return '';
+
+    return `
+      <div class="report-info-box">
+        <h3>Berichtsumfang</h3>
+        <p>Leere oder nicht berechnungsrelevante Einträge werden im PDF-Bericht automatisch ausgeblendet.</p>
+        <ul>
+          ${Number(scope.hiddenSections || 0) ? `<li>${scope.hiddenSections} leere Teilstrecken ausgeblendet.</li>` : ''}
+          ${Number(scope.hiddenFormParts || 0) ? `<li>${scope.hiddenFormParts} leere Formteile ausgeblendet.</li>` : ''}
+          ${Number(scope.hiddenSpecialComponents || 0) ? `<li>${scope.hiddenSpecialComponents} leere Sonderbauteile ausgeblendet.</li>` : ''}
+        </ul>
+      </div>
+    `;
+  }
+
+  static renderQualityProtocolPages(model, nextPage, totalPages) {
+    const issues = normalizeQualityIssues(model);
+    const chunks = chunkArray(issues, QUALITY_ROWS_PER_PAGE);
+    const totalCount = issues.length;
+
+    return chunks.map((chunk, chunkIndex) => {
+      const startIndex = chunkIndex * QUALITY_ROWS_PER_PAGE;
+      const subtitle = totalCount > QUALITY_ROWS_PER_PAGE
+        ? `Plausibilitätsprüfung und Berechnungsabgleich (${rangeLabel(startIndex, chunk.length, totalCount)})`
+        : 'Plausibilitätsprüfung und Berechnungsabgleich';
+
+      const content = `
+        ${chunkIndex === 0 ? this.renderQualityOverview(model) : ''}
+        ${chunkIndex === 0 ? this.renderCalculationAuditBlock(model) : ''}
+        ${this.renderQualityIssueTable(chunk)}
+        ${chunkIndex < chunks.length - 1 ? '<p class="report-continuation-note">Fortsetzung des QS-Prüfprotokolls auf der nächsten Seite.</p>' : ''}
+      `;
+
+      return this.renderPage(model, nextPage(), chunkIndex ? 'QS-Prüfprotokoll Fortsetzung' : 'QS-Prüfprotokoll', subtitle, content, totalPages);
+    });
+  }
+
+  static renderQualityOverview(model) {
+    const statusClass = qualityStatusClass(model.quality.status);
+    const statusLabel = qualityStatusLabel(model.quality.status);
+
+    return `
+      <div class="report-quality-grid">
+        <div class="report-quality-status ${statusClass}">
+          <span>Status</span>
+          <strong>${escapeHtml(statusLabel)}</strong>
+          <small>${model.quality.errorCount || 0} Fehler · ${model.quality.warningCount || 0} Hinweise</small>
+        </div>
+        <div class="report-quality-status neutral">
+          <span>Teilstrecken</span>
+          <strong>${model.counts.sections}</strong>
+          <small>berechnungsrelevant</small>
+        </div>
+        <div class="report-quality-status neutral">
+          <span>Formteile</span>
+          <strong>${model.counts.formParts}</strong>
+          <small>im Bericht berücksichtigt</small>
+        </div>
+        <div class="report-quality-status neutral">
+          <span>Sonderbauteile</span>
+          <strong>${model.counts.specialComponents}</strong>
+          <small>im Bericht berücksichtigt</small>
+        </div>
+      </div>
+    `;
+  }
+
+  static renderCalculationAuditBlock(model) {
+    const splitTotal = toNumber(model.totals.friction) + toNumber(model.totals.formParts) + toNumber(model.totals.special);
+    const rawTotal = Number.isFinite(Number(model.totals.rawTotal)) ? toNumber(model.totals.rawTotal) : splitTotal;
+    const difference = splitTotal - rawTotal;
+
+    return `
+      <div class="report-info-box report-audit-box">
+        <h3>Berechnungsabgleich</h3>
+        <div class="report-audit-grid">
+          <div><span>Reibungsverlust</span><strong>${formatNumber(model.totals.friction, 2)} Pa</strong></div>
+          <div><span>Formteile</span><strong>${formatNumber(model.totals.formParts, 2)} Pa</strong></div>
+          <div><span>Sonderbauteile</span><strong>${formatNumber(model.totals.special, 2)} Pa</strong></div>
+          <div><span>Summe Einzelwerte</span><strong>${formatNumber(splitTotal, 2)} Pa</strong></div>
+          <div><span>Systemtotal ungerundet</span><strong>${formatNumber(rawTotal, 2)} Pa</strong></div>
+          <div><span>Differenz</span><strong>${formatNumber(difference, 4)} Pa</strong></div>
+        </div>
+      </div>
+    `;
+  }
+
+  static renderQualityIssueTable(issues = []) {
+    if (!issues.length) {
+      return `
+        <div class="report-info-box ok">
+          <h3>Prüfergebnis</h3>
+          <p>Keine Fehler oder Hinweise vorhanden. Die Projektberechnung ist aus Berichtssicht plausibel.</p>
+        </div>
+      `;
+    }
+
+    return `
+      <table class="report-table report-issue-table">
+        <thead><tr><th>Nr.</th><th>Art</th><th>Bereich</th><th>Beschreibung</th></tr></thead>
+        <tbody>
+          ${issues.map(issue => `
+            <tr class="issue-${escapeHtml(issue.severity)}">
+              <td>${issue.position}</td>
+              <td>${escapeHtml(issue.type)}</td>
+              <td>${escapeHtml(issue.source || '-')}</td>
+              <td class="left">${escapeHtml(issue.message)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  static renderSummaryPage(model, page, totalPages = 6) {
     const content = `
       <div class="report-result-box">
         <div><span>Kanal / Rohr (Teilstrecken)</span><strong>${formatNumber(model.totals.friction, 1)} Pa</strong></div>
@@ -590,10 +1174,69 @@ export class ReportEngine {
       ${this.renderQualityBlock(model)}
     `;
 
-    return this.renderPage(model, 5, 'Gesamtzusammenfassung', 'Ergebnis der Hauptberechnung', content);
+    return this.renderPage(model, page, 'Gesamtzusammenfassung', 'Ergebnis der Hauptberechnung', content, totalPages);
   }
 
-  static renderInfoPage(model) {
+
+  static renderApprovalPage(model, page, totalPages = 6, generatedLabel = '') {
+    const statusLabel = qualityStatusLabel(model.quality.status);
+    const statusClass = qualityStatusClass(model.quality.status);
+    const revisionRows = [
+      ['Bericht-Nr.', model.project.reportNumber],
+      ['Revision', model.project.revision],
+      ['Erstellt am', model.project.date],
+      ['Generiert am', generatedLabel || '-'],
+      ['QS-Status', statusLabel],
+    ];
+
+    const content = `
+      <div class="report-approval-layout">
+        <div class="report-approval-card">
+          <h3>Berichtsstand</h3>
+          ${this.renderDefinitionList(revisionRows)}
+        </div>
+        <div class="report-approval-card status ${statusClass}">
+          <h3>Prüfstatus</h3>
+          <strong>${escapeHtml(statusLabel)}</strong>
+          <p>${model.quality.errorCount || 0} Fehler · ${model.quality.warningCount || 0} Hinweise</p>
+          <small>Details siehe QS-Prüfprotokoll.</small>
+        </div>
+      </div>
+
+      <table class="report-table report-approval-table">
+        <thead><tr><th>Schritt</th><th>Name</th><th>Datum</th><th>Unterschrift</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="left"><strong>Erstellt</strong></td>
+            <td class="left">${escapeHtml(model.project.author || '-')}</td>
+            <td>${escapeHtml(model.project.date || '-')}</td>
+            <td class="signature-cell"></td>
+          </tr>
+          <tr>
+            <td class="left"><strong>Geprüft</strong></td>
+            <td class="left">${escapeHtml(model.project.checkedBy || '-')}</td>
+            <td></td>
+            <td class="signature-cell"></td>
+          </tr>
+          <tr>
+            <td class="left"><strong>Freigegeben</strong></td>
+            <td class="left">${escapeHtml(model.project.approvedBy || '-')}</td>
+            <td>${escapeHtml(model.project.approvalDate || '')}</td>
+            <td class="signature-cell"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="report-info-box">
+        <h3>Vermerk</h3>
+        <p>Dieses Blatt dient als internes Prüf- und Freigabefeld für den Druckverlustbericht. Die fachliche Verantwortung für Eingabedaten, Zuordnung der Formteile und projektspezifische Annahmen liegt beim Bearbeiter beziehungsweise bei der prüfenden Stelle.</p>
+      </div>
+    `;
+
+    return this.renderPage(model, page, 'Prüfung / Freigabe', 'Revisionsstand und Unterschriftenfeld', content, totalPages);
+  }
+
+  static renderInfoPage(model, page, totalPages = 6) {
     const content = `
       <div class="report-two-col">
         <div>
@@ -604,6 +1247,10 @@ export class ReportEngine {
             ['Anlage', model.system.name],
             ['Bearbeiter', model.project.author],
             ['Datum', model.project.date],
+            ['Bericht-Nr.', model.project.reportNumber],
+            ['Revision', model.project.revision],
+            ['Geprüft von', model.project.checkedBy],
+            ['Freigegeben von', model.project.approvedBy],
             ['Software', model.project.software],
             ['Version', model.project.version],
           ])}
@@ -628,10 +1275,11 @@ export class ReportEngine {
           <li>Druckverlustberechnung nach Darcy-Weisbach.</li>
         </ul>
       </div>
+      ${this.renderReportScopeBlock(model)}
       <p class="report-copyright">© ${new Date().getFullYear()} Emre Özgöller – Druckverlust Pro</p>
     `;
 
-    return this.renderPage(model, 6, 'Anlageninformationen', 'Projektabschluss und Hinweise', content);
+    return this.renderPage(model, page, 'Anlageninformationen', 'Projektabschluss und Hinweise', content, totalPages);
   }
 
   static renderDefinitionList(items = []) {
@@ -696,7 +1344,7 @@ export class ReportEngine {
         --report-muted:#5c6f87;
       }
       *{box-sizing:border-box}
-      .report-print-body{margin:0;background:#eef3f9;font-family:Segoe UI,Arial,sans-serif;color:var(--report-text)}
+      .report-print-body{margin:0;background:#eef3f9;font-family:Segoe UI,Arial,sans-serif;color:var(--report-text);-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .dp-professional-report{display:grid;gap:16px;padding:14px 0;background:#eef3f9;color:var(--report-text);font-family:Segoe UI,Arial,sans-serif}
       .report-page{
         position:relative;
@@ -720,6 +1368,7 @@ export class ReportEngine {
       .report-page-head h2{margin:3px 0 3px;color:var(--report-blue);text-transform:uppercase;font-size:20px;line-height:1.1}
       .report-page-head p{margin:0;color:#24364c;font-size:11px}
       .report-page-content{height:calc(297mm - 12mm - 15mm - 36mm);overflow:hidden}
+      .report-formpart-box,.report-summary-card,.report-result-box,.report-info-box,.report-table tr{break-inside:avoid;page-break-inside:avoid}
 
       .report-cover-page{display:flex;flex-direction:column;gap:0;padding:12mm 13mm 15mm}
       .report-cover-topbar{display:flex;justify-content:space-between;align-items:flex-start;min-height:30mm}
@@ -747,6 +1396,47 @@ export class ReportEngine {
       .report-summary-card.highlight{background:linear-gradient(135deg,#05316a,#0b5eb0);border-color:#05316a;box-shadow:0 4px 12px rgba(7,63,122,.18)}
       .report-summary-card.highlight span,.report-summary-card.highlight small,.report-summary-card.highlight strong{color:white}
 
+      .report-quality-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+      .report-quality-status{border:1px solid var(--report-line);border-radius:7px;background:#fbfdff;padding:9px 10px;min-height:24mm;display:flex;flex-direction:column;justify-content:space-between}
+      .report-quality-status span{font-size:8.5px;color:var(--report-muted);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+      .report-quality-status strong{font-size:16px;color:var(--report-blue);line-height:1.1;margin-top:4px}
+      .report-quality-status small{font-size:8.2px;color:#536a83;line-height:1.2;margin-top:4px}
+      .report-quality-status.ok{border-color:#b8dfc4;background:#f3fbf5}
+      .report-quality-status.warn{border-color:#f2c282;background:#fff8ed}
+      .report-quality-status.error{border-color:#e8a0a0;background:#fff2f2}
+      .report-quality-status.warn strong{color:#9a5a00}.report-quality-status.error strong{color:#a52828}
+      .report-audit-box{margin-bottom:12px}
+      .report-audit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+      .report-audit-grid div{border:1px solid var(--report-line);border-radius:5px;background:white;padding:7px 8px}
+      .report-audit-grid span{display:block;color:var(--report-muted);font-size:8.2px;text-transform:uppercase;font-weight:900;margin-bottom:3px}
+      .report-audit-grid strong{display:block;color:var(--report-blue);font-size:11px}
+      .report-issue-table th:nth-child(1){width:13mm}.report-issue-table th:nth-child(2){width:22mm}.report-issue-table th:nth-child(3){width:34mm}
+      .report-issue-table td{font-size:8.4px;line-height:1.25}
+      .report-issue-table .issue-error td:nth-child(2){color:#a52828;font-weight:900}.report-issue-table .issue-warning td:nth-child(2){color:#9a5a00;font-weight:900}
+      .report-approval-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-bottom:16px}
+      .report-approval-card{border:1px solid var(--report-line);border-radius:8px;background:#f8fbff;padding:12px 14px;min-height:34mm}
+      .report-approval-card h3{margin:0 0 10px;color:var(--report-blue);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+      .report-approval-card.status{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:#f6f9fd}
+      .report-approval-card.status strong{font-size:28px;line-height:1;color:#123b64;text-transform:uppercase;margin:2px 0 8px}
+      .report-approval-card.status.ok{border-color:#bde5ce;background:#f2fbf5}.report-approval-card.status.warn{border-color:#f2c282;background:#fff8ed}.report-approval-card.status.error{border-color:#efb7b7;background:#fff4f4}
+      .report-approval-card.status p{margin:0;color:#223950;font-size:10px}.report-approval-card.status small{margin-top:8px;color:#536a83;font-size:8.8px}
+      .report-approval-table{margin-top:10px}
+      .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
+      .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
+      .report-toc-layout{display:grid;grid-template-columns:1.45fr .9fr;gap:20px;align-items:start}
+      .report-toc-card{border:1px solid var(--report-line);border-radius:10px;background:white;overflow:hidden}
+      .report-toc-card h3{margin:0;background:linear-gradient(135deg,#05316a,#0b5eb0);color:white;padding:12px 16px;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+      .report-toc-card p{margin:12px 16px 8px;color:#43566d;font-size:10px;line-height:1.45}
+      .report-toc-table{width:100%;border-collapse:collapse;font-size:10px}
+      .report-toc-table td{border-top:1px solid var(--report-line);padding:10px 16px;vertical-align:top}
+      .report-toc-table td:first-child strong{display:block;color:#123b64;font-size:11px;margin-bottom:3px}
+      .report-toc-table td:first-child span{display:block;color:#5b7088;font-size:9px;line-height:1.3}
+      .report-toc-table td:last-child{width:48px;text-align:right;font-weight:900;color:#0b5eb0;font-size:12px}
+      .report-toc-side{display:grid;gap:12px}
+      .report-info-box.compact{margin-top:0;padding:11px 12px}
+      .report-info-box.compact h3{margin-top:0;margin-bottom:8px;color:#123b64;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+      .report-info-box.muted{background:#f7f9fc}
+
       .report-table{width:100%;border-collapse:collapse;font-size:8.8px;table-layout:fixed}
       .report-table th{
         background:var(--report-blue);
@@ -768,6 +1458,9 @@ export class ReportEngine {
       .report-table.compact{font-size:7.8px}
       .report-table.compact th{font-size:7.1px;padding:4px 2px;line-height:1.12}
       .report-table.compact td{padding:4.5px 3px}
+      .report-table-network td{padding:3.6px 2.6px;font-size:7.4px;line-height:1.18}
+      .report-continuation-note{margin:10px 0 0;color:var(--report-muted);font-size:9px;font-style:italic}
+      .report-filter-note{margin:9px 0 0;color:#536a83;font-size:8.8px;font-style:italic;text-align:right}
       .report-table.small{font-size:8.2px}
       .report-table.small th{font-size:7.4px}
       .report-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 18px;margin-top:13px;font-size:9px;color:#23364c}
@@ -776,6 +1469,18 @@ export class ReportEngine {
       .report-formpart-box{border:1px solid var(--report-line);border-radius:6px;overflow:hidden;background:white}
       .report-formpart-box h3{margin:0;background:var(--report-blue);color:white;padding:7px 9px;font-size:10px}
       .report-part-img{max-width:82px;max-height:50px;object-fit:contain}
+      .report-catalog-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .report-catalog-card{display:grid;grid-template-columns:30mm 1fr;gap:9px;border:1px solid var(--report-line);border-radius:7px;background:#fff;overflow:hidden;min-height:31mm;break-inside:avoid;page-break-inside:avoid}
+      .report-catalog-image{display:grid;place-items:center;background:#f4f8fd;border-right:1px solid var(--report-line);padding:5px}
+      .report-catalog-image img{max-width:100%;max-height:25mm;object-fit:contain}
+      .report-catalog-image span{font-size:8px;color:var(--report-muted);text-align:center}
+      .report-catalog-body{padding:7px 8px;font-size:8.5px;line-height:1.25}
+      .report-catalog-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:5px}
+      .report-catalog-head strong{color:var(--report-blue);font-size:9.5px;line-height:1.15}
+      .report-catalog-head span{background:#eaf2fb;color:#123b64;border-radius:999px;padding:2px 6px;font-size:7.4px;font-weight:900;white-space:nowrap}
+      .report-catalog-card dl{display:grid;grid-template-columns:19mm 1fr;gap:2px 5px;margin:0}
+      .report-catalog-card dt{font-weight:900;color:#24364c}.report-catalog-card dd{margin:0;color:#06172b}
+      .report-catalog-card p{margin:5px 0 0;color:#4f637c;font-size:7.8px;line-height:1.25}
       .report-total-line{margin-top:12px;border:1px solid var(--report-line);border-radius:6px;background:#f4f7fb;padding:10px 13px;display:flex;justify-content:space-between;font-weight:900}
       .report-result-box{border:1px solid var(--report-line);border-radius:6px;overflow:hidden;margin-top:14px}
       .report-result-box div{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--report-line);font-size:12px}
@@ -791,7 +1496,7 @@ export class ReportEngine {
       .report-copyright{text-align:center;margin-top:32px;color:#43566d;font-size:10.4px}
       .report-empty{border:1px dashed var(--report-line);border-radius:8px;padding:20px;color:var(--report-muted);background:#fafcff}
       .report-footer{position:absolute;left:13mm;right:13mm;bottom:7mm;border-top:1px solid #d6deea;padding-top:5px;display:flex;justify-content:space-between;font-size:8.8px;color:#223950}
-      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-cover-main,.report-summary-cards.cover,.report-two-col{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
+      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
       @media print{
         html,body,.report-print-body{background:white!important;margin:0!important;padding:0!important}
         .dp-professional-report{display:block;padding:0;background:white;gap:0}
@@ -801,6 +1506,121 @@ export class ReportEngine {
       }
       @page{size:A4 portrait;margin:0}
     `;
+  }
+
+
+  static csvCell(value = '') {
+    const text = String(value ?? '').replace(/\r?\n/g, ' ').trim();
+    const escaped = text.replaceAll('"', '""');
+    return `"${escaped}"`;
+  }
+
+  static csvRow(values = []) {
+    return values.map(value => this.csvCell(value)).join(';');
+  }
+
+  static createCsv(model) {
+    const rows = [];
+    const addEmpty = () => rows.push('');
+    const addSection = title => {
+      if (rows.length) addEmpty();
+      rows.push(this.csvRow([title]));
+    };
+
+    rows.push(this.csvRow(['Druckverlust Pro – Datenexport']));
+    rows.push(this.csvRow(['Projekt', model.project.name]));
+    rows.push(this.csvRow(['Objekt', model.project.object]));
+    rows.push(this.csvRow(['Anlage', model.system.name]));
+    rows.push(this.csvRow(['Bearbeiter', model.project.author]));
+    rows.push(this.csvRow(['Datum', model.project.date]));
+    rows.push(this.csvRow(['Bericht-Nr.', model.project.reportNumber]));
+    rows.push(this.csvRow(['Revision', model.project.revision]));
+    rows.push(this.csvRow(['Geprueft von', model.project.checkedBy]));
+    rows.push(this.csvRow(['Freigegeben von', model.project.approvedBy]));
+    rows.push(this.csvRow(['Gesamtdruckverlust Pa', formatNumber(model.totals.total, 2)]));
+
+    addSection('Teilstrecken');
+    rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Flaeche m2', 'v m/s', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
+    (model.sections || []).forEach(section => {
+      rows.push(this.csvRow([
+        section.position,
+        section.type,
+        section.description || section.typeLabel,
+        section.name,
+        formatAirflow(section.airflow),
+        section.type === 'Rohr' ? '-' : formatSmart(toNumber(section.width) * 1000, 0),
+        section.type === 'Rohr' ? '-' : formatSmart(toNumber(section.height) * 1000, 0),
+        section.type === 'Rohr' ? formatSmart(toNumber(section.diameter) * 1000, 0) : '-',
+        formatSmart(section.length, 2),
+        formatNumber(section.area, 3),
+        formatNumber(section.velocity, 2),
+        formatNumber(section.frictionLoss, 3),
+        formatNumber(section.zetaLoss, 3),
+        formatNumber(section.directLoss, 3),
+        formatNumber(section.totalLoss, 3),
+      ]));
+    });
+
+    addSection('Formteile');
+    rows.push(this.csvRow(['Teilstrecke', 'Formteil', 'Kategorie', 'Bezug', 'Zeta', 'Dynamischer Druck Pa', 'Druckverlust Pa']));
+    (model.formPartsBySection || []).forEach(group => {
+      (group.formParts || []).forEach(part => {
+        rows.push(this.csvRow([
+          group.section?.name || part.sectionId || '-',
+          part.type || part.name,
+          part.category,
+          part.reference,
+          formatNumber(part.zeta, 3),
+          formatNumber(part.dynamicPressure, 3),
+          formatNumber(part.pressureLoss, 3),
+        ]));
+      });
+    });
+
+    addSection('Sonderbauteile');
+    rows.push(this.csvRow(['Pos.', 'Bezeichnung', 'Typ / Beschreibung', 'Hersteller', 'Luftmenge m3/h', 'Druckverlust Pa']));
+    (model.specialComponents || []).forEach(component => {
+      rows.push(this.csvRow([
+        component.position,
+        component.name,
+        component.type,
+        component.manufacturer,
+        formatAirflow(component.airflow),
+        formatNumber(component.pressureLoss, 2),
+      ]));
+    });
+
+    addSection('Zusammenfassung');
+    rows.push(this.csvRow(['Kanal / Rohr Pa', formatNumber(model.totals.friction, 2)]));
+    rows.push(this.csvRow(['Formteile Pa', formatNumber(model.totals.formParts, 2)]));
+    rows.push(this.csvRow(['Sonderbauteile Pa', formatNumber(model.totals.special, 2)]));
+    rows.push(this.csvRow(['Gesamtdruckverlust Pa', formatNumber(model.totals.total, 2)]));
+
+    addSection('QS-Pruefprotokoll');
+    rows.push(this.csvRow(['Status', qualityStatusLabel(model.quality.status)]));
+    rows.push(this.csvRow(['Fehler', model.quality.errorCount || 0]));
+    rows.push(this.csvRow(['Hinweise', model.quality.warningCount || 0]));
+    rows.push(this.csvRow(['Art', 'Bereich', 'Beschreibung']));
+    normalizeQualityIssues(model).forEach(issue => {
+      rows.push(this.csvRow([issue.type, issue.source, issue.message]));
+    });
+
+    addSection('Pruefung / Freigabe');
+    rows.push(this.csvRow(['Erstellt', model.project.author, model.project.date]));
+    rows.push(this.csvRow(['Geprueft', model.project.checkedBy, '']));
+    rows.push(this.csvRow(['Freigegeben', model.project.approvedBy, model.project.approvalDate || '']));
+
+    return `\ufeff${rows.join('\r\n')}`;
+  }
+
+  static downloadCsv(model) {
+    const csv = this.createCsv(model);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${safeFileName(model.project.name)}_Druckverlust_Datenexport.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   static downloadHtml(model) {
@@ -821,11 +1641,25 @@ export class ReportEngine {
       throw new Error('Druckfenster konnte nicht geöffnet werden. Bitte Pop-up-Blocker prüfen.');
     }
 
+    const printWhenReady = () => {
+      const ready = typeof reportWindow.__druckverlustPrintReady === 'function'
+        ? reportWindow.__druckverlustPrintReady()
+        : Promise.resolve();
+
+      ready
+        .catch(() => null)
+        .then(() => {
+          reportWindow.focus();
+          reportWindow.print();
+        });
+    };
+
     reportWindow.document.open();
     reportWindow.document.write(html);
     reportWindow.document.close();
-    reportWindow.focus();
-    reportWindow.setTimeout(() => reportWindow.print(), 350);
+
+    reportWindow.addEventListener('load', printWhenReady, { once: true });
+    reportWindow.setTimeout(printWhenReady, 1000);
   }
 
   static helpers = {

@@ -22,8 +22,8 @@
       output.textContent += JSON.stringify(currentSelection, null, 2) + '\n\n';
     });
 
-    selection.select('section', 'TS1', {
-      name: 'TS1',
+    selection.select('section', 'ts1', {
+      name: 'ts1',
       airVolume: 900
     });
 
@@ -31,7 +31,7 @@
 
     if (
       current.type === 'section' &&
-      current.id === 'TS1' &&
+      current.id === 'ts1' &&
       current.data.airVolume === 900 &&
       notified === true
     ) {

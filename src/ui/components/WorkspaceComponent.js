@@ -1097,6 +1097,7 @@ export default class WorkspaceComponent {
         <div class="workspace-actions">
           <button type="button" data-report-action="print">Drucken / PDF</button>
           <button type="button" data-report-action="html">HTML speichern</button>
+          <button type="button" data-report-action="csv">CSV Export</button>
         </div>
       </div>
 
@@ -1124,6 +1125,13 @@ export default class WorkspaceComponent {
     report.datum = report.datum ?? project.date ?? project.datum ?? new Date().toLocaleDateString('de-CH');
     report.hinweis = report.hinweis ?? project.note ?? '';
 
+    const todayCompact = new Date().toISOString().slice(0, 10).replaceAll('-', '');
+    report.reportNumber = report.reportNumber ?? report.berichtNr ?? project.reportNumber ?? project.berichtNr ?? `DP-${todayCompact}-001`;
+    report.revision = report.revision ?? report.rev ?? project.revision ?? project.rev ?? '0';
+    report.checkedBy = report.checkedBy ?? report.geprueftVon ?? project.checkedBy ?? project.geprueftVon ?? '';
+    report.approvedBy = report.approvedBy ?? report.freigegebenVon ?? project.approvedBy ?? project.freigegebenVon ?? '';
+    report.approvalDate = report.approvalDate ?? report.freigabeDatum ?? project.approvalDate ?? project.freigabeDatum ?? '';
+
     if (!project.settings || typeof project.settings !== 'object') {
       project.settings = {};
     }
@@ -1147,46 +1155,84 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
-        <div class="dp-editor-grid dp-report-settings-grid">
-          <label>
-            <span>Projekt</span>
-            <input data-report-field="project" value="${this.escapeAttribute(report.project)}">
-          </label>
+        <div class="dp-report-settings-group">
+          <h3>Projekt / Anlage</h3>
+          <div class="dp-editor-grid dp-report-settings-grid">
+            <label>
+              <span>Projekt</span>
+              <input data-report-field="project" value="${this.escapeAttribute(report.project)}">
+            </label>
 
-          <label>
-            <span>Objekt</span>
-            <input data-report-field="object" value="${this.escapeAttribute(report.object)}">
-          </label>
+            <label>
+              <span>Objekt</span>
+              <input data-report-field="object" value="${this.escapeAttribute(report.object)}">
+            </label>
 
-          <label>
-            <span>Anlage</span>
-            <input data-report-field="anlage" value="${this.escapeAttribute(report.anlage)}">
-          </label>
+            <label>
+              <span>Anlage</span>
+              <input data-report-field="anlage" value="${this.escapeAttribute(report.anlage)}">
+            </label>
 
-          <label>
-            <span>Bearbeiter</span>
-            <input data-report-field="bearbeiter" value="${this.escapeAttribute(report.bearbeiter)}">
-          </label>
+            <label>
+              <span>Bearbeiter</span>
+              <input data-report-field="bearbeiter" value="${this.escapeAttribute(report.bearbeiter)}">
+            </label>
 
-          <label>
-            <span>Datum</span>
-            <input data-report-field="datum" value="${this.escapeAttribute(report.datum)}">
-          </label>
+            <label>
+              <span>Datum</span>
+              <input data-report-field="datum" value="${this.escapeAttribute(report.datum)}">
+            </label>
+          </div>
+        </div>
 
-          <label>
-            <span>Luftdichte ρ [kg/m³]</span>
-            <input data-report-setting="rho" type="number" step="0.01" value="${this.escapeAttribute(settings.rho ?? 1.21)}">
-          </label>
+        <div class="dp-report-settings-group">
+          <h3>Prüfung / Freigabe</h3>
+          <div class="dp-editor-grid dp-report-settings-grid">
+            <label>
+              <span>Bericht-Nr.</span>
+              <input data-report-field="reportNumber" value="${this.escapeAttribute(report.reportNumber)}">
+            </label>
 
-          <label>
-            <span>Reibungszahl λ [-]</span>
-            <input data-report-setting="lambda" type="number" step="0.001" value="${this.escapeAttribute(settings.lambda ?? 0.025)}">
-          </label>
+            <label>
+              <span>Revision</span>
+              <input data-report-field="revision" value="${this.escapeAttribute(report.revision)}">
+            </label>
 
-          <label class="dp-report-settings-wide">
-            <span>Bemerkung / Hinweis</span>
-            <textarea data-report-field="hinweis" rows="3">${this.escapeHtml(report.hinweis)}</textarea>
-          </label>
+            <label>
+              <span>Geprüft von</span>
+              <input data-report-field="checkedBy" value="${this.escapeAttribute(report.checkedBy)}">
+            </label>
+
+            <label>
+              <span>Freigegeben von</span>
+              <input data-report-field="approvedBy" value="${this.escapeAttribute(report.approvedBy)}">
+            </label>
+
+            <label>
+              <span>Freigabedatum</span>
+              <input data-report-field="approvalDate" value="${this.escapeAttribute(report.approvalDate)}">
+            </label>
+          </div>
+        </div>
+
+        <div class="dp-report-settings-group">
+          <h3>Berechnungsgrundlagen / Hinweis</h3>
+          <div class="dp-editor-grid dp-report-settings-grid">
+            <label>
+              <span>Luftdichte ρ [kg/m³]</span>
+              <input data-report-setting="rho" type="number" step="0.01" value="${this.escapeAttribute(settings.rho ?? 1.21)}">
+            </label>
+
+            <label>
+              <span>Reibungszahl λ [-]</span>
+              <input data-report-setting="lambda" type="number" step="0.001" value="${this.escapeAttribute(settings.lambda ?? 0.025)}">
+            </label>
+
+            <label class="dp-report-settings-wide">
+              <span>Bemerkung / Hinweis</span>
+              <textarea data-report-field="hinweis" rows="3">${this.escapeHtml(report.hinweis)}</textarea>
+            </label>
+          </div>
         </div>
 
         <p class="dp-auto-save-hint">Änderungen werden automatisch gespeichert und im Bericht aktualisiert.</p>
@@ -1211,6 +1257,11 @@ export default class WorkspaceComponent {
         if (field === 'bearbeiter') project.author = value;
         if (field === 'datum') project.date = value;
         if (field === 'hinweis') project.note = value;
+        if (field === 'reportNumber') project.reportNumber = value;
+        if (field === 'revision') project.revision = value;
+        if (field === 'checkedBy') project.checkedBy = value;
+        if (field === 'approvedBy') project.approvedBy = value;
+        if (field === 'approvalDate') project.approvalDate = value;
 
         this.state.markProjectDirty();
         this.render();
@@ -1246,6 +1297,11 @@ export default class WorkspaceComponent {
 
           if (action === 'html') {
             ReportEngine.downloadHtml(model);
+            return;
+          }
+
+          if (action === 'csv') {
+            ReportEngine.downloadCsv(model);
           }
         } catch (error) {
           alert(error.message);
