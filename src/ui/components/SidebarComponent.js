@@ -34,32 +34,31 @@ export default class SidebarComponent {
       <h3>Projekt</h3>
 
       <button class="dp-tree-item ${this.state.getSelectionType() === 'project' ? 'active' : ''}" data-type="project">
-      ${project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt'}
+      ${this.escapeHtml(project.name ?? project.title ?? project.projectName ?? 'Unbenanntes Projekt')}
       </button>
 
       <button class="dp-tree-item ${this.state.isSelected('system', system.id) ? 'active' : ''}" data-type="system" data-id="${system.id}">
-        ▼ ${system.name}
+        ▼ ${this.escapeHtml(system.name || 'Anlage')}
       </button>
 
       <div class="dp-tree-group">
         <div class="dp-tree-heading">▼ Teilstrecken <span>${sections.length}</span></div>
         ${sections.length ? sections.map(section => `
           <button class="dp-tree-item indent ${this.state.isSelected('section', section.id) ? 'active' : ''}" data-type="section" data-id="${section.id}">
-            ${section.name || section.id}
+            ${this.escapeHtml(section.name || section.id)}
           </button>
         `).join('') : '<div class="dp-tree-empty">Keine Teilstrecke</div>'}
       </div>
 
       <div class="dp-tree-group">
         <div class="dp-tree-heading">▼ Formteile <span>${formParts.length}</span></div>
-        ${formParts.length ? formParts.map(formPart => `
-          <button class="dp-tree-item indent ${this.state.isSelected('formPart', formPart.id) ? 'active' : ''}" data-type="formPart" data-id="${formPart.id}">
-            ${formPart.name}
-          </button>
-        `).join('') : '<div class="dp-tree-empty">Keine Formteile</div>'}
+        ${this.renderFormPartsBySection(system, sections, formParts)}
       </div>
 
-
+      <div class="dp-tree-group">
+        <div class="dp-tree-heading">▼ Sonderbauteile <span>${specialComponents.length}</span></div>
+        ${this.renderSpecialComponentsByCategory(specialComponents)}
+      </div>
 
       <div class="dp-tree-group">
         <div class="dp-tree-heading">▼ Auswertung</div>
@@ -67,18 +66,96 @@ export default class SidebarComponent {
           Bericht / Druckansicht
         </button>
       </div>
-
-      <div class="dp-tree-group">
-        <div class="dp-tree-heading">▼ Sonderbauteile <span>${specialComponents.length}</span></div>
-        ${specialComponents.length ? specialComponents.map(component => `
-          <button class="dp-tree-item indent ${this.state.isSelected('specialComponent', component.id) ? 'active' : ''}" data-type="specialComponent" data-id="${component.id}">
-            ${component.name} · ${component.pressureLoss?.toFixed?.(1) ?? component.pressureLoss ?? 0} Pa
-          </button>
-        `).join('') : '<div class="dp-tree-empty">Keine Sonderbauteile</div>'}
-      </div>
     `;
 
     this.bindEvents(project, system);
+  }
+
+
+  renderFormPartsBySection(system = {}, sections = [], formParts = []) {
+    if (!formParts.length) return '<div class="dp-tree-empty">Keine Formteile</div>';
+
+    const groups = [];
+    const assignedSectionIds = new Set(sections.map(section => section.id));
+
+    sections.forEach(section => {
+      const parts = formParts.filter(part => part?.sectionId === section.id);
+      if (parts.length) {
+        groups.push({
+          title: section.name || section.id || 'Teilstrecke',
+          parts,
+        });
+      }
+    });
+
+    const unassigned = formParts.filter(part => !part?.sectionId || !assignedSectionIds.has(part.sectionId));
+    if (unassigned.length) {
+      groups.push({
+        title: 'Nicht zugeordnet',
+        parts: unassigned,
+      });
+    }
+
+    return groups.map(group => `
+      <div class="dp-tree-subgroup">
+        <div class="dp-tree-subheading">
+          <span>${this.escapeHtml(group.title)}</span>
+          <em>${group.parts.length}</em>
+        </div>
+        ${group.parts.map(formPart => `
+          <button class="dp-tree-item indent ${this.state.isSelected('formPart', formPart.id) ? 'active' : ''}" data-type="formPart" data-id="${formPart.id}">
+            <strong>${this.escapeHtml(formPart.name || 'Formteil')}</strong>
+            <span>${this.escapeHtml(formPart.type || 'Formteil')}</span>
+          </button>
+        `).join('')}
+      </div>
+    `).join('');
+  }
+
+
+  renderSpecialComponentsByCategory(specialComponents = []) {
+    if (!specialComponents.length) return '<div class="dp-tree-empty">Keine Sonderbauteile</div>';
+
+    const groups = [];
+
+    specialComponents.forEach(component => {
+      const category = component?.category || component?.type || 'Sonderbauteile';
+      let group = groups.find(item => item.category === category);
+
+      if (!group) {
+        group = { category, components: [] };
+        groups.push(group);
+      }
+
+      group.components.push(component);
+    });
+
+    return groups.map(group => `
+      <div class="dp-tree-subgroup">
+        <div class="dp-tree-subheading">
+          <span>${this.escapeHtml(group.category)}</span>
+          <em>${group.components.length}</em>
+        </div>
+        ${group.components.map(component => {
+          const pressureLoss = Number(component?.pressureLoss ?? component?.pa ?? 0);
+          return `
+            <button class="dp-tree-item indent ${this.state.isSelected('specialComponent', component.id) ? 'active' : ''}" data-type="specialComponent" data-id="${component.id}">
+              <strong>${this.escapeHtml(component.name || 'Sonderbauteil')}</strong>
+              <span>${this.escapeHtml(component.type || 'Komponente')} · ${Number.isFinite(pressureLoss) ? pressureLoss.toFixed(1) : '0.0'} Pa</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `).join('');
+  }
+
+  escapeHtml(value = '') {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
   }
 
   bindEvents(project, system) {

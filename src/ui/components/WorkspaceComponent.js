@@ -17,6 +17,12 @@ export default class WorkspaceComponent {
     this.state = state;
     this.registry = createDefaultFormPartRegistry();
     this.commands = new ProjectCommands(state);
+    this.formPartLibrarySearch = '';
+    this.formPartLibraryCategory = 'all';
+    this.specialLibrarySearch = '';
+    this.specialLibraryCategory = 'all';
+    this.libraryRecent = this.loadLibraryRecent();
+    this.libraryFavorites = this.loadLibraryFavorites();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -279,6 +285,8 @@ export default class WorkspaceComponent {
       </div>
 
       ${this.renderSectionManagement(system)}
+      ${this.renderFormPartManagement(system)}
+      ${this.renderSpecialComponentManagement(system)}
       ${this.renderCalculationSummary(total)}
       ${this.renderCalculationBreakdown(calculation)}
       ${this.renderCalculationAudit(calculation)}
@@ -287,6 +295,8 @@ export default class WorkspaceComponent {
     `;
 
     this.bindSectionManagement();
+    this.bindFormPartManagement();
+    this.bindSpecialComponentManagement();
   }
 
   renderSection(section) {
@@ -481,9 +491,702 @@ export default class WorkspaceComponent {
     });
   }
 
+
+  renderFormPartManagement(system = {}) {
+    const formParts = system?.formParts || [];
+    const sections = system?.sections || [];
+
+    return `
+      <section class="dp-editor-panel dp-formpart-management-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Formteilverwaltung</h2>
+            <p>Formteile duplizieren, löschen, sortieren und einer Teilstrecke zuweisen.</p>
+          </div>
+          <div class="dp-panel-actions">
+            <button type="button" data-formpart-action="add">+ Formteil</button>
+            <button type="button" data-formpart-action="renumber" ${formParts.length ? '' : 'disabled'}>Formteile neu nummerieren</button>
+          </div>
+        </div>
+
+        ${formParts.length ? `
+          <div class="dp-formpart-management-groups">
+            ${this.renderFormPartManagementGroups(formParts, sections)}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch kein Formteil vorhanden. Über „+ Formteil“ öffnest du die Formteilbibliothek.
+          </div>
+        `}
+      </section>
+    `;
+  }
+
+  renderFormPartManagementGroups(formParts = [], sections = []) {
+    const groups = [];
+    const assignedSectionIds = new Set(sections.map(section => section.id));
+
+    sections.forEach(section => {
+      const parts = formParts.filter(part => part?.sectionId === section.id);
+      if (parts.length) {
+        groups.push({
+          id: section.id,
+          title: section.name || section.id || 'Teilstrecke',
+          subtitle: `${parts.length} Formteil${parts.length === 1 ? '' : 'e'}`,
+          parts,
+        });
+      }
+    });
+
+    const unassigned = formParts.filter(part => !part?.sectionId || !assignedSectionIds.has(part.sectionId));
+    if (unassigned.length) {
+      groups.push({
+        id: 'unassigned',
+        title: 'Nicht zugeordnet',
+        subtitle: `${unassigned.length} Formteil${unassigned.length === 1 ? '' : 'e'}`,
+        parts: unassigned,
+      });
+    }
+
+    if (!groups.length && formParts.length) {
+      groups.push({
+        id: 'all',
+        title: 'Formteile',
+        subtitle: `${formParts.length} Formteil${formParts.length === 1 ? '' : 'e'}`,
+        parts: formParts,
+      });
+    }
+
+    return groups.map(group => `
+      <div class="dp-formpart-management-group">
+        <div class="dp-formpart-management-heading">
+          <strong>${this.escapeHtml(group.title)}</strong>
+          <span>${this.escapeHtml(group.subtitle)}</span>
+        </div>
+        <div class="dp-formpart-list">
+          ${group.parts.map(part => this.renderFormPartManagementRow(part, formParts)).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderFormPartManagementRow(formPart = {}, allFormParts = []) {
+    const entry = this.getRegistryEntry(formPart);
+    const index = allFormParts.findIndex(item => item.id === formPart?.id);
+    const total = allFormParts.length;
+    const pressureLoss = this.getFormPartPressureLoss(formPart);
+    const sectionName = this.getSectionNameById(formPart?.sectionId);
+    const category = entry?.category || formPart?.category || 'Formteil';
+    const name = formPart?.name || entry?.name || formPart?.type || 'Formteil';
+
+    return `
+      <div class="dp-formpart-row ${this.state.isSelected('formPart', formPart?.id) ? 'active' : ''}">
+        <button type="button" class="dp-formpart-row-main" data-formpart-action="select" data-formpart-id="${this.escapeAttribute(formPart?.id)}">
+          <strong>${this.escapeHtml(name)}</strong>
+          <span>${this.escapeHtml(category)} · ${this.escapeHtml(sectionName)}${pressureLoss !== null ? ` · ${this.formatNumber(pressureLoss)} Pa` : ''}</span>
+        </button>
+        <div class="dp-formpart-row-actions">
+          <button type="button" data-formpart-action="up" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-formpart-action="down" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${index < 0 || index >= total - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-formpart-action="duplicate" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Duplizieren</button>
+          <button type="button" class="danger" data-formpart-action="delete" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Löschen</button>
+        </div>
+      </div>
+    `;
+  }
+
+  bindFormPartManagement() {
+    this.root.querySelectorAll('[data-formpart-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.formpartAction;
+        const formPartId = button.dataset.formpartId;
+        const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+
+        try {
+          if (action === 'add') {
+            this.commands.openFormPartPicker();
+            return;
+          }
+
+          if (action === 'select') {
+            const formPart = system?.formParts?.find(item => item.id === formPartId);
+            if (formPart) this.state.selectFormPart(formPart);
+            return;
+          }
+
+          if (action === 'duplicate') {
+            this.commands.duplicateFormPart(formPartId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'delete') {
+            const formPart = system?.formParts?.find(item => item.id === formPartId);
+            const name = formPart?.name || 'dieses Formteil';
+            if (!confirm(`Formteil „${name}“ wirklich löschen?`)) return;
+            this.commands.deleteFormPart(formPartId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'up' || action === 'down') {
+            this.commands.moveFormPart(formPartId, action === 'up' ? -1 : 1);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'renumber') {
+            if (!confirm('Alle Formteile neu durchnummerieren? Manuelle Formteilnamen werden überschrieben.')) return;
+            this.commands.renumberFormParts({ force: true });
+            this.autoCalculateProject();
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    });
+  }
+
+  getFormPartPressureLoss(formPart = {}) {
+    const calculation = formPart?.calculationResult?.calculation || {};
+    const isDirectLoss = formPart.lossMode === 'direct' || calculation.lossMode === 'direct';
+
+    if (isDirectLoss) {
+      const value = Number(formPart.pressureLossPa ?? calculation.pressureLossPa ?? 0);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    const sectionInfo = this.getFormPartSectionCalculation(formPart);
+    const dynamicPressure = Number(sectionInfo?.result?.dynamicPressure ?? 0);
+    const zeta = Number(formPart?.zeta ?? formPart?.calculationResult?.zeta ?? 0);
+
+    if (!Number.isFinite(dynamicPressure) || !Number.isFinite(zeta)) return null;
+    return zeta * dynamicPressure;
+  }
+
+
+  renderSpecialComponentManagement(system = {}) {
+    const specialComponents = system?.specialComponents || [];
+    const allGroups = this.getSpecialComponentLibraryGroups({ ignoreFilters: true });
+    const groups = this.getSpecialComponentLibraryGroups();
+    const filteredCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+
+    return `
+      <section class="dp-editor-panel dp-special-management-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Sonderbauteile / Bauteilbibliothek</h2>
+            <p>Wähle ein Sonderbauteil aus der Bibliothek. Danach öffnet sich automatisch der passende Editor.</p>
+          </div>
+          <div class="dp-panel-actions dp-special-add-actions">
+            <button type="button" data-special-action="renumber" ${specialComponents.length ? '' : 'disabled'}>Neu nummerieren</button>
+          </div>
+        </div>
+
+        ${this.renderLibraryFilterToolbar({
+          type: 'special',
+          search: this.specialLibrarySearch,
+          category: this.specialLibraryCategory,
+          groups: allGroups,
+          total: allGroups.reduce((sum, group) => sum + group.items.length, 0),
+          filtered: filteredCount,
+          placeholder: 'Sonderbauteil suchen, z. B. Filter, BSK, Schalldämpfer…',
+        })}
+
+        ${this.renderLibraryFavoritesSection({
+          type: 'special',
+          title: 'Favorisierte Sonderbauteile',
+          items: this.getFavoriteLibraryItems('special', this.getSpecialComponentLibrary()),
+          renderCard: item => this.renderSpecialComponentLibraryCard(item),
+        })}
+
+        ${this.renderLibraryRecentSection({
+          type: 'special',
+          title: 'Zuletzt verwendete Sonderbauteile',
+          items: this.getRecentLibraryItems('special', this.getSpecialComponentLibrary()),
+          renderCard: item => this.renderSpecialComponentLibraryCard(item),
+        })}
+
+        <div class="dp-special-library">
+          ${groups.length ? groups.map(group => `
+            <div class="dp-special-library-group">
+              <div class="dp-special-library-heading">
+                <h3>${this.escapeHtml(group.category)}</h3>
+                <span>${group.items.length} Bauteil${group.items.length === 1 ? '' : 'e'}</span>
+              </div>
+              <div class="dp-special-card-grid">
+                ${group.items.map(item => this.renderSpecialComponentLibraryCard(item)).join('')}
+              </div>
+            </div>
+          `).join('') : `
+            <div class="dp-empty-state dp-library-empty">
+              Keine Sonderbauteile zur aktuellen Suche gefunden. Passe Suche oder Kategorie an.
+            </div>
+          `}
+        </div>
+
+        ${specialComponents.length ? `
+          <div class="dp-special-management-summary">
+            <div>
+              <span>Anzahl</span>
+              <strong>${specialComponents.length}</strong>
+            </div>
+            <div>
+              <span>Summe Druckverlust</span>
+              <strong>${this.formatNumber(this.sumSpecialComponentLoss(specialComponents), 1)} Pa</strong>
+            </div>
+          </div>
+
+          <div class="dp-special-list-title">
+            <h3>Erfasste Sonderbauteile</h3>
+            <span>${specialComponents.length} Eintrag${specialComponents.length === 1 ? '' : 'e'}</span>
+          </div>
+
+          <div class="dp-special-list">
+            ${specialComponents.map((component, index) => this.renderSpecialComponentManagementRow(component, index, specialComponents.length)).join('')}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch kein Sonderbauteil vorhanden. Wähle oben eine Bauteilkachel aus der Bibliothek.
+          </div>
+        `}
+      </section>
+    `;
+  }
+
+  getSpecialComponentLibrary() {
+    return typeof this.commands.getSpecialComponentLibrary === 'function'
+      ? this.commands.getSpecialComponentLibrary()
+      : [];
+  }
+
+  getSpecialComponentLibraryGroups(options = {}) {
+    const library = this.getSpecialComponentLibrary();
+    const order = ['Gerät', 'Luftaufbereitung', 'Schall', 'Regelung', 'Brandschutz', 'Raumluft', 'Aussenluft / Fortluft', 'Manuell'];
+    const groups = new Map();
+    const search = options.ignoreFilters ? '' : String(this.specialLibrarySearch || '').toLowerCase().trim();
+    const selectedCategory = options.ignoreFilters ? 'all' : String(this.specialLibraryCategory || 'all');
+
+    library
+      .filter(item => {
+        const category = item.category || 'Weitere';
+        if (selectedCategory !== 'all' && category !== selectedCategory) return false;
+
+        if (!search) return true;
+
+        return [
+          item.id,
+          item.name,
+          item.type,
+          item.category,
+          item.description,
+          item.note,
+        ].some(value => String(value || '').toLowerCase().includes(search));
+      })
+      .forEach(item => {
+        const category = item.category || 'Weitere';
+        if (!groups.has(category)) groups.set(category, []);
+        groups.get(category).push(item);
+      });
+
+    return [...groups.entries()]
+      .sort(([a], [b]) => {
+        const indexA = order.indexOf(a);
+        const indexB = order.indexOf(b);
+
+        if (indexA !== -1 || indexB !== -1) {
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        }
+
+        return String(a).localeCompare(String(b), 'de-CH');
+      })
+      .map(([category, items]) => ({
+        category,
+        items: items.sort((a, b) => String(a.name || a.type).localeCompare(String(b.name || b.type), 'de-CH')),
+      }));
+  }
+
+  renderLibraryFilterToolbar({ type, search, category, groups, total, filtered, placeholder }) {
+    const categories = groups.map(group => group.category);
+    const normalizedCategory = category || 'all';
+
+    return `
+      <div class="dp-library-filter" data-library-filter="${this.escapeAttribute(type)}">
+        <label class="dp-library-search">
+          <span>Suchen</span>
+          <input
+            type="search"
+            data-library-search="${this.escapeAttribute(type)}"
+            value="${this.escapeAttribute(search || '')}"
+            placeholder="${this.escapeAttribute(placeholder || 'Suchen…')}">
+        </label>
+
+        <div class="dp-library-categories" role="group" aria-label="Kategorien filtern">
+          ${this.renderLibraryCategoryChip(type, 'all', 'Alle', normalizedCategory === 'all')}
+          ${categories.map(item => this.renderLibraryCategoryChip(type, item, item, normalizedCategory === item)).join('')}
+        </div>
+
+        <div class="dp-library-filter-summary">
+          <strong>${filtered}</strong> von ${total} sichtbar
+          ${(search || normalizedCategory !== 'all') ? `
+            <button type="button" data-library-reset="${this.escapeAttribute(type)}">Filter zurücksetzen</button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  renderLibraryCategoryChip(type, value, label, active = false) {
+    return `
+      <button
+        type="button"
+        class="dp-library-chip ${active ? 'active' : ''}"
+        data-library-category="${this.escapeAttribute(type)}"
+        data-library-category-value="${this.escapeAttribute(value)}">
+        ${this.escapeHtml(label)}
+      </button>
+    `;
+  }
+
+  loadLibraryRecent() {
+    const fallback = { formpart: [], special: [] };
+
+    try {
+      const raw = localStorage.getItem('druckverlust-pro-library-recent');
+      const parsed = raw ? JSON.parse(raw) : fallback;
+
+      return {
+        formpart: Array.isArray(parsed.formpart) ? parsed.formpart.slice(0, 8) : [],
+        special: Array.isArray(parsed.special) ? parsed.special.slice(0, 8) : [],
+      };
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  saveLibraryRecent() {
+    try {
+      localStorage.setItem('druckverlust-pro-library-recent', JSON.stringify(this.libraryRecent));
+    } catch (error) {
+      // LocalStorage kann in manchen Test-/Privatmodi gesperrt sein. Die App soll trotzdem weiterlaufen.
+    }
+  }
+
+  recordLibraryUse(type, id) {
+    if (!type || !id) return;
+
+    const key = type === 'special' ? 'special' : 'formpart';
+    const current = Array.isArray(this.libraryRecent?.[key]) ? this.libraryRecent[key] : [];
+    this.libraryRecent[key] = [id, ...current.filter(item => item !== id)].slice(0, 8);
+    this.saveLibraryRecent();
+  }
+
+  clearLibraryRecent(type) {
+    const key = type === 'special' ? 'special' : 'formpart';
+    this.libraryRecent[key] = [];
+    this.saveLibraryRecent();
+    this.render();
+  }
+
+  getRecentLibraryItems(type, library = []) {
+    const key = type === 'special' ? 'special' : 'formpart';
+    const recentIds = Array.isArray(this.libraryRecent?.[key]) ? this.libraryRecent[key] : [];
+    const map = new Map(library.map(item => [item.id, item]));
+
+    return recentIds
+      .map(id => map.get(id))
+      .filter(Boolean)
+      .slice(0, 4);
+  }
+
+  loadLibraryFavorites() {
+    const fallback = { formpart: [], special: [] };
+
+    try {
+      const raw = localStorage.getItem('druckverlust-pro-library-favorites');
+      const parsed = raw ? JSON.parse(raw) : fallback;
+
+      return {
+        formpart: Array.isArray(parsed.formpart) ? parsed.formpart.slice(0, 12) : [],
+        special: Array.isArray(parsed.special) ? parsed.special.slice(0, 12) : [],
+      };
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  saveLibraryFavorites() {
+    try {
+      localStorage.setItem('druckverlust-pro-library-favorites', JSON.stringify(this.libraryFavorites));
+    } catch (error) {
+      // LocalStorage kann gesperrt sein. Favoriten sind Komfortdaten und dürfen die App nicht blockieren.
+    }
+  }
+
+  isLibraryFavorite(type, id) {
+    const key = type === 'special' ? 'special' : 'formpart';
+    return Array.isArray(this.libraryFavorites?.[key]) && this.libraryFavorites[key].includes(id);
+  }
+
+  toggleLibraryFavorite(type, id) {
+    if (!type || !id) return;
+
+    const key = type === 'special' ? 'special' : 'formpart';
+    const current = Array.isArray(this.libraryFavorites?.[key]) ? this.libraryFavorites[key] : [];
+
+    this.libraryFavorites[key] = current.includes(id)
+      ? current.filter(item => item !== id)
+      : [id, ...current].slice(0, 12);
+
+    this.saveLibraryFavorites();
+    this.render();
+  }
+
+  clearLibraryFavorites(type) {
+    const key = type === 'special' ? 'special' : 'formpart';
+    this.libraryFavorites[key] = [];
+    this.saveLibraryFavorites();
+    this.render();
+  }
+
+  getFavoriteLibraryItems(type, library = []) {
+    const key = type === 'special' ? 'special' : 'formpart';
+    const favoriteIds = Array.isArray(this.libraryFavorites?.[key]) ? this.libraryFavorites[key] : [];
+    const map = new Map(library.map(item => [item.id, item]));
+
+    return favoriteIds
+      .map(id => map.get(id))
+      .filter(Boolean);
+  }
+
+  renderLibraryFavoritesSection({ type, title, items = [], renderCard }) {
+    if (!items.length || typeof renderCard !== 'function') return '';
+
+    return `
+      <div class="dp-library-favorites" data-library-favorites="${this.escapeAttribute(type)}">
+        <div class="dp-library-recent-header">
+          <div>
+            <h3>${this.escapeHtml(title || 'Favoriten')}</h3>
+            <p>Fest angeheftete Einträge für den schnellen Zugriff.</p>
+          </div>
+          <button type="button" data-library-favorites-clear="${this.escapeAttribute(type)}">Favoriten leeren</button>
+        </div>
+        <div class="dp-formpart-card-grid dp-library-recent-grid">
+          ${items.map(item => renderCard(item)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  renderLibraryRecentSection({ type, title, items = [], renderCard }) {
+    if (!items.length || typeof renderCard !== 'function') return '';
+
+    return `
+      <div class="dp-library-recent" data-library-recent="${this.escapeAttribute(type)}">
+        <div class="dp-library-recent-header">
+          <div>
+            <h3>${this.escapeHtml(title || 'Zuletzt verwendet')}</h3>
+            <p>Schnellzugriff auf die zuletzt eingefügten Bibliothekseinträge.</p>
+          </div>
+          <button type="button" data-library-recent-clear="${this.escapeAttribute(type)}">Leeren</button>
+        </div>
+        <div class="dp-formpart-card-grid dp-library-recent-grid">
+          ${items.map(item => renderCard(item)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  bindLibraryFilterControls() {
+    this.root.querySelectorAll('[data-library-search]').forEach(input => {
+      input.addEventListener('input', () => {
+        const type = input.dataset.librarySearch;
+        if (type === 'formpart') this.formPartLibrarySearch = input.value || '';
+        if (type === 'special') this.specialLibrarySearch = input.value || '';
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-category]').forEach(button => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.libraryCategory;
+        const value = button.dataset.libraryCategoryValue || 'all';
+        if (type === 'formpart') this.formPartLibraryCategory = value;
+        if (type === 'special') this.specialLibraryCategory = value;
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-reset]').forEach(button => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.libraryReset;
+        if (type === 'formpart') {
+          this.formPartLibrarySearch = '';
+          this.formPartLibraryCategory = 'all';
+        }
+        if (type === 'special') {
+          this.specialLibrarySearch = '';
+          this.specialLibraryCategory = 'all';
+        }
+        this.render();
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-recent-clear]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.clearLibraryRecent(button.dataset.libraryRecentClear);
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-favorites-clear]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.clearLibraryFavorites(button.dataset.libraryFavoritesClear);
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-favorite-toggle]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.toggleLibraryFavorite(button.dataset.libraryFavoriteToggle, button.dataset.libraryItemId);
+      });
+    });
+  }
+
+  renderSpecialComponentLibraryCard(item = {}) {
+    const favorite = this.isLibraryFavorite('special', item.id);
+
+    return `
+      <div class="dp-library-card-shell">
+        <button
+          class="dp-library-favorite-toggle ${favorite ? 'active' : ''}"
+          type="button"
+          data-library-favorite-toggle="special"
+          data-library-item-id="${this.escapeAttribute(item.id)}"
+          title="${favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}"
+          aria-label="${favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}">
+          ${favorite ? '★' : '☆'}
+        </button>
+        <button class="dp-special-card" type="button" data-special-action="add" data-special-type="${this.escapeAttribute(item.id)}">
+          <div class="dp-special-card-icon" aria-hidden="true">
+            ${this.renderSpecialComponentIcon(item)}
+          </div>
+          <div class="dp-special-card-body">
+            <span>${this.escapeHtml(item.category || 'Sonderbauteil')}</span>
+            <strong>${this.escapeHtml(item.name || item.type || 'Sonderbauteil')}</strong>
+            <em>${this.formatNumber(item.unitPressureLoss ?? 0, 1)} Pa Ansatz</em>
+          </div>
+        </button>
+      </div>
+    `;
+  }
+
+  renderSpecialComponentIcon(item = {}) {
+    const id = String(item.id || '').toLowerCase();
+    const label = id.includes('filter') ? 'F'
+      : id.includes('schall') ? 'SD'
+      : id.includes('volumen') ? 'VSR'
+      : id.includes('brand') ? 'BSK'
+      : id.includes('luftdurchlass') ? 'LD'
+      : id.includes('monoblock') ? 'MB'
+      : id.includes('wetter') ? 'WG'
+      : '+';
+
+    return `
+      <svg viewBox="0 0 96 64" role="img" focusable="false">
+        <rect x="8" y="16" width="80" height="32" rx="5"></rect>
+        <line x1="18" y1="24" x2="78" y2="24"></line>
+        <line x1="18" y1="40" x2="78" y2="40"></line>
+        <text x="48" y="36" text-anchor="middle">${this.escapeHtml(label)}</text>
+      </svg>
+    `;
+  }
+
+  renderSpecialComponentManagementRow(component = {}, index = 0, total = 0) {
+    const loss = this.getSpecialComponentTotalLoss(component);
+    const q = component?.q ?? component?.airflow ?? component?.volumeFlow ?? component?.airVolume ?? 0;
+    const type = component?.type || component?.category || 'Sonderbauteil';
+    const sectionName = component?.sectionId ? this.getSectionNameById(component.sectionId) : 'Anlage';
+
+    return `
+      <div class="dp-special-row ${this.state.isSelected('specialComponent', component?.id) ? 'active' : ''}">
+        <button type="button" class="dp-special-row-main" data-special-action="select" data-special-id="${this.escapeAttribute(component?.id)}">
+          <strong>${this.escapeHtml(component?.name || 'Sonderbauteil')}</strong>
+          <span>${this.escapeHtml(type)} · ${this.escapeHtml(sectionName)} · ${this.formatAirflow(q)} m³/h · ${this.formatNumber(loss, 1)} Pa</span>
+        </button>
+        <div class="dp-special-row-actions">
+          <button type="button" data-special-action="up" data-special-id="${this.escapeAttribute(component?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-special-action="down" data-special-id="${this.escapeAttribute(component?.id)}" ${index >= total - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-special-action="duplicate" data-special-id="${this.escapeAttribute(component?.id)}">Duplizieren</button>
+          <button type="button" class="danger" data-special-action="delete" data-special-id="${this.escapeAttribute(component?.id)}">Löschen</button>
+        </div>
+      </div>
+    `;
+  }
+
+  bindSpecialComponentManagement() {
+    this.bindLibraryFilterControls();
+
+    this.root.querySelectorAll('[data-special-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.specialAction;
+        const componentId = button.dataset.specialId;
+        const specialType = button.dataset.specialType;
+        const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+
+        try {
+          if (action === 'add') {
+            const type = specialType || 'freie_komponente';
+            this.recordLibraryUse('special', type);
+            this.commands.addSpecialComponent(type);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'select') {
+            const component = system?.specialComponents?.find(item => item.id === componentId);
+            if (component) this.state.selectSpecialComponent(component);
+            return;
+          }
+
+          if (action === 'duplicate') {
+            this.commands.duplicateSpecialComponent(componentId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'delete') {
+            const component = system?.specialComponents?.find(item => item.id === componentId);
+            const name = component?.name || 'dieses Sonderbauteil';
+            if (!confirm(`Sonderbauteil „${name}“ wirklich löschen?`)) return;
+            this.commands.deleteSpecialComponent(componentId);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'up' || action === 'down') {
+            this.commands.moveSpecialComponent(componentId, action === 'up' ? -1 : 1);
+            this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'renumber') {
+            if (!confirm('Alle Sonderbauteile neu nummerieren? Manuelle Namen können überschrieben werden.')) return;
+            this.commands.renumberSpecialComponents({ force: true });
+            this.autoCalculateProject();
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    });
+  }
+
   renderFormPartPicker() {
     const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const allGroups = this.getFormPartLibraryGroups({ ignoreFilters: true });
     const groups = this.getFormPartLibraryGroups();
+    const filteredCount = groups.reduce((sum, group) => sum + group.items.length, 0);
 
     this.root.innerHTML = `
       <div class="workspace-header">
@@ -500,7 +1203,31 @@ export default class WorkspaceComponent {
       ` : ''}
 
       <section class="dp-formpart-library">
-        ${groups.map(group => `
+        ${this.renderLibraryFilterToolbar({
+          type: 'formpart',
+          search: this.formPartLibrarySearch,
+          category: this.formPartLibraryCategory,
+          groups: allGroups,
+          total: allGroups.reduce((sum, group) => sum + group.items.length, 0),
+          filtered: filteredCount,
+          placeholder: 'Formteil suchen, z. B. Bogen, Übergang, T-Stück…',
+        })}
+
+        ${this.renderLibraryFavoritesSection({
+          type: 'formpart',
+          title: 'Favorisierte Formteile',
+          items: this.getFavoriteLibraryItems('formpart', this.registry.all()),
+          renderCard: item => this.renderFormPartPickerCard(item),
+        })}
+
+        ${this.renderLibraryRecentSection({
+          type: 'formpart',
+          title: 'Zuletzt verwendete Formteile',
+          items: this.getRecentLibraryItems('formpart', this.registry.all()),
+          renderCard: item => this.renderFormPartPickerCard(item),
+        })}
+
+        ${groups.length ? groups.map(group => `
           <div class="dp-formpart-library-group">
             <div class="dp-formpart-library-heading">
               <h2>${this.escapeHtml(group.category)}</h2>
@@ -511,7 +1238,11 @@ export default class WorkspaceComponent {
               ${group.items.map(item => this.renderFormPartPickerCard(item)).join('')}
             </div>
           </div>
-        `).join('')}
+        `).join('') : `
+          <div class="dp-empty-state dp-library-empty">
+            Keine Formteile zur aktuellen Suche gefunden. Passe Suche oder Kategorie an.
+          </div>
+        `}
       </section>
     `;
 
@@ -520,16 +1251,29 @@ export default class WorkspaceComponent {
   }
 
   renderFormPartPickerCard(item) {
+    const favorite = this.isLibraryFavorite('formpart', item.id);
+
     return `
-      <button class="dp-formpart-card" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
-        <div class="dp-formpart-card-image">
-          ${this.renderFormPartCardImage(item)}
-        </div>
-        <div class="dp-formpart-card-body">
-          <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
-          <strong>${this.escapeHtml(item.name)}</strong>
-        </div>
-      </button>
+      <div class="dp-library-card-shell">
+        <button
+          class="dp-library-favorite-toggle ${favorite ? 'active' : ''}"
+          type="button"
+          data-library-favorite-toggle="formpart"
+          data-library-item-id="${this.escapeAttribute(item.id)}"
+          title="${favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}"
+          aria-label="${favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}">
+          ${favorite ? '★' : '☆'}
+        </button>
+        <button class="dp-formpart-card" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
+          <div class="dp-formpart-card-image">
+            ${this.renderFormPartCardImage(item)}
+          </div>
+          <div class="dp-formpart-card-body">
+            <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
+            <strong>${this.escapeHtml(item.name)}</strong>
+          </div>
+        </button>
+      </div>
     `;
   }
 
@@ -552,10 +1296,13 @@ export default class WorkspaceComponent {
   }
 
   bindFormPartPicker() {
+    this.bindLibraryFilterControls();
+
     this.root.querySelectorAll('[data-formpart-type]').forEach(button => {
       button.addEventListener('click', () => {
         try {
           const type = button.dataset.formpartType;
+          this.recordLibraryUse('formpart', type);
           this.commands.createFormPart(type);
           this.autoCalculateProject();
         } catch (error) {
@@ -565,15 +1312,32 @@ export default class WorkspaceComponent {
     });
   }
 
-  getFormPartLibraryGroups() {
+  getFormPartLibraryGroups(options = {}) {
     const order = ['Rund', 'Rechteck', 'Übergänge', 'Spezial', 'Abzweige'];
     const groups = new Map();
+    const search = options.ignoreFilters ? '' : String(this.formPartLibrarySearch || '').toLowerCase().trim();
+    const selectedCategory = options.ignoreFilters ? 'all' : String(this.formPartLibraryCategory || 'all');
 
-    this.registry.all().forEach(item => {
-      const category = item.category || 'Weitere';
-      if (!groups.has(category)) groups.set(category, []);
-      groups.get(category).push(item);
-    });
+    this.registry.all()
+      .filter(item => {
+        const category = item.category || 'Weitere';
+        if (selectedCategory !== 'all' && category !== selectedCategory) return false;
+
+        if (!search) return true;
+
+        return [
+          item.id,
+          item.name,
+          item.category,
+          item.description,
+          ...(item.keywords || []),
+        ].some(value => String(value || '').toLowerCase().includes(search));
+      })
+      .forEach(item => {
+        const category = item.category || 'Weitere';
+        if (!groups.has(category)) groups.set(category, []);
+        groups.get(category).push(item);
+      });
 
     return [...groups.entries()]
       .sort(([a], [b]) => {
@@ -584,7 +1348,7 @@ export default class WorkspaceComponent {
           return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
         }
 
-        return a.localeCompare(b, 'de-CH');
+        return String(a).localeCompare(String(b), 'de-CH');
       })
       .map(([category, items]) => ({
         category,
@@ -601,8 +1365,21 @@ export default class WorkspaceComponent {
     this.deriveAndStoreFormPart(formPart);
     this.calculateAndStoreFormPart(formPart, { silent: true });
 
+    const formPartIndex = system?.formParts?.findIndex(item => item.id === formPart?.id) ?? -1;
+
     this.root.innerHTML = `
-      <h1>${this.escapeHtml(formPart?.name ?? 'Formteil')}</h1>
+      <div class="workspace-header">
+        <div>
+          <h1>${this.escapeHtml(formPart?.name ?? 'Formteil')}</h1>
+          <p>Formteil bearbeiten, duplizieren, löschen oder innerhalb der Formteilliste verschieben.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-formpart-action="duplicate" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Duplizieren</button>
+          <button type="button" data-formpart-action="up" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartIndex <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-formpart-action="down" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartIndex < 0 || formPartIndex >= (system?.formParts?.length || 0) - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="danger" data-formpart-action="delete" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Löschen</button>
+        </div>
+      </div>
       ${this.renderDirtyHint()}
       ${this.renderValidationMessages(this.getFormPartValidationWarnings(formPart))}
       ${this.renderFormPartOverview(formPart)}
@@ -649,6 +1426,7 @@ export default class WorkspaceComponent {
     `;
 
     this.bindFormPartEditor(formPart);
+    this.bindFormPartManagement();
     this.bindFormPartImageFallbacks();
   }
 
@@ -2034,28 +2812,220 @@ export default class WorkspaceComponent {
   }
 
   renderSpecialComponent(component) {
-    this.root.innerHTML = `
-      <h1>${component?.name ?? 'Sonderbauteil'}</h1>
-      <p>Detailansicht des Sonderbauteils.</p>
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const components = system?.specialComponents || [];
+    const index = components.findIndex(item => item.id === component?.id);
+    const library = typeof this.commands.getSpecialComponentLibrary === 'function'
+      ? this.commands.getSpecialComponentLibrary()
+      : [];
+    const normalized = typeof this.commands.normalizeSpecialComponent === 'function'
+      ? this.commands.normalizeSpecialComponent(component)
+      : component;
+    const totalLoss = this.getSpecialComponentTotalLoss(normalized);
+    const unitLoss = Number(normalized?.unitPressureLoss ?? normalized?.pressureLoss ?? normalized?.pa ?? 0);
+    const quantity = Number(normalized?.quantity ?? 1) || 1;
 
-      <table class="dp-table">
-        <tbody>
-          <tr>
-            <th>Typ</th>
-            <td>${component?.type ?? '-'}</td>
-          </tr>
-          <tr>
-            <th>Hersteller</th>
-            <td>${component?.manufacturer ?? '-'}</td>
-          </tr>
-          <tr>
-            <th>Druckverlust</th>
-            <td>${component?.pressureLoss ?? component?.pa ?? 0} Pa</td>
-          </tr>
-        </tbody>
-      </table>
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <h1>${this.escapeHtml(normalized?.name ?? 'Sonderbauteil')}</h1>
+          <p>Sonderbauteil bearbeiten, einer Teilstrecke zuweisen und den Druckverlust erfassen.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-special-action="duplicate" data-special-id="${this.escapeAttribute(normalized?.id)}">Duplizieren</button>
+          <button type="button" data-special-action="up" data-special-id="${this.escapeAttribute(normalized?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-special-action="down" data-special-id="${this.escapeAttribute(normalized?.id)}" ${index < 0 || index >= components.length - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="danger" data-special-action="delete" data-special-id="${this.escapeAttribute(normalized?.id)}">Löschen</button>
+        </div>
+      </div>
+
+      ${this.renderSpecialComponentWarnings(normalized)}
+
+      <section class="dp-editor-panel dp-special-editor-panel">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Eingabedaten</h2>
+            <p>Druckverlust wird automatisch aus Anzahl × Druckverlust je Stück berechnet.</p>
+          </div>
+          <span class="dp-chip">Sonderbauteil</span>
+        </div>
+
+        <div class="dp-editor-grid">
+          <label>
+            <span>Name</span>
+            <input data-special-field="name" value="${this.escapeAttribute(normalized?.name ?? '')}">
+          </label>
+
+          <label>
+            <span>Bauteiltyp</span>
+            <select data-special-field="componentType">
+              ${library.map(item => `
+                <option value="${this.escapeAttribute(item.id)}" ${normalized?.componentType === item.id ? 'selected' : ''}>${this.escapeHtml(item.name)}</option>
+              `).join('')}
+            </select>
+          </label>
+
+          <label>
+            <span>Kategorie</span>
+            <input data-special-field="category" value="${this.escapeAttribute(normalized?.category ?? '')}">
+          </label>
+
+          <label>
+            <span>Typ / Beschreibung</span>
+            <input data-special-field="type" value="${this.escapeAttribute(normalized?.type ?? '')}">
+          </label>
+
+          <label>
+            <span>Zugeordnete Teilstrecke</span>
+            <select data-special-field="sectionId">
+              <option value="" ${!normalized?.sectionId ? 'selected' : ''}>Anlage / nicht zugeordnet</option>
+              ${(system?.sections || []).map(section => `
+                <option value="${this.escapeAttribute(section.id)}" ${normalized?.sectionId === section.id ? 'selected' : ''}>${this.escapeHtml(section.name || section.id)}</option>
+              `).join('')}
+            </select>
+          </label>
+
+          <label>
+            <span>Luftmenge [m³/h]</span>
+            <input data-special-field="q" type="number" step="1" value="${this.formatAirflowInput(normalized?.q ?? 0)}">
+          </label>
+
+          <label>
+            <span>Anzahl</span>
+            <input data-special-field="quantity" type="number" step="1" min="1" value="${this.escapeAttribute(quantity)}">
+          </label>
+
+          <label>
+            <span>Druckverlust je Stück [Pa]</span>
+            <input data-special-field="unitPressureLoss" type="number" step="0.1" value="${this.escapeAttribute(unitLoss)}">
+          </label>
+
+          <label>
+            <span>Hersteller</span>
+            <input data-special-field="manufacturer" value="${this.escapeAttribute(normalized?.manufacturer ?? '')}">
+          </label>
+
+          <label>
+            <span>Modell / Typ-Nr.</span>
+            <input data-special-field="model" value="${this.escapeAttribute(normalized?.model ?? '')}">
+          </label>
+
+          <label class="dp-project-meta-wide">
+            <span>Bemerkung / Datenblatt-Hinweis</span>
+            <textarea data-special-field="note" rows="3">${this.escapeHtml(normalized?.note ?? '')}</textarea>
+          </label>
+        </div>
+
+        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und in Bericht sowie Gesamtberechnung berücksichtigt.</p>
+      </section>
+
+      <section class="dp-result-panel dp-special-result-panel">
+        <h2>Ergebnis Sonderbauteil</h2>
+        <div class="dp-result-cards">
+          <div class="dp-result-card">
+            <span>Luftmenge</span>
+            <strong>${this.formatAirflow(normalized?.q ?? 0)} m³/h</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>Anzahl</span>
+            <strong>${quantity}</strong>
+          </div>
+          <div class="dp-result-card">
+            <span>je Stück</span>
+            <strong>${this.formatNumber(unitLoss, 1)} Pa</strong>
+          </div>
+          <div class="dp-result-card dp-result-card-total">
+            <span>Gesamt</span>
+            <strong>${this.formatNumber(totalLoss, 1)} Pa</strong>
+          </div>
+        </div>
+      </section>
+    `;
+
+    this.bindSpecialComponentEditor(normalized);
+    this.bindSpecialComponentManagement();
+  }
+
+  renderSpecialComponentWarnings(component = {}) {
+    const warnings = [];
+    const q = Number(component?.q ?? 0);
+    const quantity = Number(component?.quantity ?? 1);
+    const unitLoss = Number(component?.unitPressureLoss ?? component?.pressureLoss ?? 0);
+
+    if (!component?.name) warnings.push('Name des Sonderbauteils fehlt.');
+    if (!(q > 0)) warnings.push('Luftmenge fehlt oder ist 0 m³/h.');
+    if (!(quantity > 0)) warnings.push('Anzahl muss grösser 0 sein.');
+    if (!(unitLoss >= 0)) warnings.push('Druckverlust je Stück darf nicht negativ sein.');
+
+    if (!warnings.length) return '';
+
+    return `
+      <div class="dp-validation-box warning">
+        <strong>Hinweise prüfen</strong>
+        <ul>${warnings.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}</ul>
+      </div>
     `;
   }
+
+  bindSpecialComponentEditor(component = {}) {
+    this.root.querySelectorAll('[data-special-field]').forEach(input => {
+      input.addEventListener('change', () => {
+        const field = input.dataset.specialField;
+        const value = input.type === 'number' ? Number(input.value) : input.value;
+
+        if (field === 'componentType') {
+          const preset = this.commands.getSpecialComponentLibrary?.().find(item => item.id === value);
+          component.componentType = value;
+
+          if (preset) {
+            component.type = preset.type;
+            component.category = preset.category;
+            if (!component.name || component.name === 'Sonderbauteil' || /Kopie$/.test(component.name)) {
+              component.name = preset.name;
+            }
+            if (!Number(component.unitPressureLoss)) {
+              component.unitPressureLoss = Number(preset.unitPressureLoss ?? 0);
+            }
+            if (!component.note) component.note = preset.note || '';
+          }
+        } else {
+          component[field] = value;
+        }
+
+        this.updateSpecialComponentPressureLoss(component);
+        this.autoCalculateProject();
+      });
+    });
+  }
+
+  updateSpecialComponentPressureLoss(component = {}) {
+    const quantity = Math.max(1, Number(component.quantity ?? 1) || 1);
+    const unitLoss = Math.max(0, Number(component.unitPressureLoss ?? component.singlePressureLoss ?? component.pressureLoss ?? component.pa ?? 0) || 0);
+
+    component.quantity = quantity;
+    component.unitPressureLoss = unitLoss;
+    component.pressureLoss = unitLoss * quantity;
+    component.pa = component.pressureLoss;
+    component.q = Number(component.q ?? component.airflow ?? 0) || 0;
+    component.airflow = component.q;
+
+    return component;
+  }
+
+  getSpecialComponentTotalLoss(component = {}) {
+    if (!component) return 0;
+    const quantity = Math.max(1, Number(component.quantity ?? 1) || 1);
+    const unitLoss = Number(component.unitPressureLoss ?? component.singlePressureLoss);
+
+    if (Number.isFinite(unitLoss)) return unitLoss * quantity;
+
+    return Number(component.pressureLoss ?? component.pa ?? component.totalPressureLoss ?? 0) || 0;
+  }
+
+  sumSpecialComponentLoss(components = []) {
+    return components.reduce((sum, component) => sum + this.getSpecialComponentTotalLoss(component), 0);
+  }
+
 
   renderCalculationSummary(total) {
     if (total === null || total === undefined) {

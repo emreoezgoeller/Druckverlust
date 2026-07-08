@@ -1853,6 +1853,7 @@
 
 .dp-panel-actions button,
 .dp-section-row-actions button,
+.dp-formpart-row-actions button,
 .workspace-actions button.danger {
   border: 1px solid var(--dp-border);
   background: #ffffff;
@@ -1865,37 +1866,44 @@
 
 .dp-panel-actions button:hover,
 .dp-section-row-actions button:hover,
+.dp-formpart-row-actions button:hover,
 .workspace-actions button:hover {
   background: #edf5ff;
 }
 
 .dp-section-row-actions button.danger,
+.dp-formpart-row-actions button.danger,
 .workspace-actions button.danger {
   color: #b91c1c;
   border-color: #fecaca;
 }
 
 .dp-section-row-actions button.danger:hover,
+.dp-formpart-row-actions button.danger:hover,
 .workspace-actions button.danger:hover {
   background: #fef2f2;
 }
 
 .dp-section-row-actions button:disabled,
+.dp-formpart-row-actions button:disabled,
 .workspace-actions button:disabled {
   opacity: .45;
   cursor: not-allowed;
 }
 
-.dp-section-management-panel {
+.dp-section-management-panel,
+.dp-formpart-management-panel {
   background: #ffffff;
 }
 
-.dp-section-list {
+.dp-section-list,
+.dp-formpart-list {
   display: grid;
   gap: 10px;
 }
 
-.dp-section-row {
+.dp-section-row,
+.dp-formpart-row {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) auto;
   gap: 12px;
@@ -1906,12 +1914,14 @@
   background: #f8fafc;
 }
 
-.dp-section-row.active {
+.dp-section-row.active,
+.dp-formpart-row.active {
   border-color: #93c5fd;
   background: #eff6ff;
 }
 
-.dp-section-row-main {
+.dp-section-row-main,
+.dp-formpart-row-main {
   display: grid;
   gap: 4px;
   width: 100%;
@@ -1923,18 +1933,21 @@
   padding: 4px;
 }
 
-.dp-section-row-main strong {
+.dp-section-row-main strong,
+.dp-formpart-row-main strong {
   color: var(--dp-blue-900);
   font-size: 15px;
 }
 
-.dp-section-row-main span {
+.dp-section-row-main span,
+.dp-formpart-row-main span {
   color: var(--dp-muted);
   font-size: 13px;
   font-weight: 700;
 }
 
-.dp-section-row-actions {
+.dp-section-row-actions,
+.dp-formpart-row-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -1951,11 +1964,13 @@
 }
 
 @media (max-width: 980px) {
-  .dp-section-row {
+  .dp-section-row,
+.dp-formpart-row {
     grid-template-columns: 1fr;
   }
 
-  .dp-section-row-actions {
+  .dp-section-row-actions,
+.dp-formpart-row-actions {
     justify-content: flex-start;
   }
 }
@@ -2057,4 +2072,573 @@
   color: var(--dp-blue-900);
   font-size: 20px;
   font-weight: 900;
+}
+
+
+/* Sprint 18.3/18.5 – Formteilverwaltung + Sidebar-Struktur */
+.dp-formpart-management-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.dp-formpart-management-group {
+  display: grid;
+  gap: 8px;
+}
+
+.dp-formpart-management-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-formpart-management-heading span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #edf5ff;
+  color: var(--dp-blue-900);
+}
+
+.dp-formpart-row {
+  background: #ffffff;
+}
+
+.dp-formpart-row.active {
+  box-shadow: inset 4px 0 0 #0e5a9c;
+}
+
+.dp-tree-subgroup {
+  margin: 5px 0 8px 0;
+}
+
+.dp-tree-subheading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 3px 12px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--dp-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.dp-tree-subheading em {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-style: normal;
+  text-align: center;
+}
+
+.dp-tree-item strong,
+.dp-tree-item span {
+  display: block;
+}
+
+.dp-tree-item strong {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.dp-tree-item span {
+  margin-top: 2px;
+  color: var(--dp-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dp-tree-item.active span {
+  color: rgba(255,255,255,.82);
+}
+
+/* Sprint 18.4/18.6 – Sonderbauteile / Bauteilbibliothek */
+.dp-special-management-panel {
+  border-left: 4px solid #5b7c99;
+}
+
+.dp-special-add-actions select {
+  min-width: 220px;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  background: #fff;
+  font: inherit;
+}
+
+.dp-special-management-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0.9rem 0;
+}
+
+.dp-special-management-summary > div {
+  padding: 0.85rem 1rem;
+  border: 1px solid #dbe4ee;
+  border-radius: 0.85rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+}
+
+.dp-special-management-summary span {
+  display: block;
+  color: #60738a;
+  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
+}
+
+.dp-special-management-summary strong {
+  color: #17324d;
+  font-size: 1.15rem;
+}
+
+.dp-special-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.dp-special-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.7rem;
+  border: 1px solid #d8e2ec;
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.dp-special-row.active {
+  border-color: #1f6aa5;
+  box-shadow: 0 0 0 3px rgba(31, 106, 165, 0.11);
+}
+
+.dp-special-row-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.dp-special-row-main strong {
+  color: #17324d;
+}
+
+.dp-special-row-main span {
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.dp-special-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.dp-special-editor-panel {
+  border-left: 4px solid #1f6aa5;
+}
+
+.dp-special-result-panel .dp-result-card-total {
+  background: #17324d;
+  color: #fff;
+}
+
+.dp-special-result-panel .dp-result-card-total span,
+.dp-special-result-panel .dp-result-card-total strong {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .dp-special-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-special-row-actions,
+  .dp-special-add-actions {
+    justify-content: flex-start;
+  }
+
+  .dp-special-management-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sprint 18.7 – Sonderbauteil-Kachelauswahl */
+.dp-special-library {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.dp-special-library-group {
+  border: 1px solid #dbe4ee;
+  border-radius: 1rem;
+  background: #f8fbff;
+  padding: 0.85rem;
+}
+
+.dp-special-library-heading,
+.dp-special-list-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #e1eaf3;
+}
+
+.dp-special-library-heading h3,
+.dp-special-list-title h3 {
+  margin: 0;
+  color: #083763;
+  font-size: 1rem;
+}
+
+.dp-special-library-heading span,
+.dp-special-list-title span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.dp-special-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.8rem;
+}
+
+.dp-special-card {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #cbdced;
+  border-radius: 0.95rem;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.dp-special-card:hover,
+.dp-special-card:focus-visible {
+  border-color: #0f4c81;
+  box-shadow: 0 12px 28px rgba(8, 55, 99, 0.12);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.dp-special-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 66px;
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, #f5f9fd 0%, #eaf2fb 100%);
+  border: 1px solid #d7e4f1;
+}
+
+.dp-special-card-icon svg {
+  width: 78px;
+  height: 54px;
+}
+
+.dp-special-card-icon rect {
+  fill: rgba(227, 239, 250, .9);
+  stroke: #0f4c81;
+  stroke-width: 2;
+}
+
+.dp-special-card-icon line {
+  stroke: #7aa5cb;
+  stroke-width: 1.5;
+}
+
+.dp-special-card-icon text {
+  fill: #083763;
+  font-size: 14px;
+  font-weight: 900;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.dp-special-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dp-special-card-body span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+
+.dp-special-card-body strong {
+  color: #17324d;
+  font-size: 0.96rem;
+  line-height: 1.22;
+}
+
+.dp-special-card-body em {
+  color: #0f4c81;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .dp-special-card {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-special-card-icon {
+    min-height: 58px;
+  }
+}
+
+/* Sprint 18.8 – Bibliothekssuche / Filter */
+.dp-library-filter {
+  border: 1px solid var(--border, #d7e3f2);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 16px;
+  margin: 12px 0 20px;
+  box-shadow: 0 10px 24px rgba(8, 54, 96, 0.05);
+}
+
+.dp-library-search {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.dp-library-search span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--muted, #5f6f86);
+  text-transform: uppercase;
+}
+
+.dp-library-search input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border, #d7e3f2);
+  border-radius: 12px;
+  font: inherit;
+  color: var(--text, #062c4f);
+  background: #fff;
+}
+
+.dp-library-search input:focus {
+  outline: none;
+  border-color: var(--accent, #1d71b8);
+  box-shadow: 0 0 0 3px rgba(29, 113, 184, 0.12);
+}
+
+.dp-library-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dp-library-chip {
+  border: 1px solid var(--border, #d7e3f2);
+  background: #fff;
+  color: var(--text, #062c4f);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-library-chip:hover,
+.dp-library-chip:focus-visible {
+  border-color: var(--accent, #1d71b8);
+  box-shadow: 0 0 0 3px rgba(29, 113, 184, 0.10);
+  outline: none;
+}
+
+.dp-library-chip.active {
+  background: var(--primary, #083e70);
+  color: #fff;
+  border-color: var(--primary, #083e70);
+}
+
+.dp-library-filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted, #5f6f86);
+  font-size: 0.9rem;
+}
+
+.dp-library-filter-summary strong {
+  color: var(--text, #062c4f);
+}
+
+.dp-library-filter-summary button {
+  border: 0;
+  background: transparent;
+  color: var(--primary, #083e70);
+  font-weight: 800;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.dp-library-filter-summary button:hover,
+.dp-library-filter-summary button:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.dp-library-empty {
+  margin-top: 8px;
+}
+
+/* Sprint 18.9 – Bibliothek Schnellzugriff */
+.dp-library-recent {
+  border: 1px solid rgba(29, 113, 184, 0.22);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(236, 246, 255, 0.85), rgba(255, 255, 255, 0.95));
+  padding: 14px;
+  margin: 14px 0 18px;
+}
+
+.dp-library-recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dp-library-recent-header h3 {
+  margin: 0;
+  color: var(--primary, #083e70);
+  font-size: 1rem;
+}
+
+.dp-library-recent-header p {
+  margin: 3px 0 0;
+  color: var(--muted, #5f6f86);
+  font-size: 0.86rem;
+}
+
+.dp-library-recent-header button {
+  border: 1px solid var(--border, #d7e3f2);
+  background: #fff;
+  color: var(--primary, #083e70);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-library-recent-header button:hover,
+.dp-library-recent-header button:focus-visible {
+  border-color: var(--accent, #1d71b8);
+  box-shadow: 0 0 0 3px rgba(29, 113, 184, 0.10);
+  outline: none;
+}
+
+.dp-library-recent-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.dp-library-recent .dp-formpart-card,
+.dp-library-recent .dp-special-card {
+  background: #fff;
+}
+
+/* Sprint 18.10 – Bibliothek Favoriten */
+.dp-library-favorites {
+  border: 1px solid rgba(8, 62, 112, 0.26);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.72), rgba(255, 255, 255, 0.96));
+  padding: 14px;
+  margin: 14px 0 18px;
+}
+
+.dp-library-card-shell {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.dp-library-card-shell > .dp-formpart-card,
+.dp-library-card-shell > .dp-special-card {
+  width: 100%;
+  height: 100%;
+}
+
+.dp-library-favorite-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(8, 62, 112, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #64748b;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.10);
+}
+
+.dp-library-favorite-toggle:hover,
+.dp-library-favorite-toggle:focus-visible {
+  color: var(--dp-blue-900, #073b66);
+  border-color: #93c5fd;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.32), 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.dp-library-favorite-toggle.active {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.45);
+  background: #fffaf0;
+}
+
+.dp-library-favorites .dp-formpart-card,
+.dp-library-favorites .dp-special-card {
+  background: #ffffff;
 }
