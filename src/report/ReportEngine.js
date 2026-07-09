@@ -1,3 +1,5 @@
+import { APP_RELEASE } from '../core/appVersion.js';
+
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
 
@@ -137,7 +139,27 @@ function createPrintWaitScript() {
   return `
     <script>
       (function(){
+        function protectImages(){
+          var selector = 'img, svg, picture, canvas, .report-logo-wrap, .report-illustration-card, .report-catalog-image, .report-formpart-box';
+          var images = Array.prototype.slice.call(document.images || []);
+
+          images.forEach(function(img){
+            img.setAttribute('draggable', 'false');
+            img.classList.add('dp-protected-image');
+          });
+
+          ['contextmenu', 'dragstart', 'selectstart'].forEach(function(type){
+            document.addEventListener(type, function(event){
+              var target = event.target;
+              if (target && target.closest && target.closest(selector)) {
+                event.preventDefault();
+              }
+            }, true);
+          });
+        }
+
         function waitForImages(){
+          protectImages();
           var images = Array.prototype.slice.call(document.images || []);
           if (!images.length) return Promise.resolve();
 
@@ -156,6 +178,12 @@ function createPrintWaitScript() {
             return new Promise(function(resolve){ setTimeout(resolve, 250); });
           });
         };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', protectImages, { once:true });
+        } else {
+          protectImages();
+        }
       })();
     <\/script>
   `;
@@ -280,11 +308,15 @@ function toAbsoluteAssetUrl(path = '') {
   if (!cleanPath) return '';
   if (/^(data:|https?:|blob:)/i.test(cleanPath)) return cleanPath;
 
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return `${window.location.origin}/${cleanPath}`;
+  if (typeof document !== 'undefined' && document.baseURI) {
+    return new URL(cleanPath, document.baseURI).href;
   }
 
-  return `/${cleanPath}`;
+  if (typeof window !== 'undefined' && window.location?.href) {
+    return new URL(cleanPath, window.location.href).href;
+  }
+
+  return cleanPath;
 }
 
 function getProjectMeta(project = {}) {
@@ -452,10 +484,11 @@ export class ReportEngine {
         airflow: result.q ?? section.q ?? section.volumeFlow ?? section.airVolume,
         velocity: result.velocity,
         dynamicPressure: result.dynamicPressure,
-        frictionLoss: result.frictionLoss,
-        zetaLoss: result.zetaLoss,
-        directLoss: result.directFormPartLoss,
-        totalLoss: result.roundedTotalLoss ?? result.totalLoss ?? result.totalPressureLoss,
+        frictionLoss: toNumber(result.frictionLoss),
+        zetaLoss: toNumber(result.zetaLoss),
+        directLoss: toNumber(result.directFormPartLoss),
+        totalLoss: toNumber(result.roundedTotalLoss ?? result.totalLoss ?? result.totalPressureLoss),
+        rawTotalLoss: toNumber(result.totalLoss),
         zetaSum: result.zetaSum ?? calculationItem?.zetaFromParts ?? 0,
         formParts: assignedFormParts,
       };
@@ -713,7 +746,7 @@ export class ReportEngine {
       reportOptions.includeInfo,
     ];
 
-    const requiredProjectFields = [project.name, project.object, project.plant || model.system?.name, project.author, project.date];
+    const requiredProjectFields = [project.name, project.object, project.plantNumber, project.plant || model.system?.name, project.author, project.date];
     const requiredReleaseFields = [project.reportNumber, project.revision];
     const approvalFields = [project.checkedBy, project.approvedBy, project.approvalDate];
     const qualityOk = model.quality?.status === 'ok';
@@ -725,8 +758,8 @@ export class ReportEngine {
         id: 'project-data',
         label: 'Projekt- und Anlagenangaben',
         status: requiredProjectFields.every(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
-        message: 'Projekt, Objekt, Anlage, Bearbeiter und Datum sind gepflegt.',
-        warning: 'Projekt, Objekt, Anlage, Bearbeiter oder Datum fehlen noch.',
+        message: 'Projektnummer, Projektname, BKP-Nummer, Anlage, Bearbeiter und Datum sind gepflegt.',
+        warning: 'Projektnummer, Projektname, BKP-Nummer, Anlage, Bearbeiter oder Datum fehlen noch.',
       },
       {
         id: 'release-data',
@@ -831,7 +864,7 @@ export class ReportEngine {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(this.createDocumentTitle(model))}</title>
-  <meta name="generator" content="Druckverlust Pro – Sprint 17 Abschluss">
+  <meta name="generator" content="Druckverlust Pro – Phase ${APP_RELEASE}">
   <style>${this.getReportCss()}</style>
 </head>
 <body class="report-print-body">
@@ -1003,7 +1036,7 @@ export class ReportEngine {
       <section class="report-page">
         <header class="report-page-head">
           <div class="report-logo-wrap">
-            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo">` : '<div class="report-logo-placeholder">EO</div>'}
+            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
           </div>
           <div>
             <h2>${escapeHtml(title)}</h2>
@@ -1030,7 +1063,7 @@ export class ReportEngine {
       <section class="report-page report-cover-page">
         <header class="report-cover-topbar">
           <div class="report-logo-wrap large">
-            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo">` : '<div class="report-logo-placeholder">EO</div>'}
+            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
           </div>
           <div class="report-generated">Erstellt: ${escapeHtml(generatedLabel)}</div>
         </header>
@@ -1047,10 +1080,10 @@ export class ReportEngine {
           <div class="report-project-card">
             <h3>Projektangaben</h3>
             ${this.renderDefinitionList([
-              ['Projekt', model.project.name],
-              ['Objekt', model.project.object],
+              ['Projektnummer', model.project.name],
+              ['Projektname', model.project.object],
+              ['BKP-Nummer', model.project.plantNumber || '-'],
               ['Anlage', model.system.name],
-              ['Anlagennummer', model.project.plantNumber || '-'],
               ['Bearbeiter', model.project.author],
               ['Firma', model.project.company || '-'],
               ['Standort', model.project.address || '-'],
@@ -1059,7 +1092,7 @@ export class ReportEngine {
               ['Revision', model.project.revision],
             ])}
           </div>
-          <div class="report-illustration-card">${model.assets.reportHero ? `<img class="report-hero-image" src="${escapeHtml(model.assets.reportHero)}" alt="Technische Lüftungskanal-Grafik">` : makeDuctIllustration()}</div>
+          <div class="report-illustration-card">${model.assets.reportHero ? `<img class="report-hero-image" src="${escapeHtml(model.assets.reportHero)}" alt="Technische Lüftungskanal-Grafik" draggable="false" loading="lazy" decoding="async">` : makeDuctIllustration()}</div>
         </div>
 
         <div class="report-cover-divider slim"></div>
@@ -1095,7 +1128,7 @@ export class ReportEngine {
         <table class="report-table compact report-table-network">
           <thead>
             <tr>
-              <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>Fläche<br>m²</th><th>v<br>m/s</th><th>Δp<br>Pa</th>
+              <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>Fläche<br>m²</th><th>v<br>m/s</th><th>Δp<br>Kanal/Rohr<br>Pa</th>
             </tr>
           </thead>
           <tbody>${rows || '<tr><td colspan="12">Keine Teilstrecken vorhanden.</td></tr>'}</tbody>
@@ -1123,7 +1156,7 @@ export class ReportEngine {
         <td>${formatSmart(section.length, 2)}</td>
         <td>${formatNumber(section.area, 3)}</td>
         <td>${formatNumber(section.velocity, 2)}</td>
-        <td>${formatNumber(section.frictionLoss + section.zetaLoss + section.directLoss, 3)}</td>
+        <td>${formatNumber(section.frictionLoss, 3)}</td>
       </tr>
     `;
   }
@@ -1133,7 +1166,7 @@ export class ReportEngine {
       <div class="report-legend">
         <span><strong>TS</strong> = Teilstrecke</span>
         <span><strong>v</strong> = Luftgeschwindigkeit</span>
-        <span><strong>Δp</strong> = Druckverlust</span>
+        <span><strong>Δp Kanal/Rohr</strong> = Reibungsdruckverlust der Teilstrecke ohne Formteile</span>
         <span><strong>ζ</strong> = Formbeiwert</span>
         <span><strong>λ</strong> = Reibungszahl</span>
         <span><strong>ρ</strong> = Luftdichte</span>
@@ -1199,7 +1232,7 @@ export class ReportEngine {
             ${group.formParts.map(part => `
               <tr>
                 <td class="left">${escapeHtml(part.type || part.name)}</td>
-                <td>${part.image ? `<img class="report-part-img" src="${escapeHtml(part.image)}" alt="${escapeHtml(part.name)}">` : '-'}</td>
+                <td>${part.image ? `<img class="report-part-img" src="${escapeHtml(part.image)}" alt="${escapeHtml(part.name)}" draggable="false" loading="lazy" decoding="async">` : '-'}</td>
                 <td>${formatNumber(part.zeta, 3)}</td>
                 <td>${formatNumber(part.pressureLoss, 2)}</td>
               </tr>
@@ -1243,7 +1276,7 @@ export class ReportEngine {
     return `
       <article class="report-catalog-card">
         <div class="report-catalog-image">
-          ${row.image ? `<img src="${escapeHtml(row.image)}" alt="${escapeHtml(row.name)}">` : '<span>Keine Skizze</span>'}
+          ${row.image ? `<img src="${escapeHtml(row.image)}" alt="${escapeHtml(row.name)}" draggable="false" loading="lazy" decoding="async">` : '<span>Keine Skizze</span>'}
         </div>
         <div class="report-catalog-body">
           <div class="report-catalog-head">
@@ -1544,8 +1577,9 @@ export class ReportEngine {
         <div>
           <h3>Anlageninformationen</h3>
           ${this.renderDefinitionList([
-            ['Projekt', model.project.name],
-            ['Objekt', model.project.object],
+            ['Projektnummer', model.project.name],
+            ['Projektname', model.project.object],
+            ['BKP-Nummer', model.project.plantNumber || '-'],
             ['Anlage', model.system.name],
             ['Bearbeiter', model.project.author],
             ['Datum', model.project.date],
@@ -1798,6 +1832,7 @@ export class ReportEngine {
       .report-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
       .report-note-list,.report-info-box ul{margin:0;padding-left:17px;font-size:10.4px;line-height:1.62}
       .report-user-note{margin-top:12px;border-left:3px solid var(--report-blue);background:#f4f8fd;padding:9px 10px;font-size:10px;line-height:1.45;color:#20354f}
+      .dp-professional-report img,.report-print-body img{user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;pointer-events:none}
       .report-copyright{text-align:center;margin-top:32px;color:#43566d;font-size:10.4px}
       .report-empty{border:1px dashed var(--report-line);border-radius:8px;padding:20px;color:var(--report-muted);background:#fafcff}
       .report-footer{position:absolute;left:13mm;right:13mm;bottom:7mm;border-top:1px solid #d6deea;padding-top:5px;display:flex;justify-content:space-between;font-size:8.8px;color:#223950}
@@ -1833,8 +1868,9 @@ export class ReportEngine {
     };
 
     rows.push(this.csvRow(['Druckverlust Pro – Datenexport']));
-    rows.push(this.csvRow(['Projekt', model.project.name]));
-    rows.push(this.csvRow(['Objekt', model.project.object]));
+    rows.push(this.csvRow(['Projektnummer', model.project.name]));
+    rows.push(this.csvRow(['Projektname', model.project.object]));
+    rows.push(this.csvRow(['BKP-Nummer', model.project.plantNumber || '-']));
     rows.push(this.csvRow(['Anlage', model.system.name]));
     rows.push(this.csvRow(['Bearbeiter', model.project.author]));
     rows.push(this.csvRow(['Datum', model.project.date]));

@@ -5,7 +5,10 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js';
+import ReportEngine from '../../report/ReportEngine.js?v=18.20a';
+import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import { APP_RELEASE } from '../../core/appVersion.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -38,6 +41,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'section') return this.renderSection(selection.data);
     if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
     if (selection.type === 'report') return this.renderReport();
+    if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -51,6 +55,243 @@ export default class WorkspaceComponent {
     `;
   }
 
+  renderWorkflowDashboard(project = null, system = null, context = 'system') {
+    if (!project || !system) return '';
+
+    const sections = system?.sections || [];
+    const formParts = system?.formParts || [];
+    const specialComponents = system?.specialComponents || [];
+    const calculation = project?.calculationResult?.calculation || null;
+    const totals = calculation?.totals || {};
+    const total = totals.totalRounded ?? totals.total ?? null;
+    const quality = project?.calculationResult?.quality || null;
+    const errorCount = quality?.errors?.length || 0;
+    const warningCount = quality?.warnings?.length || 0;
+    const qsLabel = errorCount ? 'Fehler' : warningCount ? 'Prüfen' : calculation ? 'OK' : 'Offen';
+    const qsClass = errorCount ? 'error' : warningCount ? 'warning' : calculation ? 'ok' : 'idle';
+    const lastCalculation = this.state.lastCalculationAt
+      ? new Date(this.state.lastCalculationAt).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' })
+      : 'noch nicht berechnet';
+    const relevantSections = sections.filter(section => this.isSectionRelevant(section)).length;
+    const specialLoss = specialComponents.reduce((sum, component) => sum + Number(component?.pressureLoss ?? 0), 0);
+    const nextSteps = this.getWorkflowNextSteps({ sections, formParts, specialComponents, calculation, errorCount, warningCount });
+
+    return `
+      <section class="dp-workflow-dashboard ${context === 'project' ? 'project' : 'system'}">
+        <div class="dp-workflow-head">
+          <div>
+            <span class="dp-overline">Arbeitsdashboard</span>
+            <h2>${context === 'project' ? 'Projektfortschritt' : 'Anlagenfortschritt'}</h2>
+            <p>Schnellübersicht für Eingabe, Berechnung, Kontrolle und Bericht.</p>
+          </div>
+          <span class="dp-workflow-status ${this.escapeAttribute(qsClass)}">QS ${this.escapeHtml(qsLabel)}</span>
+        </div>
+
+        <div class="dp-workflow-grid">
+          <div class="dp-workflow-kpi">
+            <span>Gesamt</span>
+            <strong>${total === null ? '-' : `${this.formatNumber(total, 1)} Pa`}</strong>
+            <em>aktueller Druckverlust</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Teilstrecken</span>
+            <strong>${relevantSections}/${sections.length}</strong>
+            <em>berechnungsrelevant / total</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Formteile</span>
+            <strong>${formParts.length}</strong>
+            <em>zugeordnet oder offen</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Sonderbauteile</span>
+            <strong>${this.formatNumber(specialLoss, 1)} Pa</strong>
+            <em>${specialComponents.length} Komponente${specialComponents.length === 1 ? '' : 'n'}</em>
+          </div>
+        </div>
+
+        <div class="dp-workflow-actions">
+          <button type="button" data-workflow-action="add-section">+ Teilstrecke</button>
+          <button type="button" data-workflow-action="add-formpart">+ Formteil</button>
+          <button type="button" data-workflow-action="add-special">+ Sonderbauteil</button>
+          <button type="button" data-workflow-action="open-report">Bericht öffnen</button>
+        </div>
+
+        <div class="dp-workflow-bottom">
+          <div class="dp-workflow-next">
+            <h3>Nächste Schritte</h3>
+            <ul>
+              ${nextSteps.map(step => `<li>${this.escapeHtml(step)}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="dp-workflow-meta">
+            <span>Letzte Berechnung</span>
+            <strong>${this.escapeHtml(lastCalculation)}</strong>
+            <span>Berichtsumfang</span>
+            <strong>${this.getReportOptionSummary(project)}</strong>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  renderProjectCheckPanel(project = null, system = null) {
+    const check = ProjectDiagnostics.create(project, { system });
+    const visibleItems = check.items.filter(item => item.status !== 'ok').slice(0, 8);
+    const okCount = check.counts?.ok ?? 0;
+    const hasProblems = visibleItems.length > 0;
+
+    return `
+      <section class="dp-editor-panel dp-project-check-panel dp-project-check-${this.escapeAttribute(check.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Projektcheck</span>
+            <h2>Abgabe- und Plausibilitätscheck</h2>
+            <p>${this.escapeHtml(check.summary)}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(check.status)}">${this.escapeHtml(check.label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats">
+          <div>
+            <span>Fehler</span>
+            <strong>${this.escapeHtml(check.counts.error)}</strong>
+          </div>
+          <div>
+            <span>Hinweise</span>
+            <strong>${this.escapeHtml(check.counts.warning)}</strong>
+          </div>
+          <div>
+            <span>OK-Punkte</span>
+            <strong>${this.escapeHtml(okCount)}</strong>
+          </div>
+        </div>
+
+        ${hasProblems ? `
+          <div class="dp-project-check-list">
+            ${visibleItems.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-project-check-ready">
+            <strong>Alles sauber.</strong>
+            <span>Der aktuelle Stand ist bereit für Bericht, Export und Speicherung.</span>
+          </div>
+        `}
+
+        <div class="dp-project-check-actions">
+          <button type="button" data-project-check-action="recalculate">Neu prüfen</button>
+          <button type="button" data-project-check-action="project">Projektangaben</button>
+          <button type="button" data-project-check-action="report">Bericht öffnen</button>
+        </div>
+      </section>
+    `;
+  }
+
+  bindProjectCheckPanel(project = null, system = null) {
+    this.root.querySelectorAll('[data-project-check-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.projectCheckAction;
+
+        if (action === 'recalculate') {
+          this.autoCalculateProject();
+          return;
+        }
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', project || this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'report') {
+          if (typeof this.state.selectReport === 'function') {
+            this.state.selectReport(system || this.state.selectedSystem || project || this.state.project);
+          } else {
+            this.state.setSelection?.('report', system || this.state.selectedSystem || project || this.state.project);
+            this.state.notify?.();
+          }
+        }
+      });
+    });
+  }
+
+  getWorkflowNextSteps({ sections = [], formParts = [], specialComponents = [], calculation = null, errorCount = 0, warningCount = 0 } = {}) {
+    const steps = [];
+
+    if (!sections.length) steps.push('Erste Teilstrecke erfassen.');
+    if (sections.length && !sections.some(section => this.isSectionRelevant(section))) steps.push('Mindestens eine Teilstrecke mit Luftmenge und Geometrie vollständig ausfüllen.');
+    if (sections.length && !formParts.length) steps.push('Formteile über die Kachelbibliothek ergänzen.');
+    if (!specialComponents.length) steps.push('Sonderbauteile wie Filter, Schalldämpfer oder BSK ergänzen.');
+    if (!calculation) steps.push('Eingaben prüfen – die automatische Berechnung erstellt danach den aktuellen Anlagenwert.');
+    if (errorCount) steps.push(`${errorCount} QS-Fehler beheben, bevor der Bericht freigegeben wird.`);
+    if (!errorCount && warningCount) steps.push(`${warningCount} QS-Hinweis${warningCount === 1 ? '' : 'e'} prüfen.`);
+
+    if (!steps.length) steps.push('Projekt ist bereit für Bericht / Export.');
+    return steps.slice(0, 4);
+  }
+
+  isSectionRelevant(section = {}) {
+    const q = Number(section.q ?? section.volumeFlow ?? section.airVolume ?? 0);
+    const l = Number(section.l ?? section.length ?? 0);
+    const b = Number(section.b ?? section.width ?? 0);
+    const h = Number(section.h ?? section.height ?? 0);
+    const d = Number(section.d ?? section.diameter ?? 0);
+    const isPipe = this.isPipeSection(section);
+
+    return q > 0 && (l > 0 || section.formParts?.length) && (isPipe ? d > 0 : b > 0 && h > 0);
+  }
+
+  getReportOptionSummary(project = null) {
+    const options = project?.reportOptions || {};
+    const keys = Object.keys(options);
+
+    if (!keys.length) return 'Standardumfang';
+
+    const active = keys.filter(key => options[key] !== false).length;
+    return `${active}/${keys.length} Bereiche aktiv`;
+  }
+
+  bindWorkflowDashboard(project = null, system = null) {
+    this.root.querySelectorAll('[data-workflow-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.workflowAction;
+        const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+
+        if (action === 'add-section') {
+          this.commands.addSection();
+          return;
+        }
+
+        if (action === 'add-formpart') {
+          if (typeof this.state.selectFormPartPicker === 'function') {
+            this.state.selectFormPartPicker(activeSystem);
+          } else {
+            this.state.setSelection?.('formPartPicker', activeSystem);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'add-special') {
+          if (typeof this.commands.addSpecialComponent === 'function') {
+            this.commands.addSpecialComponent('freie_komponente');
+          }
+          return;
+        }
+
+        if (action === 'open-report') {
+          this.state.setSelection?.('report', project || this.state.project);
+          this.state.notify?.();
+        }
+      });
+    });
+  }
+
   renderProject(project) {
     const meta = this.ensureProjectMeta(project);
     const systems = project?.systems || [];
@@ -62,10 +303,13 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <div class="workspace-header">
         <div>
-          <h1>${this.escapeHtml(project?.name ?? 'Projekt')}</h1>
+          <h1>${this.escapeHtml(meta.object || meta.name || 'Projekt')}</h1>
           <p>Projektangaben und Grunddaten für Berechnung, Speicherung und Bericht.</p>
         </div>
       </div>
+
+      ${this.renderWorkflowDashboard(project, activeSystem, 'project')}
+      ${this.renderProjectCheckPanel(project, activeSystem)}
 
       <section class="dp-editor-panel dp-project-meta-panel">
         <div class="dp-panel-header">
@@ -78,23 +322,23 @@ export default class WorkspaceComponent {
 
         <div class="dp-editor-grid dp-project-meta-grid">
           <label>
-            <span>Projektname</span>
+            <span>Projektnummer</span>
             <input data-project-field="name" value="${this.escapeAttribute(meta.name)}">
           </label>
 
           <label>
-            <span>Objekt</span>
+            <span>Projektname</span>
             <input data-project-field="object" value="${this.escapeAttribute(meta.object)}">
+          </label>
+
+          <label>
+            <span>BKP-Nummer</span>
+            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
           </label>
 
           <label>
             <span>Anlage</span>
             <input data-project-field="anlage" value="${this.escapeAttribute(meta.anlage)}">
-          </label>
-
-          <label>
-            <span>Anlagennummer</span>
-            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
           </label>
 
           <label>
@@ -145,6 +389,8 @@ export default class WorkspaceComponent {
     `;
 
     this.bindProjectMetaEditor(project, activeSystem);
+    this.bindWorkflowDashboard(project, activeSystem);
+    this.bindProjectCheckPanel(project, activeSystem);
   }
 
   ensureProjectMeta(project = null, system = null) {
@@ -262,6 +508,9 @@ export default class WorkspaceComponent {
       <h1>${system?.name ?? 'Anlage'}</h1>
       <p>Übersicht der gewählten Anlage.</p>
 
+      ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
+      ${this.renderProjectCheckPanel(this.state.project, system)}
+
       <div class="dp-cards">
         <div class="dp-card">
           <strong>Teilstrecken</strong>
@@ -294,6 +543,8 @@ export default class WorkspaceComponent {
       ${this.renderCalculationTable(calculation)}
     `;
 
+    this.bindWorkflowDashboard(this.state.project, system);
+    this.bindProjectCheckPanel(this.state.project, system);
     this.bindSectionManagement();
     this.bindFormPartManagement();
     this.bindSpecialComponentManagement();
@@ -1290,6 +1541,9 @@ export default class WorkspaceComponent {
       <img
         src="${this.escapeAttribute(src)}"
         alt="${this.escapeAttribute(item.name)}"
+        draggable="false"
+        loading="lazy"
+        decoding="async"
         data-fallbacks="${this.escapeAttribute(fallbacks.join('|'))}">
       <div class="dp-image-missing" style="display:none;">Skizze fehlt</div>
     `;
@@ -1362,6 +1616,7 @@ export default class WorkspaceComponent {
 
     this.ensureFormPartSection(formPart, sections);
     this.applyFormPartDefaults(formPart);
+    const autoSizeResult = this.applySectionDimensionsToFormPart(formPart);
     this.deriveAndStoreFormPart(formPart);
     this.calculateAndStoreFormPart(formPart, { silent: true });
 
@@ -1417,6 +1672,8 @@ export default class WorkspaceComponent {
           </label>
         </div>
 
+        ${this.renderFormPartAutoSizePanel(formPart, autoSizeResult)}
+
         ${this.renderFormPartParameters(formPart)}
 
         <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
@@ -1444,6 +1701,14 @@ export default class WorkspaceComponent {
           if (entry && (!formPart.name || /^Formteil\s+\d+$/i.test(String(formPart.name)))) {
             formPart.name = entry.name;
           }
+
+          this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
+        }
+
+        if (field === 'sectionId') {
+          this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
+        } else if (this.isFormPartAutoSizeField(field)) {
+          formPart.autoSizeManualOverride = true;
         }
 
         this.deriveAndStoreFormPart(formPart);
@@ -1451,6 +1716,277 @@ export default class WorkspaceComponent {
         this.autoCalculateProject();
       });
     });
+
+    this.root.querySelectorAll('[data-formpart-size-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.formpartSizeAction;
+
+        if (action !== 'apply-section') return;
+
+        const result = this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
+
+        if (!result?.applied) {
+          alert(result?.message || 'Es konnten keine Grössen aus der Teilstrecke übernommen werden.');
+          return;
+        }
+
+        this.deriveAndStoreFormPart(formPart);
+        this.calculateAndStoreFormPart(formPart, { silent: true });
+        this.autoCalculateProject();
+      });
+    });
+  }
+
+  renderFormPartAutoSizePanel(formPart, autoSizeResult = null) {
+    const section = this.getSectionById(formPart?.sectionId);
+    const status = autoSizeResult?.status || formPart?.autoSize?.status || 'idle';
+    const statusClass = this.escapeAttribute(status);
+    const sectionName = section
+      ? this.getSectionNameById(section.id)
+      : 'keine Teilstrecke gewählt';
+    const lastSummary = formPart?.autoSize?.summary || autoSizeResult?.summary || '';
+    const fieldSummary = autoSizeResult?.fields?.length
+      ? autoSizeResult.fields.map(field => this.getFormPartAutoSizeFieldLabel(field)).join(', ')
+      : lastSummary || 'Noch keine automatische Grössenübernahme durchgeführt.';
+    const manual = Boolean(formPart?.autoSizeManualOverride);
+
+    return `
+      <section class="dp-autosize-panel dp-autosize-${statusClass}">
+        <div>
+          <span class="dp-overline">Automatische Grössenübernahme</span>
+          <h3>Grössen aus Teilstrecke</h3>
+          <p>
+            Gewählte Teilstrecke: <strong>${this.escapeHtml(sectionName)}</strong>.
+            ${section ? 'Kanal-/Rohrgrösse und Hauptluftmenge werden beim Anwählen automatisch übernommen.' : 'Bitte zuerst eine Teilstrecke zuordnen.'}
+          </p>
+          <small>${this.escapeHtml(fieldSummary)}${manual ? ' · manuell angepasst' : ''}</small>
+        </div>
+        <button type="button" data-formpart-size-action="apply-section" ${section ? '' : 'disabled'}>
+          Grössen übernehmen
+        </button>
+      </section>
+    `;
+  }
+
+  applySectionDimensionsToFormPart(formPart, options = {}) {
+    const entry = this.getRegistryEntry(formPart);
+    const section = this.getSectionById(formPart?.sectionId);
+
+    if (!formPart || !entry) {
+      return { applied: false, status: 'missing', message: 'Formteiltyp nicht gefunden.' };
+    }
+
+    if (!section) {
+      return { applied: false, status: 'missing', message: 'Keine Teilstrecke zugeordnet.' };
+    }
+
+    const force = Boolean(options.force);
+    const signature = this.getSectionAutoSizeSignature(section);
+
+    if (formPart.autoSizeManualOverride && !force) {
+      return {
+        applied: false,
+        status: 'manual',
+        section,
+        message: 'Die Grössen wurden manuell angepasst. Automatische Übernahme pausiert.',
+      };
+    }
+
+    if (!force && formPart.autoSize?.sectionId === section.id && formPart.autoSize?.signature === signature) {
+      return {
+        applied: false,
+        status: 'unchanged',
+        section,
+        summary: formPart.autoSize?.summary || '',
+        fields: formPart.autoSize?.fields || [],
+      };
+    }
+
+    const values = this.getFormPartSectionDimensionValues(formPart, entry, section);
+    const fields = Object.keys(values).filter(field => values[field] !== undefined && values[field] !== null && values[field] !== '');
+
+    if (!fields.length) {
+      formPart.autoSize = {
+        sectionId: section.id,
+        signature,
+        status: 'empty',
+        appliedAt: new Date().toISOString(),
+        fields: [],
+        summary: 'Für diesen Formteiltyp wurden keine passenden Grössenfelder gefunden.',
+      };
+      return {
+        applied: false,
+        status: 'empty',
+        section,
+        message: formPart.autoSize.summary,
+      };
+    }
+
+    fields.forEach(field => {
+      formPart[field] = values[field];
+    });
+
+    if (options.clearManualOverride !== false) {
+      delete formPart.autoSizeManualOverride;
+    }
+
+    const summary = fields
+      .map(field => this.getFormPartAutoSizeFieldLabel(field))
+      .join(', ');
+
+    formPart.autoSize = {
+      sectionId: section.id,
+      sectionName: this.getSectionNameById(section.id),
+      signature,
+      status: 'applied',
+      appliedAt: new Date().toISOString(),
+      fields,
+      summary: `Übernommen: ${summary}`,
+    };
+
+    return {
+      applied: true,
+      status: 'applied',
+      section,
+      fields,
+      summary: formPart.autoSize.summary,
+    };
+  }
+
+  getFormPartSectionDimensionValues(formPart, entry, section) {
+    const parameterIds = new Set((entry?.parameters || []).map(parameter => parameter.id));
+    const values = {};
+    const geometry = this.getSectionGeometryForFormPart(section);
+    const type = String(entry?.id || formPart?.type || '').toLowerCase();
+    const has = field => parameterIds.has(field);
+    const set = (field, value) => {
+      if (!has(field)) return;
+      if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return;
+      values[field] = value;
+    };
+    const setShape = (prefix = '') => {
+      const bauformField = prefix ? `${prefix}_bauform` : 'bauform';
+      const widthField = prefix ? `${prefix}_breite` : 'a';
+      const heightField = prefix ? `${prefix}_hoehe` : 'b';
+      const diameterField = prefix ? `${prefix}_d` : 'd';
+
+      if (has(bauformField)) values[bauformField] = geometry.bauform;
+
+      if (geometry.isPipe) {
+        set(diameterField, geometry.diameterMm);
+        return;
+      }
+
+      set(widthField, geometry.widthMm);
+      set(heightField, geometry.heightMm);
+    };
+
+    // Einfache Bögen / Etagen übernehmen die direkte Rohr- oder Kanalgrösse.
+    setShape('');
+
+    // Übergänge: die zugewiesene Teilstrecke wird auf die Anschlussseite gelegt,
+    // die zur Strömungsrichtung des Formteils passt. Die zweite Seite bleibt frei/manuell.
+    if (type.includes('uebergang_gross_klein')) {
+      setShape('A2');
+    } else if (type.includes('uebergang_klein_gross')) {
+      setShape('A1');
+    }
+
+    // Abzweige / Hosenstück / T-Stück / Sattelstück: zugewiesene Teilstrecke = Hauptanschluss.
+    if (
+      type.includes('hosenstueck') ||
+      type.includes('t_abzweig') ||
+      type.includes('t_stueck') ||
+      type.includes('sattelstueck')
+    ) {
+      setShape('A');
+      set('W', geometry.q);
+    }
+
+    // Durchgangsvarianten bekommen zusätzlich den Durchgang AD/WD aus der Teilstrecke.
+    if (type.includes('durchgang')) {
+      setShape('AD');
+      set('WD', geometry.q);
+    }
+
+    return values;
+  }
+
+  getSectionGeometryForFormPart(section = {}) {
+    const isPipe = this.isPipeSection(section);
+    return {
+      isPipe,
+      bauform: isPipe ? 'Rohr' : 'Kanal',
+      q: Math.round(Number(section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0)),
+      widthMm: this.toMillimetres(section?.b ?? section?.width ?? 0),
+      heightMm: this.toMillimetres(section?.h ?? section?.height ?? 0),
+      diameterMm: this.toMillimetres(section?.d ?? section?.diameter ?? 0),
+    };
+  }
+
+  toMillimetres(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number) || number <= 0) return 0;
+
+    // Teilstrecken arbeiten aktuell in Meter. Falls alte Projektdaten bereits mm enthalten,
+    // werden Werte ab 10 als Millimeter interpretiert.
+    return Math.round(number < 10 ? number * 1000 : number);
+  }
+
+  getSectionAutoSizeSignature(section = {}) {
+    const geometry = this.getSectionGeometryForFormPart(section);
+    return [
+      section?.id || '',
+      geometry.bauform,
+      geometry.q,
+      geometry.widthMm,
+      geometry.heightMm,
+      geometry.diameterMm,
+    ].join('|');
+  }
+
+  isFormPartAutoSizeField(field = '') {
+    return new Set([
+      'd', 'a', 'b',
+      'A1_bauform', 'A1_breite', 'A1_hoehe', 'A1_d',
+      'A2_bauform', 'A2_breite', 'A2_hoehe', 'A2_d',
+      'A_breite', 'A_hoehe', 'A_d',
+      'AD_breite', 'AD_hoehe', 'AD_d',
+      'AA_breite', 'AA_hoehe', 'AA_d',
+      'W', 'WD', 'WA',
+      'bauform',
+    ]).has(field);
+  }
+
+  getFormPartAutoSizeFieldLabel(field = '') {
+    const labels = {
+      d: 'd',
+      a: 'Breite a',
+      b: 'Höhe b',
+      bauform: 'Bauform',
+      W: 'W',
+      WD: 'WD',
+      WA: 'WA',
+      A1_bauform: 'A1-Bauform',
+      A1_breite: 'A1-Breite',
+      A1_hoehe: 'A1-Höhe',
+      A1_d: 'A1-Durchmesser',
+      A2_bauform: 'A2-Bauform',
+      A2_breite: 'A2-Breite',
+      A2_hoehe: 'A2-Höhe',
+      A2_d: 'A2-Durchmesser',
+      A_breite: 'A-Breite',
+      A_hoehe: 'A-Höhe',
+      A_d: 'A-Durchmesser',
+      AD_breite: 'AD-Breite',
+      AD_hoehe: 'AD-Höhe',
+      AD_d: 'AD-Durchmesser',
+      AA_breite: 'AA-Breite',
+      AA_hoehe: 'AA-Höhe',
+      AA_d: 'AA-Durchmesser',
+    };
+
+    return labels[field] || field;
   }
 
   autoCalculateProject(options = {}) {
@@ -1871,6 +2407,9 @@ export default class WorkspaceComponent {
         <img
           src="${this.escapeAttribute(src)}"
           alt="${this.escapeAttribute(entry.name)}"
+          draggable="false"
+          loading="lazy"
+          decoding="async"
           data-fallbacks="${this.escapeAttribute(fallbacks.join('|'))}">
         <div class="dp-image-missing" style="display:none;">Skizze konnte nicht geladen werden.</div>
       </div>
@@ -2165,6 +2704,142 @@ export default class WorkspaceComponent {
   }
 
 
+  renderDeploymentCheck(check = null) {
+    const result = check || this.state.deploymentCheck;
+    const hasResult = !!result;
+    const status = result?.status || 'warning';
+    const label = result?.label || 'Noch nicht geprüft';
+    const counts = result?.counts || { ok: 0, warning: 0, error: 0 };
+    const items = result?.items || [];
+    const location = result?.location || {};
+    const finishedAt = result?.finishedAt ? new Date(result.finishedAt) : null;
+    const finishedLabel = finishedAt && !Number.isNaN(finishedAt.getTime())
+      ? finishedAt.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'medium' })
+      : '-';
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <h1>Deployment-QS</h1>
+          <p>Prüft Startdateien, GitHub-Pages-Pfade, Cache-Versionen, Pflichtbilder und Basiszustand.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-deploy-action="run">Neu prüfen</button>
+          <button type="button" data-deploy-action="copy" ${hasResult ? '' : 'disabled'}>Zusammenfassung kopieren</button>
+          <button type="button" data-deploy-action="project">Zurück zum Projekt</button>
+        </div>
+      </div>
+
+      <section class="dp-editor-panel dp-deploy-check-panel dp-deploy-${this.escapeAttribute(status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Phase ${this.escapeHtml(APP_RELEASE)}</span>
+            <h2>GitHub Pages / Deployment-Prüfung</h2>
+            <p>${this.escapeHtml(result?.summary || 'Noch keine Prüfung ausgeführt. Klicke auf „Neu prüfen“.')}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(status)}">${this.escapeHtml(label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats dp-deploy-stats">
+          <div>
+            <span>OK</span>
+            <strong>${this.escapeHtml(counts.ok)}</strong>
+          </div>
+          <div>
+            <span>Hinweise</span>
+            <strong>${this.escapeHtml(counts.warning)}</strong>
+          </div>
+          <div>
+            <span>Fehler</span>
+            <strong>${this.escapeHtml(counts.error)}</strong>
+          </div>
+        </div>
+
+        <div class="dp-deploy-meta-grid">
+          <div>
+            <span>Aktuelle Adresse</span>
+            <strong>${this.escapeHtml(location.href || '-')}</strong>
+          </div>
+          <div>
+            <span>Erwarteter Pfad</span>
+            <strong>${this.escapeHtml(location.expectedBasePath || './')}</strong>
+          </div>
+          <div>
+            <span>Version</span>
+            <strong>${this.escapeHtml(result?.version || APP_RELEASE)}</strong>
+          </div>
+          <div>
+            <span>Geprüft</span>
+            <strong>${this.escapeHtml(finishedLabel)}</strong>
+          </div>
+        </div>
+
+        ${items.length ? `
+          <div class="dp-project-check-list dp-deploy-check-list">
+            ${items.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+                ${item.details ? `<em>${this.escapeHtml(item.details)}</em>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch keine Deployment-Prüfung vorhanden.
+          </div>
+        `}
+      </section>
+    `;
+
+    this.bindDeploymentCheckActions();
+  }
+
+  bindDeploymentCheckActions() {
+    this.root.querySelectorAll('[data-deploy-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.deployAction;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = DeploymentDiagnostics.toText(this.state.deploymentCheck || {});
+          try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = 'Zusammenfassung kopieren'; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'run') {
+          const originalText = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Prüfung läuft…';
+
+          try {
+            const check = await DeploymentDiagnostics.run({ project: this.state.project, version: APP_RELEASE });
+            this.state.deploymentCheck = check;
+            this.state.setSelection?.('deploymentCheck', check);
+            this.state.notify?.();
+          } catch (error) {
+            alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
+          } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        }
+      });
+    });
+  }
+
+
   renderReportExportCheck(model) {
     const checklist = ReportEngine.createExportChecklist(model);
     const statusLabel = checklist.status === 'ok'
@@ -2324,6 +2999,7 @@ export default class WorkspaceComponent {
     report.project = report.project ?? project.name ?? 'Unbenanntes Projekt';
     report.object = report.object ?? project.object ?? project.objekt ?? '-';
     report.anlage = report.anlage ?? system?.name ?? project.plant ?? project.anlage ?? 'Anlage';
+    report.anlageNumber = report.anlageNumber ?? project.anlageNumber ?? project.systemNumber ?? project.meta?.anlageNumber ?? '';
     report.bearbeiter = report.bearbeiter ?? project.author ?? project.bearbeiter ?? '-';
     report.datum = report.datum ?? project.date ?? project.datum ?? new Date().toLocaleDateString('de-CH');
     report.hinweis = report.hinweis ?? project.note ?? '';
@@ -2557,13 +3233,18 @@ export default class WorkspaceComponent {
           <h3>Projekt / Anlage</h3>
           <div class="dp-editor-grid dp-report-settings-grid">
             <label>
-              <span>Projekt</span>
+              <span>Projektnummer</span>
               <input data-report-field="project" value="${this.escapeAttribute(report.project)}">
             </label>
 
             <label>
-              <span>Objekt</span>
+              <span>Projektname</span>
               <input data-report-field="object" value="${this.escapeAttribute(report.object)}">
+            </label>
+
+            <label>
+              <span>BKP-Nummer</span>
+              <input data-report-field="anlageNumber" value="${this.escapeAttribute(report.anlageNumber)}">
             </label>
 
             <label>
@@ -2661,6 +3342,7 @@ export default class WorkspaceComponent {
 
         if (field === 'project') project.name = value || 'Unbenanntes Projekt';
         if (field === 'object') project.object = value;
+        if (field === 'anlageNumber') project.anlageNumber = value;
         if (field === 'anlage' && this.state.selectedSystem) this.state.selectedSystem.name = value || 'Anlage';
         if (field === 'bearbeiter') project.author = value;
         if (field === 'datum') project.date = value;

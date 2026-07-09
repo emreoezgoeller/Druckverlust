@@ -1,20 +1,38 @@
-# Druckverlust Pro – Architektur v0.4.1
+# Druckverlust Pro – Architektur
 
 ## Grundsatz
-Die Benutzeroberfläche darf nicht die Berechnungslogik enthalten. Alle Fachberechnungen laufen langfristig über zentrale Engines.
 
-## Kernmodule
+Die Benutzeroberfläche darf nicht die Berechnungslogik enthalten. Alle Fachberechnungen laufen über zentrale, DOM-unabhängige Module.
+
+## Aktiver Stand Phase 18.20
 
 ```text
-src/core/CalculationEngine.js   – Kanal, Rohr, Druckverlust, Summen
-src/core/ProjectSchema.js       – einheitliche Projekt-/Teilstreckenstruktur
-src/core/FormPartRegistry.js    – Liste aller verfügbaren Formteile
-src/core/FormPartEngine.js      – ζ-Berechnung und Zuweisung
-src/core/ProjectEngine.js       – Projektoperationen und Neuberechnung
+index.html                         – Startdatei / Cache-Busting
+src/main.js                        – Bootstrap der professionellen Oberfläche
+src/core/appVersion.js             – zentrale Versionsdaten
+src/app/ApplicationState.js        – Anwendungszustand
+src/app/ProjectCommands.js         – Projektaktionen
+src/project/defaultProject.js      – Standardprojekt mit 5 Teilstrecken
+src/project/ProjectCalculationService.js – Berechnungsservice
+src/core/CalculationEngine.js      – Kanal, Rohr, Druckverlust, Summen
+src/formteile/FormPartRegistry.js  – aktive Formteilbibliothek
+src/report/ReportEngine.js         – Bericht / Druckansicht / HTML / CSV
+src/storage/AutoSaveEngine.js      – Autosicherung
+src/storage/StorageEngine.js       – Projektdateien speichern/öffnen
+src/diagnostics/*                  – Projektcheck und Deployment-QS
+src/ui/*                           – professionelle Oberfläche
 ```
 
-## Ziel
-- bestehende Web-App bleibt lauffähig
-- neue Module werden schrittweise angeschlossen
-- keine bestehenden Funktionen werden gelöscht
-- jede Berechnung erhält einen Referenztest gegen Excel
+## Bewusst behaltene Kompatibilität
+
+- `src/calculation/engine.js`
+- `src/pdf/report.js`
+- `src/formteile/library.js`
+- `src/ui/components/PropertiesComponent.js`
+
+Diese Dateien bleiben enthalten, damit ältere Export-/Diagnosepfade nicht abrupt brechen und spätere Funktionen wieder andocken können.
+
+
+## Ergänzung Phase 18.20
+
+Formteile können Grössen automatisch aus der zugeordneten Teilstrecke übernehmen. Die aktive Logik sitzt im `WorkspaceComponent` und bleibt manuell übersteuerbar.

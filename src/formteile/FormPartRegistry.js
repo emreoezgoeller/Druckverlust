@@ -2010,7 +2010,6 @@ export const defaultFormParts = [
     name: 'Sattelstück mit Einströmkonus',
     image: formPartImage('sattelstueck_mit_einstroemkonus'),
     imageFallbacks: formPartImageSources('sattelstueck_mit_einstroemkonus', 'sattelstueck_mit_einstroemkonus.png', [
-      'assets/formteile/sattelstueck_mit_einstroemkonus/sattelst#U00fcck_mit_einstroemkonus.png',
       'assets/formteile/sattelstueck_mit_einstroemkonus.png',
     ]),
     referenceFile: formPartExcel('sattelstueck_mit_einstroemkonus'),

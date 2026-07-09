@@ -19,8 +19,6 @@ export default class ApplicationShell {
 
         <main class="dp-workspace"></main>
 
-        <aside class="dp-properties"></aside>
-
         <footer class="dp-status"></footer>
       </div>
     `;

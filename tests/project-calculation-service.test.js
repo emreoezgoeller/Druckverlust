@@ -1,4 +1,4 @@
-import ProjectCalculationService from '../../src/project/ProjectCalculationService.js';
+import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
 
 const out = document.getElementById('out');
 const lines = [];
@@ -25,7 +25,7 @@ async function run() {
   log('Starte ProjectCalculationService Referenztest...');
   log('');
 
-  const response = await fetch('./TEST-001.json');
+  const response = await fetch('./reference/TEST-001.json');
   if (!response.ok) throw new Error(`TEST-001.json konnte nicht geladen werden. Status: ${response.status}`);
 
   const fixture = await response.json();

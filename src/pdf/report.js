@@ -1,6 +1,81 @@
-import { calculateProject, calculateRow, fmt } from '../calculation/engine.js';
-import { APP_VERSION } from '../core/state.js';
+import * as Engine from '../calculation/engine.js?v=18.20a';
+import { APP_BUILD_LABEL } from '../core/appVersion.js';
 import { getPartDefinition } from '../formteile/library.js';
+
+
+const toNumberCompat = (value, fallback = 0) => {
+  if (value === null || value === undefined || value === '') return fallback;
+  const number = Number(String(value).replace(',', '.'));
+  return Number.isFinite(number) ? number : fallback;
+};
+
+const fmtFallback = (value, digits = 1) => {
+  const number = toNumberCompat(value, NaN);
+  return Number.isFinite(number) ? number.toFixed(digits) : '-';
+};
+
+function calculateRowFallback(row = {}, project = {}, parts = []) {
+  const type = String(row.type || '').toLowerCase();
+  const q = toNumberCompat(row.q ?? row.volumeFlow ?? row.airVolume);
+  const l = toNumberCompat(row.l ?? row.length);
+  const rho = toNumberCompat(project.rho ?? project.airDensity, 1.21);
+  const lambda = toNumberCompat(project.lambda, 0.025);
+  const manualPa = toNumberCompat(row.pa ?? row.pressureLoss ?? row.dp);
+
+  if (type === 'special' || type === 'sonderbauteil') {
+    return { area: 0, eqDiameter: 0, velocity: 0, pdyn: 0, r: 0, rl: 0, zeta: 0, z: 0, total: manualPa, warnings: [] };
+  }
+
+  const d = toNumberCompat(row.d ?? row.diameter);
+  const b = toNumberCompat(row.b ?? row.width);
+  const h = toNumberCompat(row.h ?? row.height);
+  const isPipe = type === 'pipe' || type === 'rohr' || type === 'round' || (d > 0 && !(b > 0 && h > 0));
+  const area = isPipe ? (d > 0 ? Math.PI * d * d / 4 : 0) : (b > 0 && h > 0 ? b * h : 0);
+  const eqDiameter = isPipe ? (d > 0 ? d : 0) : (b > 0 && h > 0 ? (2 * b * h) / (b + h) : 0);
+  const velocity = q > 0 && area > 0 ? q / (3600 * area) : 0;
+  const pdyn = velocity > 0 ? 0.5 * rho * velocity * velocity : 0;
+  const r = lambda > 0 && eqDiameter > 0 && pdyn > 0 ? (lambda / eqDiameter) * pdyn : 0;
+  const rl = r * l;
+  const zetaFromParts = Array.isArray(parts)
+    ? parts.filter(part => part?.rowId === row.id || part?.sectionId === row.id || part?.targetSectionId === row.id || (part?.ts && row?.ts && String(part.ts) === String(row.ts))).reduce((sum, part) => sum + toNumberCompat(part.zeta), 0)
+    : 0;
+  const zeta = zetaFromParts + toNumberCompat(row.zetaSum ?? row.zeta ?? row.sumZeta);
+  const z = zeta * pdyn;
+  return { area, eqDiameter, velocity, pdyn, r, rl, zeta, z, total: rl + z + manualPa, warnings: [] };
+}
+
+function calculateProjectFallback(state = {}) {
+  const project = state.project || state.settings || {};
+  const rows = Array.isArray(state.rows) ? state.rows : (Array.isArray(state.sections) ? state.sections : []);
+  const parts = Array.isArray(state.parts) ? state.parts : (Array.isArray(state.formParts) ? state.formParts : []);
+  const specialComponents = Array.isArray(state.specialComponents) ? state.specialComponents : [];
+  const rowResults = new Map();
+  const totals = { duct: 0, part: 0, special: 0, total: 0, rowResults, warnings: [], version: '18.12b-report-fallback' };
+
+  rows.forEach(row => {
+    const result = calculateRow(row, project, parts);
+    rowResults.set(row.id, result);
+    const rowType = String(row.type || '').toLowerCase();
+    if (rowType === 'special' || rowType === 'sonderbauteil') totals.special += result.total;
+    else { totals.duct += result.rl; totals.part += result.z; }
+  });
+
+  specialComponents.forEach(component => { totals.special += toNumberCompat(component.pressureLoss ?? component.pa ?? component.dp ?? component.totalLoss); });
+  totals.total = totals.duct + totals.part + totals.special;
+  return totals;
+}
+
+const fmt = Engine.fmt || fmtFallback;
+const calculateRow = Engine.calculateRow || calculateRowFallback;
+const calculateProject = Engine.calculateProject || calculateProjectFallback;
+
+function resolveAssetUrl(src){
+  const clean = String(src || '').replaceAll('\\', '/').replace(/^\.\//, '').replace(/^\//, '');
+  if (!clean || /^(data:|https?:|blob:)/i.test(clean)) return clean;
+  if (typeof document !== 'undefined' && document.baseURI) return new URL(clean, document.baseURI).href;
+  if (typeof window !== 'undefined' && window.location?.href) return new URL(clean, window.location.href).href;
+  return clean;
+}
 
 async function imageToDataUrl(src){
   return new Promise(resolve=>{
@@ -47,7 +122,7 @@ export async function generatePdf(state){
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(25,36,50); doc.text('Teilstrecken, Sonderbauteile und Formteile in einer Hauptberechnung.',14,55);
   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(6,61,120); doc.text('PROJEKTANGABEN',14,73);
   doc.setFontSize(9); doc.setTextColor(20,30,44);
-  const rows = [['Projekt / Objekt',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Luftdichte ρ',`${state.project.rho} kg/m³`],['Reibungszahl λ',state.project.lambda]];
+  const rows = [['Projektnummer',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Luftdichte ρ',`${state.project.rho} kg/m³`],['Reibungszahl λ',state.project.lambda]];
   let yy=82; rows.forEach(([k,v])=>{doc.setFont('helvetica','bold');doc.text(k,14,yy);doc.setFont('helvetica','normal');doc.text(String(v||''),58,yy);yy+=8;});
   doc.setDrawColor(7,65,122); doc.line(14,134,196,134);
   doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.setFontSize(12); doc.text('ZUSAMMENFASSUNG',14,146);
@@ -83,7 +158,7 @@ export async function generatePdf(state){
 
   // Seite 6 Anlageninfo
   doc.addPage(); addHeader(doc, logo, 'ANLAGENINFORMATIONEN', 'Projektabschluss und Hinweise', 6);
-  doc.autoTable({startY:48,body:[['Projekt',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Software','Druckverlust Pro'],['Version',APP_VERSION]],theme:'plain',styles:{fontSize:10,cellPadding:3},columnStyles:{0:{fontStyle:'bold',cellWidth:40}}});
+  doc.autoTable({startY:48,body:[['Projekt',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Software','Druckverlust Pro'],['Version',APP_BUILD_LABEL]],theme:'plain',styles:{fontSize:10,cellPadding:3},columnStyles:{0:{fontStyle:'bold',cellWidth:40}}});
   doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.text('HINWEISE',118,51); doc.setFont('helvetica','normal'); doc.setTextColor(20,30,44); doc.setFontSize(10); doc.text(['• Alle Angaben ohne Gewähr.','• Für die Richtigkeit der Eingabedaten ist der Planer verantwortlich.','• Diese Berechnung ersetzt keine Detailplanung.'],118,62);
   doc.setFontSize(9); doc.setTextColor(70,85,100); doc.text('© 2026 Emre Özgöller – Druckverlust Pro',105,260,{align:'center'});
 
