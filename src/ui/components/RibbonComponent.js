@@ -17,8 +17,16 @@ export default class RibbonComponent {
   render() {
     this.root.innerHTML = `
       <div class="dp-brand">
-        <strong>Druckverlust Pro</strong>
-        <span>Professional</span>
+        <img
+          class="dp-brand-logo dp-protected-image"
+          src="assets/logo/eo-logo.png"
+          alt="EO Logo"
+          draggable="false"
+        />
+        <div class="dp-brand-text">
+          <strong>Druckverlust Pro</strong>
+          <span>Professional</span>
+        </div>
       </div>
 
       <nav class="dp-tabs">

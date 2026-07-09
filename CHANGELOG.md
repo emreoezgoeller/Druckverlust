@@ -1,3 +1,10 @@
+## 18.12d – Logo im Ribbon und Eigenschaften ausgeblendet
+
+- EO-Logo im oberen Ribbon direkt vor „Druckverlust Pro“ ergänzt.
+- Eigenschaften-Seitenleiste in der Hauptoberfläche ausgeblendet, damit die Arbeitsfläche breiter und ruhiger wird.
+- `PropertiesComponent` bleibt im Projekt erhalten und kann später wieder aktiviert werden, sobald die Detailbearbeitung dort genutzt wird.
+- Cache-Busting auf `18.12d` erhöht.
+
 
 ## 18.12c – Bilderpfade und Bildschutz
 

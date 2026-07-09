@@ -1,12 +1,11 @@
-// Druckverlust Pro – Phase 18.12c
+// Druckverlust Pro – Phase 18.12d
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.12c';
-import PropertiesComponent from './ui/components/PropertiesComponent.js';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.12d';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 
@@ -201,7 +200,6 @@ function bootstrap() {
   new RibbonComponent(document.querySelector('.dp-ribbon'), state).render();
   new SidebarComponent(document.querySelector('.dp-sidebar'), state);
   new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
-  new PropertiesComponent(document.querySelector('.dp-properties'), state);
   new StatusBarComponent(document.querySelector('.dp-status'), state);
 
   installImageCopyProtection();

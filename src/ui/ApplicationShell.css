@@ -32,12 +32,12 @@ body {
 .dp-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 280px 1fr 360px;
+  grid-template-columns: 280px minmax(0, 1fr);
   grid-template-rows: 76px 1fr 36px;
   grid-template-areas:
-    "ribbon ribbon ribbon"
-    "sidebar workspace properties"
-    "status status status";
+    "ribbon ribbon"
+    "sidebar workspace"
+    "status status";
   background: var(--dp-bg);
   color: var(--dp-text);
   font-family: "Segoe UI", system-ui, sans-serif;
@@ -48,7 +48,7 @@ body {
   display: flex;
   align-items: center;
   gap: 32px;
-  padding: 0 24px;
+  padding: 0 22px;
   background: linear-gradient(90deg, var(--dp-blue-900), var(--dp-blue-800));
   color: white;
   border-bottom: 1px solid #062640;
@@ -56,8 +56,27 @@ body {
 
 .dp-brand {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+}
+
+.dp-brand-logo {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  object-fit: contain;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.dp-brand-text {
+  display: flex;
   flex-direction: column;
-  min-width: 220px;
 }
 
 .dp-brand strong {
@@ -115,6 +134,11 @@ body {
   padding: 20px;
   border-right: 0;
   border-top: 0;
+}
+
+.dp-properties[hidden],
+.dp-properties.is-hidden {
+  display: none;
 }
 
 .dp-sidebar h3,
