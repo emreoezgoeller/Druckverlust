@@ -1,0 +1,22 @@
+{
+  "id": "TEST-001",
+  "name": "Monoblock Referenz 900 m³/h",
+  "description": "Referenzfall von Emre: 5 Teilstrecken mit je 1.25 m Länge, 900 m³/h und Monoblock 100 Pa.",
+  "settings": {
+    "rho": 1.21,
+    "lambda": 0.025
+  },
+  "sections": [
+    { "id": "ts1", "type": "duct", "ts": "TS1", "description": "Rechteckkanal 450 × 450", "q": 900, "b": 0.45, "h": 0.45, "l": 1.25, "zetaSum": 0.33 },
+    { "id": "ts2", "type": "duct", "ts": "TS2", "description": "Rechteckkanal 800 × 800", "q": 900, "b": 0.80, "h": 0.80, "l": 1.25, "zetaSum": 0 },
+    { "id": "mb1", "type": "special", "description": "Monoblock", "pa": 100 },
+    { "id": "ts3", "type": "pipe", "ts": "TS3", "description": "Rohr Ø500", "q": 900, "d": 0.50, "l": 1.25, "zetaSum": 2.36 },
+    { "id": "ts4", "type": "pipe", "ts": "TS4", "description": "Rohr Ø300", "q": 900, "d": 0.30, "l": 1.25, "zetaSum": 0.59 },
+    { "id": "ts5", "type": "pipe", "ts": "TS5", "description": "Rohr Ø400", "q": 900, "d": 0.40, "l": 1.25, "zetaSum": 0 }
+  ],
+  "expected": {
+    "referenceTotalPaApprox": 109.5,
+    "tolerancePa": 1.0,
+    "note": "Dieser Zielwert stammt aus Emres Excel-Screenshot. Die Toleranz bleibt vorerst 1.0 Pa, bis alle einzelnen Formteil-Zeta-Formeln 1:1 validiert sind."
+  }
+}
