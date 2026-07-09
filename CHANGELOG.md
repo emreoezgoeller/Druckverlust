@@ -1,3 +1,12 @@
+
+## 18.12c – Bilderpfade und Bildschutz
+
+- Report-Bilder werden auf GitHub Pages jetzt relativ zur Projektseite geladen, nicht mehr vom Domain-Root.
+- Fehlerhafte 404-Aufrufe für `eo-logo.png`, `duct-network-hero.png` und Formteilbilder behoben.
+- Cache-Busting auf `18.12c` erhöht.
+- Bildschutz ergänzt: Drag, Rechtsklick und Markieren für Bilder/Skizzen werden blockiert.
+- Für den Deploy-Fix werden die betroffenen Bilddateien zusätzlich in der Änderungs-ZIP mitgeliefert.
+
 # CHANGELOG
 
 ## Phase 18.12b – Cache-/Deploy-Fix

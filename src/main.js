@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 18.12
+// Druckverlust Pro – Phase 18.12c
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.12c';
 import PropertiesComponent from './ui/components/PropertiesComponent.js';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
@@ -143,6 +143,45 @@ function calculateInitialProject(state) {
   }
 }
 
+function installImageCopyProtection() {
+  const isProtectedTarget = event => {
+    const target = event?.target;
+    return !!target?.closest?.('img, svg, picture, canvas, .dp-formpart-image, .dp-formpart-card-image, .report-catalog-image, .report-illustration-card, .report-logo-wrap, .protected-media');
+  };
+
+  ['contextmenu', 'dragstart'].forEach(type => {
+    document.addEventListener(type, event => {
+      if (isProtectedTarget(event)) event.preventDefault();
+    }, true);
+  });
+
+  document.addEventListener('selectstart', event => {
+    if (isProtectedTarget(event)) event.preventDefault();
+  }, true);
+
+  const protectImage = image => {
+    image.setAttribute('draggable', 'false');
+    image.setAttribute('loading', image.getAttribute('loading') || 'lazy');
+    image.classList.add('dp-protected-image');
+  };
+
+  document.querySelectorAll('img').forEach(protectImage);
+
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(records => {
+      records.forEach(record => {
+        record.addedNodes.forEach(node => {
+          if (node?.nodeType !== 1) return;
+          if (node.matches?.('img')) protectImage(node);
+          node.querySelectorAll?.('img').forEach(protectImage);
+        });
+      });
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+}
+
 function bootstrap() {
   const root = document.getElementById('app');
 
@@ -164,6 +203,8 @@ function bootstrap() {
   new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
   new PropertiesComponent(document.querySelector('.dp-properties'), state);
   new StatusBarComponent(document.querySelector('.dp-status'), state);
+
+  installImageCopyProtection();
 
   window.DruckverlustPro = {
     state,

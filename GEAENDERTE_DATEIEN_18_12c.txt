@@ -1,0 +1,19 @@
+Phase 18.12c – geänderte/mitzuliefernde Dateien
+
+Code geändert:
+- index.html
+- CHANGELOG.md
+- src/main.js
+- src/ui/ApplicationShell.css
+- src/ui/components/WorkspaceComponent.js
+- src/report/ReportEngine.js
+- src/pdf/report.js
+- docs/SPRINT18_12C_BILDER_KOPIERSCHUTZ.md
+
+Für Deploy-Sicherheit zusätzlich mitgeliefert:
+- assets/logo/eo-logo.png
+- assets/report/duct-network-hero.png
+- assets/formteile/uebergang_gross_klein.png
+- assets/formteile/uebergang_klein_gross.png
+- assets/formteile/uebergang_gross_klein/uebergang_gross_klein.png
+- assets/formteile/uebergang_klein_gross/uebergang_klein_gross.png

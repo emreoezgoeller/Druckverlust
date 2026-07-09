@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js';
+import ReportEngine from '../../report/ReportEngine.js?v=18.12c';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -1448,6 +1448,9 @@ export default class WorkspaceComponent {
       <img
         src="${this.escapeAttribute(src)}"
         alt="${this.escapeAttribute(item.name)}"
+        draggable="false"
+        loading="lazy"
+        decoding="async"
         data-fallbacks="${this.escapeAttribute(fallbacks.join('|'))}">
       <div class="dp-image-missing" style="display:none;">Skizze fehlt</div>
     `;
@@ -2029,6 +2032,9 @@ export default class WorkspaceComponent {
         <img
           src="${this.escapeAttribute(src)}"
           alt="${this.escapeAttribute(entry.name)}"
+          draggable="false"
+          loading="lazy"
+          decoding="async"
           data-fallbacks="${this.escapeAttribute(fallbacks.join('|'))}">
         <div class="dp-image-missing" style="display:none;">Skizze konnte nicht geladen werden.</div>
       </div>

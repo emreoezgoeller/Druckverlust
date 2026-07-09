@@ -69,6 +69,14 @@ const fmt = Engine.fmt || fmtFallback;
 const calculateRow = Engine.calculateRow || calculateRowFallback;
 const calculateProject = Engine.calculateProject || calculateProjectFallback;
 
+function resolveAssetUrl(src){
+  const clean = String(src || '').replaceAll('\\', '/').replace(/^\.\//, '').replace(/^\//, '');
+  if (!clean || /^(data:|https?:|blob:)/i.test(clean)) return clean;
+  if (typeof document !== 'undefined' && document.baseURI) return new URL(clean, document.baseURI).href;
+  if (typeof window !== 'undefined' && window.location?.href) return new URL(clean, window.location.href).href;
+  return clean;
+}
+
 async function imageToDataUrl(src){
   return new Promise(resolve=>{
     const img = new Image();

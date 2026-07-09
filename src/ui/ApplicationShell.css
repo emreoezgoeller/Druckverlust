@@ -2854,3 +2854,30 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Phase 18.12c – Bildschutz / Drag-Schutz */
+img,
+svg,
+picture,
+canvas,
+.dp-protected-image,
+.dp-formpart-image,
+.dp-formpart-card-image,
+.report-catalog-image,
+.report-illustration-card,
+.report-logo-wrap {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+.dp-formpart-image img,
+.dp-formpart-card-image img,
+.report-catalog-image img,
+.report-illustration-card img,
+.report-logo-wrap img,
+.dp-protected-image {
+  pointer-events: none;
+}
