@@ -5,7 +5,11 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
+<<<<<<< HEAD
 import ReportEngine from '../../report/ReportEngine.js?v=18.20a';
+=======
+import ReportEngine from '../../report/ReportEngine.js?v=18.18';
+>>>>>>> 3878efa18540cddce73e78696fad3fd1d4470a0d
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import { APP_RELEASE } from '../../core/appVersion.js';
@@ -2733,7 +2737,11 @@ export default class WorkspaceComponent {
       <section class="dp-editor-panel dp-deploy-check-panel dp-deploy-${this.escapeAttribute(status)}">
         <div class="dp-panel-header">
           <div>
+<<<<<<< HEAD
             <span class="dp-overline">Phase ${this.escapeHtml(APP_RELEASE)}</span>
+=======
+            <span class="dp-overline">Phase 18.18</span>
+>>>>>>> 3878efa18540cddce73e78696fad3fd1d4470a0d
             <h2>GitHub Pages / Deployment-Prüfung</h2>
             <p>${this.escapeHtml(result?.summary || 'Noch keine Prüfung ausgeführt. Klicke auf „Neu prüfen“.')}</p>
           </div>

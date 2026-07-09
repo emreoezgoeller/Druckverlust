@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import * as Engine from '../calculation/engine.js?v=18.20a';
 import { APP_BUILD_LABEL } from '../core/appVersion.js';
+=======
+import * as Engine from '../calculation/engine.js?v=18.18';
+import { APP_VERSION } from '../core/state.js';
+>>>>>>> 3878efa18540cddce73e78696fad3fd1d4470a0d
 import { getPartDefinition } from '../formteile/library.js';
 
 

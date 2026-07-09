@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Changelog
 
 ## 18.20a – PDF-Δp-Spalte korrigiert
@@ -29,6 +30,12 @@
 
 ## 18.18 – Versionszentrale und Update-QS
 
+=======
+# CHANGELOG
+
+## 18.18 – Versionszentrale und Update-QS
+
+>>>>>>> 3878efa18540cddce73e78696fad3fd1d4470a0d
 - Zentrale Versionsdatei `src/core/appVersion.js` ergänzt.
 - Cache-Busting auf `18.18` erhöht.
 - Statusbar, Hilfe, Info-Dialog und Deployment-QS verwenden jetzt dieselbe Versionsquelle.

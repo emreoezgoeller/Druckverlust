@@ -11,6 +11,7 @@
 - Phase 18.16: Projektcheck / Abgabecheck
 - Phase 18.17: Deployment-QS / finale Startdiagnose
 - Phase 18.18: Versionszentrale / Update-QS
+<<<<<<< HEAD
 - Phase 18.19: Struktur-Cleanup / Altlastenbereinigung
 - Phase 18.20: Automatische Formteil-Grössenübernahme aus Teilstrecken
 - Phase 18.20a: PDF-Δp-Spalte korrigiert und eindeutig auf Kanal/Rohr-Reibungsverlust begrenzt
@@ -19,4 +20,10 @@
 
 - Phase 18.21: Live-Check auf GitHub Pages und kleine UI-QS
 - Phase 18.22: Teilstrecken-Editor und Eingabe-QS finalisieren
+=======
+
+## Nächste sinnvolle Schritte
+
+- Phase 18 Abschluss: finale Live-Prüfung nach 18.18 auf GitHub Pages
+>>>>>>> 3878efa18540cddce73e78696fad3fd1d4470a0d
 - Phase 19: Import / Datenübernahme
