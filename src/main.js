@@ -1,126 +1,17 @@
-// Druckverlust Pro – Phase 18.12d
+// Druckverlust Pro – Phase 18.18
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.12d';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.18';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
-
-function createDefaultProject() {
-  const now = Date.now();
-  const systemId = `system-${now}`;
-
-  return {
-    id: `project-${now}`,
-    name: 'Unbenanntes Projekt',
-    object: '',
-    anlageNumber: '',
-    author: '',
-    company: '',
-    address: '',
-    note: '',
-    settings: {
-      rho: 1.21,
-      lambda: 0.025,
-      sectionRoundingStep: 0.5,
-    },
-    meta: {
-      name: '',
-      object: '',
-      anlageNumber: '',
-      anlage: 'Zuluftanlage',
-      bearbeiter: '',
-      company: '',
-      address: '',
-      note: '',
-    },
-    report: {
-      project: '',
-      object: '',
-      anlageNumber: '',
-      anlage: 'Zuluftanlage',
-      bearbeiter: '',
-      company: '',
-      address: '',
-      hinweis: '',
-      datum: new Date().toISOString().slice(0, 10),
-    },
-    systems: [
-      {
-        id: systemId,
-        name: 'Zuluftanlage',
-        type: 'Zuluft',
-        sections: [
-          {
-            id: `${systemId}-ts1`,
-            name: 'ts1',
-            type: 'duct',
-            description: 'Rechteckkanal 450 × 450 mm',
-            q: 900,
-            b: 0.45,
-            h: 0.45,
-            d: 0,
-            l: 1.25,
-            zetaSum: 0,
-          },
-          {
-            id: `${systemId}-ts2`,
-            name: 'ts2',
-            type: 'duct',
-            description: 'Rechteckkanal 800 × 800 mm',
-            q: 900,
-            b: 0.8,
-            h: 0.8,
-            d: 0,
-            l: 1.25,
-            zetaSum: 0,
-          },
-          {
-            id: `${systemId}-ts3`,
-            name: 'ts3',
-            type: 'pipe',
-            description: 'Rundrohr Ø500 mm',
-            q: 900,
-            b: 0,
-            h: 0,
-            d: 0.5,
-            l: 1.25,
-            zetaSum: 0,
-          },
-          {
-            id: `${systemId}-ts4`,
-            name: 'ts4',
-            type: 'pipe',
-            description: 'Rundrohr Ø300 mm',
-            q: 900,
-            b: 0,
-            h: 0,
-            d: 0.3,
-            l: 1.25,
-            zetaSum: 0,
-          },
-          {
-            id: `${systemId}-ts5`,
-            name: 'ts5',
-            type: 'pipe',
-            description: 'Rundrohr Ø400 mm',
-            q: 900,
-            b: 0,
-            h: 0,
-            d: 0.4,
-            l: 1.25,
-            zetaSum: 0,
-          },
-        ],
-        formParts: [],
-        specialComponents: [],
-      },
-    ],
-  };
-}
+import createDefaultProject from './project/defaultProject.js';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js';
+import AutoSaveEngine from './storage/AutoSaveEngine.js';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js';
 
 function calculateInitialProject(state) {
   const project = state.project;
@@ -181,6 +72,40 @@ function installImageCopyProtection() {
   }
 }
 
+function resolveStartupProject() {
+  const recovery = AutoSaveEngine.load();
+
+  if (AutoSaveEngine.isRecoverable(recovery)) {
+    const description = AutoSaveEngine.describe(recovery);
+    const restore = confirm([
+      'Lokale Autosicherung gefunden.',
+      '',
+      description,
+      '',
+      'Möchtest du diese Version wiederherstellen?',
+    ].join('\n'));
+
+    if (restore) {
+      return { project: recovery.project, recovered: true, recoveredAt: recovery.metadata?.savedAt || recovery.savedAt || null };
+    }
+
+    AutoSaveEngine.clear();
+  }
+
+  return { project: createDefaultProject(), recovered: false, recoveredAt: null };
+}
+
+function installBeforeUnloadProtection(state) {
+  if (typeof window === 'undefined') return;
+
+  window.addEventListener('beforeunload', event => {
+    if (!state?.isProjectDirty) return;
+
+    event.preventDefault();
+    event.returnValue = '';
+  });
+}
+
 function bootstrap() {
   const root = document.getElementById('app');
 
@@ -189,10 +114,18 @@ function bootstrap() {
   }
 
   const state = new ApplicationState();
-  const project = createDefaultProject();
+  const startup = resolveStartupProject();
+  const project = startup.project;
+
   state.setProject(project);
   state.setSelection('project', project);
   calculateInitialProject(state);
+
+  if (startup.recovered) {
+    state.isProjectDirty = true;
+    state.recoveredFromAutoSave = true;
+    state.lastAutoSaveAt = startup.recoveredAt;
+  }
 
   const shell = new ApplicationShell(root);
   shell.render();
@@ -201,10 +134,16 @@ function bootstrap() {
   new SidebarComponent(document.querySelector('.dp-sidebar'), state);
   new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
   new StatusBarComponent(document.querySelector('.dp-status'), state);
+  new KeyboardShortcuts(state).install();
 
+  AutoSaveEngine.install(state);
+  installBeforeUnloadProtection(state);
   installImageCopyProtection();
 
   window.DruckverlustPro = {
+    version: APP_RELEASE,
+    label: APP_BUILD_LABEL,
+    info: createAppInfo(),
     state,
     recalculate() {
       const result = ProjectCalculationService.calculate(state.project);

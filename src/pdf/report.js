@@ -1,4 +1,4 @@
-import * as Engine from '../calculation/engine.js?v=18.12b';
+import * as Engine from '../calculation/engine.js?v=18.18';
 import { APP_VERSION } from '../core/state.js';
 import { getPartDefinition } from '../formteile/library.js';
 

@@ -2905,3 +2905,242 @@ canvas,
 .dp-protected-image {
   pointer-events: none;
 }
+
+/* Phase 18.14 – Statusbar Kurzbefehle */
+.dp-status-center {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 18px;
+}
+
+.dp-status-shortcuts {
+  opacity: 0.85;
+}
+
+@media (max-width: 1180px) {
+  .dp-status-shortcuts {
+    display: none;
+  }
+}
+
+/* Phase 18.16 – Projektcheck */
+.dp-project-check-panel {
+  border-left: 5px solid #d9e3ef;
+}
+
+.dp-project-check-ok {
+  border-left-color: #16a34a;
+}
+
+.dp-project-check-warning {
+  border-left-color: #f59e0b;
+}
+
+.dp-project-check-error {
+  border-left-color: #dc2626;
+}
+
+.dp-project-check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.dp-project-check-badge.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dp-project-check-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dp-project-check-badge.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.dp-project-check-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.dp-project-check-stats div {
+  background: #f8fafc;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.dp-project-check-stats span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-project-check-stats strong {
+  display: block;
+  color: var(--dp-blue-900);
+  font-size: 24px;
+  margin-top: 4px;
+}
+
+.dp-project-check-list {
+  display: grid;
+  gap: 8px;
+}
+
+.dp-project-check-item {
+  border: 1px solid var(--dp-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.dp-project-check-item strong,
+.dp-project-check-item span {
+  display: block;
+}
+
+.dp-project-check-item strong {
+  color: var(--dp-blue-900);
+  margin-bottom: 3px;
+}
+
+.dp-project-check-item span {
+  color: var(--dp-muted);
+}
+
+.dp-project-check-item.warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.dp-project-check-item.error {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.dp-project-check-ready {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.dp-project-check-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.dp-project-check-actions button {
+  border: 1px solid var(--dp-border);
+  background: #fff;
+  color: var(--dp-blue-900);
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dp-project-check-actions button:hover {
+  background: #edf5ff;
+}
+
+@media (max-width: 900px) {
+  .dp-project-check-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-project-check-ready {
+    flex-direction: column;
+  }
+}
+
+/* Phase 18.17 – Deployment-QS */
+.dp-deploy-check-panel {
+  border-left: 5px solid #d9e3ef;
+}
+
+.dp-deploy-ok {
+  border-left-color: #16a34a;
+}
+
+.dp-deploy-warning {
+  border-left-color: #f59e0b;
+}
+
+.dp-deploy-error {
+  border-left-color: #dc2626;
+}
+
+.dp-deploy-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.dp-deploy-meta-grid div {
+  background: #f8fafc;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  padding: 12px;
+  min-width: 0;
+}
+
+.dp-deploy-meta-grid span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.dp-deploy-meta-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--dp-blue-900);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.dp-deploy-check-list em {
+  display: block;
+  margin-top: 4px;
+  color: var(--dp-muted);
+  font-style: normal;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.dp-deploy-stats .dp-project-check-stats div,
+.dp-deploy-stats div {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .dp-deploy-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,6 +2,7 @@
 // Zentrale Projektbefehle für UI, Ribbon und spätere Dialoge.
 
 import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js';
+import createDefaultProject from '../project/defaultProject.js';
 
 
 const SPECIAL_COMPONENT_LIBRARY = Object.freeze([
@@ -108,22 +109,12 @@ export default class ProjectCommands {
     this.formPartRegistry = createDefaultFormPartRegistry();
   }
 
-  createProject(name = 'Neues Projekt') {
-    const now = Date.now();
+  createProject(options = {}) {
+    const config = typeof options === 'string'
+      ? { projectNumber: options }
+      : { ...options };
 
-    const project = {
-      id: `project-${now}`,
-      name,
-      systems: [
-        {
-          id: `system-${now}`,
-          name: 'Zuluftanlage',
-          sections: [],
-          formParts: [],
-          specialComponents: []
-        }
-      ]
-    };
+    const project = createDefaultProject(config);
 
     this.state.setProject(project);
     this.state.setSelection('project', project);

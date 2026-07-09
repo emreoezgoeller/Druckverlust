@@ -5,7 +5,10 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=18.12c';
+import ReportEngine from '../../report/ReportEngine.js?v=18.18';
+import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import { APP_RELEASE } from '../../core/appVersion.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -38,6 +41,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'section') return this.renderSection(selection.data);
     if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
     if (selection.type === 'report') return this.renderReport();
+    if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -131,6 +135,91 @@ export default class WorkspaceComponent {
     `;
   }
 
+  renderProjectCheckPanel(project = null, system = null) {
+    const check = ProjectDiagnostics.create(project, { system });
+    const visibleItems = check.items.filter(item => item.status !== 'ok').slice(0, 8);
+    const okCount = check.counts?.ok ?? 0;
+    const hasProblems = visibleItems.length > 0;
+
+    return `
+      <section class="dp-editor-panel dp-project-check-panel dp-project-check-${this.escapeAttribute(check.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Projektcheck</span>
+            <h2>Abgabe- und Plausibilitätscheck</h2>
+            <p>${this.escapeHtml(check.summary)}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(check.status)}">${this.escapeHtml(check.label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats">
+          <div>
+            <span>Fehler</span>
+            <strong>${this.escapeHtml(check.counts.error)}</strong>
+          </div>
+          <div>
+            <span>Hinweise</span>
+            <strong>${this.escapeHtml(check.counts.warning)}</strong>
+          </div>
+          <div>
+            <span>OK-Punkte</span>
+            <strong>${this.escapeHtml(okCount)}</strong>
+          </div>
+        </div>
+
+        ${hasProblems ? `
+          <div class="dp-project-check-list">
+            ${visibleItems.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-project-check-ready">
+            <strong>Alles sauber.</strong>
+            <span>Der aktuelle Stand ist bereit für Bericht, Export und Speicherung.</span>
+          </div>
+        `}
+
+        <div class="dp-project-check-actions">
+          <button type="button" data-project-check-action="recalculate">Neu prüfen</button>
+          <button type="button" data-project-check-action="project">Projektangaben</button>
+          <button type="button" data-project-check-action="report">Bericht öffnen</button>
+        </div>
+      </section>
+    `;
+  }
+
+  bindProjectCheckPanel(project = null, system = null) {
+    this.root.querySelectorAll('[data-project-check-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.projectCheckAction;
+
+        if (action === 'recalculate') {
+          this.autoCalculateProject();
+          return;
+        }
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', project || this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'report') {
+          if (typeof this.state.selectReport === 'function') {
+            this.state.selectReport(system || this.state.selectedSystem || project || this.state.project);
+          } else {
+            this.state.setSelection?.('report', system || this.state.selectedSystem || project || this.state.project);
+            this.state.notify?.();
+          }
+        }
+      });
+    });
+  }
+
   getWorkflowNextSteps({ sections = [], formParts = [], specialComponents = [], calculation = null, errorCount = 0, warningCount = 0 } = {}) {
     const steps = [];
 
@@ -220,6 +309,7 @@ export default class WorkspaceComponent {
       </div>
 
       ${this.renderWorkflowDashboard(project, activeSystem, 'project')}
+      ${this.renderProjectCheckPanel(project, activeSystem)}
 
       <section class="dp-editor-panel dp-project-meta-panel">
         <div class="dp-panel-header">
@@ -300,6 +390,7 @@ export default class WorkspaceComponent {
 
     this.bindProjectMetaEditor(project, activeSystem);
     this.bindWorkflowDashboard(project, activeSystem);
+    this.bindProjectCheckPanel(project, activeSystem);
   }
 
   ensureProjectMeta(project = null, system = null) {
@@ -418,6 +509,7 @@ export default class WorkspaceComponent {
       <p>Übersicht der gewählten Anlage.</p>
 
       ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
+      ${this.renderProjectCheckPanel(this.state.project, system)}
 
       <div class="dp-cards">
         <div class="dp-card">
@@ -452,6 +544,7 @@ export default class WorkspaceComponent {
     `;
 
     this.bindWorkflowDashboard(this.state.project, system);
+    this.bindProjectCheckPanel(this.state.project, system);
     this.bindSectionManagement();
     this.bindFormPartManagement();
     this.bindSpecialComponentManagement();
@@ -2326,6 +2419,142 @@ export default class WorkspaceComponent {
         `).join('')}
       </optgroup>
     `).join('');
+  }
+
+
+  renderDeploymentCheck(check = null) {
+    const result = check || this.state.deploymentCheck;
+    const hasResult = !!result;
+    const status = result?.status || 'warning';
+    const label = result?.label || 'Noch nicht geprüft';
+    const counts = result?.counts || { ok: 0, warning: 0, error: 0 };
+    const items = result?.items || [];
+    const location = result?.location || {};
+    const finishedAt = result?.finishedAt ? new Date(result.finishedAt) : null;
+    const finishedLabel = finishedAt && !Number.isNaN(finishedAt.getTime())
+      ? finishedAt.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'medium' })
+      : '-';
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <h1>Deployment-QS</h1>
+          <p>Prüft Startdateien, GitHub-Pages-Pfade, Cache-Versionen, Pflichtbilder und Basiszustand.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-deploy-action="run">Neu prüfen</button>
+          <button type="button" data-deploy-action="copy" ${hasResult ? '' : 'disabled'}>Zusammenfassung kopieren</button>
+          <button type="button" data-deploy-action="project">Zurück zum Projekt</button>
+        </div>
+      </div>
+
+      <section class="dp-editor-panel dp-deploy-check-panel dp-deploy-${this.escapeAttribute(status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Phase 18.18</span>
+            <h2>GitHub Pages / Deployment-Prüfung</h2>
+            <p>${this.escapeHtml(result?.summary || 'Noch keine Prüfung ausgeführt. Klicke auf „Neu prüfen“.')}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(status)}">${this.escapeHtml(label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats dp-deploy-stats">
+          <div>
+            <span>OK</span>
+            <strong>${this.escapeHtml(counts.ok)}</strong>
+          </div>
+          <div>
+            <span>Hinweise</span>
+            <strong>${this.escapeHtml(counts.warning)}</strong>
+          </div>
+          <div>
+            <span>Fehler</span>
+            <strong>${this.escapeHtml(counts.error)}</strong>
+          </div>
+        </div>
+
+        <div class="dp-deploy-meta-grid">
+          <div>
+            <span>Aktuelle Adresse</span>
+            <strong>${this.escapeHtml(location.href || '-')}</strong>
+          </div>
+          <div>
+            <span>Erwarteter Pfad</span>
+            <strong>${this.escapeHtml(location.expectedBasePath || './')}</strong>
+          </div>
+          <div>
+            <span>Version</span>
+            <strong>${this.escapeHtml(result?.version || APP_RELEASE)}</strong>
+          </div>
+          <div>
+            <span>Geprüft</span>
+            <strong>${this.escapeHtml(finishedLabel)}</strong>
+          </div>
+        </div>
+
+        ${items.length ? `
+          <div class="dp-project-check-list dp-deploy-check-list">
+            ${items.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+                ${item.details ? `<em>${this.escapeHtml(item.details)}</em>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch keine Deployment-Prüfung vorhanden.
+          </div>
+        `}
+      </section>
+    `;
+
+    this.bindDeploymentCheckActions();
+  }
+
+  bindDeploymentCheckActions() {
+    this.root.querySelectorAll('[data-deploy-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.deployAction;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = DeploymentDiagnostics.toText(this.state.deploymentCheck || {});
+          try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = 'Zusammenfassung kopieren'; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'run') {
+          const originalText = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Prüfung läuft…';
+
+          try {
+            const check = await DeploymentDiagnostics.run({ project: this.state.project, version: APP_RELEASE });
+            this.state.deploymentCheck = check;
+            this.state.setSelection?.('deploymentCheck', check);
+            this.state.notify?.();
+          } catch (error) {
+            alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
+          } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        }
+      });
+    });
   }
 
 

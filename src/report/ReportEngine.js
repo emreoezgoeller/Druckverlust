@@ -1,3 +1,5 @@
+import { APP_RELEASE } from '../core/appVersion.js';
+
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
 
@@ -861,7 +863,7 @@ export class ReportEngine {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(this.createDocumentTitle(model))}</title>
-  <meta name="generator" content="Druckverlust Pro – Phase 18.12c">
+  <meta name="generator" content="Druckverlust Pro – Phase ${APP_RELEASE}">
   <style>${this.getReportCss()}</style>
 </head>
 <body class="report-print-body">

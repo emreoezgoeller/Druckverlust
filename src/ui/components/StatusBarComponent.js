@@ -1,6 +1,8 @@
 // Druckverlust Pro – StatusBarComponent
 // Zeigt Statusinformationen der Anwendung.
 
+import { APP_BUILD_LABEL } from '../../core/appVersion.js';
+
 export default class StatusBarComponent {
   constructor(rootElement, state) {
     if (!rootElement) {
@@ -11,6 +13,14 @@ export default class StatusBarComponent {
     this.state = state;
 
     this.state.subscribe(() => this.render());
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('druckverlust:auto-save', event => {
+        this.state.lastAutoSaveAt = event.detail?.savedAt || null;
+        this.render();
+      });
+    }
+
     this.render();
   }
 
@@ -22,15 +32,18 @@ export default class StatusBarComponent {
     const projectDirty = this.state.isProjectDirty;
     const quality = this.getQualityStatus();
     const lastCalculation = this.getLastCalculationLabel();
+    const autoSave = this.getAutoSaveLabel();
 
     this.root.innerHTML = `
       <div class="dp-status-left">
-        Druckverlust Pro v1.0
+        ${this.escapeHtml(APP_BUILD_LABEL)}
       </div>
 
       <div class="dp-status-center">
         Auswahl: ${label}
         ${lastCalculation ? `<span class="dp-status-muted"> · ${lastCalculation}</span>` : ''}
+        ${autoSave ? `<span class="dp-status-muted"> · ${autoSave}</span>` : ''}
+        <span class="dp-status-muted dp-status-shortcuts"> · Ctrl+S speichern · Ctrl+D duplizieren · Deploy-QS</span>
       </div>
 
       <div class="dp-status-right">
@@ -88,6 +101,31 @@ export default class StatusBarComponent {
     })}`;
   }
 
+
+  getAutoSaveLabel() {
+    const timestamp = this.state.lastAutoSaveAt;
+
+    if (!timestamp || !this.state.isProjectDirty) return '';
+
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return 'Autosicherung aktiv';
+
+    return `Autosicherung ${date.toLocaleTimeString('de-CH', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })}`;
+  }
+
+  escapeHtml(value = '') {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('\"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
   getSelectionLabel(selection) {
     if (!selection || selection.type === 'none') {
       return 'Keine';
@@ -115,6 +153,10 @@ export default class StatusBarComponent {
 
     if (selection.type === 'report') {
       return `Bericht – ${selection.data?.name ?? this.state.selectedSystem?.name ?? '-'}`;
+    }
+
+    if (selection.type === 'deploymentCheck') {
+      return 'Deployment-QS';
     }
 
     if (selection.type === 'specialComponent') {

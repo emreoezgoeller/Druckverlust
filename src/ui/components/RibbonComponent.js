@@ -37,7 +37,11 @@ export default class RibbonComponent {
         <button data-action="addFormPart">+ Formteil</button>
         <button data-action="addSpecialComponent">+ Sonderbauteil</button>
         <button data-action="calculate">Neu berechnen</button>
+        <button data-action="projectCheck">Projekt prüfen</button>
+        <button data-action="deploymentCheck">Deploy prüfen</button>
         <button data-action="showReport">Bericht</button>
+        <button data-action="showShortcutHelp" title="Tastaturkürzel anzeigen">Hilfe</button>
+        <button data-action="showAppInfo" title="Version und Projektstatus anzeigen">Info</button>
       </nav>
     `;
 
