@@ -1,3 +1,11 @@
+# CHANGELOG
+
+## Phase 18.12b – Cache-/Deploy-Fix
+
+- `index.html` lädt `ApplicationShell.css` und `src/main.js` neu mit Versionsparameter `?v=18.12b`.
+- `src/pdf/report.js` verwendet keinen fehleranfälligen Named-Import von `calculateRow` mehr.
+- Fallback-Berechnung im PDF-Modul ergänzt, damit alte Browser-/GitHub-Cache-Mischstände nicht mehr beim Start abbrechen.
+
 
 ## Phase 18.12a – Deploy-Fix
 

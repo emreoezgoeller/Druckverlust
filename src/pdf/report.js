@@ -1,6 +1,73 @@
-import { calculateProject, calculateRow, fmt } from '../calculation/engine.js';
+import * as Engine from '../calculation/engine.js?v=18.12b';
 import { APP_VERSION } from '../core/state.js';
 import { getPartDefinition } from '../formteile/library.js';
+
+
+const toNumberCompat = (value, fallback = 0) => {
+  if (value === null || value === undefined || value === '') return fallback;
+  const number = Number(String(value).replace(',', '.'));
+  return Number.isFinite(number) ? number : fallback;
+};
+
+const fmtFallback = (value, digits = 1) => {
+  const number = toNumberCompat(value, NaN);
+  return Number.isFinite(number) ? number.toFixed(digits) : '-';
+};
+
+function calculateRowFallback(row = {}, project = {}, parts = []) {
+  const type = String(row.type || '').toLowerCase();
+  const q = toNumberCompat(row.q ?? row.volumeFlow ?? row.airVolume);
+  const l = toNumberCompat(row.l ?? row.length);
+  const rho = toNumberCompat(project.rho ?? project.airDensity, 1.21);
+  const lambda = toNumberCompat(project.lambda, 0.025);
+  const manualPa = toNumberCompat(row.pa ?? row.pressureLoss ?? row.dp);
+
+  if (type === 'special' || type === 'sonderbauteil') {
+    return { area: 0, eqDiameter: 0, velocity: 0, pdyn: 0, r: 0, rl: 0, zeta: 0, z: 0, total: manualPa, warnings: [] };
+  }
+
+  const d = toNumberCompat(row.d ?? row.diameter);
+  const b = toNumberCompat(row.b ?? row.width);
+  const h = toNumberCompat(row.h ?? row.height);
+  const isPipe = type === 'pipe' || type === 'rohr' || type === 'round' || (d > 0 && !(b > 0 && h > 0));
+  const area = isPipe ? (d > 0 ? Math.PI * d * d / 4 : 0) : (b > 0 && h > 0 ? b * h : 0);
+  const eqDiameter = isPipe ? (d > 0 ? d : 0) : (b > 0 && h > 0 ? (2 * b * h) / (b + h) : 0);
+  const velocity = q > 0 && area > 0 ? q / (3600 * area) : 0;
+  const pdyn = velocity > 0 ? 0.5 * rho * velocity * velocity : 0;
+  const r = lambda > 0 && eqDiameter > 0 && pdyn > 0 ? (lambda / eqDiameter) * pdyn : 0;
+  const rl = r * l;
+  const zetaFromParts = Array.isArray(parts)
+    ? parts.filter(part => part?.rowId === row.id || part?.sectionId === row.id || part?.targetSectionId === row.id || (part?.ts && row?.ts && String(part.ts) === String(row.ts))).reduce((sum, part) => sum + toNumberCompat(part.zeta), 0)
+    : 0;
+  const zeta = zetaFromParts + toNumberCompat(row.zetaSum ?? row.zeta ?? row.sumZeta);
+  const z = zeta * pdyn;
+  return { area, eqDiameter, velocity, pdyn, r, rl, zeta, z, total: rl + z + manualPa, warnings: [] };
+}
+
+function calculateProjectFallback(state = {}) {
+  const project = state.project || state.settings || {};
+  const rows = Array.isArray(state.rows) ? state.rows : (Array.isArray(state.sections) ? state.sections : []);
+  const parts = Array.isArray(state.parts) ? state.parts : (Array.isArray(state.formParts) ? state.formParts : []);
+  const specialComponents = Array.isArray(state.specialComponents) ? state.specialComponents : [];
+  const rowResults = new Map();
+  const totals = { duct: 0, part: 0, special: 0, total: 0, rowResults, warnings: [], version: '18.12b-report-fallback' };
+
+  rows.forEach(row => {
+    const result = calculateRow(row, project, parts);
+    rowResults.set(row.id, result);
+    const rowType = String(row.type || '').toLowerCase();
+    if (rowType === 'special' || rowType === 'sonderbauteil') totals.special += result.total;
+    else { totals.duct += result.rl; totals.part += result.z; }
+  });
+
+  specialComponents.forEach(component => { totals.special += toNumberCompat(component.pressureLoss ?? component.pa ?? component.dp ?? component.totalLoss); });
+  totals.total = totals.duct + totals.part + totals.special;
+  return totals;
+}
+
+const fmt = Engine.fmt || fmtFallback;
+const calculateRow = Engine.calculateRow || calculateRowFallback;
+const calculateProject = Engine.calculateProject || calculateProjectFallback;
 
 async function imageToDataUrl(src){
   return new Promise(resolve=>{
