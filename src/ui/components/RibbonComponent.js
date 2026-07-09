@@ -27,6 +27,7 @@ export default class RibbonComponent {
         <button data-action="saveProject">Speichern</button>
         <button data-action="addSection">+ Teilstrecke</button>
         <button data-action="addFormPart">+ Formteil</button>
+        <button data-action="addSpecialComponent">+ Sonderbauteil</button>
         <button data-action="calculate">Neu berechnen</button>
         <button data-action="showReport">Bericht</button>
       </nav>

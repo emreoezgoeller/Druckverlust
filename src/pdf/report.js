@@ -47,7 +47,7 @@ export async function generatePdf(state){
   doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(25,36,50); doc.text('Teilstrecken, Sonderbauteile und Formteile in einer Hauptberechnung.',14,55);
   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(6,61,120); doc.text('PROJEKTANGABEN',14,73);
   doc.setFontSize(9); doc.setTextColor(20,30,44);
-  const rows = [['Projekt / Objekt',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Luftdichte ρ',`${state.project.rho} kg/m³`],['Reibungszahl λ',state.project.lambda]];
+  const rows = [['Projektnummer',state.project.name],['Anlage',state.project.system],['Bearbeiter',state.project.editor],['Datum',state.project.date],['Luftdichte ρ',`${state.project.rho} kg/m³`],['Reibungszahl λ',state.project.lambda]];
   let yy=82; rows.forEach(([k,v])=>{doc.setFont('helvetica','bold');doc.text(k,14,yy);doc.setFont('helvetica','normal');doc.text(String(v||''),58,yy);yy+=8;});
   doc.setDrawColor(7,65,122); doc.line(14,134,196,134);
   doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.setFontSize(12); doc.text('ZUSAMMENFASSUNG',14,146);

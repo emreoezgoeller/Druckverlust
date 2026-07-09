@@ -1,5 +1,17 @@
 # Changelog
 
+
+## 18.12 – Professionelle Startseite aktiv
+
+- Phase-18-Oberfläche als aktive Startseite angebunden.
+- `index.html` auf professionelle Shell umgestellt.
+- `src/main.js` als Bootstrap für ApplicationState, Shell, Ribbon, Sidebar, Workspace, Properties und Statusbar neu aufgebaut.
+- Standardprojekt mit 5 Teilstrecken beim Start ergänzt.
+- Initiale automatische Berechnung beim Start ergänzt.
+- Ribbon um `+ Sonderbauteil` erweitert.
+- Basis-CSS für randlose Vollbild-Shell ergänzt.
+
+
 ## Sprint 18.11 – Arbeitsdashboard / Schnellaktionen
 
 ### Neu

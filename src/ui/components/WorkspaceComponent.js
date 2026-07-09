@@ -214,7 +214,7 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <div class="workspace-header">
         <div>
-          <h1>${this.escapeHtml(project?.name ?? 'Projekt')}</h1>
+          <h1>${this.escapeHtml(meta.object || meta.name || 'Projekt')}</h1>
           <p>Projektangaben und Grunddaten für Berechnung, Speicherung und Bericht.</p>
         </div>
       </div>
@@ -232,23 +232,23 @@ export default class WorkspaceComponent {
 
         <div class="dp-editor-grid dp-project-meta-grid">
           <label>
-            <span>Projektname</span>
+            <span>Projektnummer</span>
             <input data-project-field="name" value="${this.escapeAttribute(meta.name)}">
           </label>
 
           <label>
-            <span>Objekt</span>
+            <span>Projektname</span>
             <input data-project-field="object" value="${this.escapeAttribute(meta.object)}">
+          </label>
+
+          <label>
+            <span>BKP-Nummer</span>
+            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
           </label>
 
           <label>
             <span>Anlage</span>
             <input data-project-field="anlage" value="${this.escapeAttribute(meta.anlage)}">
-          </label>
-
-          <label>
-            <span>Anlagennummer</span>
-            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
           </label>
 
           <label>
@@ -2482,6 +2482,7 @@ export default class WorkspaceComponent {
     report.project = report.project ?? project.name ?? 'Unbenanntes Projekt';
     report.object = report.object ?? project.object ?? project.objekt ?? '-';
     report.anlage = report.anlage ?? system?.name ?? project.plant ?? project.anlage ?? 'Anlage';
+    report.anlageNumber = report.anlageNumber ?? project.anlageNumber ?? project.systemNumber ?? project.meta?.anlageNumber ?? '';
     report.bearbeiter = report.bearbeiter ?? project.author ?? project.bearbeiter ?? '-';
     report.datum = report.datum ?? project.date ?? project.datum ?? new Date().toLocaleDateString('de-CH');
     report.hinweis = report.hinweis ?? project.note ?? '';
@@ -2715,13 +2716,18 @@ export default class WorkspaceComponent {
           <h3>Projekt / Anlage</h3>
           <div class="dp-editor-grid dp-report-settings-grid">
             <label>
-              <span>Projekt</span>
+              <span>Projektnummer</span>
               <input data-report-field="project" value="${this.escapeAttribute(report.project)}">
             </label>
 
             <label>
-              <span>Objekt</span>
+              <span>Projektname</span>
               <input data-report-field="object" value="${this.escapeAttribute(report.object)}">
+            </label>
+
+            <label>
+              <span>BKP-Nummer</span>
+              <input data-report-field="anlageNumber" value="${this.escapeAttribute(report.anlageNumber)}">
             </label>
 
             <label>
@@ -2819,6 +2825,7 @@ export default class WorkspaceComponent {
 
         if (field === 'project') project.name = value || 'Unbenanntes Projekt';
         if (field === 'object') project.object = value;
+        if (field === 'anlageNumber') project.anlageNumber = value;
         if (field === 'anlage' && this.state.selectedSystem) this.state.selectedSystem.name = value || 'Anlage';
         if (field === 'bearbeiter') project.author = value;
         if (field === 'datum') project.date = value;

@@ -713,7 +713,7 @@ export class ReportEngine {
       reportOptions.includeInfo,
     ];
 
-    const requiredProjectFields = [project.name, project.object, project.plant || model.system?.name, project.author, project.date];
+    const requiredProjectFields = [project.name, project.object, project.plantNumber, project.plant || model.system?.name, project.author, project.date];
     const requiredReleaseFields = [project.reportNumber, project.revision];
     const approvalFields = [project.checkedBy, project.approvedBy, project.approvalDate];
     const qualityOk = model.quality?.status === 'ok';
@@ -725,8 +725,8 @@ export class ReportEngine {
         id: 'project-data',
         label: 'Projekt- und Anlagenangaben',
         status: requiredProjectFields.every(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
-        message: 'Projekt, Objekt, Anlage, Bearbeiter und Datum sind gepflegt.',
-        warning: 'Projekt, Objekt, Anlage, Bearbeiter oder Datum fehlen noch.',
+        message: 'Projektnummer, Projektname, BKP-Nummer, Anlage, Bearbeiter und Datum sind gepflegt.',
+        warning: 'Projektnummer, Projektname, BKP-Nummer, Anlage, Bearbeiter oder Datum fehlen noch.',
       },
       {
         id: 'release-data',
@@ -1047,10 +1047,10 @@ export class ReportEngine {
           <div class="report-project-card">
             <h3>Projektangaben</h3>
             ${this.renderDefinitionList([
-              ['Projekt', model.project.name],
-              ['Objekt', model.project.object],
+              ['Projektnummer', model.project.name],
+              ['Projektname', model.project.object],
+              ['BKP-Nummer', model.project.plantNumber || '-'],
               ['Anlage', model.system.name],
-              ['Anlagennummer', model.project.plantNumber || '-'],
               ['Bearbeiter', model.project.author],
               ['Firma', model.project.company || '-'],
               ['Standort', model.project.address || '-'],
@@ -1544,8 +1544,9 @@ export class ReportEngine {
         <div>
           <h3>Anlageninformationen</h3>
           ${this.renderDefinitionList([
-            ['Projekt', model.project.name],
-            ['Objekt', model.project.object],
+            ['Projektnummer', model.project.name],
+            ['Projektname', model.project.object],
+            ['BKP-Nummer', model.project.plantNumber || '-'],
             ['Anlage', model.system.name],
             ['Bearbeiter', model.project.author],
             ['Datum', model.project.date],
@@ -1833,8 +1834,9 @@ export class ReportEngine {
     };
 
     rows.push(this.csvRow(['Druckverlust Pro – Datenexport']));
-    rows.push(this.csvRow(['Projekt', model.project.name]));
-    rows.push(this.csvRow(['Objekt', model.project.object]));
+    rows.push(this.csvRow(['Projektnummer', model.project.name]));
+    rows.push(this.csvRow(['Projektname', model.project.object]));
+    rows.push(this.csvRow(['BKP-Nummer', model.project.plantNumber || '-']));
     rows.push(this.csvRow(['Anlage', model.system.name]));
     rows.push(this.csvRow(['Bearbeiter', model.project.author]));
     rows.push(this.csvRow(['Datum', model.project.date]));

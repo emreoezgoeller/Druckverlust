@@ -10,10 +10,10 @@ Sprint 18 startet den Bereich Bedienkomfort. Die wichtigsten Projektangaben werd
 
 Im Projektbereich können jetzt gepflegt werden:
 
+- Projektnummer
 - Projektname
-- Objekt
+- BKP-Nummer
 - Anlage
-- Anlagennummer
 - Bearbeiter
 - Firma
 - Adresse / Standort

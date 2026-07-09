@@ -87,6 +87,16 @@ export default class RibbonActions {
     }
   }
 
+  addSpecialComponent() {
+    try {
+      const component = this.commands.addSpecialComponent('freie_komponente');
+      this.calculate({ silent: true, keepDirty: true });
+      console.info('RibbonAction: Sonderbauteil hinzugefügt', component);
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
   calculate(options = {}) {
     const project = this.state.project;
 
