@@ -51,6 +51,158 @@ export default class WorkspaceComponent {
     `;
   }
 
+  renderWorkflowDashboard(project = null, system = null, context = 'system') {
+    if (!project || !system) return '';
+
+    const sections = system?.sections || [];
+    const formParts = system?.formParts || [];
+    const specialComponents = system?.specialComponents || [];
+    const calculation = project?.calculationResult?.calculation || null;
+    const totals = calculation?.totals || {};
+    const total = totals.totalRounded ?? totals.total ?? null;
+    const quality = project?.calculationResult?.quality || null;
+    const errorCount = quality?.errors?.length || 0;
+    const warningCount = quality?.warnings?.length || 0;
+    const qsLabel = errorCount ? 'Fehler' : warningCount ? 'Prüfen' : calculation ? 'OK' : 'Offen';
+    const qsClass = errorCount ? 'error' : warningCount ? 'warning' : calculation ? 'ok' : 'idle';
+    const lastCalculation = this.state.lastCalculationAt
+      ? new Date(this.state.lastCalculationAt).toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' })
+      : 'noch nicht berechnet';
+    const relevantSections = sections.filter(section => this.isSectionRelevant(section)).length;
+    const specialLoss = specialComponents.reduce((sum, component) => sum + Number(component?.pressureLoss ?? 0), 0);
+    const nextSteps = this.getWorkflowNextSteps({ sections, formParts, specialComponents, calculation, errorCount, warningCount });
+
+    return `
+      <section class="dp-workflow-dashboard ${context === 'project' ? 'project' : 'system'}">
+        <div class="dp-workflow-head">
+          <div>
+            <span class="dp-overline">Arbeitsdashboard</span>
+            <h2>${context === 'project' ? 'Projektfortschritt' : 'Anlagenfortschritt'}</h2>
+            <p>Schnellübersicht für Eingabe, Berechnung, Kontrolle und Bericht.</p>
+          </div>
+          <span class="dp-workflow-status ${this.escapeAttribute(qsClass)}">QS ${this.escapeHtml(qsLabel)}</span>
+        </div>
+
+        <div class="dp-workflow-grid">
+          <div class="dp-workflow-kpi">
+            <span>Gesamt</span>
+            <strong>${total === null ? '-' : `${this.formatNumber(total, 1)} Pa`}</strong>
+            <em>aktueller Druckverlust</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Teilstrecken</span>
+            <strong>${relevantSections}/${sections.length}</strong>
+            <em>berechnungsrelevant / total</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Formteile</span>
+            <strong>${formParts.length}</strong>
+            <em>zugeordnet oder offen</em>
+          </div>
+          <div class="dp-workflow-kpi">
+            <span>Sonderbauteile</span>
+            <strong>${this.formatNumber(specialLoss, 1)} Pa</strong>
+            <em>${specialComponents.length} Komponente${specialComponents.length === 1 ? '' : 'n'}</em>
+          </div>
+        </div>
+
+        <div class="dp-workflow-actions">
+          <button type="button" data-workflow-action="add-section">+ Teilstrecke</button>
+          <button type="button" data-workflow-action="add-formpart">+ Formteil</button>
+          <button type="button" data-workflow-action="add-special">+ Sonderbauteil</button>
+          <button type="button" data-workflow-action="open-report">Bericht öffnen</button>
+        </div>
+
+        <div class="dp-workflow-bottom">
+          <div class="dp-workflow-next">
+            <h3>Nächste Schritte</h3>
+            <ul>
+              ${nextSteps.map(step => `<li>${this.escapeHtml(step)}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="dp-workflow-meta">
+            <span>Letzte Berechnung</span>
+            <strong>${this.escapeHtml(lastCalculation)}</strong>
+            <span>Berichtsumfang</span>
+            <strong>${this.getReportOptionSummary(project)}</strong>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  getWorkflowNextSteps({ sections = [], formParts = [], specialComponents = [], calculation = null, errorCount = 0, warningCount = 0 } = {}) {
+    const steps = [];
+
+    if (!sections.length) steps.push('Erste Teilstrecke erfassen.');
+    if (sections.length && !sections.some(section => this.isSectionRelevant(section))) steps.push('Mindestens eine Teilstrecke mit Luftmenge und Geometrie vollständig ausfüllen.');
+    if (sections.length && !formParts.length) steps.push('Formteile über die Kachelbibliothek ergänzen.');
+    if (!specialComponents.length) steps.push('Sonderbauteile wie Filter, Schalldämpfer oder BSK ergänzen.');
+    if (!calculation) steps.push('Eingaben prüfen – die automatische Berechnung erstellt danach den aktuellen Anlagenwert.');
+    if (errorCount) steps.push(`${errorCount} QS-Fehler beheben, bevor der Bericht freigegeben wird.`);
+    if (!errorCount && warningCount) steps.push(`${warningCount} QS-Hinweis${warningCount === 1 ? '' : 'e'} prüfen.`);
+
+    if (!steps.length) steps.push('Projekt ist bereit für Bericht / Export.');
+    return steps.slice(0, 4);
+  }
+
+  isSectionRelevant(section = {}) {
+    const q = Number(section.q ?? section.volumeFlow ?? section.airVolume ?? 0);
+    const l = Number(section.l ?? section.length ?? 0);
+    const b = Number(section.b ?? section.width ?? 0);
+    const h = Number(section.h ?? section.height ?? 0);
+    const d = Number(section.d ?? section.diameter ?? 0);
+    const isPipe = this.isPipeSection(section);
+
+    return q > 0 && (l > 0 || section.formParts?.length) && (isPipe ? d > 0 : b > 0 && h > 0);
+  }
+
+  getReportOptionSummary(project = null) {
+    const options = project?.reportOptions || {};
+    const keys = Object.keys(options);
+
+    if (!keys.length) return 'Standardumfang';
+
+    const active = keys.filter(key => options[key] !== false).length;
+    return `${active}/${keys.length} Bereiche aktiv`;
+  }
+
+  bindWorkflowDashboard(project = null, system = null) {
+    this.root.querySelectorAll('[data-workflow-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.workflowAction;
+        const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+
+        if (action === 'add-section') {
+          this.commands.addSection();
+          return;
+        }
+
+        if (action === 'add-formpart') {
+          if (typeof this.state.selectFormPartPicker === 'function') {
+            this.state.selectFormPartPicker(activeSystem);
+          } else {
+            this.state.setSelection?.('formPartPicker', activeSystem);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'add-special') {
+          if (typeof this.commands.addSpecialComponent === 'function') {
+            this.commands.addSpecialComponent('freie_komponente');
+          }
+          return;
+        }
+
+        if (action === 'open-report') {
+          this.state.setSelection?.('report', project || this.state.project);
+          this.state.notify?.();
+        }
+      });
+    });
+  }
+
   renderProject(project) {
     const meta = this.ensureProjectMeta(project);
     const systems = project?.systems || [];
@@ -66,6 +218,8 @@ export default class WorkspaceComponent {
           <p>Projektangaben und Grunddaten für Berechnung, Speicherung und Bericht.</p>
         </div>
       </div>
+
+      ${this.renderWorkflowDashboard(project, activeSystem, 'project')}
 
       <section class="dp-editor-panel dp-project-meta-panel">
         <div class="dp-panel-header">
@@ -145,6 +299,7 @@ export default class WorkspaceComponent {
     `;
 
     this.bindProjectMetaEditor(project, activeSystem);
+    this.bindWorkflowDashboard(project, activeSystem);
   }
 
   ensureProjectMeta(project = null, system = null) {
@@ -262,6 +417,8 @@ export default class WorkspaceComponent {
       <h1>${system?.name ?? 'Anlage'}</h1>
       <p>Übersicht der gewählten Anlage.</p>
 
+      ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
+
       <div class="dp-cards">
         <div class="dp-card">
           <strong>Teilstrecken</strong>
@@ -294,6 +451,7 @@ export default class WorkspaceComponent {
       ${this.renderCalculationTable(calculation)}
     `;
 
+    this.bindWorkflowDashboard(this.state.project, system);
     this.bindSectionManagement();
     this.bindFormPartManagement();
     this.bindSpecialComponentManagement();
