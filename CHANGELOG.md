@@ -1,3 +1,10 @@
+
+## Phase 18.12a – Deploy-Fix
+
+- Fehlenden Kompatibilitäts-Export in `src/calculation/engine.js` für GitHub-Pages-Deployment korrigiert.
+- `calculateRow`, `fmt`, `calculateProject` und `createTest001State` werden wieder direkt bereitgestellt.
+- Fehler behoben: `report.js` konnte `calculateRow` nicht importieren.
+
 # Changelog
 
 
