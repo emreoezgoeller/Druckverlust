@@ -1,19 +1,28 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 18.35a RC**.
+Aktueller Entwicklungsstand: **Phase 19.00 Produktseite**.
 
 Die professionelle Oberfläche ist aktiv. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Deployment-QS, Versions-/Update-Prüfung, automatische Formteil-Grössenübernahme, Teilstrecken-Schnellerfassung, PDF-/Berichts-QS, transparente Druckverlust-Aufteilung, Rechen-QS, robuste **.dvp-Projektdatei-QS**, Bedienführung mit Pflichtfeld-Hinweisen und Demo-Projekt für Vorführung und QS sowie die finale Release-Candidate-Schlussprüfung.
 
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `18.35a`.
-- Über den Ribbon-Button **Datei-QS** können Speichern, Öffnen, Dateiname, IDs, Zuordnungen und Import-Stabilität geprüft werden.
+- Die aktuelle Cache-Version ist `19.00`.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
+- Interne QS-Module für Datei, Deployment und Release-Candidate bleiben im Code erhalten, sind aber im Ribbon ausgeblendet.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
-- Über den Ribbon-Button **RC prüfen** läuft die finale Schlussprüfung für den internen Teststand.
 - Bilder sind gegen Rechtsklick, Ziehen und Markieren geschützt.
 
+
+
+## Phase 19.00 – Produktseite
+
+Mit Phase 19.00 wurde eine separate Produkt-/Landingpage ergänzt:
+
+- `produkt.html` = Produktauftritt für Präsentation, Vertrieb und spätere Webseite
+- `index.html` = bleibt weiterhin die direkte Druckverlust-Pro-Anwendung
+
+Damit kann der Produktauftritt vorbereitet werden, ohne den bestehenden Tool-Link auf GitHub Pages zu brechen.
 
 ## Phase 18.35a – Ribbon-QS-Schaltflächen ausgeblendet
 

@@ -1,3 +1,11 @@
+## 19.00 – Produktseite / Landingpage
+
+- Neue separate Produktseite `produkt.html` ergänzt.
+- Neues Styling für Produktauftritt unter `src/landing/landing.css`.
+- Tool bleibt weiterhin stabil unter `index.html` erreichbar.
+- Produktseite enthält Hero-Bereich, Funktionsübersicht, Arbeitsablauf und Bericht-/Export-Positionierung.
+- Cache-Busting auf `19.00` erhöht.
+
 ## 18.35a – Ribbon-QS-Schaltflächen ausgeblendet
 
 - Sichtbare Ribbon-Schaltflächen **Datei-QS**, **Deploy prüfen** und **RC prüfen** entfernt.

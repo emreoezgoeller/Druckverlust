@@ -37,3 +37,9 @@
 - Phase 18.35: Release Candidate / Schlussprüfung **erledigt**
 - Phase 18.35a: Ribbon-QS-Schaltflächen ausgeblendet **erledigt**
 - Phase 19: Produktstand, Landingpage und Lizenz-/Abo-Vorbereitung
+
+
+## Phase 19 – Produktauftritt
+
+- Phase 19.00: Produktseite / Landingpage **erledigt**
+- Nächster Schritt: Entscheidung, ob `produkt.html` später zur Hauptseite wird oder separat bleibt.
