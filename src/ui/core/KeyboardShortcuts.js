@@ -35,6 +35,8 @@ export default class KeyboardShortcuts {
     const key = String(event.key || '').toLowerCase();
     const hasModifier = event.ctrlKey || event.metaKey;
 
+    if (event.altKey && key === 'home') return this.run(event, 'showDashboard');
+
     if (hasModifier) {
       if (key === 's') return this.run(event, 'saveProject');
       if (key === 'o') return this.run(event, 'openProject');

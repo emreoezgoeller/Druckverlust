@@ -30,6 +30,7 @@ export default class RibbonComponent {
       </div>
 
       <nav class="dp-tabs">
+        <button data-action="showDashboard" title="Zur Projekt-/Anlagenübersicht">Start</button>
         <button data-action="newProject">Neu</button>
         <button data-action="openProject">Öffnen</button>
         <button data-action="saveProject">Speichern</button>
@@ -38,6 +39,8 @@ export default class RibbonComponent {
         <button data-action="addSpecialComponent">+ Sonderbauteil</button>
         <button data-action="calculate">Neu berechnen</button>
         <button data-action="projectCheck">Projekt prüfen</button>
+        <button data-action="calculationCheck">Rechen-QS</button>
+        <button data-action="projectFileCheck">Datei-QS</button>
         <button data-action="deploymentCheck">Deploy prüfen</button>
         <button data-action="showReport">Bericht</button>
         <button data-action="showShortcutHelp" title="Tastaturkürzel anzeigen">Hilfe</button>

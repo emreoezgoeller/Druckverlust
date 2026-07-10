@@ -5,9 +5,11 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=18.27';
+import ReportEngine from '../../report/ReportEngine.js?v=18.33';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import { APP_RELEASE } from '../../core/appVersion.js';
 
 export default class WorkspaceComponent {
@@ -22,6 +24,7 @@ export default class WorkspaceComponent {
     this.commands = new ProjectCommands(state);
     this.formPartLibrarySearch = '';
     this.formPartLibraryCategory = 'all';
+    this.formPartLibraryFit = 'all';
     this.specialLibrarySearch = '';
     this.specialLibraryCategory = 'all';
     this.libraryRecent = this.loadLibraryRecent();
@@ -42,6 +45,8 @@ export default class WorkspaceComponent {
     if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
     if (selection.type === 'report') return this.renderReport();
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
+    if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
+    if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -131,6 +136,235 @@ export default class WorkspaceComponent {
             <strong>${this.getReportOptionSummary(project)}</strong>
           </div>
         </div>
+      </section>
+    `;
+  }
+
+  renderUiGuidancePanel(project = null, system = null, context = 'system') {
+    if (!project) return '';
+
+    const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+    const steps = this.createUiGuidanceSteps(project, activeSystem, context);
+    const nextOpen = steps.find(step => step.status !== 'ok') || steps[steps.length - 1];
+
+    return `
+      <section class="dp-editor-panel dp-ui-guide-panel dp-ui-guide-${this.escapeAttribute(context)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Bedienführung</span>
+            <h2>Was als Nächstes?</h2>
+            <p>${this.escapeHtml(nextOpen?.hint || 'Projekt Schritt für Schritt fertigstellen.')}</p>
+          </div>
+          <span class="dp-ui-guide-badge ${this.escapeAttribute(nextOpen?.status || 'ok')}">${this.escapeHtml(nextOpen?.badge || 'OK')}</span>
+        </div>
+
+        <div class="dp-ui-guide-grid">
+          ${steps.map(step => `
+            <button type="button" class="dp-ui-guide-step ${this.escapeAttribute(step.status)}" data-ui-guide-action="${this.escapeAttribute(step.action)}">
+              <span class="dp-ui-guide-number">${this.escapeHtml(step.number)}</span>
+              <strong>${this.escapeHtml(step.title)}</strong>
+              <em>${this.escapeHtml(step.detail)}</em>
+            </button>
+          `).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  createUiGuidanceSteps(project = null, system = null, context = 'system') {
+    const meta = this.ensureProjectMeta(project, system);
+    const sections = system?.sections || [];
+    const formParts = system?.formParts || [];
+    const specialComponents = system?.specialComponents || [];
+    const calculation = project?.calculationResult?.calculation || null;
+    const requiredFields = this.getProjectRequiredFields(meta);
+    const missingRequired = requiredFields.filter(field => field.missing);
+    const relevantSections = sections.filter(section => this.isSectionRelevant(section));
+    const assignedFormParts = formParts.filter(part => part?.sectionId && sections.some(section => section.id === part.sectionId));
+    const formPartWarnings = formParts.filter(part => this.getFormPartValidationWarnings(part).length).length;
+    const projectCheck = ProjectDiagnostics.create(project, { system });
+    const calcCheck = CalculationDiagnostics.create(project, { system });
+    const fileCheck = ProjectFileDiagnostics.create(project);
+
+    const stepStatus = (isOk, isWarning = false) => isOk ? 'ok' : (isWarning ? 'warning' : 'open');
+
+    return [
+      {
+        number: '1',
+        action: 'project',
+        title: 'Projektangaben',
+        status: stepStatus(!missingRequired.length, missingRequired.length && missingRequired.length <= 2),
+        badge: missingRequired.length ? `${missingRequired.length} offen` : 'OK',
+        detail: missingRequired.length ? `${missingRequired.map(field => field.label).slice(0, 2).join(', ')} ergänzen` : 'Pflichtfelder vollständig',
+        hint: missingRequired.length ? 'Zuerst Projektnummer, Projektname, BKP-Nummer und Anlage sauber eintragen.' : 'Projektangaben sind sauber erfasst.',
+      },
+      {
+        number: '2',
+        action: 'sections',
+        title: 'Teilstrecken',
+        status: stepStatus(relevantSections.length > 0, sections.length > 0),
+        badge: `${relevantSections.length}/${sections.length}`,
+        detail: sections.length ? `${relevantSections.length} berechnungsrelevant` : 'erste Teilstrecke erfassen',
+        hint: 'Als Nächstes die Teilstrecken mit Luftmenge, Länge und Geometrie vollständig erfassen.',
+      },
+      {
+        number: '3',
+        action: 'formparts',
+        title: 'Formteile',
+        status: stepStatus(formParts.length > 0 && !formPartWarnings, formParts.length > 0),
+        badge: formPartWarnings ? `${formPartWarnings} prüfen` : `${assignedFormParts.length}/${formParts.length}`,
+        detail: formParts.length ? `${assignedFormParts.length} zugeordnet` : 'Formteile ergänzen',
+        hint: 'Danach Formteile über die Bibliothek ergänzen und den passenden Teilstrecken zuordnen.',
+      },
+      {
+        number: '4',
+        action: 'checks',
+        title: 'QS prüfen',
+        status: stepStatus(projectCheck.status !== 'error' && calcCheck.status !== 'error' && fileCheck.status !== 'error', projectCheck.status === 'warning' || calcCheck.status === 'warning' || fileCheck.status === 'warning'),
+        badge: [projectCheck.status, calcCheck.status, fileCheck.status].includes('error') ? 'Fehler' : ([projectCheck.status, calcCheck.status, fileCheck.status].includes('warning') ? 'Hinweis' : 'OK'),
+        detail: 'Projekt-, Rechen- und Datei-QS',
+        hint: 'Vor dem Bericht die QS-Prüfungen ausführen und Hinweise sauber abarbeiten.',
+      },
+      {
+        number: '5',
+        action: 'report',
+        title: 'Bericht',
+        status: stepStatus(Boolean(calculation) && projectCheck.status !== 'error' && calcCheck.status !== 'error', Boolean(calculation)),
+        badge: calculation ? 'bereit' : 'offen',
+        detail: specialComponents.length ? `${specialComponents.length} Sonderbauteil(e) enthalten` : 'PDF/Druck prüfen',
+        hint: 'Zum Schluss Bericht öffnen, Druckpaket prüfen und PDF erzeugen.',
+      },
+    ];
+  }
+
+  getProjectRequiredFields(meta = {}) {
+    return [
+      { key: 'name', label: 'Projektnummer', value: meta.name, placeholders: ['Unbenannte Projektnummer', 'Unbenanntes Projekt'] },
+      { key: 'object', label: 'Projektname', value: meta.object, placeholders: ['Projekt', 'Objekt'] },
+      { key: 'anlageNumber', label: 'BKP-Nummer', value: meta.anlageNumber, placeholders: [] },
+      { key: 'anlage', label: 'Anlage', value: meta.anlage, placeholders: ['Anlage'] },
+    ].map(field => ({
+      ...field,
+      missing: this.isProjectRequiredValueMissing(field.value, field.placeholders),
+    }));
+  }
+
+  isProjectRequiredValueMissing(value = '', placeholders = []) {
+    const text = String(value ?? '').trim();
+    if (!text) return true;
+    return placeholders.some(placeholder => text.toLowerCase() === String(placeholder).toLowerCase());
+  }
+
+  renderRequiredMarker(value = '', placeholders = []) {
+    const missing = this.isProjectRequiredValueMissing(value, placeholders);
+    return `<em class="dp-required-marker ${missing ? 'missing' : 'ok'}">${missing ? 'Pflichtfeld' : 'OK'}</em>`;
+  }
+
+  getRequiredFieldClass(value = '', placeholders = []) {
+    return `dp-required-field ${this.isProjectRequiredValueMissing(value, placeholders) ? 'missing' : 'ok'}`;
+  }
+
+  bindUiGuidancePanel(project = null, system = null) {
+    this.root.querySelectorAll('[data-ui-guide-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.uiGuideAction;
+        const activeProject = project || this.state.project;
+        const activeSystem = system || this.state.selectedSystem || activeProject?.systems?.[0] || null;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', activeProject);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'sections') {
+          if (activeSystem && typeof this.state.selectSystem === 'function') {
+            this.state.selectSystem(activeSystem);
+          } else if (activeSystem) {
+            this.state.setSelection?.('system', activeSystem);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'formparts') {
+          if (typeof this.state.selectFormPartPicker === 'function') {
+            this.state.selectFormPartPicker(activeSystem);
+          } else {
+            this.state.setSelection?.('formPartPicker', activeSystem);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'checks') {
+          this.autoCalculateProject({ notify: false });
+          const check = CalculationDiagnostics.create(activeProject, { system: activeSystem });
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'report') {
+          this.autoCalculateProject({ notify: false });
+          this.state.setSelection?.('report', activeSystem || activeProject);
+          this.state.notify?.();
+        }
+      });
+    });
+  }
+
+  renderProjectFilePanel(project = null) {
+    const check = ProjectFileDiagnostics.create(project);
+    const visibleItems = check.items.filter(item => item.status !== 'ok').slice(0, 5);
+    const okCount = check.counts?.ok ?? 0;
+    const sizeKb = Math.round((check.jsonSizeBytes || 0) / 1024);
+
+    return `
+      <section class="dp-editor-panel dp-file-check-panel dp-file-check-${this.escapeAttribute(check.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Datei-QS</span>
+            <h2>Projektdatei und Übergabeformat</h2>
+            <p>${this.escapeHtml(check.summary)}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(check.status)}">${this.escapeHtml(check.label)}</span>
+        </div>
+
+        <div class="dp-file-check-meta">
+          <div>
+            <span>Dateiname</span>
+            <strong>${this.escapeHtml(check.fileName || '-')}</strong>
+          </div>
+          <div>
+            <span>Schema</span>
+            <strong>${this.escapeHtml(check.schemaVersion || '-')}</strong>
+          </div>
+          <div>
+            <span>Grösse</span>
+            <strong>${this.escapeHtml(sizeKb)} kB</strong>
+          </div>
+          <button type="button" data-file-check-action="open">Details öffnen</button>
+        </div>
+
+        ${visibleItems.length ? `
+          <div class="dp-project-check-list compact">
+            ${visibleItems.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-project-check-list compact">
+            <div class="dp-project-check-item ok">
+              <strong>OK-Punkte</strong>
+              <span>${this.escapeHtml(okCount)} Prüfpunkt(e) ohne Hinweis.</span>
+            </div>
+          </div>
+        `}
       </section>
     `;
   }
@@ -308,8 +542,10 @@ export default class WorkspaceComponent {
         </div>
       </div>
 
+      ${this.renderUiGuidancePanel(project, activeSystem, 'project')}
       ${this.renderWorkflowDashboard(project, activeSystem, 'project')}
       ${this.renderProjectCheckPanel(project, activeSystem)}
+      ${this.renderProjectFilePanel(project)}
 
       <section class="dp-editor-panel dp-project-meta-panel">
         <div class="dp-panel-header">
@@ -321,24 +557,24 @@ export default class WorkspaceComponent {
         </div>
 
         <div class="dp-editor-grid dp-project-meta-grid">
-          <label>
-            <span>Projektnummer</span>
-            <input data-project-field="name" value="${this.escapeAttribute(meta.name)}">
+          <label class="${this.getRequiredFieldClass(meta.name, ['Unbenannte Projektnummer', 'Unbenanntes Projekt'])}">
+            <span>Projektnummer ${this.renderRequiredMarker(meta.name, ['Unbenannte Projektnummer', 'Unbenanntes Projekt'])}</span>
+            <input data-project-field="name" value="${this.escapeAttribute(meta.name)}" aria-required="true">
           </label>
 
-          <label>
-            <span>Projektname</span>
-            <input data-project-field="object" value="${this.escapeAttribute(meta.object)}">
+          <label class="${this.getRequiredFieldClass(meta.object, ['Projekt', 'Objekt'])}">
+            <span>Projektname ${this.renderRequiredMarker(meta.object, ['Projekt', 'Objekt'])}</span>
+            <input data-project-field="object" value="${this.escapeAttribute(meta.object)}" aria-required="true">
           </label>
 
-          <label>
-            <span>BKP-Nummer</span>
-            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}">
+          <label class="${this.getRequiredFieldClass(meta.anlageNumber)}">
+            <span>BKP-Nummer ${this.renderRequiredMarker(meta.anlageNumber)}</span>
+            <input data-project-field="anlageNumber" value="${this.escapeAttribute(meta.anlageNumber)}" aria-required="true">
           </label>
 
-          <label>
-            <span>Anlage</span>
-            <input data-project-field="anlage" value="${this.escapeAttribute(meta.anlage)}">
+          <label class="${this.getRequiredFieldClass(meta.anlage, ['Anlage'])}">
+            <span>Anlage ${this.renderRequiredMarker(meta.anlage, ['Anlage'])}</span>
+            <input data-project-field="anlage" value="${this.escapeAttribute(meta.anlage)}" aria-required="true">
           </label>
 
           <label>
@@ -389,6 +625,7 @@ export default class WorkspaceComponent {
     `;
 
     this.bindProjectMetaEditor(project, activeSystem);
+    this.bindUiGuidancePanel(project, activeSystem);
     this.bindWorkflowDashboard(project, activeSystem);
     this.bindProjectCheckPanel(project, activeSystem);
   }
@@ -508,8 +745,10 @@ export default class WorkspaceComponent {
       <h1>${system?.name ?? 'Anlage'}</h1>
       <p>Übersicht der gewählten Anlage.</p>
 
+      ${this.renderUiGuidancePanel(this.state.project, system, 'system')}
       ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
       ${this.renderProjectCheckPanel(this.state.project, system)}
+      ${this.renderProjectFilePanel(this.state.project)}
 
       <div class="dp-cards">
         <div class="dp-card">
@@ -541,12 +780,15 @@ export default class WorkspaceComponent {
       ${this.renderCalculationBreakdown(calculation)}
       ${this.renderSectionResultDetailPanel(calculation)}
       ${this.renderCalculationAudit(calculation)}
+      ${this.renderCalculationDiagnosticsPanel(calculation, system)}
       ${this.renderProjectValidationOverview(system)}
       ${this.renderCalculationTable(calculation)}
     `;
 
+    this.bindUiGuidancePanel(this.state.project, system);
     this.bindWorkflowDashboard(this.state.project, system);
     this.bindProjectCheckPanel(this.state.project, system);
+    this.bindCalculationDiagnosticsPanel(system);
     this.bindSectionManagement();
     this.bindSectionQuickEdit();
     this.bindFormPartManagement();
@@ -1378,6 +1620,7 @@ export default class WorkspaceComponent {
         if (type === 'formpart') {
           this.formPartLibrarySearch = '';
           this.formPartLibraryCategory = 'all';
+          this.formPartLibraryFit = 'all';
         }
         if (type === 'special') {
           this.specialLibrarySearch = '';
@@ -1539,15 +1782,18 @@ export default class WorkspaceComponent {
 
   renderFormPartPicker() {
     const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const selectedSection = this.state.selectedSection || system?.sections?.[0] || null;
     const allGroups = this.getFormPartLibraryGroups({ ignoreFilters: true });
     const groups = this.getFormPartLibraryGroups();
     const filteredCount = groups.reduce((sum, group) => sum + group.items.length, 0);
+    const audit = this.getFormPartLibraryAudit(allGroups);
 
     this.root.innerHTML = `
       <div class="workspace-header">
         <div>
           <h1>Formteil auswählen</h1>
           <p>Wähle zuerst ein Formteil aus der Bibliothek. Danach öffnet sich automatisch der passende Editor.</p>
+          <p class="dp-library-context">Aktive Teilstrecke: <strong>${this.escapeHtml(selectedSection ? this.getSectionNameById(selectedSection.id) : 'keine')}</strong>${selectedSection ? ` · ${this.escapeHtml(this.getSectionShapeLabel(selectedSection))}` : ''}</p>
         </div>
       </div>
 
@@ -1568,6 +1814,10 @@ export default class WorkspaceComponent {
           placeholder: 'Formteil suchen, z. B. Bogen, Übergang, T-Stück…',
         })}
 
+        ${this.renderFormPartLibrarySmartFilters(selectedSection)}
+
+        ${this.renderFormPartLibraryAudit(audit)}
+
         ${this.renderLibraryFavoritesSection({
           type: 'formpart',
           title: 'Favorisierte Formteile',
@@ -1582,18 +1832,23 @@ export default class WorkspaceComponent {
           renderCard: item => this.renderFormPartPickerCard(item),
         })}
 
-        ${groups.length ? groups.map(group => `
-          <div class="dp-formpart-library-group">
+        ${groups.length ? groups.map(group => {
+          const meta = this.getFormPartCategoryMeta(group.category);
+          return `
+          <div class="dp-formpart-library-group dp-formpart-library-group-${this.escapeAttribute(meta.key)}">
             <div class="dp-formpart-library-heading">
-              <h2>${this.escapeHtml(group.category)}</h2>
+              <div>
+                <h2><span aria-hidden="true">${this.escapeHtml(meta.icon)}</span> ${this.escapeHtml(meta.label)}</h2>
+                <p>${this.escapeHtml(meta.description)}</p>
+              </div>
               <span>${group.items.length} Formteil${group.items.length === 1 ? '' : 'e'}</span>
             </div>
 
             <div class="dp-formpart-card-grid">
-              ${group.items.map(item => this.renderFormPartPickerCard(item)).join('')}
+              ${group.items.map(item => this.renderFormPartPickerCard(item, selectedSection)).join('')}
             </div>
           </div>
-        `).join('') : `
+        `}).join('') : `
           <div class="dp-empty-state dp-library-empty">
             Keine Formteile zur aktuellen Suche gefunden. Passe Suche oder Kategorie an.
           </div>
@@ -1605,8 +1860,156 @@ export default class WorkspaceComponent {
     this.bindFormPartImageFallbacks();
   }
 
-  renderFormPartPickerCard(item) {
+  renderFormPartLibrarySmartFilters(selectedSection = null) {
+    const active = this.formPartLibraryFit || 'all';
+    const filters = [
+      { id: 'all', label: 'Alle Formteile', help: 'Bibliothek ohne Zusatzfilter anzeigen.' },
+      { id: 'section', label: 'Passend zur Teilstrecke', help: selectedSection ? `Filtert nach ${this.getSectionShapeLabel(selectedSection)}.` : 'Bitte zuerst eine Teilstrecke wählen.' },
+      { id: 'alpha', label: 'mit α/β-Auswahl', help: 'Zeigt Formteile mit gesperrter Winkel-Auswahl statt freier Eingabe.' },
+      { id: 'sync', label: 'mit Grössen-Sync', help: 'Zeigt Formteile, die Grössen/Luftmengen aus Teilstrecken übernehmen.' },
+    ];
+
+    return `
+      <div class="dp-formpart-smartfilter">
+        <div>
+          <span class="dp-overline">Formteil-Assistent</span>
+          <strong>Auswahl eingrenzen</strong>
+          <p>${selectedSection ? `Auswahl bezogen auf ${this.escapeHtml(this.getSectionNameById(selectedSection.id))}.` : 'Ohne aktive Teilstrecke werden alle Formteile angezeigt.'}</p>
+        </div>
+        <div class="dp-formpart-smartfilter-buttons">
+          ${filters.map(filter => `
+            <button
+              type="button"
+              class="${active === filter.id ? 'active' : ''}"
+              data-formpart-fit="${this.escapeAttribute(filter.id)}"
+              title="${this.escapeAttribute(filter.help)}">
+              ${this.escapeHtml(filter.label)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  renderFormPartLibraryAudit(audit = {}) {
+    const warnings = audit.warnings || [];
+
+    return `
+      <div class="dp-formpart-audit">
+        <div>
+          <span class="dp-overline">Bibliotheks-QS</span>
+          <strong>${this.escapeHtml(audit.total || 0)} Formteile · ${this.escapeHtml(audit.categories || 0)} Kategorien</strong>
+          <p>${warnings.length ? `${warnings.length} Hinweis${warnings.length === 1 ? '' : 'e'} prüfen.` : 'Bilder, Auswahlfelder und Sync-Metadaten wirken vollständig.'}</p>
+        </div>
+        <div class="dp-formpart-audit-grid">
+          <span><b>${this.escapeHtml(audit.withImages || 0)}</b> Bilder</span>
+          <span><b>${this.escapeHtml(audit.withLockedAngles || 0)}</b> α/β-Auswahl</span>
+          <span><b>${this.escapeHtml(audit.withAutoSync || 0)}</b> Auto-Sync</span>
+          <span><b>${this.escapeHtml(audit.withConnections || 0)}</b> Anschluss-Sync</span>
+        </div>
+        ${warnings.length ? `
+          <details class="dp-formpart-audit-details">
+            <summary>Hinweise anzeigen</summary>
+            <ul>${warnings.map(warning => `<li>${this.escapeHtml(warning)}</li>`).join('')}</ul>
+          </details>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  getFormPartLibraryAudit(groups = []) {
+    const items = groups.flatMap(group => group.items || []);
+    const warnings = [];
+
+    items.forEach(item => {
+      if (!this.getFormPartImageSources(item).length) warnings.push(`${item.name || item.id}: keine Skizze hinterlegt.`);
+      if (!Array.isArray(item.parameters) || !item.parameters.length) warnings.push(`${item.name || item.id}: keine Parameterdefinition hinterlegt.`);
+    });
+
+    return {
+      total: items.length,
+      categories: new Set(items.map(item => item.category || 'Weitere')).size,
+      withImages: items.filter(item => this.getFormPartImageSources(item).length).length,
+      withLockedAngles: items.filter(item => this.hasLockedAngleSelection(item)).length,
+      withAutoSync: items.filter(item => this.supportsFormPartAutoSync(item)).length,
+      withConnections: items.filter(item => this.getFormPartConnectionDefinitions({ type: item.id }).length).length,
+      warnings,
+    };
+  }
+
+  getFormPartCardMeta(item = {}, selectedSection = null) {
+    const compatible = this.isFormPartCompatibleWithSection(item, selectedSection);
+    const badges = [];
+
+    badges.push({
+      label: compatible ? 'passt zur TS' : 'andere Bauform',
+      className: compatible ? 'ok' : 'muted',
+    });
+
+    if (this.hasLockedAngleSelection(item)) badges.push({ label: 'α/β Dropdown', className: 'ok' });
+    if (this.supportsFormPartAutoSync(item)) badges.push({ label: 'Grössen-Sync', className: 'ok' });
+    if (this.getFormPartConnectionDefinitions({ type: item.id }).length) badges.push({ label: 'Anschluss-Sync', className: 'ok' });
+    if (this.getFormPartImageSources(item).length) badges.push({ label: 'Bild', className: 'soft' });
+
+    return { compatible, badges };
+  }
+
+  getFormPartCategoryMeta(category = '') {
+    const value = String(category || 'Weitere');
+    const map = {
+      Rund: { key: 'round', label: 'Rund / Rohr', icon: '◯', description: 'Bögen und Formteile für runde Rohre.' },
+      Rechteck: { key: 'rect', label: 'Rechteck / Kanal', icon: '▭', description: 'Bögen und Formteile für rechteckige Kanäle.' },
+      'Übergänge': { key: 'transition', label: 'Übergänge', icon: '⇄', description: 'Reduzierungen und Erweiterungen mit zwei Anschlussseiten.' },
+      Abzweige: { key: 'branch', label: 'Abzweige / T-Stücke', icon: '┬', description: 'T-Stücke, Hosenstücke und Sattelstücke mit Haupt-/Abzweiganschlüssen.' },
+      Spezial: { key: 'special', label: 'Spezialformteile', icon: '◆', description: 'Spezielle Formteile und Versätze.' },
+    };
+
+    return map[value] || { key: 'other', label: value, icon: '•', description: 'Weitere Formteile.' };
+  }
+
+  hasLockedAngleSelection(item = {}) {
+    return (item.parameters || []).some(parameter => {
+      const id = String(parameter?.id || parameter || '').toLowerCase();
+      return ['alpha', 'beta'].includes(id) && parameter?.type === 'select' && Array.isArray(parameter.options) && parameter.options.length;
+    });
+  }
+
+  supportsFormPartAutoSync(item = {}) {
+    const ids = new Set((item.parameters || []).map(parameter => String(parameter?.id || parameter || '')));
+    const direct = ['d', 'a', 'b', 'A_d', 'A_breite', 'A_hoehe', 'W'];
+    const transition = ['A1_bauform', 'A2_bauform'];
+    return direct.some(id => ids.has(id)) || transition.some(id => ids.has(id));
+  }
+
+  isFormPartCompatibleWithSection(item = {}, section = null) {
+    if (!section) return true;
+
+    const isPipe = this.isPipeSection(section);
+    const category = String(item?.category || '');
+    const ids = new Set((item.parameters || []).map(parameter => String(parameter?.id || parameter || '')));
+    const hasShapeSelector = ids.has('bauform') || ids.has('A1_bauform') || ids.has('A2_bauform');
+
+    if (hasShapeSelector) return true;
+    if (isPipe) return category === 'Rund' || category === 'Übergänge' || category === 'Abzweige' || category === 'Spezial';
+    return category === 'Rechteck' || category === 'Übergänge' || category === 'Abzweige' || category === 'Spezial';
+  }
+
+  getSectionShapeLabel(section = {}) {
+    const geometry = this.getSectionGeometryForFormPart(section);
+    if (geometry.isPipe) return `Rohr Ø ${this.formatNumber(geometry.diameterMm, 0)} mm · ${this.formatAirflow(geometry.q)} m³/h`;
+    return `Kanal ${this.formatNumber(geometry.widthMm, 0)} × ${this.formatNumber(geometry.heightMm, 0)} mm · ${this.formatAirflow(geometry.q)} m³/h`;
+  }
+
+  truncateText(value = '', maxLength = 120) {
+    const text = String(value || '').trim();
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
+  }
+
+  renderFormPartPickerCard(item, selectedSection = null) {
     const favorite = this.isLibraryFavorite('formpart', item.id);
+    const cardMeta = this.getFormPartCardMeta(item, selectedSection);
+    const description = String(item?.description || '').trim();
 
     return `
       <div class="dp-library-card-shell">
@@ -1619,13 +2022,17 @@ export default class WorkspaceComponent {
           aria-label="${favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}">
           ${favorite ? '★' : '☆'}
         </button>
-        <button class="dp-formpart-card" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
+        <button class="dp-formpart-card ${cardMeta.compatible ? 'dp-formpart-card-compatible' : 'dp-formpart-card-muted'}" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
           <div class="dp-formpart-card-image">
             ${this.renderFormPartCardImage(item)}
           </div>
           <div class="dp-formpart-card-body">
             <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
             <strong>${this.escapeHtml(item.name)}</strong>
+            ${description ? `<p>${this.escapeHtml(this.truncateText(description, 110))}</p>` : ''}
+            <div class="dp-formpart-card-badges">
+              ${cardMeta.badges.map(badge => `<em class="${this.escapeAttribute(badge.className || '')}">${this.escapeHtml(badge.label)}</em>`).join('')}
+            </div>
           </div>
         </button>
       </div>
@@ -1656,6 +2063,13 @@ export default class WorkspaceComponent {
   bindFormPartPicker() {
     this.bindLibraryFilterControls();
 
+    this.root.querySelectorAll('[data-formpart-fit]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.formPartLibraryFit = button.dataset.formpartFit || 'all';
+        this.render();
+      });
+    });
+
     this.root.querySelectorAll('[data-formpart-type]').forEach(button => {
       button.addEventListener('click', () => {
         try {
@@ -1671,15 +2085,22 @@ export default class WorkspaceComponent {
   }
 
   getFormPartLibraryGroups(options = {}) {
-    const order = ['Rund', 'Rechteck', 'Übergänge', 'Spezial', 'Abzweige'];
+    const order = ['Rund', 'Rechteck', 'Übergänge', 'Abzweige', 'Spezial'];
     const groups = new Map();
     const search = options.ignoreFilters ? '' : String(this.formPartLibrarySearch || '').toLowerCase().trim();
     const selectedCategory = options.ignoreFilters ? 'all' : String(this.formPartLibraryCategory || 'all');
+    const fitFilter = options.ignoreFilters ? 'all' : String(this.formPartLibraryFit || 'all');
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const selectedSection = this.state.selectedSection || system?.sections?.[0] || null;
 
     this.registry.all()
       .filter(item => {
         const category = item.category || 'Weitere';
         if (selectedCategory !== 'all' && category !== selectedCategory) return false;
+
+        if (fitFilter === 'section' && !this.isFormPartCompatibleWithSection(item, selectedSection)) return false;
+        if (fitFilter === 'alpha' && !this.hasLockedAngleSelection(item)) return false;
+        if (fitFilter === 'sync' && !this.supportsFormPartAutoSync(item) && !this.getFormPartConnectionDefinitions({ type: item.id }).length) return false;
 
         if (!search) return true;
 
@@ -3094,6 +3515,118 @@ export default class WorkspaceComponent {
   }
 
 
+  renderProjectFileCheck(check = null) {
+    const result = check || this.state.projectFileCheck || ProjectFileDiagnostics.create(this.state.project);
+    const statusLabel = result.status === 'ok'
+      ? 'Datei-QS OK'
+      : result.status === 'error'
+        ? 'Datei-QS Fehler'
+        : 'Datei-QS mit Hinweisen';
+    const checkedAt = result.checkedAt ? new Date(result.checkedAt).toLocaleString('de-CH') : '-';
+    const sizeKb = Math.round((result.jsonSizeBytes || 0) / 1024);
+
+    this.root.innerHTML = `
+      <section class="dp-editor-panel dp-check-detail dp-file-check-detail">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Projektdatei</span>
+            <h1>.dvp-Datei-QS</h1>
+            <p>${this.escapeHtml(result.summary || 'Prüft Speichern, Öffnen, IDs, Zuordnungen und Dateiformat.')}</p>
+          </div>
+          <span class="dp-report-export-status ${this.escapeAttribute(result.status)}">${this.escapeHtml(statusLabel)}</span>
+        </div>
+
+        <div class="dp-file-check-meta detail">
+          <div>
+            <span>Dateiname</span>
+            <strong>${this.escapeHtml(result.fileName || '-')}</strong>
+          </div>
+          <div>
+            <span>Schema</span>
+            <strong>${this.escapeHtml(result.schemaVersion || '-')}</strong>
+          </div>
+          <div>
+            <span>Version</span>
+            <strong>${this.escapeHtml(result.appRelease || APP_RELEASE)}</strong>
+          </div>
+          <div>
+            <span>Projektgrösse</span>
+            <strong>${this.escapeHtml(sizeKb)} kB</strong>
+          </div>
+          <div>
+            <span>Geprüft</span>
+            <strong>${this.escapeHtml(checkedAt)}</strong>
+          </div>
+        </div>
+
+        <div class="dp-project-check-stats">
+          <div><span>Fehler</span><strong>${this.escapeHtml(result.counts?.error || 0)}</strong></div>
+          <div><span>Hinweise</span><strong>${this.escapeHtml(result.counts?.warning || 0)}</strong></div>
+          <div><span>OK</span><strong>${this.escapeHtml(result.counts?.ok || 0)}</strong></div>
+        </div>
+
+        <div class="dp-workflow-actions">
+          <button type="button" data-file-check-action="run">Neu prüfen</button>
+          <button type="button" data-file-check-action="copy">Datei-QS kopieren</button>
+          <button type="button" data-file-check-action="project">Projektangaben</button>
+        </div>
+
+        <div class="dp-project-check-list">
+          ${(result.items || []).map(item => `
+            <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+              <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+              <span>${this.escapeHtml(item.message)}</span>
+              ${item.details ? `<em>${this.escapeHtml(item.details)}</em>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </section>
+    `;
+
+    this.bindProjectFileCheckActions();
+  }
+
+  bindProjectFileCheckActions() {
+    this.root.querySelectorAll('[data-file-check-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.fileCheckAction;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'open') {
+          const check = ProjectFileDiagnostics.create(this.state.project);
+          this.state.projectFileCheck = check;
+          this.state.setSelection?.('projectFileCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'run') {
+          const check = ProjectFileDiagnostics.create(this.state.project);
+          this.state.projectFileCheck = check;
+          this.state.setSelection?.('projectFileCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = ProjectFileDiagnostics.toText(this.state.projectFileCheck || ProjectFileDiagnostics.create(this.state.project));
+          try {
+            await navigator.clipboard.writeText(text);
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = 'Datei-QS kopieren'; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
   renderDeploymentCheck(check = null) {
     const result = check || this.state.deploymentCheck;
     const hasResult = !!result;
@@ -3230,6 +3763,30 @@ export default class WorkspaceComponent {
   }
 
 
+  renderPdfPrintGuidance(model) {
+    const checklist = ReportEngine.createExportChecklist(model);
+    const guidance = checklist.printGuidance || ReportEngine.createPrintGuidance(model, checklist.pdfFileName);
+
+    return `
+      <div class="dp-report-print-guidance">
+        <div class="dp-report-print-guidance-head">
+          <div>
+            <strong>PDF-Druckpaket</strong>
+            <span>${this.escapeHtml(guidance.totalPages)} Seite(n) · vorgeschlagener Name: ${this.escapeHtml(guidance.fileName)}</span>
+          </div>
+        </div>
+        <div class="dp-report-print-guidance-grid">
+          ${(guidance.rows || []).map(row => `
+            <div>
+              <span>${this.escapeHtml(row[0])}</span>
+              <strong>${this.escapeHtml(row[1])}</strong>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   renderReportExportCheck(model) {
     const checklist = ReportEngine.createExportChecklist(model);
     const statusLabel = checklist.status === 'ok'
@@ -3293,17 +3850,18 @@ export default class WorkspaceComponent {
         <div class="dp-report-file-preview">
           <div>
             <span>Dateiname Bericht</span>
-            <strong>${this.escapeHtml(checklist.fileBaseName)}_Bericht.html</strong>
+            <strong>${this.escapeHtml(checklist.htmlFileName || `${checklist.fileBaseName}_Bericht.html`)}</strong>
           </div>
           <div>
             <span>Dateiname PDF/Druck</span>
-            <strong>${this.escapeHtml(checklist.fileBaseName)}_Bericht.pdf</strong>
+            <strong>${this.escapeHtml(checklist.pdfFileName || `${checklist.fileBaseName}_Bericht.pdf`)}</strong>
           </div>
           <div>
             <span>Dateiname Datenexport</span>
-            <strong>${this.escapeHtml(checklist.fileBaseName)}_Datenexport.csv</strong>
+            <strong>${this.escapeHtml(checklist.csvFileName || `${checklist.fileBaseName}_Datenexport.csv`)}</strong>
           </div>
         </div>
+        ${this.renderPdfPrintGuidance(model)}
         <p class="dp-report-export-note">HTML-Berichte werden mit eingebetteten Bildern gespeichert und können dadurch auch ausserhalb des Projektordners geöffnet werden. Für PDF wird der Browser-Druckdialog genutzt; der vorgeschlagene PDF-Name ist in der Dateivorschau ersichtlich.</p>
       </section>
     `;
@@ -3313,7 +3871,7 @@ export default class WorkspaceComponent {
   renderReportCompletionSummary(model) {
     const completion = ReportEngine.createReportCompletionSummary(model);
     const statusLabel = completion.status === 'ok'
-      ? 'Phase 17 abgeschlossen'
+      ? 'Bericht abgabebereit'
       : completion.status === 'error'
         ? 'Abschluss blockiert'
         : 'Abschluss mit Hinweisen';
@@ -4250,6 +4808,252 @@ export default class WorkspaceComponent {
         ` : ''}
       </section>
     `;
+  }
+
+
+  createCalculationDiagnostics(system = null) {
+    const project = this.state.project;
+
+    if (!project) return null;
+
+    try {
+      return CalculationDiagnostics.create(project, { system: system || this.state.selectedSystem || project?.systems?.[0] || null });
+    } catch (error) {
+      return {
+        status: 'error',
+        label: 'Fehler',
+        summary: `Rechen-QS konnte nicht erstellt werden: ${error?.message || String(error)}`,
+        items: [],
+        counts: { error: 1, warning: 0, ok: 0, total: 1 },
+        totals: {},
+      };
+    }
+  }
+
+  renderCalculationDiagnosticsPanel(calculation = null, system = null) {
+    if (!calculation) return '';
+
+    const check = this.createCalculationDiagnostics(system);
+    if (!check) return '';
+
+    const visibleItems = (check.items || [])
+      .filter(item => item.status !== 'ok')
+      .slice(0, 5);
+    const okCount = check.counts?.ok ?? 0;
+
+    return `
+      <section class="dp-result-panel dp-calculation-check-panel dp-calculation-check-${this.escapeAttribute(check.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Rechen-QS</span>
+            <h2>Fachliche Rechenkontrolle</h2>
+            <p>${this.escapeHtml(check.summary)}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(check.label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats">
+          <div>
+            <span>Fehler</span>
+            <strong>${this.escapeHtml(check.counts?.error ?? 0)}</strong>
+          </div>
+          <div>
+            <span>Hinweise</span>
+            <strong>${this.escapeHtml(check.counts?.warning ?? 0)}</strong>
+          </div>
+          <div>
+            <span>OK-Punkte</span>
+            <strong>${this.escapeHtml(okCount)}</strong>
+          </div>
+        </div>
+
+        <div class="dp-audit-grid dp-calculation-total-grid">
+          <div>
+            <span>Reibung</span>
+            <strong>${this.formatNumber(check.totals?.friction, 1)} Pa</strong>
+          </div>
+          <div>
+            <span>Formteile</span>
+            <strong>${this.formatNumber((Number(check.totals?.zetaLoss ?? 0) + Number(check.totals?.directFormPartLoss ?? 0)), 1)} Pa</strong>
+          </div>
+          <div>
+            <span>Sonderbauteile</span>
+            <strong>${this.formatNumber(check.totals?.special, 1)} Pa</strong>
+          </div>
+          <div>
+            <span>Total gerundet</span>
+            <strong>${this.formatNumber(check.totals?.totalRounded, 1)} Pa</strong>
+          </div>
+        </div>
+
+        ${visibleItems.length ? `
+          <div class="dp-project-check-list">
+            ${visibleItems.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}${item.detail ? ` · ${this.escapeHtml(item.detail)}` : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-project-check-ready">
+            <strong>Rechnung stimmig.</strong>
+            <span>Summen, Einheiten, p_dyn und Rundungen sind plausibel.</span>
+          </div>
+        `}
+
+        <div class="dp-project-check-actions">
+          <button type="button" data-calculation-check-action="open">Details öffnen</button>
+          <button type="button" data-calculation-check-action="copy">Rechen-QS kopieren</button>
+        </div>
+      </section>
+    `;
+  }
+
+  bindCalculationDiagnosticsPanel(system = null) {
+    this.root.querySelectorAll('[data-calculation-check-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.calculationCheckAction;
+        const check = this.createCalculationDiagnostics(system);
+
+        if (!check) return;
+
+        if (action === 'open') {
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = CalculationDiagnostics.toText(check);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Rechen-QS kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
+  renderCalculationCheck(check = null) {
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0] || null;
+    const current = check || this.createCalculationDiagnostics(system);
+
+    if (!current) {
+      this.root.innerHTML = `
+        <h1>Rechen-QS</h1>
+        <p>Kein Projekt vorhanden.</p>
+      `;
+      return;
+    }
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">QS / Nachweis</span>
+          <h1>Rechen-QS</h1>
+          <p>${this.escapeHtml(current.summary)}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-calculation-detail-action="recheck">Neu prüfen</button>
+          <button type="button" data-calculation-detail-action="copy">QS kopieren</button>
+          <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-calculation-check-panel dp-calculation-check-${this.escapeAttribute(current.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>Rechenstatus</h2>
+            <p>Kontrolliert werden Summenbildung, Reibung, Formteilverluste, Sonderbauteile, p_dyn, Einheiten und Rundungen.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.label)}</span>
+        </div>
+
+        <div class="dp-project-check-stats">
+          <div><span>Fehler</span><strong>${this.escapeHtml(current.counts?.error ?? 0)}</strong></div>
+          <div><span>Hinweise</span><strong>${this.escapeHtml(current.counts?.warning ?? 0)}</strong></div>
+          <div><span>OK-Punkte</span><strong>${this.escapeHtml(current.counts?.ok ?? 0)}</strong></div>
+        </div>
+
+        <div class="dp-audit-grid dp-calculation-total-grid">
+          <div><span>Reibung</span><strong>${this.formatNumber(current.totals?.friction, 1)} Pa</strong></div>
+          <div><span>ζ-Formteile</span><strong>${this.formatNumber(current.totals?.zetaLoss, 1)} Pa</strong></div>
+          <div><span>Direkt-Formteile</span><strong>${this.formatNumber(current.totals?.directFormPartLoss, 1)} Pa</strong></div>
+          <div><span>Sonderbauteile</span><strong>${this.formatNumber(current.totals?.special, 1)} Pa</strong></div>
+          <div><span>Total ungerundet</span><strong>${this.formatNumber(current.totals?.total, 1)} Pa</strong></div>
+          <div><span>Total gerundet</span><strong>${this.formatNumber(current.totals?.totalRounded, 1)} Pa</strong></div>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-calculation-detail-list">
+        <h2>Detailprüfung</h2>
+        <table class="dp-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Bereich</th>
+              <th>Prüfung</th>
+              <th>Ergebnis</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(current.items || []).map(item => `
+              <tr class="dp-calculation-row-${this.escapeAttribute(item.status)}">
+                <td><span class="dp-calculation-status ${this.escapeAttribute(item.status)}">${this.escapeHtml(item.status)}</span></td>
+                <td>${this.escapeHtml(item.area)}</td>
+                <td><strong>${this.escapeHtml(item.label)}</strong></td>
+                <td>${this.escapeHtml(item.message)}</td>
+                <td>${this.escapeHtml(item.detail || '-')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </section>
+    `;
+
+    this.bindCalculationCheckDetail(current, system);
+  }
+
+  bindCalculationCheckDetail(check = null, system = null) {
+    this.root.querySelectorAll('[data-calculation-detail-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.calculationDetailAction;
+
+        if (action === 'recheck') {
+          this.autoCalculateProject();
+          const next = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = next;
+          this.state.setSelection?.('calculationCheck', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'system') {
+          this.state.selectSystem?.(system || this.state.selectedSystem || this.state.project?.systems?.[0]);
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = CalculationDiagnostics.toText(check);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'QS kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
   }
 
 

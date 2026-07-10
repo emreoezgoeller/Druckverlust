@@ -1,4 +1,4 @@
-import * as Engine from '../calculation/engine.js?v=18.27';
+import * as Engine from '../calculation/engine.js?v=18.33';
 import { APP_BUILD_LABEL } from '../core/appVersion.js';
 import { getPartDefinition } from '../formteile/library.js';
 

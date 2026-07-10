@@ -43,7 +43,7 @@ export default class StatusBarComponent {
         Auswahl: ${label}
         ${lastCalculation ? `<span class="dp-status-muted"> · ${lastCalculation}</span>` : ''}
         ${autoSave ? `<span class="dp-status-muted"> · ${autoSave}</span>` : ''}
-        <span class="dp-status-muted dp-status-shortcuts"> · Ctrl+S speichern · Ctrl+D duplizieren · Deploy-QS</span>
+        <span class="dp-status-muted dp-status-shortcuts"> · Ctrl+S speichern · Alt+Home Start · Datei-QS</span>
       </div>
 
       <div class="dp-status-right">
@@ -157,6 +157,14 @@ export default class StatusBarComponent {
 
     if (selection.type === 'deploymentCheck') {
       return 'Deployment-QS';
+    }
+
+    if (selection.type === 'calculationCheck') {
+      return 'Rechen-QS';
+    }
+
+    if (selection.type === 'projectFileCheck') {
+      return 'Datei-QS';
     }
 
     if (selection.type === 'specialComponent') {

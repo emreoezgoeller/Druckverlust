@@ -13,7 +13,7 @@
 - Phase 18.18: Versionszentrale / Update-QS
 - Phase 18.19: Struktur-Cleanup / Altlastenbereinigung
 - Phase 18.20: Automatische Formteil-Grössenübernahme aus Teilstrecken
-- Phase 18.20a: PDF-Δp-Spalte korrigiert und eindeutig auf Kanal/Rohr-Reibungsverlust begrenzt
+- Phase 18.20a: PDF-Δp-Spalte korrigiert
 - Phase 18.21: Live-/UI-QS und Deployment-Prüfung erweitert
 - Phase 18.22: Teilstrecken-Eingabe-QS und Formteil-Sync
 - Phase 18.23: Formteil-Anschluss-Sync für zweite Teilstrecken
@@ -21,8 +21,15 @@
 - Phase 18.25: Druckverlust-Aufteilung und PDF-Nachweis
 - Phase 18.26: Teilstrecken-/Formteil-Ergebnisdetails verdichtet
 - Phase 18.27: Teilstrecken-Schnellerfassung in der Anlagenübersicht
+- Phase 18.29: Formteilbibliothek & Auswahl-Assistent
+- Phase 18.30: PDF-Druckpaket und Berichtsabschluss
+- Phase 18.31: Rechen-QS und fachlicher Nachweis
+- Phase 18.32: Projektdatei-QS und .dvp-Stabilisierung
+- Phase 18.33: Bedienführung und Oberfläche polieren
 
 ## Nächste sinnvolle Schritte
 
-- Phase 18.27: Formteilwerte / Zeta-Tabellen fachlich weiter absichern
-- Phase 19: Import / Datenübernahme
+- Phase 18.32: `.dvp` Projektdatei robuster machen mit Versionsprüfung und besseren Fehlermeldungen **erledigt**
+- Phase 18.33: Bedienung und Oberfläche weiter polieren **erledigt**
+- Phase 18.34: Demo-/Beispielprojekt und finale Produktvorbereitung
+- Phase 19: Produktstand, Demo-Projekt, Landingpage und Lizenz-/Abo-Vorbereitung

@@ -7,6 +7,8 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import { APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js';
 
 export default class RibbonActions {
@@ -22,6 +24,21 @@ export default class RibbonActions {
   confirmDiscardChanges(actionLabel = 'fortfahren') {
     if (!this.state.isProjectDirty) return true;
     return confirm(`Das aktuelle Projekt enthält ungespeicherte Änderungen. Trotzdem ${actionLabel}?`);
+  }
+
+  showDashboard() {
+    const project = this.state.project;
+    const system = this.getActiveSystem();
+
+    if (system && typeof this.state.selectSystem === 'function') {
+      this.state.selectSystem(system);
+      return;
+    }
+
+    if (project) {
+      this.state.setSelection?.('project', project);
+      this.state.notify?.();
+    }
   }
 
   newProject() {
@@ -50,6 +67,7 @@ export default class RibbonActions {
 
       try {
         const project = await StorageEngine.openFile(file);
+        const importWarnings = project?._importInfo?.normalizedWarnings || project?._importInfo?.warnings || [];
 
         this.state.setProject(project);
         this.state.setSelection('project', project);
@@ -57,9 +75,20 @@ export default class RibbonActions {
         this.state.markProjectClean();
         AutoSaveEngine.clear();
 
+        if (importWarnings.length) {
+          alert([
+            'Projekt wurde geöffnet und automatisch bereinigt.',
+            '',
+            ...importWarnings.slice(0, 6).map(item => `• ${item}`),
+            importWarnings.length > 6 ? `• … ${importWarnings.length - 6} weitere Hinweise` : '',
+            '',
+            'Tipp: Einmal speichern, damit die Datei im neuen stabilen Format abgelegt wird.',
+          ].filter(Boolean).join('\n'));
+        }
+
         console.info('RibbonAction: Projekt geöffnet', project);
       } catch (error) {
-        alert(error.message);
+        alert(`Projekt konnte nicht geöffnet werden: ${error.message}`);
       }
     });
 
@@ -299,6 +328,53 @@ export default class RibbonActions {
   }
 
 
+  calculationCheck() {
+    const project = this.state.project;
+    const system = this.getActiveSystem();
+
+    if (!project) {
+      alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.calculate({ silent: true, keepDirty: true });
+
+    const check = CalculationDiagnostics.create(project, { system });
+    this.state.calculationCheck = check;
+    this.state.setSelection?.('calculationCheck', check);
+    this.state.notify?.();
+
+    const text = CalculationDiagnostics.toText(check);
+    if (check.status === 'error') {
+      console.warn(text);
+    } else {
+      console.info(text);
+    }
+  }
+
+
+  projectFileCheck() {
+    const project = this.state.project;
+
+    if (!project) {
+      alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    const check = ProjectFileDiagnostics.create(project);
+    this.state.projectFileCheck = check;
+    this.state.setSelection?.('projectFileCheck', check);
+    this.state.notify?.();
+
+    const text = ProjectFileDiagnostics.toText(check);
+    if (check.status === 'error') {
+      console.warn(text);
+    } else {
+      console.info(text);
+    }
+  }
+
+
   async deploymentCheck() {
     const project = this.state.project;
 
@@ -333,7 +409,10 @@ export default class RibbonActions {
       'Ctrl + O: Projekt öffnen',
       'Ctrl + N: Neues Projekt',
       'Ctrl + Enter: Neu berechnen',
+      'Start: zurück zur Projekt-/Anlagenübersicht',
       'Projekt prüfen: über Ribbon-Schaltfläche „Projekt prüfen“',
+      'Rechen-QS: prüft Summen, Einheiten, p_dyn und Rundungen',
+      'Datei-QS: prüft .dvp-Datei, IDs und Zuordnungen',
       `Deploy prüfen: prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Bildschutz`,
       'Ctrl + B oder Ctrl + P: Bericht öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
@@ -366,6 +445,7 @@ export default class RibbonActions {
       `Teilstrecken: ${sections}`,
       `Formteile: ${formParts}`,
       `Sonderbauteile: ${specialComponents}`,
+      `Projektdatei: ${StorageEngine.createFileName(project || {})}`,
       '',
       'Hinweis: Nach dem Hochladen auf GitHub Pages bitte Ctrl+F5 drücken, damit die neue Cache-Version geladen wird.',
     ].join('\n'));

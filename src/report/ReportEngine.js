@@ -1,4 +1,4 @@
-import { APP_RELEASE } from '../core/appVersion.js';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -47,6 +47,18 @@ function compactFileToken(value = '') {
   return safeFileName(value)
     .replace(/_{2,}/g, '_')
     .replace(/^_|_$/g, '');
+}
+
+function createPdfFileName(fileBaseName = 'Druckverlustbericht') {
+  return `${safeFileName(fileBaseName || 'Druckverlustbericht')}_Bericht.pdf`;
+}
+
+function createHtmlFileName(fileBaseName = 'Druckverlustbericht') {
+  return `${safeFileName(fileBaseName || 'Druckverlustbericht')}_Bericht.html`;
+}
+
+function createCsvFileName(fileBaseName = 'Druckverlustbericht') {
+  return `${safeFileName(fileBaseName || 'Druckverlustbericht')}_Datenexport.csv`;
 }
 
 
@@ -179,10 +191,21 @@ function createPrintWaitScript() {
           });
         };
 
+        function bindPrintHelper(){
+          document.addEventListener('click', function(event){
+            var button = event.target && event.target.closest ? event.target.closest('[data-print-action]') : null;
+            if (!button) return;
+            var action = button.getAttribute('data-print-action');
+            if (action === 'print') window.print();
+            if (action === 'close') window.close();
+          });
+        }
+
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', protectImages, { once:true });
+          document.addEventListener('DOMContentLoaded', function(){ protectImages(); bindPrintHelper(); }, { once:true });
         } else {
           protectImages();
+          bindPrintHelper();
         }
       })();
     <\/script>
@@ -766,6 +789,11 @@ export class ReportEngine {
     const zeroLossFormParts = (model.formParts || []).filter(part => !hasNonZero(part?.pressureLoss)).length;
     const zeroLossSpecials = (model.specialComponents || []).filter(component => !hasNonZero(component?.pressureLoss)).length;
     const pageStatus = pagePlan.totalPages > 70 ? 'warning' : pagePlan.totalPages > 0 ? 'ok' : 'error';
+    const fileBaseName = this.createExportBaseName(model);
+    const pdfFileName = createPdfFileName(fileBaseName);
+    const htmlFileName = createHtmlFileName(fileBaseName);
+    const csvFileName = createCsvFileName(fileBaseName);
+    const printGuidance = this.createPrintGuidance(model, pdfFileName);
     const splitTotal = toNumber(model.totals?.friction) + toNumber(model.totals?.formParts) + toNumber(model.totals?.special);
     const totalDifference = Math.abs(splitTotal - toNumber(model.totals?.total));
     const hasLossBreakdown = hasCalculatedTotal && Number.isFinite(splitTotal) && totalDifference <= 0.1;
@@ -851,6 +879,13 @@ export class ReportEngine {
           : 'Kein gültiger Seitenplan vorhanden.',
       },
       {
+        id: 'pdf-print-settings',
+        label: 'PDF-Druckeinstellungen',
+        status: 'ok',
+        message: `PDF vorbereitet: A4 Hochformat, Skalierung 100 %, Hintergrundgrafiken aktivieren, vorgeschlagener Name ${pdfFileName}.`,
+        warning: 'PDF-Druckeinstellungen konnten nicht geprüft werden.',
+      },
+      {
         id: 'image-export',
         label: 'HTML-Bilder',
         status: 'ok',
@@ -874,9 +909,31 @@ export class ReportEngine {
       errorCount,
       warningCount,
       items,
-      fileBaseName: this.createExportBaseName(model),
+      fileBaseName,
       documentTitle: this.createDocumentTitle(model),
+      htmlFileName,
+      pdfFileName,
+      csvFileName,
+      printGuidance,
       pagePlan,
+    };
+  }
+
+  static createPrintGuidance(model = {}, pdfFileName = '') {
+    const pagePlan = this.createPagePlan(model);
+    const guidance = [
+      ['Ziel', 'Als PDF speichern oder firmeneigenen PDF-Drucker wählen.'],
+      ['Format', 'A4, Hochformat.'],
+      ['Skalierung', '100 % bzw. Standard. Nicht manuell verkleinern.'],
+      ['Ränder', 'Standard oder keine zusätzlichen Browser-Ränder. Der Bericht hat eigene Seitenränder.'],
+      ['Hintergrundgrafiken', 'Aktivieren, damit Kopfzeilen, Tabellenköpfe und Summenkarten korrekt erscheinen.'],
+      ['Dateiname', pdfFileName || createPdfFileName(this.createExportBaseName(model))],
+    ];
+
+    return {
+      totalPages: pagePlan.totalPages,
+      fileName: pdfFileName || createPdfFileName(this.createExportBaseName(model)),
+      rows: guidance,
     };
   }
 
@@ -888,6 +945,10 @@ export class ReportEngine {
       `Dateibasis: ${checklist.fileBaseName}`,
       `Status: ${checklist.status.toUpperCase()} · Fehler: ${checklist.errorCount} · Hinweise: ${checklist.warningCount}`,
       `PDF-Seiten: ${checklist.pagePlan?.totalPages ?? '-'}`,
+      `PDF-Dateiname: ${checklist.pdfFileName || '-'}`,
+      '',
+      'PDF-Druckeinstellungen:',
+      ...(checklist.printGuidance?.rows || []).map(row => `- ${row[0]}: ${row[1]}`),
       '',
       'Prüfpunkte:',
       ...checklist.items.map(item => `- [${String(item.status || '').toUpperCase()}] ${item.label}: ${item.status === 'ok' ? item.message : item.warning}`),
@@ -933,7 +994,10 @@ export class ReportEngine {
       ['Ausgeblendete leere Teilstrecken', completion.hiddenSections],
       ['Ausgeblendete leere Formteile', completion.hiddenFormParts],
       ['Ausgeblendete leere Sonderbauteile', completion.hiddenSpecialComponents],
-      ['Export-Dateiname', completion.fileBaseName],
+      ['Export-Dateibasis', completion.fileBaseName],
+      ['PDF-Dateiname', createPdfFileName(completion.fileBaseName)],
+      ['HTML-Dateiname', createHtmlFileName(completion.fileBaseName)],
+      ['CSV-Dateiname', createCsvFileName(completion.fileBaseName)],
     ];
   }
 
@@ -953,6 +1017,7 @@ export class ReportEngine {
   <style>${this.getReportCss()}</style>
 </head>
 <body class="report-print-body">
+  ${this.renderPrintHelperBar(model)}
   ${this.renderReportBody(model, { standalone: true, generatedLabel, includeStyle: false })}
   ${createPrintWaitScript()}
 </body>
@@ -963,6 +1028,25 @@ export class ReportEngine {
   static async createStandaloneHtmlWithEmbeddedAssets(model) {
     const html = this.createStandaloneHtml(model);
     return inlineHtmlImages(html);
+  }
+
+  static renderPrintHelperBar(model = {}) {
+    const fileBaseName = this.createExportBaseName(model);
+    const pdfFileName = createPdfFileName(fileBaseName);
+    const guidance = this.createPrintGuidance(model, pdfFileName);
+
+    return `
+      <div class="report-print-helper no-print">
+        <div>
+          <strong>PDF-Ausgabe vorbereitet</strong>
+          <span>${escapeHtml(guidance.totalPages)} Seite(n) · Dateiname: ${escapeHtml(guidance.fileName)}</span>
+        </div>
+        <div class="report-print-helper-actions">
+          <button type="button" data-print-action="print">Drucken / PDF</button>
+          <button type="button" data-print-action="close">Fenster schliessen</button>
+        </div>
+      </div>
+    `;
   }
 
   static createPagePlan(model) {
@@ -1129,16 +1213,26 @@ export class ReportEngine {
           </div>
         </header>
         <div class="report-page-content">${content}</div>
-        ${this.renderFooter(page, totalPages)}
+        ${this.renderFooter(model, page, totalPages)}
       </section>
     `;
   }
 
-  static renderFooter(page, totalPages) {
+  static renderFooter(modelOrPage, pageOrTotalPages, maybeTotalPages) {
+    const hasModel = typeof modelOrPage === 'object' && modelOrPage !== null;
+    const model = hasModel ? modelOrPage : null;
+    const page = hasModel ? pageOrTotalPages : modelOrPage;
+    const totalPages = hasModel ? maybeTotalPages : pageOrTotalPages;
+    const reportNumber = model?.project?.reportNumber && model.project.reportNumber !== '-'
+      ? model.project.reportNumber
+      : 'Druckverlust Pro';
+    const revision = model?.project?.revision ? `Rev. ${model.project.revision}` : 'Rev. 0';
+    const plant = model?.system?.name ? ` · ${model.system.name}` : '';
+
     return `
       <footer class="report-footer">
-        <span>Druckverlust Pro – Lüftungstechnik</span>
-        <span>${page} / ${totalPages}</span>
+        <span>${escapeHtml(reportNumber)} · ${escapeHtml(revision)}${escapeHtml(plant)}</span>
+        <span>Seite ${page} / ${totalPages}</span>
       </footer>
     `;
   }
@@ -1191,7 +1285,7 @@ export class ReportEngine {
             ${this.renderSummaryCard('Gesamtdruckverlust', 'Σ Druckverlust', model.totals.total, 'Pa', true)}
           </div>
         </section>
-        ${this.renderFooter(page, totalPages)}
+        ${this.renderFooter(model, page, totalPages)}
       </section>
     `;
   }
@@ -1753,7 +1847,8 @@ export class ReportEngine {
             ['Geprüft von', model.project.checkedBy],
             ['Freigegeben von', model.project.approvedBy],
             ['Software', model.project.software],
-            ['Version', model.project.version],
+            ['Projektversion', model.project.version],
+            ['Softwarestand', APP_BUILD_LABEL],
           ])}
         </div>
         <div>
@@ -2010,7 +2105,10 @@ export class ReportEngine {
       .dp-professional-report img,.report-print-body img{user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;pointer-events:none}
       .report-copyright{text-align:center;margin-top:32px;color:#43566d;font-size:10.4px}
       .report-empty{border:1px dashed var(--report-line);border-radius:8px;padding:20px;color:var(--report-muted);background:#fafcff}
-      .report-footer{position:absolute;left:13mm;right:13mm;bottom:7mm;border-top:1px solid #d6deea;padding-top:5px;display:flex;justify-content:space-between;font-size:8.8px;color:#223950}
+      .report-footer{position:absolute;left:13mm;right:13mm;bottom:7mm;border-top:1px solid #d6deea;padding-top:5px;display:flex;justify-content:space-between;font-size:8.8px;color:#223950;gap:10px}
+      .report-footer span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145mm}
+      .report-print-helper{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:210mm;margin:0 auto 12px;padding:10px 14px;border:1px solid #cfdbea;border-radius:10px;background:#ffffff;box-shadow:0 8px 28px rgba(20,45,75,.12);font-family:Segoe UI,Arial,sans-serif;color:#06172b}
+      .report-print-helper strong{display:block;color:#073f7a;font-size:13px}.report-print-helper span{display:block;color:#5c6f87;font-size:10px;margin-top:2px}.report-print-helper-actions{display:flex;gap:8px}.report-print-helper button{border:1px solid #0b559c;background:#073f7a;color:white;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}.report-print-helper button:last-child{background:white;color:#073f7a}
       @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
       @media print{
         html,body,.report-print-body{background:white!important;margin:0!important;padding:0!important}

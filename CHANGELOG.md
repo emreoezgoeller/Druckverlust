@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## 18.33 – Bedienführung und Oberfläche polieren
+
+- Neue Bedienführung in Projekt- und Anlagenübersicht ergänzt: Projektangaben, Teilstrecken, Formteile, QS und Bericht werden als klare Arbeitskette angezeigt.
+- Pflichtfelder in den Projektangaben werden optisch markiert: Projektnummer, Projektname, BKP-Nummer und Anlage.
+- Neuer Ribbon-Button **Start** führt zurück zur Projekt-/Anlagenübersicht.
+- Neues Tastaturkürzel **Alt + Home** führt ebenfalls zurück zur Startübersicht.
+- Statusbar erkennt nun Rechen-QS und Datei-QS als eigene Auswahlbereiche.
+- Hilfedialog um Start, Datei-QS und Bedienhinweise erweitert.
+- Cache-Busting auf `18.33` erhöht.
+
+## 18.32 – Projektdatei-QS und .dvp-Stabilisierung
+
+- `StorageEngine` erweitert: `.dvp`-Dateien enthalten jetzt Schema-Version, App-Version, Exportzeitpunkt und Projektzusammenfassung.
+- Robustes Öffnen ergänzt: gültige `.dvp`-Dateien und ältere Rohprojekt-JSON-Strukturen werden erkannt und normalisiert.
+- Projekt-Normalisierung ergänzt für Metadaten, Berichtsdaten, Anlagen, Teilstrecken, Formteile, Sonderbauteile, eindeutige IDs und Zuordnungen.
+- Neuer Ribbon-Button **Datei-QS** mit Detailseite, Status, Dateiname, Schema, Grösse und kopierbarer QS-Zusammenfassung.
+- Kompakter Datei-QS-Block in Projekt- und Anlagenübersicht ergänzt.
+- Öffnen-Fehler und Import-Hinweise sind verständlicher.
+- Cache-Busting auf `18.32` erhöht.
+
+## 18.31 – Rechen-QS und fachlicher Nachweis
+
+- Neuer Ribbon-Button **Rechen-QS** ergänzt.
+- Neues Diagnostikmodul `CalculationDiagnostics` prüft Summenbildung, Rundung, Einzelresultate, Formteil-/Sonderbauteilanteile, p_dyn, Geschwindigkeit und Reibungsverlust.
+- Anlagenübersicht erhält einen kompakten Rechen-QS-Block mit Fehlern, Hinweisen, OK-Punkten und Druckverlust-Aufteilung.
+- Detailseite für Rechen-QS ergänzt inklusive kopierbarer QS-Zusammenfassung.
+- Plausibilitätsprüfung weist negative Direktverluste, 0-Pa-Auffälligkeiten und Ergebnisanzahl-Abweichungen sauber aus.
+- Cache-Busting auf `18.31` erhöht.
+
+## 18.29 – Formteilbibliothek & Auswahl-Assistent
+
+- Formteil-Auswahl um einen Assistenten mit Schnellfiltern ergänzt: alle Formteile, passend zur aktiven Teilstrecke, mit α/β-Auswahl und mit Grössen-/Anschluss-Sync.
+- Bibliotheks-QS ergänzt: Anzahl Formteile, Kategorien, hinterlegte Bilder, gesperrte Winkel-Auswahl, Auto-Sync und Anschluss-Sync werden direkt angezeigt.
+- Formteil-Karten verbessert: Beschreibung, Bildstatus, Auto-Sync, Anschluss-Sync, α/β-Dropdown und Kompatibilität zur aktiven Teilstrecke werden sichtbar.
+- Kategorien fachlicher sortiert und verständlicher beschriftet: Rund/Rohr, Rechteck/Kanal, Übergänge, Abzweige/T-Stücke und Spezialformteile.
+- Freie α-/β-Eingaben bleiben gesperrt; verfügbare Winkelwerte werden weiterhin über Dropdowns geführt.
+- Cache-Busting auf `18.29` erhöht.
+
 ## 18.27 – Teilstrecken-Schnellerfassung
 - Neue kompakte Schnellerfassung in der Anlagenübersicht ergänzt.
 - Teilstrecken können direkt in der Übersicht mit Typ, Luftmenge, Länge und Geometrie bearbeitet werden.

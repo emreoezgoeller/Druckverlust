@@ -3615,3 +3615,530 @@ canvas,
   font-weight: 900;
   white-space: nowrap;
 }
+
+/* Phase 18.29 – Formteilbibliothek & Auswahl-Assistent */
+.dp-library-context {
+  margin: 6px 0 0;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.dp-formpart-smartfilter,
+.dp-formpart-audit {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid #cfe0f4;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(8, 62, 112, 0.06);
+}
+
+.dp-formpart-smartfilter strong,
+.dp-formpart-audit strong {
+  display: block;
+  margin: 2px 0 4px;
+  color: var(--dp-blue-900, #073b66);
+  font-size: 1.02rem;
+}
+
+.dp-formpart-smartfilter p,
+.dp-formpart-audit p,
+.dp-formpart-library-heading p,
+.dp-formpart-card-body p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.dp-formpart-smartfilter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dp-formpart-smartfilter-buttons button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #0f3f68;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dp-formpart-smartfilter-buttons button:hover,
+.dp-formpart-smartfilter-buttons button:focus-visible {
+  border-color: #1d71b8;
+  box-shadow: 0 0 0 3px rgba(29, 113, 184, 0.12);
+  outline: none;
+}
+
+.dp-formpart-smartfilter-buttons button.active {
+  background: #083e70;
+  color: #fff;
+  border-color: #083e70;
+}
+
+.dp-formpart-audit {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border-color: #bbf7d0;
+}
+
+.dp-formpart-audit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.dp-formpart-audit-grid span {
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: #fff;
+  color: #475569;
+  padding: 10px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.dp-formpart-audit-grid b {
+  display: block;
+  color: var(--dp-blue-900, #073b66);
+  font-size: 1.1rem;
+}
+
+.dp-formpart-audit-details {
+  grid-column: 1 / -1;
+  color: #7c2d12;
+  font-size: 0.86rem;
+}
+
+.dp-formpart-audit-details summary {
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.dp-formpart-library-heading {
+  align-items: flex-start;
+}
+
+.dp-formpart-library-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dp-formpart-card-body {
+  gap: 9px;
+}
+
+.dp-formpart-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.dp-formpart-card-badges em {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.dp-formpart-card-badges em.ok {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.dp-formpart-card-badges em.soft {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+.dp-formpart-card-badges em.muted {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.dp-formpart-card-muted {
+  opacity: 0.82;
+}
+
+.dp-formpart-card-compatible {
+  border-color: rgba(34, 197, 94, 0.32);
+}
+
+@media (max-width: 1000px) {
+  .dp-formpart-smartfilter,
+  .dp-formpart-audit {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-formpart-smartfilter-buttons {
+    justify-content: flex-start;
+  }
+
+  .dp-formpart-audit-grid {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+}
+
+
+/* Phase 18.30 – PDF-Druckpaket und Berichtsabschluss */
+.dp-report-print-guidance{
+  margin-top:14px;
+  border:1px solid #cfdbea;
+  border-radius:14px;
+  background:linear-gradient(135deg,#f8fbff,#eef6ff);
+  padding:14px;
+}
+
+.dp-report-print-guidance-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.dp-report-print-guidance-head strong{
+  display:block;
+  color:#073f7a;
+  font-size:15px;
+}
+
+.dp-report-print-guidance-head span{
+  display:block;
+  color:#5d6f86;
+  font-size:12px;
+  margin-top:2px;
+}
+
+.dp-report-print-guidance-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+.dp-report-print-guidance-grid div{
+  border:1px solid #d9e5f3;
+  border-radius:10px;
+  background:white;
+  padding:10px 11px;
+  min-height:62px;
+}
+
+.dp-report-print-guidance-grid span{
+  display:block;
+  color:#64758c;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+  margin-bottom:5px;
+}
+
+.dp-report-print-guidance-grid strong{
+  display:block;
+  color:#0b1d33;
+  font-size:12px;
+  line-height:1.35;
+}
+
+@media (max-width:1100px){
+  .dp-report-print-guidance-grid{grid-template-columns:1fr}
+}
+
+/* Phase 18.31 – Rechen-QS und fachlicher Nachweis */
+.dp-calculation-check-panel {
+  border-color: #cfdbea;
+}
+
+.dp-calculation-check-ok {
+  background: linear-gradient(135deg, #f8fffb, #effdf5);
+}
+
+.dp-calculation-check-warning {
+  background: linear-gradient(135deg, #fffdf5, #fff7ed);
+}
+
+.dp-calculation-check-error {
+  background: linear-gradient(135deg, #fff8f8, #fef2f2);
+}
+
+.dp-calculation-total-grid {
+  margin-top: 14px;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+}
+
+.dp-calculation-detail-list {
+  overflow-x: auto;
+}
+
+.dp-calculation-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 66px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dp-calculation-status.ok,
+.dp-calculation-row-ok .dp-calculation-status {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dp-calculation-status.warning,
+.dp-calculation-row-warning .dp-calculation-status {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dp-calculation-status.error,
+.dp-calculation-row-error .dp-calculation-status {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.dp-calculation-row-warning td {
+  background: #fffaf0;
+}
+
+.dp-calculation-row-error td {
+  background: #fff5f5;
+}
+
+@media (max-width: 1100px) {
+  .dp-calculation-total-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .dp-calculation-total-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phase 18.32 – Projektdatei-QS und .dvp-Stabilisierung */
+.dp-file-check-panel {
+  border-left: 4px solid #94a3b8;
+}
+
+.dp-file-check-panel.dp-file-check-ok {
+  border-left-color: #16a34a;
+}
+
+.dp-file-check-panel.dp-file-check-warning {
+  border-left-color: #f59e0b;
+}
+
+.dp-file-check-panel.dp-file-check-error {
+  border-left-color: #dc2626;
+}
+
+.dp-file-check-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin: 14px 0;
+}
+
+.dp-file-check-meta.detail {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: stretch;
+}
+
+.dp-file-check-meta > div {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(248, 250, 252, 0.75);
+}
+
+.dp-file-check-meta span {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.dp-file-check-meta strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.dp-file-check-meta button,
+.dp-file-check-detail button {
+  min-height: 38px;
+}
+
+@media (max-width: 900px) {
+  .dp-file-check-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phase 18.33 – Bedienführung und Oberfläche polieren */
+.dp-ui-guide-panel {
+  border-left: 4px solid #2563eb;
+  background: linear-gradient(135deg, #f8fbff, #f1f6ff);
+}
+
+.dp-ui-guide-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.dp-ui-guide-badge.ok,
+.dp-ui-guide-step.ok .dp-ui-guide-number {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.dp-ui-guide-badge.warning,
+.dp-ui-guide-step.warning .dp-ui-guide-number {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.dp-ui-guide-badge.open,
+.dp-ui-guide-step.open .dp-ui-guide-number {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.dp-ui-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dp-ui-guide-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  align-items: start;
+  min-height: 86px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dp-ui-guide-step:hover,
+.dp-ui-guide-step:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.42);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+  outline: none;
+}
+
+.dp-ui-guide-number {
+  grid-row: span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.dp-ui-guide-step strong {
+  color: #0f172a;
+  font-size: 0.92rem;
+}
+
+.dp-ui-guide-step em {
+  grid-column: 2;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.dp-required-field > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dp-required-field.missing input,
+.dp-required-field.missing textarea,
+.dp-required-field.missing select {
+  border-color: rgba(245, 158, 11, 0.75);
+  background: #fffbeb;
+}
+
+.dp-required-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dp-required-marker.ok {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.dp-required-marker.missing {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+@media (max-width: 1200px) {
+  .dp-ui-guide-grid {
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-ui-guide-grid {
+    grid-template-columns: 1fr;
+  }
+}
