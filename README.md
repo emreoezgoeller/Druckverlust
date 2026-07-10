@@ -1,13 +1,26 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 19.02 Produktseite / App-Trennung**.
+Aktueller Entwicklungsstand: **Phase 19.05 Footer-Copyright Produktseite**.
 
 Die öffentliche Startseite ist jetzt die Produkt-/Landingpage. Das eigentliche Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt und PDF-/Berichtsexport.
+
+### Phase 19.05 – Footer-Copyright Produktseite
+
+Der Footer der Produktseite zeigt jetzt links den gewünschten Copyright-Hinweis: `© 2026 Emre Özgöller – Druckverlust Pro · Professional`.
+
+### Phase 19.04 – Produktseite Feinschliff
+
+Die Hauptseite wurde um einen kompakten Nutzenstreifen und einen Abschluss-CTA ergänzt. Damit sieht die Produktseite professioneller aus, bleibt aber bewusst kurz und übersichtlich.
+
+
+### Phase 19.03 – Demo-Start von der Hauptseite
+
+Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öffnen (`app.html?demo=1`).
 
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `19.01`.
+- Die aktuelle Cache-Version ist `19.05`.
 - Über den Ribbon-Button **Datei-QS** können Speichern, Öffnen, Dateiname, IDs, Zuordnungen und Import-Stabilität geprüft werden.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

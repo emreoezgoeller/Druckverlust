@@ -1,3 +1,24 @@
+## Phase 19.05 – Footer-Copyright auf der Produktseite
+
+- Footer der Produktseite ergänzt: `© 2026 Emre Özgöller – Druckverlust Pro · Professional`.
+- `index.html` und `produkt.html` bleiben synchron.
+- Cache-Version auf `19.05` erhöht.
+
+## Phase 19.04 – Produktseite Feinschliff und Abschluss-CTA
+
+- Kompakter Nutzenstreifen auf der Hauptseite ergänzt.
+- Kurzvorteile eingebaut: ohne Excel-Chaos, nachvollziehbar, berichtsfertig.
+- Abschlussbereich mit Buttons **Tool starten** und **Demo-Projekt testen** ergänzt.
+- `index.html` und `produkt.html` bleiben synchron.
+- Cache-Version auf `19.04` erhöht.
+
+## Phase 19.03 – Demo-Start von der Hauptseite
+
+- Demo-Button auf der Produktseite startet jetzt direkt das Demo-Projekt über `app.html?demo=1`.
+- App erkennt den Demo-Startparameter automatisch und lädt das Beispielprojekt ohne manuelles Klicken auf „Demo“.
+- Wenn noch eine lokale Autosicherung vorhanden ist, wird vor dem Demo-Laden gefragt.
+- Cache-Version auf `19.03` erhöht.
+
 ## 19.01 – Produktseite als Startseite / Tool unter app.html
 
 ## Phase 19.02 – kurze Bedienungsanleitung auf der Hauptseite

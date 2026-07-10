@@ -30,6 +30,9 @@
 - Phase 18.35: Release Candidate / Schlussprüfung
 - Phase 19.00: Produktseite / Landingpage
 - Phase 19.02: Produktseite als `index.html`, Tool unter `app.html`
+- Phase 19.03: Demo-Start von der Hauptseite
+- Phase 19.04: Produktseite Feinschliff und Abschluss-CTA
+- Phase 19.05: Footer-Copyright auf Produktseite
 
 ## Nächste sinnvolle Schritte
 
@@ -39,5 +42,15 @@
 - Phase 18.35: Release Candidate / Schlussprüfung **erledigt**
 - Phase 18.35a: Ribbon-QS-Schaltflächen ausgeblendet **erledigt**
 - Phase 19.02: Produktseite als Startseite und Tool unter `app.html` **erledigt**
-- Phase 19.02: Produktseite visuell weiter professionalisieren
+- Phase 19.04: Produktseite visuell weiter professionalisieren **erledigt**
+- Phase 19.05: Footer-Copyright auf Produktseite **erledigt**
 - Phase 20: Lizenz-/Abo-Vorbereitung
+
+### Phase 19.03 – Demo-Start von der Hauptseite
+
+Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öffnen (`app.html?demo=1`).
+
+
+### Phase 19.05 – Footer-Copyright
+
+Die Produktseite zeigt unten links den gewünschten Copyright-Hinweis mit Name und Edition.

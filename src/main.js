@@ -1,14 +1,15 @@
-// Druckverlust Pro – Phase 19.02
+// Druckverlust Pro – Phase 19.05
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.02';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.05';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
+import createDemoProject from './project/demoProject.js';
 import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
 import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js';
@@ -72,27 +73,61 @@ function installImageCopyProtection() {
   }
 }
 
+function isDemoStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const demoParam = String(params.get('demo') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'demo'].includes(demoParam) || hash.includes('demo');
+}
+
+function cleanupDemoUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('demo') && !url.hash.toLowerCase().includes('demo')) return;
+
+  url.searchParams.delete('demo');
+  if (url.hash.toLowerCase().includes('demo')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
+  const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
 
   if (AutoSaveEngine.isRecoverable(recovery)) {
     const description = AutoSaveEngine.describe(recovery);
+    const intro = demoRequested
+      ? 'Demo-Projekt wurde angefordert, aber es gibt noch eine lokale Autosicherung.'
+      : 'Lokale Autosicherung gefunden.';
+    const restoreQuestion = demoRequested
+      ? 'OK = Autosicherung wiederherstellen, Abbrechen = Demo-Projekt laden.'
+      : 'Möchtest du diese Version wiederherstellen?';
+
     const restore = confirm([
-      'Lokale Autosicherung gefunden.',
+      intro,
       '',
       description,
       '',
-      'Möchtest du diese Version wiederherstellen?',
+      restoreQuestion,
     ].join('\n'));
 
     if (restore) {
-      return { project: recovery.project, recovered: true, recoveredAt: recovery.metadata?.savedAt || recovery.savedAt || null };
+      return { project: recovery.project, recovered: true, recoveredAt: recovery.metadata?.savedAt || recovery.savedAt || null, demoRequested: false };
     }
 
     AutoSaveEngine.clear();
   }
 
-  return { project: createDefaultProject(), recovered: false, recoveredAt: null };
+  if (demoRequested) {
+    cleanupDemoUrlFlag();
+    return { project: createDemoProject(), recovered: false, recoveredAt: null, demoRequested: true };
+  }
+
+  return { project: createDefaultProject(), recovered: false, recoveredAt: null, demoRequested: false };
 }
 
 function installBeforeUnloadProtection(state) {
@@ -125,6 +160,11 @@ function bootstrap() {
     state.isProjectDirty = true;
     state.recoveredFromAutoSave = true;
     state.lastAutoSaveAt = startup.recoveredAt;
+  }
+
+  if (startup.demoRequested) {
+    state.loadedFromLandingDemo = true;
+    state.isProjectDirty = false;
   }
 
   const shell = new ApplicationShell(root);
