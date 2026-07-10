@@ -1,4 +1,68 @@
+# CHANGELOG
+
+## 18.27 – Teilstrecken-Schnellerfassung
+- Neue kompakte Schnellerfassung in der Anlagenübersicht ergänzt.
+- Teilstrecken können direkt in der Übersicht mit Typ, Luftmenge, Länge und Geometrie bearbeitet werden.
+- Zugeordnete Formteile werden bei Änderungen automatisch synchronisiert, sofern sie nicht manuell überschrieben wurden.
+- Ergebniswerte v und Δp TS werden direkt in der Schnelltabelle angezeigt.
+- Cache-Busting auf `18.27` erhöht.
+
+## 18.26 – Ergebnisdetails verdichten
+
+- Anlagenübersicht um verdichtete Teilstrecken-/Formteilaufteilung ergänzt.
+- Kritische Teilstrecke mit höchstem Druckverlust wird automatisch hervorgehoben.
+- Teilstrecken-Editor zeigt Kanal/Rohr, Formteile und Summe TS als kompakte Ergebnis-Karten.
+- Formteil-Editor zeigt dynamischen Druck, ζ-/Direktmodus und Δp Formteil als kompakte Ergebnis-Karten.
+- Zugeordnete Formteile zeigen neu p_dyn und die Kurzformel `ζ × p_dyn`.
+- Cache-Busting auf `18.26` erhöht.
+
+
+## 18.25 – Druckverlust-Aufteilung und PDF-Nachweis
+
+- Gesamtzusammenfassung im Bericht um eine klare Druckverlust-Aufteilung ergänzt.
+- Formel sichtbar gemacht: Kanal/Rohr + Formteile + Sonderbauteile = Gesamtdruckverlust.
+- Teilstrecken-Aufteilung ergänzt mit `Δp Kanal/Rohr`, `Formteile` und `Summe TS`.
+- Hinweis ergänzt, dass die Haupttabelle nur den Reibungsdruckverlust der Teilstrecke zeigt.
+- Rundungsdifferenzen werden im Bericht transparent ausgewiesen.
+- Legacy-PDF-Modul korrigiert: `Δp Kanal/Rohr Pa` statt unscharfem `ΔP Pa`; Wert entspricht nur dem Reibungsverlust.
+- Cache-Busting auf `18.25` erhöht.
+
 # Changelog
+
+## 18.24 – PDF-/Berichts-QS und Export-Feinschliff
+
+- Exportprüfung im Bericht erweitert: Dokumenttitel, geplanter PDF-Seitenumfang und aktive Inhaltsbereiche werden sichtbar angezeigt.
+- Dateivorschau zeigt nun HTML-Bericht, PDF-/Druckname und CSV-Datenexport separat.
+- Neuer Button „Export-QS kopieren“ ergänzt, damit Prüfstatus und Hinweise schnell weitergegeben werden können.
+- Zusätzliche Plausibilitätsprüfungen für sichtbaren Berechnungsinhalt, 0-Pa-Einträge, Formteil-Zuordnung, ausgeblendete leere Einträge und Seitenplan ergänzt.
+- Cache-Busting auf `18.24` erhöht.
+
+## 18.23 – Formteil-Anschluss-Sync für zweite Teilstrecken
+
+- Formteile können zusätzliche Anschluss-Teilstrecken verwenden: Übergänge für die zweite Anschlussseite, Abzweige/Hosenstücke/T-Stücke für Abzweig AA/WA und Durchgang AD/WD.
+- Neue Anschluss-Synchronisation im Formteil-Editor ergänzt.
+- Beim Anwählen einer zusätzlichen Teilstrecke werden Grösse und Luftmenge automatisch auf die passenden Formteilfelder übernommen.
+- Manuelle Anpassungen bleiben möglich; über „Anschlüsse übernehmen“ können die gewählten Anschlussseiten bewusst neu synchronisiert werden.
+- Cache-Busting auf `18.23` erhöht.
+
+## 18.22 – Teilstrecken-Eingabe-QS und Formteil-Sync
+
+- Teilstrecken-Editor zeigt neu einen kompakten Eingabe-QS-Block für Luftmenge, Länge, Geometrie und Formteil-Synchronisation.
+- Zugeordnete Formteile werden beim Ändern einer Teilstrecke automatisch mit der aktuellen Kanal-/Rohrgrösse synchronisiert, sofern sie nicht bewusst manuell überschrieben wurden.
+- Im Bereich „Zugeordnete Formteile“ gibt es neu den Button „Grössen synchronisieren“, um auch manuell pausierte Formteile bewusst neu aus der Teilstrecke zu übernehmen.
+- Formteil-Sync unterscheidet zwischen aktuell, offen, manuell und nicht zugeordnet.
+- Cache-Busting auf `18.22` erhöht.
+
+## 18.21 – Live-/UI-QS und Deployment-Prüfung erweitert
+
+- Deployment-QS prüft jetzt zusätzlich die sichtbare Oberfläche: Shell, Ribbon, Sidebar, Arbeitsbereich und Statusbar.
+- Eigenschaftenfenster wird kontrolliert, damit es weiterhin ausgeblendet bleibt.
+- Ribbon-Befehle werden auf Vollständigkeit geprüft.
+- UI-Überlauf / horizontale Seitenbreite wird erkannt und als Hinweis gemeldet.
+- Bildschutzprüfung wurde erweitert: Logo-Ladevorgang und `draggable="false"` für Bilder.
+- Pflichtdateien der Oberfläche und Versionszentrale in die Deploy-Prüfung aufgenommen.
+- Ribbon wurde für kleinere Fenster stabilisiert; Befehle können horizontal scrollen, statt das Layout zu sprengen.
+- Cache-Busting auf `18.21` erhöht.
 
 ## 18.20a – PDF-Δp-Spalte korrigiert
 

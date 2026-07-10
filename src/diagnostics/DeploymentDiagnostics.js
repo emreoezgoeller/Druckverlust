@@ -1,5 +1,5 @@
 // Druckverlust Pro – DeploymentDiagnostics
-// Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien und Startzustand.
+// Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
 import { APP_RELEASE } from '../core/appVersion.js';
 
@@ -96,6 +96,10 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Start', label: 'Hauptmodul', path: `src/main.js?v=${version}` },
     { area: 'Layout', label: 'Shell-CSS', path: `src/ui/ApplicationShell.css?v=${version}` },
     { area: 'Berechnung', label: 'Kompatibilitäts-Engine', path: `src/calculation/engine.js?v=${version}` },
+    { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
+    { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
+    { area: 'QS', label: 'Deployment-Diagnose', path: `src/diagnostics/DeploymentDiagnostics.js?v=${version}` },
+    { area: 'Version', label: 'Versionszentrale', path: `src/core/appVersion.js?v=${version}` },
     { area: 'Bericht', label: 'Bericht-Engine', path: `src/report/ReportEngine.js?v=${version}` },
     { area: 'PDF', label: 'PDF-Export', path: `src/pdf/report.js?v=${version}` },
     { area: 'Logo', label: 'EO-Logo', path: 'assets/logo/eo-logo.png' },
@@ -174,6 +178,132 @@ function checkRuntime(project = null, version = DEFAULT_VERSION) {
   return items;
 }
 
+function isElementVisible(element) {
+  if (!element || typeof window === 'undefined') return false;
+
+  const style = window.getComputedStyle ? window.getComputedStyle(element) : null;
+  if (style && (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')) return false;
+
+  return element.getClientRects().length > 0;
+}
+
+function checkUiShell() {
+  const items = [];
+
+  if (typeof document === 'undefined') {
+    items.push(createItem('UI', 'Browserprüfung', 'warning', 'DOM ist in dieser Umgebung nicht verfügbar. UI-Prüfung wurde übersprungen.'));
+    return items;
+  }
+
+  const requiredAreas = [
+    ['.dp-shell', 'Shell'],
+    ['.dp-ribbon', 'Ribbon'],
+    ['.dp-sidebar', 'Sidebar'],
+    ['.dp-workspace', 'Arbeitsbereich'],
+    ['.dp-status', 'Statusbar'],
+  ];
+
+  requiredAreas.forEach(([selector, label]) => {
+    const element = document.querySelector(selector);
+    items.push(createItem(
+      'UI',
+      label,
+      isElementVisible(element) ? 'ok' : 'error',
+      isElementVisible(element) ? `${label} ist sichtbar.` : `${label} wurde nicht sichtbar gerendert.`,
+      selector,
+    ));
+  });
+
+  const properties = document.querySelector('.dp-properties');
+  items.push(createItem(
+    'UI',
+    'Eigenschaftenfenster',
+    properties && isElementVisible(properties) ? 'warning' : 'ok',
+    properties && isElementVisible(properties)
+      ? 'Eigenschaftenfenster ist sichtbar. Aktuell soll es ausgeblendet bleiben.'
+      : 'Eigenschaftenfenster ist ausgeblendet und stört die Arbeitsfläche nicht.',
+  ));
+
+  const actions = Array.from(document.querySelectorAll('.dp-tabs [data-action]')).map(button => button.dataset.action);
+  const requiredActions = [
+    'newProject',
+    'openProject',
+    'saveProject',
+    'addSection',
+    'addFormPart',
+    'addSpecialComponent',
+    'calculate',
+    'projectCheck',
+    'deploymentCheck',
+    'showReport',
+    'showShortcutHelp',
+    'showAppInfo',
+  ];
+  const missingActions = requiredActions.filter(action => !actions.includes(action));
+
+  items.push(createItem(
+    'UI',
+    'Ribbon-Befehle',
+    missingActions.length ? 'error' : 'ok',
+    missingActions.length
+      ? `Folgende Ribbon-Befehle fehlen: ${missingActions.join(', ')}`
+      : `${requiredActions.length} Ribbon-Befehle sind vorhanden.`,
+  ));
+
+  const tabs = document.querySelector('.dp-tabs');
+  if (tabs) {
+    const overflow = tabs.scrollWidth > tabs.clientWidth + 4;
+    items.push(createItem(
+      'UI',
+      'Ribbon-Breite',
+      overflow ? 'warning' : 'ok',
+      overflow
+        ? 'Ribbon ist breiter als der sichtbare Bereich. Auf kleineren Bildschirmen kann horizontales Scrollen nötig sein.'
+        : 'Ribbon passt in den sichtbaren Bereich.',
+      `${tabs.clientWidth}px sichtbar / ${tabs.scrollWidth}px Inhalt`,
+    ));
+  }
+
+  const root = document.documentElement;
+  if (root) {
+    const pageOverflow = root.scrollWidth > root.clientWidth + 4;
+    items.push(createItem(
+      'UI',
+      'Seitenbreite',
+      pageOverflow ? 'warning' : 'ok',
+      pageOverflow
+        ? 'Die Seite erzeugt horizontales Überlaufen. Layout bei aktueller Fensterbreite prüfen.'
+        : 'Kein horizontales Seitenüberlaufen erkannt.',
+      `${root.clientWidth}px sichtbar / ${root.scrollWidth}px Inhalt`,
+    ));
+  }
+
+  const logo = document.querySelector('.dp-brand-logo');
+  if (logo) {
+    const loaded = logo.complete && (logo.naturalWidth || 0) > 0;
+    items.push(createItem(
+      'Bildschutz',
+      'Logo geladen',
+      loaded ? 'ok' : 'warning',
+      loaded ? 'Ribbon-Logo ist geladen.' : 'Ribbon-Logo ist noch nicht geladen oder nicht erreichbar.',
+      logo.getAttribute('src') || '',
+    ));
+  }
+
+  const images = Array.from(document.querySelectorAll('img'));
+  const unprotectedImages = images.filter(image => image.getAttribute('draggable') !== 'false');
+  items.push(createItem(
+    'Bildschutz',
+    'Kopierschutz-Attribute',
+    unprotectedImages.length ? 'warning' : 'ok',
+    unprotectedImages.length
+      ? `${unprotectedImages.length} Bild(er) haben kein draggable="false".`
+      : `${images.length} Bild(er) mit Drag-Schutz geprüft.`,
+  ));
+
+  return items;
+}
+
 export default class DeploymentDiagnostics {
   static getRequiredFiles(version = DEFAULT_VERSION) {
     return getRequiredFiles(version);
@@ -183,6 +313,7 @@ export default class DeploymentDiagnostics {
     const startedAt = nowIso();
     const location = getLocationInfo();
     const runtimeItems = checkRuntime(project, version);
+    const uiItems = checkUiShell();
     const requiredFiles = getRequiredFiles(version);
     const probes = await Promise.all(requiredFiles.map(file => probeUrl(file.path)));
 
@@ -201,7 +332,7 @@ export default class DeploymentDiagnostics {
       );
     });
 
-    const items = [...runtimeItems, ...fileItems];
+    const items = [...runtimeItems, ...uiItems, ...fileItems];
     const status = normalizeStatus(items);
     const counts = {
       ok: items.filter(item => item.status === 'ok').length,

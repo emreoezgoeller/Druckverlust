@@ -997,7 +997,7 @@ body {
 
 .dp-assigned-formpart-item {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(70px, auto) minmax(120px, auto) minmax(130px, auto);
+  grid-template-columns: minmax(220px, 1fr) minmax(70px, auto) minmax(90px, auto) minmax(120px, auto) minmax(180px, auto);
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
@@ -3216,4 +3216,402 @@ canvas,
   .dp-autosize-panel button {
     width: 100%;
   }
+}
+
+/* Phase 18.21 – kleine UI-QS / Ribbon stabilisieren */
+.dp-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+
+.dp-tabs button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.dp-deploy-check-list em {
+  display: block;
+  margin-top: 4px;
+  color: var(--dp-muted);
+  font-style: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 1180px) {
+  .dp-ribbon {
+    gap: 18px;
+    padding: 0 14px;
+  }
+
+  .dp-brand {
+    min-width: 210px;
+  }
+
+  .dp-tabs button {
+    padding: 9px 12px;
+  }
+}
+
+/* Phase 18.22 – Teilstrecken-Eingabe-QS und Formteil-Sync */
+.dp-section-qs-panel {
+  border: 1px solid var(--dp-border);
+  background: #f8fbff;
+  border-radius: 18px;
+  padding: 18px;
+  margin: 18px 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .04);
+}
+
+.dp-section-qs-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.dp-section-qs-head h2 {
+  margin: 4px 0 0;
+  color: var(--dp-blue-900);
+}
+
+.dp-section-qs-head small {
+  max-width: 520px;
+  color: var(--dp-muted);
+  line-height: 1.45;
+  text-align: right;
+}
+
+.dp-section-qs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.dp-section-qs-item {
+  border: 1px solid var(--dp-border);
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.dp-section-qs-item span {
+  display: block;
+  color: var(--dp-muted);
+  font-size: .82rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.dp-section-qs-item strong {
+  color: var(--dp-blue-900);
+}
+
+.dp-section-qs-item.ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.dp-section-qs-item.warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.dp-section-qs-item.manual {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.dp-section-qs-item.idle {
+  background: #f8fafc;
+}
+
+@media (max-width: 1180px) {
+  .dp-section-qs-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-section-qs-head {
+    flex-direction: column;
+  }
+
+  .dp-section-qs-head small {
+    text-align: left;
+  }
+
+  .dp-section-qs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phase 18.23 – Formteil-Anschluss-Sync */
+.dp-formpart-connection-panel {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid #c7d2fe;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.dp-formpart-connection-panel .dp-panel-header.compact {
+  margin-bottom: 14px;
+}
+
+.dp-formpart-connection-panel h3 {
+  margin: 2px 0 6px 0;
+}
+
+.dp-connection-grid {
+  margin-top: 10px;
+}
+
+.dp-connection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #dbe4ef;
+}
+
+.dp-connection-summary span {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.dp-connection-summary button {
+  border: 0;
+  border-radius: 9px;
+  background: #0e5a9c;
+  color: white;
+  cursor: pointer;
+  font-weight: 750;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+.dp-connection-summary button:hover {
+  background: #084a82;
+}
+
+.dp-connection-applied {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.dp-connection-manual {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+@media (max-width: 720px) {
+  .dp-connection-summary {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+/* Phase 18.24 – PDF-/Berichts-QS */
+.dp-report-export-meta {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 12px;
+}
+
+.dp-report-export-meta div {
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.dp-report-export-meta span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.dp-report-export-meta strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--dp-blue-900);
+  font-size: 13px;
+}
+
+.dp-report-export-meta button {
+  align-self: stretch;
+  border: 0;
+  border-radius: 12px;
+  background: var(--dp-blue-700);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.dp-report-export-meta button:hover {
+  background: var(--dp-blue-900);
+}
+
+@media (max-width: 1120px) {
+  .dp-report-export-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dp-report-export-meta button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-report-export-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Phase 18.26 – verdichtete Ergebnisdetails */
+.dp-result-detail-panel,
+.dp-section-result-panel,
+.dp-formpart-result-panel {
+  border-color: #c7d2fe;
+}
+
+.dp-result-detail-cards,
+.dp-section-result-cards,
+.dp-formpart-result-cards {
+  margin-bottom: 16px;
+}
+
+.dp-result-card em {
+  display: block;
+  margin-top: 6px;
+  color: var(--dp-muted);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.dp-result-detail-badge,
+.dp-critical-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--dp-blue-900);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.dp-result-detail-badge {
+  padding: 8px 12px;
+  border: 1px solid #bfdbfe;
+  white-space: nowrap;
+}
+
+.dp-critical-chip {
+  margin-left: 8px;
+  padding: 3px 7px;
+  border: 1px solid #93c5fd;
+  text-transform: uppercase;
+}
+
+.dp-result-detail-table .dp-critical-row td {
+  background: #eff6ff;
+}
+
+.dp-result-detail-table td:first-child {
+  min-width: 120px;
+}
+
+@media (max-width: 900px) {
+  .dp-result-detail-badge {
+    width: max-content;
+  }
+}
+
+/* Phase 18.27 – Teilstrecken-Schnellerfassung */
+.dp-section-quick-panel {
+  border-color: #dbeafe;
+}
+
+.dp-quick-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--dp-border);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.dp-section-quick-table {
+  min-width: 980px;
+  margin: 0;
+}
+
+.dp-section-quick-table th,
+.dp-section-quick-table td {
+  vertical-align: middle;
+}
+
+.dp-section-quick-table input,
+.dp-section-quick-table select {
+  width: 100%;
+  min-width: 76px;
+  padding: 7px 8px;
+  border: 1px solid var(--dp-border);
+  border-radius: 9px;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+.dp-section-quick-table input:disabled {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.dp-section-quick-row.active td {
+  background: #eff6ff;
+}
+
+.dp-link-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dp-blue-900);
+  font-weight: 900;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dp-link-button:hover {
+  text-decoration: underline;
+}
+
+.dp-quick-sync-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
 }

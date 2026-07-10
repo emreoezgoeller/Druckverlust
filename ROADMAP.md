@@ -14,9 +14,15 @@
 - Phase 18.19: Struktur-Cleanup / Altlastenbereinigung
 - Phase 18.20: Automatische Formteil-Grössenübernahme aus Teilstrecken
 - Phase 18.20a: PDF-Δp-Spalte korrigiert und eindeutig auf Kanal/Rohr-Reibungsverlust begrenzt
+- Phase 18.21: Live-/UI-QS und Deployment-Prüfung erweitert
+- Phase 18.22: Teilstrecken-Eingabe-QS und Formteil-Sync
+- Phase 18.23: Formteil-Anschluss-Sync für zweite Teilstrecken
+- Phase 18.24: PDF-/Berichts-QS und Export-Feinschliff
+- Phase 18.25: Druckverlust-Aufteilung und PDF-Nachweis
+- Phase 18.26: Teilstrecken-/Formteil-Ergebnisdetails verdichtet
+- Phase 18.27: Teilstrecken-Schnellerfassung in der Anlagenübersicht
 
 ## Nächste sinnvolle Schritte
 
-- Phase 18.21: Live-Check auf GitHub Pages und kleine UI-QS
-- Phase 18.22: Teilstrecken-Editor und Eingabe-QS finalisieren
+- Phase 18.27: Formteilwerte / Zeta-Tabellen fachlich weiter absichern
 - Phase 19: Import / Datenübernahme

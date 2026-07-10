@@ -334,7 +334,7 @@ export default class RibbonActions {
       'Ctrl + N: Neues Projekt',
       'Ctrl + Enter: Neu berechnen',
       'Projekt prüfen: über Ribbon-Schaltfläche „Projekt prüfen“',
-      `Deploy prüfen: prüft GitHub-Pages-Pfade, Cache-Version ?v=${APP_RELEASE} und Pflichtdateien`,
+      `Deploy prüfen: prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Bildschutz`,
       'Ctrl + B oder Ctrl + P: Bericht öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',

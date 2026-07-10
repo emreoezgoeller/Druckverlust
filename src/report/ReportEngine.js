@@ -752,6 +752,23 @@ export class ReportEngine {
     const qualityOk = model.quality?.status === 'ok';
     const hasContent = contentOptions.some(Boolean);
     const hasCalculatedTotal = Number.isFinite(Number(model.totals?.total));
+    const pagePlan = this.createPagePlan(model);
+    const visibleSections = Number(model.counts?.sections || 0);
+    const visibleFormParts = Number(model.counts?.formParts || 0);
+    const visibleSpecialComponents = Number(model.counts?.specialComponents || 0);
+    const hiddenSections = Number(model.reportScope?.hiddenSections || 0);
+    const hiddenFormParts = Number(model.reportScope?.hiddenFormParts || 0);
+    const hiddenSpecialComponents = Number(model.reportScope?.hiddenSpecialComponents || 0);
+    const hiddenTotal = hiddenSections + hiddenFormParts + hiddenSpecialComponents;
+    const hasVisibleCalculationContent = visibleSections > 0 || visibleFormParts > 0 || visibleSpecialComponents > 0;
+    const zeroLossSections = (model.sections || []).filter(section => !hasNonZero(section?.totalLoss) && !hasNonZero(section?.frictionLoss)).length;
+    const orphanFormParts = (model.formParts || []).filter(part => !part?.sectionId || part.sectionId === '-').length;
+    const zeroLossFormParts = (model.formParts || []).filter(part => !hasNonZero(part?.pressureLoss)).length;
+    const zeroLossSpecials = (model.specialComponents || []).filter(component => !hasNonZero(component?.pressureLoss)).length;
+    const pageStatus = pagePlan.totalPages > 70 ? 'warning' : pagePlan.totalPages > 0 ? 'ok' : 'error';
+    const splitTotal = toNumber(model.totals?.friction) + toNumber(model.totals?.formParts) + toNumber(model.totals?.special);
+    const totalDifference = Math.abs(splitTotal - toNumber(model.totals?.total));
+    const hasLossBreakdown = hasCalculatedTotal && Number.isFinite(splitTotal) && totalDifference <= 0.1;
 
     const items = [
       {
@@ -786,8 +803,59 @@ export class ReportEngine {
         id: 'calculation-total',
         label: 'Berechnung',
         status: hasCalculatedTotal ? 'ok' : 'error',
-        message: 'Berechnungsergebnis ist vorhanden.',
+        message: `Berechnungsergebnis ist vorhanden: ${formatNumber(model.totals?.total, 1)} Pa.`,
         warning: 'Berechnungsergebnis fehlt oder ist ungültig.',
+      },
+      {
+        id: 'loss-breakdown',
+        label: 'Druckverlust-Aufteilung',
+        status: hasLossBreakdown ? 'ok' : 'warning',
+        message: `Aufteilung ist konsistent: Kanal/Rohr ${formatNumber(model.totals?.friction, 1)} Pa + Formteile ${formatNumber(model.totals?.formParts, 1)} Pa + Sonderbauteile ${formatNumber(model.totals?.special, 1)} Pa.`,
+        warning: `Aufteilung prüfen. Summe Einzelwerte weicht um ${formatNumber(totalDifference, 2)} Pa vom Gesamtdruckverlust ab.`,
+      },
+      {
+        id: 'calculation-content',
+        label: 'Berechnungsinhalt',
+        status: hasVisibleCalculationContent ? 'ok' : 'error',
+        message: `${visibleSections} Teilstrecken, ${visibleFormParts} Formteile und ${visibleSpecialComponents} Sonderbauteile werden ausgegeben.`,
+        warning: 'Der Bericht enthält keine berechnungsrelevanten Teilstrecken/Formteile/Sonderbauteile.',
+      },
+      {
+        id: 'zero-loss-check',
+        label: '0-Pa-Einträge',
+        status: zeroLossSections || zeroLossFormParts || zeroLossSpecials ? 'warning' : 'ok',
+        message: 'Keine auffälligen 0-Pa-Einträge im sichtbaren Bericht.',
+        warning: `${zeroLossSections} Teilstrecke(n), ${zeroLossFormParts} Formteil(e) und ${zeroLossSpecials} Sonderbauteil(e) haben 0 Pa. Bitte prüfen, ob die Eingabe vollständig ist.`,
+      },
+      {
+        id: 'orphan-formparts',
+        label: 'Formteil-Zuordnung',
+        status: orphanFormParts ? 'warning' : 'ok',
+        message: 'Alle sichtbaren Formteile sind einer Teilstrecke zugeordnet.',
+        warning: `${orphanFormParts} sichtbare Formteil(e) haben keine eindeutige Teilstrecken-Zuordnung.`,
+      },
+      {
+        id: 'hidden-entries',
+        label: 'Ausgeblendete leere Einträge',
+        status: hiddenTotal ? 'warning' : 'ok',
+        message: 'Keine leeren Einträge wurden im Bericht ausgeblendet.',
+        warning: `${hiddenTotal} leere Einträge werden ausgeblendet (${hiddenSections} Teilstrecken, ${hiddenFormParts} Formteile, ${hiddenSpecialComponents} Sonderbauteile).`,
+      },
+      {
+        id: 'page-plan',
+        label: 'PDF-Seitenplan',
+        status: pageStatus,
+        message: `${pagePlan.totalPages} PDF-Seite(n) geplant, ${pagePlan.entries?.length || 0} Inhaltsbereich(e) aktiv.`,
+        warning: pagePlan.totalPages > 70
+          ? `Der Bericht ist mit ${pagePlan.totalPages} Seiten sehr lang. Seitenumbrüche vor Abgabe prüfen.`
+          : 'Kein gültiger Seitenplan vorhanden.',
+      },
+      {
+        id: 'image-export',
+        label: 'HTML-Bilder',
+        status: 'ok',
+        message: 'HTML-Export versucht Logo und Formteilbilder einzubetten, damit der Bericht unabhängig vom Projektordner geöffnet werden kann.',
+        warning: 'Bildprüfung nicht verfügbar.',
       },
       {
         id: 'report-scope',
@@ -808,7 +876,24 @@ export class ReportEngine {
       items,
       fileBaseName: this.createExportBaseName(model),
       documentTitle: this.createDocumentTitle(model),
+      pagePlan,
     };
+  }
+
+  static createExportChecklistText(model = {}) {
+    const checklist = this.createExportChecklist(model);
+    const lines = [
+      `Druckverlust Pro – Export-QS`,
+      `Dokument: ${checklist.documentTitle}`,
+      `Dateibasis: ${checklist.fileBaseName}`,
+      `Status: ${checklist.status.toUpperCase()} · Fehler: ${checklist.errorCount} · Hinweise: ${checklist.warningCount}`,
+      `PDF-Seiten: ${checklist.pagePlan?.totalPages ?? '-'}`,
+      '',
+      'Prüfpunkte:',
+      ...checklist.items.map(item => `- [${String(item.status || '').toUpperCase()}] ${item.label}: ${item.status === 'ok' ? item.message : item.warning}`),
+    ];
+
+    return lines.join('\n');
   }
 
 
@@ -1469,6 +1554,9 @@ export class ReportEngine {
         <div class="total"><span>Gesamtdruckverlust</span><strong>${formatNumber(model.totals.total, 1)} Pa</strong></div>
       </div>
 
+      ${this.renderLossExplanationBox(model)}
+      ${this.renderLossBreakdownTable(model)}
+
       <div class="report-info-box">
         <h3>Berechnungsgrundlagen</h3>
         <p>Luftdichte ρ = ${formatNumber(model.settings.rho, 2)} kg/m³</p>
@@ -1480,6 +1568,83 @@ export class ReportEngine {
     `;
 
     return this.renderPage(model, page, 'Gesamtzusammenfassung', 'Ergebnis der Hauptberechnung', content, totalPages);
+  }
+
+  static renderLossExplanationBox(model) {
+    const friction = toNumber(model.totals?.friction);
+    const formParts = toNumber(model.totals?.formParts);
+    const special = toNumber(model.totals?.special);
+    const total = toNumber(model.totals?.total);
+    const calculatedTotal = friction + formParts + special;
+    const difference = calculatedTotal - total;
+
+    return `
+      <div class="report-info-box report-loss-explanation">
+        <h3>Druckverlust-Aufteilung</h3>
+        <p><strong>Wichtig:</strong> Die Spalte <em>Δp Kanal/Rohr</em> in der Haupttabelle zeigt nur den Reibungsdruckverlust der Teilstrecke. Formteile und Sonderbauteile werden bewusst separat ausgewiesen.</p>
+        <div class="report-formula-line">
+          <span>Gesamt</span>
+          <strong>${formatNumber(friction, 1)} Pa</strong>
+          <span>+</span>
+          <strong>${formatNumber(formParts, 1)} Pa</strong>
+          <span>+</span>
+          <strong>${formatNumber(special, 1)} Pa</strong>
+          <span>=</span>
+          <strong>${formatNumber(total, 1)} Pa</strong>
+        </div>
+        ${Math.abs(difference) > 0.05 ? `<small>Hinweis: Rundungsdifferenz gegenüber Einzelwertsumme ${formatNumber(difference, 2)} Pa.</small>` : '<small>Die Summen sind innerhalb der Rundung konsistent.</small>'}
+      </div>
+    `;
+  }
+
+  static renderLossBreakdownTable(model) {
+    const groups = model.formPartsBySection || [];
+    const rows = groups
+      .filter(group => group?.section)
+      .map(group => {
+        const frictionLoss = toNumber(group.section?.frictionLoss);
+        const formPartLoss = toNumber(group.sum);
+        return {
+          position: group.section?.position || '-',
+          name: group.section?.name || group.section?.description || '-',
+          frictionLoss,
+          formPartLoss,
+          total: frictionLoss + formPartLoss,
+        };
+      });
+
+    if (!rows.length) return '';
+
+    const maxRows = 8;
+    const visibleRows = rows.slice(0, maxRows);
+    const hidden = rows.length - visibleRows.length;
+    const sectionPlusFormParts = rows.reduce((sum, row) => sum + row.total, 0);
+
+    return `
+      <div class="report-loss-breakdown">
+        <h3>Teilstrecken-Aufteilung</h3>
+        <table class="report-table small report-loss-breakdown-table">
+          <thead>
+            <tr><th>Pos.</th><th>TS</th><th>Δp Kanal/Rohr</th><th>Formteile</th><th>Summe TS</th></tr>
+          </thead>
+          <tbody>
+            ${visibleRows.map(row => `
+              <tr>
+                <td>${escapeHtml(row.position)}</td>
+                <td class="left">${escapeHtml(row.name)}</td>
+                <td>${formatNumber(row.frictionLoss, 2)} Pa</td>
+                <td>${formatNumber(row.formPartLoss, 2)} Pa</td>
+                <td><strong>${formatNumber(row.total, 2)} Pa</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr><td colspan="4" class="left"><strong>Summe Teilstrecken + Formteile</strong></td><td><strong>${formatNumber(sectionPlusFormParts, 2)} Pa</strong></td></tr>
+          </tfoot>
+        </table>
+        ${hidden > 0 ? `<p class="report-continuation-note">${hidden} weitere Teilstrecke${hidden === 1 ? '' : 'n'} werden in den Detailseiten dargestellt.</p>` : ''}
+      </div>
+    `;
   }
 
 
@@ -1827,6 +1992,16 @@ export class ReportEngine {
       .report-result-box strong{font-size:14px}
       .report-result-box .total{background:linear-gradient(135deg,#05316a,#0b5eb0);color:white;font-size:16px;font-weight:900}
       .report-result-box .total strong{font-size:22px}
+      .report-loss-explanation{background:linear-gradient(135deg,#f8fbff,#eef6ff)}
+      .report-loss-explanation p{margin:0 0 8px;color:#20354f}
+      .report-loss-explanation em{font-style:normal;color:var(--report-blue);font-weight:900}
+      .report-formula-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid #d8e5f4;border-radius:6px;background:white;padding:7px 9px;margin:7px 0 6px;font-size:9.6px}
+      .report-formula-line span{color:#536a83;font-weight:800}
+      .report-formula-line strong{color:var(--report-blue);font-size:10.6px}
+      .report-loss-breakdown{margin-top:10px}
+      .report-loss-breakdown h3{margin:0 0 6px;color:var(--report-blue);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+      .report-loss-breakdown-table th:nth-child(1){width:13mm}.report-loss-breakdown-table th:nth-child(2){width:45mm}
+      .report-loss-breakdown-table td{font-size:8.1px;padding:4px 3px}
       .report-info-box{border:1px solid var(--report-line);border-radius:7px;background:#f8fbff;padding:12px 15px;margin-top:14px;font-size:10.4px;line-height:1.45}
       .report-info-box.ok{border-color:#bde5ce;background:#f2fbf5}.report-info-box.warn{border-color:#f2c282;background:#fff8ed}
       .report-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}

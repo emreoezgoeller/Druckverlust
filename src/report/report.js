@@ -1,4 +1,4 @@
-import * as Engine from '../calculation/engine.js?v=18.27';
+import * as Engine from '../calculation/engine.js?v=18.23';
 import { APP_BUILD_LABEL } from '../core/appVersion.js';
 import { getPartDefinition } from '../formteile/library.js';
 
@@ -131,9 +131,9 @@ export async function generatePdf(state){
 
   // Seite 2
   doc.addPage(); addHeader(doc, logo, 'HAUPTBERECHNUNG – LUFTNETZ', 'Übersicht aller Teilstrecken', 2);
-  const body = state.rows.map((r,i)=>{const c=calculateRow(r,state.project,state.parts);return [i+1,r.type==='duct'?'Kanal':r.type==='pipe'?'Rohr':'Sonder-',r.desc,r.ts||'-',r.q||'-',r.b||'-',r.h||'-',r.d||'-',r.l||'-',fmt(c.area,3),fmt(c.velocity,2),fmt(c.rl,1)];});
-  doc.autoTable({startY:42,head:[['Pos.','Typ','Beschreibung','TS','Luft m³/h','Breite m','Höhe m','Ø m','Länge m','Fläche','v m/s','Δp Kanal/Rohr Pa']],body,theme:'grid',headStyles:{fillColor:[7,65,122],fontSize:7},styles:{fontSize:7,cellPadding:2},columnStyles:{2:{cellWidth:36}}});
-  doc.setFontSize(9); doc.setTextColor(40,55,72); doc.text('Legende: TS = Teilstrecke · v = Luftgeschwindigkeit · Δp Kanal/Rohr = Reibungsverlust ohne Formteile · ζ = Formbeiwert',14,262);
+  const body = state.rows.map((r,i)=>{const c=calculateRow(r,state.project,state.parts);return [i+1,r.type==='duct'?'Kanal':r.type==='pipe'?'Rohr':'Sonder-',r.desc,r.ts||'-',r.q||'-',r.b||'-',r.h||'-',r.d||'-',r.l||'-',fmt(c.area,3),fmt(c.velocity,2),fmt(c.total,1)];});
+  doc.autoTable({startY:42,head:[['Pos.','Typ','Beschreibung','TS','Luft m³/h','Breite m','Höhe m','Ø m','Länge m','Fläche','v m/s','ΔP Pa']],body,theme:'grid',headStyles:{fillColor:[7,65,122],fontSize:7},styles:{fontSize:7,cellPadding:2},columnStyles:{2:{cellWidth:36}}});
+  doc.setFontSize(9); doc.setTextColor(40,55,72); doc.text('Legende: TS = Teilstrecke · v = Luftgeschwindigkeit · ΔP = Druckverlust · ζ = Formbeiwert',14,262);
 
   // Seite 3 Formteile
   doc.addPage(); addHeader(doc, logo, 'ZUGEORDNETE FORMTEILE', 'Übersicht aller Formteile pro Teilstrecke', 3);
@@ -154,8 +154,7 @@ export async function generatePdf(state){
   // Seite 5 Gesamt
   doc.addPage(); addHeader(doc, logo, 'GESAMTZUSAMMENFASSUNG', 'Ergebnis der Hauptberechnung', 5);
   doc.autoTable({startY:48,body:[['Kanal / Rohr',`${fmt(totals.duct,1)} Pa`],['Formteile',`${fmt(totals.part,1)} Pa`],['Sonderbauteile',`${fmt(totals.special,1)} Pa`],['GESAMTDRUCKVERLUST',`${fmt(totals.total,1)} Pa`]],theme:'grid',styles:{fontSize:12,cellPadding:5},columnStyles:{1:{halign:'right',fontStyle:'bold'}},didParseCell:data=>{if(data.row.index===3){data.cell.styles.fillColor=[7,65,122];data.cell.styles.textColor=[255,255,255];data.cell.styles.fontStyle='bold';data.cell.styles.fontSize=15;}}});
-  doc.setDrawColor(206,218,232); doc.setFillColor(248,251,255); doc.roundedRect(14,108,182,38,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.text('DRUCKVERLUST-AUFTEILUNG',20,120); doc.setFont('helvetica','normal'); doc.setTextColor(20,30,44); doc.setFontSize(9); doc.text(['Δp Kanal/Rohr = nur Reibungsdruckverlust der Teilstrecke.','Formteile und Sonderbauteile werden separat addiert.',`Gesamt = ${fmt(totals.duct,1)} + ${fmt(totals.part,1)} + ${fmt(totals.special,1)} = ${fmt(totals.total,1)} Pa`],20,130);
-  doc.setDrawColor(206,218,232); doc.setFillColor(248,251,255); doc.roundedRect(14,156,182,38,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.text('BERECHNUNGSGRUNDLAGEN',20,168); doc.setFont('helvetica','normal'); doc.setTextColor(20,30,44); doc.setFontSize(10); doc.text([`Luftdichte ρ = ${state.project.rho} kg/m³`,`Reibungszahl λ = ${state.project.lambda}`,'Druckverlustberechnung nach Darcy-Weisbach und hinterlegten Formteilwerten.'],20,178);
+  doc.setDrawColor(206,218,232); doc.setFillColor(248,251,255); doc.roundedRect(14,108,182,46,2,2,'FD'); doc.setFont('helvetica','bold'); doc.setTextColor(6,61,120); doc.text('BERECHNUNGSGRUNDLAGEN',20,120); doc.setFont('helvetica','normal'); doc.setTextColor(20,30,44); doc.setFontSize(10); doc.text([`Luftdichte ρ = ${state.project.rho} kg/m³`,`Reibungszahl λ = ${state.project.lambda}`,'Druckverlustberechnung nach Darcy-Weisbach und hinterlegten Formteilwerten.'],20,130);
 
   // Seite 6 Anlageninfo
   doc.addPage(); addHeader(doc, logo, 'ANLAGENINFORMATIONEN', 'Projektabschluss und Hinweise', 6);
