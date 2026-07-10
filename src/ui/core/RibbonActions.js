@@ -5,10 +5,12 @@ import ProjectCommands from '../../app/ProjectCommands.js';
 import StorageEngine from '../../storage/StorageEngine.js';
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
+import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
 import { APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js';
 
 export default class RibbonActions {
@@ -49,6 +51,19 @@ export default class RibbonActions {
     this.state.markProjectClean();
     AutoSaveEngine.clear();
     console.info('RibbonAction: Neues Projekt erstellt');
+  }
+
+
+  loadDemoProject() {
+    if (!this.confirmDiscardChanges('das Demo-Projekt laden')) return;
+
+    const project = createDemoProject();
+    this.state.setProject(project);
+    this.state.setSelection('project', project);
+    this.calculate({ silent: true, keepDirty: false });
+    this.state.markProjectClean();
+    AutoSaveEngine.clear();
+    console.info('RibbonAction: Demo-Projekt geladen', project);
   }
 
   openProject() {
@@ -401,19 +416,45 @@ export default class RibbonActions {
     }
   }
 
+  async releaseCandidateCheck() {
+    const project = this.state.project;
+    const system = this.getActiveSystem();
+
+    if (!project) {
+      alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    try {
+      const check = await ReleaseCandidateDiagnostics.run({ state: this.state, project, system });
+      this.state.releaseCandidateCheck = check;
+      this.state.setSelection?.('releaseCandidateCheck', check);
+      this.state.notify?.();
+
+      const text = ReleaseCandidateDiagnostics.toText(check);
+      if (check.status === 'error') {
+        console.warn(text);
+      } else {
+        console.info(text);
+      }
+    } catch (error) {
+      alert(`Release-Candidate-QS konnte nicht ausgeführt werden: ${error.message}`);
+    }
+  }
+
+
   showShortcutHelp() {
     alert([
       `Tastaturkürzel ${APP_BUILD_LABEL}`,
       '',
       'Ctrl + S: Projekt speichern',
       'Ctrl + O: Projekt öffnen',
+      'Demo laden: Beispielprojekt mit Teilstrecken, Formteilen und Sonderbauteilen',
       'Ctrl + N: Neues Projekt',
       'Ctrl + Enter: Neu berechnen',
       'Start: zurück zur Projekt-/Anlagenübersicht',
       'Projekt prüfen: über Ribbon-Schaltfläche „Projekt prüfen“',
       'Rechen-QS: prüft Summen, Einheiten, p_dyn und Rundungen',
-      'Datei-QS: prüft .dvp-Datei, IDs und Zuordnungen',
-      `Deploy prüfen: prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Bildschutz`,
       'Ctrl + B oder Ctrl + P: Bericht öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',
@@ -440,7 +481,7 @@ export default class RibbonActions {
       `Cache-Version: ?v=${APP_RELEASE}`,
       `Adresse: ${info.href || 'lokal / unbekannt'}`,
       '',
-      `Aktuelles Projekt: ${project?.name || project?.meta?.name || 'kein Projekt'}`,
+      `Aktuelles Projekt: ${project?.name || project?.meta?.name || 'kein Projekt'}${project?.demo?.isDemoProject ? ' (Demo)' : ''}`,
       `Aktive Anlage: ${system?.name || 'keine Anlage'}`,
       `Teilstrecken: ${sections}`,
       `Formteile: ${formParts}`,

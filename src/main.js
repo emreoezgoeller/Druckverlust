@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 18.33
+// Druckverlust Pro – Phase 18.35a
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.33';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=18.35a';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';

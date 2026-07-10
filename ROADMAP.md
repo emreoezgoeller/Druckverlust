@@ -26,10 +26,14 @@
 - Phase 18.31: Rechen-QS und fachlicher Nachweis
 - Phase 18.32: Projektdatei-QS und .dvp-Stabilisierung
 - Phase 18.33: Bedienführung und Oberfläche polieren
+- Phase 18.34: Demo-/Beispielprojekt und Vorführmodus
+- Phase 18.35: Release Candidate / Schlussprüfung
 
 ## Nächste sinnvolle Schritte
 
 - Phase 18.32: `.dvp` Projektdatei robuster machen mit Versionsprüfung und besseren Fehlermeldungen **erledigt**
 - Phase 18.33: Bedienung und Oberfläche weiter polieren **erledigt**
-- Phase 18.34: Demo-/Beispielprojekt und finale Produktvorbereitung
-- Phase 19: Produktstand, Demo-Projekt, Landingpage und Lizenz-/Abo-Vorbereitung
+- Phase 18.34: Demo-/Beispielprojekt und Vorführmodus **erledigt**
+- Phase 18.35: Release Candidate / Schlussprüfung **erledigt**
+- Phase 18.35a: Ribbon-QS-Schaltflächen ausgeblendet **erledigt**
+- Phase 19: Produktstand, Landingpage und Lizenz-/Abo-Vorbereitung

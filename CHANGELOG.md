@@ -1,4 +1,30 @@
+## 18.35a – Ribbon-QS-Schaltflächen ausgeblendet
+
+- Sichtbare Ribbon-Schaltflächen **Datei-QS**, **Deploy prüfen** und **RC prüfen** entfernt.
+- Interne Diagnosemodule bleiben erhalten und können später wieder aktiviert werden.
+- Statusbar und Hilfedialog bereinigt, damit keine ausgeblendeten QS-Schaltflächen mehr beworben werden.
+- Deployment-QS erwartet den ausgeblendeten Button **Deploy prüfen** nicht mehr als sichtbaren Ribbon-Befehl.
+- Cache-Busting auf `18.35a` erhöht.
+
 # CHANGELOG
+
+## 18.35 – Release Candidate / Schlussprüfung
+
+- Neuer Ribbon-Button **RC prüfen** ergänzt.
+- Neues Diagnostikmodul `ReleaseCandidateDiagnostics` ergänzt.
+- Schlussprüfung kombiniert Projektcheck, Rechen-QS, Datei-QS, Berichtmodell, Demo-Projekt, Speicherbarkeit und Deployment-QS.
+- Eigene RC-Detailseite mit Ampelstatus, Zähler, Prüfpunkten und kopierbarem RC-Protokoll ergänzt.
+- Deployment-QS prüft nun auch das neue RC-QS-Modul.
+- Cache-Busting auf `18.35` erhöht.
+
+## 18.34 – Demo-Projekt und Vorführmodus
+
+- Neuer Ribbon-Button `Demo` ergänzt.
+- Vollständiges Beispielprojekt mit 5 Teilstrecken, mehreren Formteilen und Sonderbauteilen ergänzt.
+- Demo-Projekt nutzt die normale Rechenlogik und eignet sich für Rechen-QS, Datei-QS, Deploy-QS und Berichtstest.
+- Ungespeicherte Änderungen werden vor dem Laden des Demo-Projekts abgefragt.
+- Cache-Busting auf `18.34` erhöht.
+
 
 ## 18.33 – Bedienführung und Oberfläche polieren
 
@@ -194,6 +220,15 @@
 - Für den Deploy-Fix werden die betroffenen Bilddateien zusätzlich in der Änderungs-ZIP mitgeliefert.
 
 # CHANGELOG
+
+## 18.35 – Release Candidate / Schlussprüfung
+
+- Neuer Ribbon-Button **RC prüfen** ergänzt.
+- Neues Diagnostikmodul `ReleaseCandidateDiagnostics` ergänzt.
+- Schlussprüfung kombiniert Projektcheck, Rechen-QS, Datei-QS, Berichtmodell, Demo-Projekt, Speicherbarkeit und Deployment-QS.
+- Eigene RC-Detailseite mit Ampelstatus, Zähler, Prüfpunkten und kopierbarem RC-Protokoll ergänzt.
+- Deployment-QS prüft nun auch das neue RC-QS-Modul.
+- Cache-Busting auf `18.35` erhöht.
 
 ## Phase 18.12b – Cache-/Deploy-Fix
 

@@ -5,11 +5,12 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=18.33';
+import ReportEngine from '../../report/ReportEngine.js?v=18.35a';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
 import { APP_RELEASE } from '../../core/appVersion.js';
 
 export default class WorkspaceComponent {
@@ -47,6 +48,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
+    if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
     if (selection.type === 'specialComponent') return this.renderSpecialComponent(selection.data);
 
@@ -3626,6 +3628,136 @@ export default class WorkspaceComponent {
       });
     });
   }
+
+  renderReleaseCandidateCheck(check = null) {
+    const result = check || this.state.releaseCandidateCheck;
+    const hasResult = !!result;
+    const status = result?.status || 'warning';
+    const counts = result?.counts || { ok: 0, warning: 0, error: 0 };
+    const finishedAt = result?.finishedAt ? new Date(result.finishedAt) : null;
+    const finishedLabel = finishedAt && !Number.isNaN(finishedAt.getTime())
+      ? finishedAt.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'medium' })
+      : '-';
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Release Candidate / Schlussprüfung</span>
+          <h1>Phase ${this.escapeHtml(APP_RELEASE)} – RC-Check</h1>
+          <p>${this.escapeHtml(result?.summary || 'Führt Projektcheck, Rechen-QS, Datei-QS, Bericht, Demo-Projekt und Deployment-QS zusammen.')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-rc-action="run">Neu prüfen</button>
+          <button type="button" data-rc-action="copy" ${hasResult ? '' : 'disabled'}>RC-Protokoll kopieren</button>
+          <button type="button" data-rc-action="project">Zurück zum Projekt</button>
+        </div>
+      </div>
+
+      <section class="dp-editor-panel dp-rc-panel dp-rc-${this.escapeAttribute(status)}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(result?.label || 'Noch nicht geprüft')}</h2>
+            <p>${this.escapeHtml(result?.nextRecommendation || 'Klicke auf „Neu prüfen“, um den aktuellen Stand als Release Candidate zu bewerten.')}</p>
+          </div>
+          <span class="dp-project-check-badge ${this.escapeAttribute(status)}">${this.escapeHtml(result?.label || 'offen')}</span>
+        </div>
+
+        <div class="dp-project-check-stats dp-rc-stats">
+          <div><span>OK</span><strong>${this.escapeHtml(counts.ok)}</strong></div>
+          <div><span>Hinweise</span><strong>${this.escapeHtml(counts.warning)}</strong></div>
+          <div><span>Fehler</span><strong>${this.escapeHtml(counts.error)}</strong></div>
+        </div>
+
+        <div class="dp-deploy-meta-grid dp-rc-meta">
+          <div>
+            <span>Version</span>
+            <strong>${this.escapeHtml(result?.release || APP_RELEASE)}</strong>
+          </div>
+          <div>
+            <span>Projekt</span>
+            <strong>${this.escapeHtml(result?.projectName || this.state.project?.name || '-')}</strong>
+          </div>
+          <div>
+            <span>Anlage</span>
+            <strong>${this.escapeHtml(result?.systemName || this.state.selectedSystem?.name || '-')}</strong>
+          </div>
+          <div>
+            <span>Geprüft</span>
+            <strong>${this.escapeHtml(finishedLabel)}</strong>
+          </div>
+        </div>
+
+        ${hasResult ? `
+          <div class="dp-project-check-list dp-rc-list">
+            ${(result.items || []).map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.status)}">
+                <strong>${this.escapeHtml(item.area)} · ${this.escapeHtml(item.label)}</strong>
+                <span>${this.escapeHtml(item.message)}</span>
+                ${item.details ? `<em>${this.escapeHtml(item.details)}</em>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="dp-empty-state">
+            Noch keine Schlussprüfung vorhanden. Der RC-Check ist der letzte technische Sammeltest von Phase 18.
+          </div>
+        `}
+      </section>
+    `;
+
+    this.bindReleaseCandidateCheckActions();
+  }
+
+  bindReleaseCandidateCheckActions() {
+    this.root.querySelectorAll('[data-rc-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.rcAction;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', this.state.project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = ReleaseCandidateDiagnostics.toText(this.state.releaseCandidateCheck || {});
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'run') {
+          const originalText = button.textContent;
+          button.disabled = true;
+          button.textContent = 'Prüfung läuft…';
+
+          try {
+            const check = await ReleaseCandidateDiagnostics.run({
+              state: this.state,
+              project: this.state.project,
+              system: this.state.selectedSystem || this.state.project?.systems?.[0],
+              registry: this.registry,
+            });
+            this.state.releaseCandidateCheck = check;
+            this.state.setSelection?.('releaseCandidateCheck', check);
+            this.state.notify?.();
+          } catch (error) {
+            alert(`RC-Check konnte nicht ausgeführt werden: ${error.message}`);
+          } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        }
+      });
+    });
+  }
+
 
   renderDeploymentCheck(check = null) {
     const result = check || this.state.deploymentCheck;

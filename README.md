@@ -1,17 +1,39 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 18.33**.
+Aktueller Entwicklungsstand: **Phase 18.35a RC**.
 
-Die professionelle Oberfläche ist aktiv. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Deployment-QS, Versions-/Update-Prüfung, automatische Formteil-Grössenübernahme, Teilstrecken-Schnellerfassung, PDF-/Berichts-QS, transparente Druckverlust-Aufteilung, Rechen-QS und neu eine robuste **.dvp-Projektdatei-QS** und eine klarere Bedienführung mit Pflichtfeld-Hinweisen.
+Die professionelle Oberfläche ist aktiv. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Deployment-QS, Versions-/Update-Prüfung, automatische Formteil-Grössenübernahme, Teilstrecken-Schnellerfassung, PDF-/Berichts-QS, transparente Druckverlust-Aufteilung, Rechen-QS, robuste **.dvp-Projektdatei-QS**, Bedienführung mit Pflichtfeld-Hinweisen und Demo-Projekt für Vorführung und QS sowie die finale Release-Candidate-Schlussprüfung.
 
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `18.33`.
+- Die aktuelle Cache-Version ist `18.35a`.
 - Über den Ribbon-Button **Datei-QS** können Speichern, Öffnen, Dateiname, IDs, Zuordnungen und Import-Stabilität geprüft werden.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
+- Über den Ribbon-Button **RC prüfen** läuft die finale Schlussprüfung für den internen Teststand.
 - Bilder sind gegen Rechtsklick, Ziehen und Markieren geschützt.
+
+
+## Phase 18.35a – Ribbon-QS-Schaltflächen ausgeblendet
+
+Die internen QS-Schaltflächen **Datei-QS**, **Deploy prüfen** und **RC prüfen** wurden aus dem sichtbaren Ribbon entfernt, damit die Bedienoberfläche ruhiger wirkt. Die Diagnosemodule bleiben im Projekt erhalten und können später bei Bedarf wieder aktiviert werden.
+
+## Phase 18.35 – Release Candidate / Schlussprüfung
+
+- Neuer Ribbon-Button **RC prüfen** ergänzt.
+- Der RC-Check fasst Projektcheck, Rechen-QS, Datei-QS, Berichtmodell, Demo-Projekt, Speicherbarkeit und Deployment-QS zusammen.
+- Ergebnis wird als klare Ampel angezeigt: **RC bereit**, **RC mit Hinweisen** oder **RC blockiert**.
+- Das RC-Protokoll kann kopiert und als Übergabe-/Testnotiz verwendet werden.
+- Diese Phase schliesst die technische Grundsystem-Stabilisierung von Phase 18 ab.
+
+
+## Phase 18.34 – Demo-Projekt und Vorführmodus
+
+- Neuer Ribbon-Button **Demo** lädt ein vollständiges Beispielprojekt.
+- Das Demo-Projekt enthält Projektangaben, 5 Teilstrecken, Formteile und Sonderbauteile.
+- Das Beispiel eignet sich für Vorführung, Rechen-QS, Datei-QS, Deploy-QS und Berichtstest.
+- Beim Laden des Demo-Projekts werden ungespeicherte Änderungen vorher abgefragt.
 
 ## Phase 18.33 – Bedienführung und Oberfläche polieren
 
