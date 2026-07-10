@@ -34,6 +34,10 @@
 - Phase 19.04: Produktseite Feinschliff und Abschluss-CTA
 - Phase 19.05: Footer-Copyright auf Produktseite
 - Phase 19.06: Integrierte Bedienungsanleitung im Tool
+- Phase 19.07: Bedienung, Demo und Beispielnachweis
+- Phase 19.08: Professional-/Trust-Bereich
+- Phase 19.09: Kontakt und Rechtliches vorbereitet
+- Phase 19.10: SEO, Mobile und Startseiten-Feinschliff
 
 ## Nächste sinnvolle Schritte
 
@@ -46,6 +50,10 @@
 - Phase 19.04: Produktseite visuell weiter professionalisieren **erledigt**
 - Phase 19.05: Footer-Copyright auf Produktseite **erledigt**
 - Phase 19.06: Hilfe-/Bedienungsanleitung im Tool **erledigt**
+- Phase 19.07: Bedienung, Demo und Beispielnachweis **erledigt**
+- Phase 19.08: Professional-/Trust-Bereich **erledigt**
+- Phase 19.09: Kontakt und Rechtliches vorbereitet **erledigt**
+- Phase 19.10: SEO, Mobile und Startseiten-Feinschliff **erledigt**
 - Phase 20: Lizenz-/Abo-Vorbereitung
 
 ### Phase 19.03 – Demo-Start von der Hauptseite
@@ -60,3 +68,31 @@ Die Produktseite zeigt unten links den gewünschten Copyright-Hinweis mit Name u
 ### Phase 19.06 – integrierte Bedienungsanleitung
 
 Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kann die Produktseite direkt `app.html?help=1` aufrufen.
+
+
+### Phase 19.08 – Professional-/Trust-Bereich
+
+- Produktseite professioneller gerahmt.
+- Einsatzbereiche für Planer, Kontrolle und Abgabe sichtbar.
+- Transparenzhinweis zur lokalen `.dvp`-Projektdatei ergänzt.
+- Footer mit Schnelllinks erweitert.
+
+### Phase 19.07 – Bedienung, Demo und Beispielnachweis
+
+- Produktseite um Demo-/Beispielnachweis-Bereich erweitert.
+- Beispielbericht kann direkt von der Hauptseite gestartet werden.
+- Hilfeseite mit Beispielwerten, Rechenverständnis und PDF-Hinweisen erweitert.
+- Demo-Projekt für Präsentation und Schulung klarer beschrieben.
+
+
+### Phase 19.09 – Kontakt und Rechtliches vorbereitet
+
+- Produktseite um Kontakt-/Feedbackbereich ergänzt.
+- Footer um Impressum und Datenschutz erweitert.
+- `impressum.html` und `datenschutz.html` als Platzhalterseiten vorbereitet.
+- Final rechtlich zu prüfende Angaben bleiben bewusst als Platzhalter markiert.
+
+
+### Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+
+Die Startseite ist für GitHub Pages als öffentliche Produktseite optimiert. Metaangaben, Link-Vorschau, strukturierte Daten, Skip-Link, Fokuszustände und mobile Layoutdetails wurden ergänzt.

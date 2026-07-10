@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=19.06';
+import ReportEngine from '../../report/ReportEngine.js?v=19.10';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -70,27 +70,29 @@ export default class WorkspaceComponent {
     const sectionCount = system?.sections?.length || 0;
     const formPartCount = system?.formParts?.length || 0;
     const specialCount = system?.specialComponents?.length || 0;
+    const isDemo = Boolean(project?.demo?.isDemoProject);
 
     this.root.innerHTML = `
       <div class="workspace-header dp-help-header">
         <div>
           <span class="dp-overline">Bedienungsanleitung</span>
           <h1>Druckverlust Pro richtig benutzen</h1>
-          <p>Kurzer Leitfaden für Projektstart, Teilstrecken, Formteile, Sonderbauteile, QS und Bericht.</p>
+          <p>Kurzer Leitfaden für Projektstart, Teilstrecken, Formteile, Sonderbauteile, QS und Bericht – mit Demo und Beispielwerten.</p>
         </div>
         <div class="workspace-actions">
           <button type="button" data-help-action="project">Projekt öffnen</button>
           <button type="button" data-help-action="demo">Demo laden</button>
+          <button type="button" data-help-action="demo-report">Beispielbericht</button>
         </div>
       </div>
 
       <section class="dp-help-hero">
         <div>
           <h2>Schnellstart in 4 Schritten</h2>
-          <p>Die Berechnung funktioniert am saubersten, wenn du immer von links nach rechts arbeitest: Projektdaten → Teilstrecken → Formteile/Sonderbauteile → Bericht.</p>
+          <p>Arbeite von links nach rechts: Projektdaten → Teilstrecken → Formteile/Sonderbauteile → Bericht. Die Berechnung läuft automatisch im Hintergrund.</p>
         </div>
         <div class="dp-help-status">
-          <span>Aktueller Stand</span>
+          <span>${isDemo ? 'Demo-Projekt aktiv' : 'Aktueller Stand'}</span>
           <strong>${this.escapeHtml(sectionCount)} TS · ${this.escapeHtml(formPartCount)} Formteile · ${this.escapeHtml(specialCount)} Sonderbauteile</strong>
         </div>
       </section>
@@ -99,7 +101,7 @@ export default class WorkspaceComponent {
         <article>
           <span>01</span>
           <h3>Projekt erfassen</h3>
-          <p>Projektnummer, Projektname, BKP-Nummer und Anlage eintragen. Diese Daten erscheinen später im Bericht und Dateinamen.</p>
+          <p>Projektnummer, Projektname, BKP-Nummer und Anlage eintragen. Diese Angaben erscheinen im Bericht und im Dateinamen.</p>
           <button type="button" data-help-action="project">Zu den Projektangaben</button>
         </article>
         <article>
@@ -111,7 +113,7 @@ export default class WorkspaceComponent {
         <article>
           <span>03</span>
           <h3>Formteile ergänzen</h3>
-          <p>Formteil auswählen und Teilstrecke zuordnen. Grössen und Luftmengen können automatisch übernommen und bei Bedarf manuell angepasst werden.</p>
+          <p>Formteil auswählen und Teilstrecke zuordnen. Grössen und Luftmengen können automatisch aus den Teilstrecken übernommen werden.</p>
           <button type="button" data-help-action="formparts">Formteil-Assistent öffnen</button>
         </article>
         <article>
@@ -122,20 +124,55 @@ export default class WorkspaceComponent {
         </article>
       </section>
 
+      <section class="dp-help-panel dp-help-demo-panel">
+        <div>
+          <span class="dp-overline">Demo / Beispielnachweis</span>
+          <h2>Erst testen, dann eigenes Projekt aufbauen</h2>
+          <p>Das Demo-Projekt enthält eine kleine Zuluftanlage mit Hauptkanal, Übergang, Rundrohr, Abzweig, Sonderbauteilen und Berichtsdaten. Damit kannst du die Bedienung und den PDF-Nachweis direkt prüfen.</p>
+        </div>
+        <div class="dp-help-demo-actions">
+          <button type="button" data-help-action="demo">Demo-Projekt laden</button>
+          <button type="button" data-help-action="demo-report">Demo-Bericht öffnen</button>
+        </div>
+      </section>
+
+      <section class="dp-help-panel">
+        <div>
+          <span class="dp-overline">Beispielwerte</span>
+          <h2>Typische Eingaben im Tool</h2>
+        </div>
+        <div class="dp-help-example-grid" aria-label="Beispielwerte">
+          <article><strong>Kanal-Teilstrecke</strong><span>q 3’200 m³/h · L 8.5 m · b/h 800 × 450 mm</span></article>
+          <article><strong>Rohr-Teilstrecke</strong><span>q 1’200 m³/h · L 9.0 m · Ø 500 mm</span></article>
+          <article><strong>Formteil</strong><span>Bogen / Übergang / Abzweig mit ζ-Wert und p_dyn</span></article>
+          <article><strong>Sonderbauteil</strong><span>z. B. Filter 80 Pa oder Schalldämpfer 25 Pa</span></article>
+        </div>
+      </section>
+
       <section class="dp-help-panel">
         <div>
           <span class="dp-overline">Wichtige Eingaben</span>
           <h2>Was muss wo eingetragen werden?</h2>
         </div>
         <div class="dp-help-table" role="table" aria-label="Eingabefelder und Bedeutung">
-          <div role="row"><strong role="cell">Teilstrecke</strong><span role="cell">Luftmenge m³/h, Länge m, Kanal b/h oder Rohr Ø</span></div>
-          <div role="row"><strong role="cell">Formteil</strong><span role="cell">Typ, zugehörige Teilstrecke, ζ-/Auswahlwerte und bei Bedarf Anschlussgrössen</span></div>
-          <div role="row"><strong role="cell">Sonderbauteil</strong><span role="cell">Hersteller/Typ und bekannter Druckverlust in Pa</span></div>
-          <div role="row"><strong role="cell">Bericht</strong><span role="cell">Bericht-Nr., Revision, Umfang und PDF-Druck über Browserdialog</span></div>
+          <div role="row"><strong role="cell">Teilstrecke</strong><span role="cell">Luftmenge m³/h, Länge m, Kanal b/h oder Rohr Ø. Die Eingabe erfolgt in m; Formteile übernehmen daraus mm-Werte.</span></div>
+          <div role="row"><strong role="cell">Formteil</strong><span role="cell">Typ, zugehörige Teilstrecke, ζ-/Auswahlwerte und bei Bedarf Anschlussgrössen. Manuelle Anpassungen bleiben möglich.</span></div>
+          <div role="row"><strong role="cell">Sonderbauteil</strong><span role="cell">Hersteller/Typ und bekannter Druckverlust in Pa. Dieser Wert wird direkt in die Gesamtsumme übernommen.</span></div>
+          <div role="row"><strong role="cell">Bericht</strong><span role="cell">Bericht-Nr., Revision, Umfang und PDF-Druck über Browserdialog. Empfohlen: A4 Hochformat, 100 %, Hintergrundgrafiken aktivieren.</span></div>
         </div>
       </section>
 
       <section class="dp-help-panel dp-help-two-col">
+        <div>
+          <span class="dp-overline">Rechenverständnis</span>
+          <h2>Was bedeutet welcher Druckverlust?</h2>
+          <ul>
+            <li><strong>Δp Kanal/Rohr</strong> = Reibungsverlust der geraden Teilstrecke.</li>
+            <li><strong>Δp Formteil</strong> = ζ × p_dyn des zugeordneten Formteils.</li>
+            <li><strong>Sonderbauteile</strong> = fixer Hersteller- oder Vorgabewert in Pa.</li>
+            <li><strong>Gesamt</strong> = Teilstrecken + Formteile + Sonderbauteile.</li>
+          </ul>
+        </div>
         <div>
           <span class="dp-overline">QS</span>
           <h2>Vor dem Export kurz prüfen</h2>
@@ -145,6 +182,19 @@ export default class WorkspaceComponent {
             <li>Formteile den richtigen Teilstrecken zugeordnet?</li>
             <li>Sonderbauteile mit realistischem Pa-Wert?</li>
             <li>Gesamtdruckverlust im Bericht nachvollziehbar?</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="dp-help-panel dp-help-two-col">
+        <div>
+          <span class="dp-overline">PDF / Bericht</span>
+          <h2>Sauber als PDF speichern</h2>
+          <ul>
+            <li>Bericht öffnen.</li>
+            <li>Im Bericht auf <strong>Drucken / PDF</strong> klicken.</li>
+            <li>A4 Hochformat und Skalierung 100 % wählen.</li>
+            <li>Hintergrundgrafiken aktivieren, damit Logo und Tabellen sauber wirken.</li>
           </ul>
         </div>
         <div>
@@ -210,6 +260,11 @@ export default class WorkspaceComponent {
 
         if (action === 'demo') {
           window.location.href = 'app.html?demo=1';
+          return;
+        }
+
+        if (action === 'demo-report') {
+          window.location.href = 'app.html?demo=1&report=1';
           return;
         }
 

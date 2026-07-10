@@ -1,8 +1,16 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 19.06 integrierte Bedienungsanleitung**.
+Aktueller Entwicklungsstand: **Phase 19.10 SEO, Mobile und Startseiten-Feinschliff**.
 
-Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport und eine integrierte Bedienungsanleitung im Tool.
+Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten sowie SEO-/Mobile-Feinschliff.
+
+### Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+
+Die Produktseite wurde für Suchmaschinen, Link-Vorschau und mobile Nutzung nachgezogen. Enthalten sind Open-Graph-/Twitter-Metadaten, strukturierte SoftwareApplication-Daten, Skip-Link, Fokuszustände und stabilere mobile Navigation.
+
+### Phase 19.09 – Kontakt und Rechtliches vorbereitet
+
+Die Produktseite enthält jetzt einen kompakten Kontakt-/Feedbackbereich. Zusätzlich wurden `impressum.html` und `datenschutz.html` als vorbereitete Platzhalter ergänzt. Die finalen Pflichtangaben müssen vor einer offiziellen Veröffentlichung geprüft und ergänzt werden.
 
 ### Phase 19.06 – integrierte Bedienungsanleitung
 
@@ -24,7 +32,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `19.06`.
+- Die aktuelle Cache-Version ist `19.10`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
@@ -98,3 +106,18 @@ Die Formteil-Auswahl wurde erweitert. Sie zeigt nun eine Bibliotheks-QS, fachlic
 
 - Kurzanleitung auf der Hauptseite: Projekt → Teilstrecken → Formteile → Bericht.
 - Tool bleibt unter `app.html`, Produktseite bleibt `index.html`.
+
+
+## Phase 19.08 – Professional-/Trust-Bereich
+
+Die Produktseite zeigt jetzt zusätzlich, wofür das Tool gedacht ist: Lüftungsplanung, Kontrolle und Abgabe. Ergänzt wurde ein kurzer Transparenzhinweis zur lokalen Projektdatei `.dvp` sowie ein kompakter Footer mit Tool-, Anleitung- und Demo-Links.
+
+## Phase 19.07 – Bedienung, Demo und Beispielnachweis
+
+Die Produktseite kann jetzt nicht nur das Demo-Projekt öffnen, sondern auch direkt den Beispielbericht starten:
+
+- `app.html?demo=1` lädt das Demo-Projekt.
+- `app.html?demo=1&report=1` lädt das Demo-Projekt und öffnet direkt den Bericht.
+- `app.html?help=1` öffnet direkt die integrierte Bedienungsanleitung.
+
+Die Hilfeseite enthält zusätzlich Beispielwerte und eine kurze Erklärung der Druckverlust-Aufteilung.

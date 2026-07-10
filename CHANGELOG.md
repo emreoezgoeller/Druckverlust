@@ -1,3 +1,23 @@
+# CHANGELOG
+
+## Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+
+- Produktseite mit SEO-/Social-Media-Metadaten ergänzt.
+- Strukturierte SoftwareApplication-Daten für die Hauptseite vorbereitet.
+- Skip-Link und Fokuszustände für bessere Bedienbarkeit ergänzt.
+- Mobile Navigation, Buttons und Vorschautabelle stabilisiert.
+- `index.html` und `produkt.html` bleiben synchron.
+- App-, Impressum- und Datenschutzseiten mit passenden Metaangaben nachgezogen.
+- Cache-Busting auf `19.10` erhöht.
+
+## Phase 19.09 – Kontakt und Rechtliches vorbereitet
+
+- Produktseite um kompakten Bereich **Kontakt / Feedback** erweitert.
+- Footer um Links zu **Impressum** und **Datenschutz** ergänzt.
+- Neue Platzhalterseiten `impressum.html` und `datenschutz.html` erstellt.
+- Rechtliche Seiten klar als vorbereitete Platzhalter markiert, damit vor Veröffentlichung die Pflichtangaben ergänzt werden können.
+- Cache-Busting auf `19.09` erhöht.
+
 ## Phase 19.06 – integrierte Bedienungsanleitung im Tool
 
 - Ribbon-Button **Hilfe** öffnet jetzt eine richtige Hilfeseite im Arbeitsbereich statt nur ein kurzes Popup.
@@ -331,3 +351,23 @@
 - Ribbon um Hilfe-Button für die Tastaturkürzel ergänzt.
 - Statusbar zeigt die wichtigsten Kurzbefehle an.
 - Cache-Busting auf `18.14` erhöht.
+
+
+## Phase 19.08 – Professional-/Trust-Bereich
+
+- Produktseite um kompakten Bereich „Professional / Einsatz“ erweitert.
+- Einsatzbereiche ergänzt: Planer, Kontrolle und Abgabe.
+- Transparenzhinweis ergänzt: aktuelle Web-Version arbeitet ohne Cloud-Zwang und nutzt `.dvp`-Projektdateien.
+- Footer um schnelle Links zu Tool, Anleitung und Demo ergänzt.
+- Produktnavigation um „Einsatz“ erweitert.
+- Cache-Busting auf `19.08` erhöht.
+
+## Phase 19.07 – Bedienung, Demo und Beispielnachweis
+
+- Produktseite um **Beispielbericht ansehen** ergänzt (`app.html?demo=1&report=1`).
+- Kompakter Abschnitt **Demo / Beispielnachweis** ergänzt.
+- Tool erkennt neu den Startparameter `report=1` bzw. `bericht=1` und öffnet direkt den Bericht.
+- Hilfeseite im Tool erweitert: Beispielwerte, Demo-Erklärung, Rechenverständnis und PDF-Hinweise.
+- Fehler in der Hilfe-Aktionsbindung bereinigt, sodass Projekt, Anlagenübersicht, Formteil-Assistent und Bericht zuverlässig geöffnet werden.
+- Demo-Projekt mit klarerem Zweck und Berichtshinweis ergänzt.
+- Cache-Busting auf `19.07` erhöht.

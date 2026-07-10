@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 19.06
-// Startet die professionelle Oberfläche als aktive Hauptanwendung.
+// Druckverlust Pro – Phase 19.10
+// Startet Tool, Demo, Hilfe und Beispielbericht über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.06';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.10';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
@@ -118,6 +118,29 @@ function cleanupHelpUrlFlag() {
   window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
 }
 
+function isReportStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const reportParam = String(params.get('bericht') || params.get('report') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'bericht', 'report', 'beispiel'].includes(reportParam) || hash.includes('bericht') || hash.includes('report');
+}
+
+function cleanupReportUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadReport = url.searchParams.has('bericht') || url.searchParams.has('report') || url.hash.toLowerCase().includes('bericht') || url.hash.toLowerCase().includes('report');
+  if (!hadReport) return;
+
+  url.searchParams.delete('bericht');
+  url.searchParams.delete('report');
+  if (url.hash.toLowerCase().includes('bericht') || url.hash.toLowerCase().includes('report')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
   const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
@@ -192,9 +215,16 @@ function bootstrap() {
   }
 
   const helpRequested = isHelpStartupRequested();
+  const reportRequested = isReportStartupRequested();
+
   if (helpRequested) {
     state.setSelection('help', { source: 'landing' });
     cleanupHelpUrlFlag();
+  } else if (reportRequested) {
+    const activeSystem = state.selectedSystem || project?.systems?.[0] || project;
+    state.setSelection('report', activeSystem);
+    state.selectedReport = activeSystem;
+    cleanupReportUrlFlag();
   }
 
   const shell = new ApplicationShell(root);

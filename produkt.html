@@ -3,12 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Druckverlust Pro – Produktseite</title>
+  <title>Druckverlust Pro – Druckverlustberechnung online</title>
   <meta name="description" content="Druckverlust Pro ist ein professionelles Web-Tool für Druckverlustberechnung, Formteil-Nachweis, QS und PDF-Bericht." />
+  <meta name="application-name" content="Druckverlust Pro" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#073a6f" />
+  <link rel="canonical" href="https://emreoezgoeller.github.io/Druckverlust/" />
   <link rel="icon" href="favicon.ico" />
-  <link rel="stylesheet" href="src/landing/landing.css?v=19.06" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="de_CH" />
+  <meta property="og:site_name" content="Druckverlust Pro" />
+  <meta property="og:title" content="Druckverlust Pro – Druckverlustberechnung online" />
+  <meta property="og:description" content="Teilstrecken, Formteile, Sonderbauteile, QS und PDF-Bericht in einer professionellen Web-Oberfläche." />
+  <meta property="og:url" content="https://emreoezgoeller.github.io/Druckverlust/" />
+  <meta property="og:image" content="https://emreoezgoeller.github.io/Druckverlust/assets/report/duct-network-hero.png" />
+  <meta property="og:image:alt" content="Druckverlust Pro Bericht- und Kanalnetz-Vorschau" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Druckverlust Pro – Druckverlustberechnung online" />
+  <meta name="twitter:description" content="Professionelles Web-Tool für Lüftungs-Druckverlustberechnung mit QS und PDF-Bericht." />
+  <meta name="twitter:image" content="https://emreoezgoeller.github.io/Druckverlust/assets/report/duct-network-hero.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Druckverlust Pro",
+    "applicationCategory": "EngineeringApplication",
+    "operatingSystem": "Web",
+    "description": "Web-Tool für Druckverlustberechnung, Formteil-Nachweis, QS und PDF-Bericht.",
+    "creator": { "@type": "Person", "name": "Emre Özgöller" }
+  }
+  </script>
+  <link rel="stylesheet" href="src/landing/landing.css?v=19.10" />
 </head>
 <body>
+  <a class="dp-skip-link" href="#hauptinhalt">Zum Inhalt springen</a>
   <header class="dp-landing-header">
     <a class="dp-landing-brand" href="index.html" aria-label="Druckverlust Pro Produktseite">
       <img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" />
@@ -21,19 +49,22 @@
       <a href="#funktionen">Funktionen</a>
       <a href="#ablauf">So funktioniert’s</a>
       <a href="#berichte">Berichte</a>
+      <a href="#beispiel">Beispiel</a>
+      <a href="#einsatz">Einsatz</a>
+      <a href="#kontakt">Kontakt</a>
       <a href="app.html?help=1">Anleitung</a>
       <a class="dp-nav-button" href="app.html">Tool starten</a>
     </nav>
   </header>
 
-  <main>
+  <main id="hauptinhalt">
     <section class="dp-hero">
       <div class="dp-hero-copy">
-        <span class="dp-eyebrow">Phase 19.06 · Produktauftritt</span>
+        <span class="dp-eyebrow">Phase 19.10 · Produktauftritt</span>
         <h1>Druckverlustberechnung sauber, nachvollziehbar und berichtsfertig.</h1>
         <p>
           Druckverlust Pro verbindet Teilstrecken, Formteile, Sonderbauteile, automatische QS und PDF-Bericht in einer Oberfläche.
-          Ziel: weniger Excel-Chaos, klarere Nachweise und ein professioneller Export für Planung und Kontrolle.
+          Mit Demo-Projekt und Beispielbericht kannst du den Ablauf sofort testen – ohne eigene Projektdaten.
         </p>
         <div class="dp-hero-actions">
           <a class="dp-primary" href="app.html">Tool starten</a>
@@ -131,7 +162,85 @@
           wo Druckverlust entsteht und welche Teilstrecke kritisch ist.
         </p>
       </div>
-      <a class="dp-primary" href="app.html">Zum Tool</a>
+      <div class="dp-report-actions">
+        <a class="dp-primary" href="app.html">Zum Tool</a>
+        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
+      </div>
+    </section>
+
+    <section id="beispiel" class="dp-section dp-demo-block">
+      <div>
+        <span class="dp-eyebrow">Demo / Beispielnachweis</span>
+        <h2>Erst testen, dann eigenes Projekt aufbauen.</h2>
+        <p>Das Demo-Projekt enthält bereits Teilstrecken, Formteile und Sonderbauteile. Damit kannst du Bedienung, Rechen-QS und PDF-Bericht direkt prüfen.</p>
+      </div>
+      <div class="dp-demo-cards">
+        <article><strong>Demo öffnen</strong><span>Beispielanlage laden und Werte bearbeiten.</span></article>
+        <article><strong>Bericht ansehen</strong><span>PDF-/Druckansicht mit Druckverlust-Aufteilung prüfen.</span></article>
+        <article><strong>Danach speichern</strong><span>Eigene Projekte als .dvp-Datei ablegen.</span></article>
+      </div>
+      <div class="dp-hero-actions dp-demo-actions">
+        <a class="dp-primary" href="app.html?demo=1">Demo-Projekt testen</a>
+        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
+      </div>
+    </section>
+
+    <section id="einsatz" class="dp-section dp-trust-block">
+      <div class="dp-section-head">
+        <span class="dp-eyebrow">Professional / Einsatz</span>
+        <h2>Für Lüftungsplanung, Kontrolle und saubere Abgabe.</h2>
+        <p>
+          Druckverlust Pro ist als Arbeitswerkzeug aufgebaut: Projekt lokal erfassen, Rechenweg prüfen,
+          Bericht erzeugen und die Datei als Projektstand sichern.
+        </p>
+      </div>
+      <div class="dp-trust-grid" aria-label="Einsatzbereiche und Transparenz">
+        <article>
+          <strong>Für Planer</strong>
+          <span>Teilstrecken, Formteile und Sonderbauteile werden strukturiert statt in losen Excel-Zeilen geführt.</span>
+        </article>
+        <article>
+          <strong>Für Kontrolle</strong>
+          <span>QS-Blöcke helfen, fehlende Projektangaben, auffällige Werte und unvollständige Zuordnungen schneller zu erkennen.</span>
+        </article>
+        <article>
+          <strong>Für Abgabe</strong>
+          <span>Der Bericht zeigt Kanal/Rohr, Formteile und Sonderbauteile getrennt und nachvollziehbar.</span>
+        </article>
+      </div>
+      <div class="dp-transparency-note">
+        <strong>Transparenz:</strong>
+        <span>Die aktuelle Web-Version arbeitet ohne Cloud-Zwang. Projektstände werden als <code>.dvp</code>-Datei gespeichert und können später wieder geöffnet werden.</span>
+      </div>
+    </section>
+
+    <section id="kontakt" class="dp-section dp-contact-block">
+      <div class="dp-section-head">
+        <span class="dp-eyebrow">Kontakt / Feedback</span>
+        <h2>Rückmeldungen direkt für die Weiterentwicklung sammeln.</h2>
+        <p>
+          Druckverlust Pro ist aktuell als professionelle Web-Version im Aufbau. Für Tests, Rückmeldungen und neue Formteilwünsche
+          ist ein klarer Feedback-Weg vorbereitet, ohne die Hauptseite mit zu viel Text zu füllen.
+        </p>
+      </div>
+      <div class="dp-contact-grid" aria-label="Kontakt und Feedback">
+        <article>
+          <strong>Feedback geben</strong>
+          <span>Hinweise zu Bedienung, Bericht, Formteilen oder Rechen-QS sauber sammeln.</span>
+        </article>
+        <article>
+          <strong>Fehler melden</strong>
+          <span>Screenshot, Projektstand und kurze Beschreibung helfen bei der schnellen Korrektur.</span>
+        </article>
+        <article>
+          <strong>Wünsche erfassen</strong>
+          <span>Neue Formteile, Exportwünsche oder Bedienhilfen können als nächste Ausbaustufe geplant werden.</span>
+        </article>
+      </div>
+      <div class="dp-contact-actions">
+        <a class="dp-primary" href="app.html?demo=1">Demo testen</a>
+        <a class="dp-secondary" href="app.html?help=1">Anleitung öffnen</a>
+      </div>
     </section>
 
     <section class="dp-final-cta" aria-label="Tool starten">
@@ -140,13 +249,14 @@
       <div class="dp-hero-actions">
         <a class="dp-primary" href="app.html">Tool starten</a>
         <a class="dp-secondary" href="app.html?demo=1">Demo-Projekt testen</a>
+        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
       </div>
     </section>
   </main>
 
   <footer class="dp-landing-footer">
     <span>© 2026 Emre Özgöller – Druckverlust Pro · Professional</span>
-    <span>Produktseite Phase 19.06</span>
+    <span class="dp-footer-links"><a href="app.html">Tool</a><a href="app.html?help=1">Anleitung</a><a href="app.html?demo=1">Demo</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Phase 19.10</em></span>
   </footer>
 
   <script>

@@ -19,7 +19,7 @@ export function createDemoProject(options = {}) {
     bearbeiter: options.bearbeiter || 'Demo-Benutzer',
     company: options.company || 'Emre Özgöller',
     address: options.address || 'Beispieladresse 1, 3000 Bern',
-    note: options.note || 'Demo-Projekt für Prüfung von Teilstrecken, Formteilen, Sonderbauteilen und Bericht.',
+    note: options.note || 'Demo-Projekt für Bedienung, Rechen-QS, Formteil-Sync und Beispielbericht. Werte sind bewusst praxisnah, aber nicht projektspezifisch verbindlich.',
     datum: options.datum || today(),
     settings: {
       rho: 1.21,
@@ -222,14 +222,19 @@ export function createDemoProject(options = {}) {
   project.demo = {
     isDemoProject: true,
     createdBy: 'Druckverlust Pro',
-    purpose: 'Vorführung, QS und Berichtstest',
+    purpose: 'Vorführung, Bedienung, QS und Beispielnachweis',
+    quickStart: [
+      'Anlagenübersicht öffnen und Teilstrecken prüfen.',
+      'Formteile anklicken und Grössen-/Anschlussübernahme ansehen.',
+      'Bericht öffnen und Druckverlust-Aufteilung prüfen.',
+    ],
   };
 
   project.report = {
     ...project.report,
     reportNumber: 'DP-DEMO-001',
     revision: 'R0',
-    hinweis: project.note,
+    hinweis: 'Beispielnachweis für Demo: Druckverluste getrennt nach Kanal/Rohr, Formteilen und Sonderbauteilen prüfen.',
     datum: options.datum || today(),
   };
 

@@ -4175,7 +4175,7 @@ canvas,
   letter-spacing: -0.01em;
 }
 
-/* Phase 19.06 – integrierte Bedienungsanleitung */
+/* Phase 19.06/19.07 – integrierte Bedienungsanleitung */
 .dp-help-header .workspace-actions {
   display: flex;
   gap: 10px;
@@ -4334,4 +4334,61 @@ canvas,
   .dp-help-two-col,
   .dp-help-table > div { grid-template-columns: 1fr; }
   .dp-help-header .workspace-actions { flex-wrap: wrap; }
+}
+
+/* Phase 19.07 – Hilfe, Demo und Beispielnachweis */
+.dp-help-demo-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #eef7ff 100%);
+}
+
+.dp-help-demo-panel p {
+  max-width: 880px;
+}
+
+.dp-help-demo-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dp-help-example-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dp-help-example-grid article {
+  min-height: 118px;
+  padding: 16px;
+  border: 1px solid #e4edf7;
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.dp-help-example-grid strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--dp-blue-900);
+}
+
+.dp-help-example-grid span {
+  color: var(--dp-muted);
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+@media (max-width: 1100px) {
+  .dp-help-example-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dp-help-demo-panel { align-items: flex-start; flex-direction: column; }
+  .dp-help-demo-actions { justify-content: flex-start; }
+}
+
+@media (max-width: 720px) {
+  .dp-help-example-grid { grid-template-columns: 1fr; }
 }
