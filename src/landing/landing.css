@@ -247,49 +247,67 @@ main { overflow: hidden; }
 .dp-feature-grid h3 { margin: 0 0 12px; font-size: 24px; }
 .dp-feature-grid p, .dp-report-block p { color: var(--dp-muted); line-height: 1.55; }
 
-.dp-split {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(320px, 1fr);
-  gap: 40px;
-  align-items: start;
+.dp-howto {
   background: #fff;
+  border-top: 1px solid var(--dp-border);
+  border-bottom: 1px solid var(--dp-border);
 }
 
-.dp-steps {
+.dp-howto-head {
+  max-width: 920px;
+  margin-bottom: 24px;
+}
+
+.dp-howto-head p {
+  max-width: 760px;
+  margin: 16px 0 0;
+  color: var(--dp-muted);
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+.dp-howto-grid {
   display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: steps;
 }
 
-.dp-steps li {
-  counter-increment: steps;
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 16px;
-  align-items: start;
-  padding: 18px;
+.dp-howto-grid article {
+  min-height: 155px;
+  padding: 20px;
   border: 1px solid var(--dp-border);
   border-radius: 22px;
   background: #f8fbff;
+  box-shadow: 0 14px 34px rgba(6, 45, 85, 0.07);
 }
 
-.dp-steps li::before {
-  content: counter(steps);
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+.dp-howto-grid span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 16px;
+  border-radius: 14px;
   background: var(--dp-blue-900);
   color: #fff;
   font-weight: 1000;
 }
 
-.dp-steps strong { display: block; font-size: 20px; }
-.dp-steps span { display: block; margin-top: 5px; color: var(--dp-muted); }
+.dp-howto-grid strong {
+  display: block;
+  font-size: 21px;
+}
+
+.dp-howto-grid p {
+  margin: 8px 0 0;
+  color: var(--dp-muted);
+  line-height: 1.45;
+}
+
+.dp-howto-action {
+  margin-top: 22px;
+}
 
 .dp-report-block {
   display: flex;
@@ -314,13 +332,13 @@ main { overflow: hidden; }
 
 @media (max-width: 980px) {
   .dp-landing-header { align-items: flex-start; flex-direction: column; }
-  .dp-hero, .dp-split { grid-template-columns: 1fr; }
-  .dp-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dp-hero { grid-template-columns: 1fr; }
+  .dp-feature-grid, .dp-howto-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dp-report-block { align-items: flex-start; flex-direction: column; }
 }
 
 @media (max-width: 620px) {
-  .dp-feature-grid, .dp-preview-grid { grid-template-columns: 1fr; }
+  .dp-feature-grid, .dp-preview-grid, .dp-howto-grid { grid-template-columns: 1fr; }
   .dp-hero h1 { font-size: 42px; }
   .dp-landing-footer { flex-direction: column; }
 }

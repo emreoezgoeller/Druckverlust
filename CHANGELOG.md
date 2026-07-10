@@ -1,5 +1,14 @@
 ## 19.01 – Produktseite als Startseite / Tool unter app.html
 
+## Phase 19.02 – kurze Bedienungsanleitung auf der Hauptseite
+
+- Hauptseite um kompakten Bereich „So funktioniert’s“ ergänzt.
+- Vier kurze Schritte eingebaut: Projekt, Teilstrecken, Formteile, Bericht.
+- Button „Tool starten“ direkt unter der Kurzanleitung ergänzt.
+- Produktseite bewusst schlank gehalten, keine ausführliche Anleitung auf der Landingpage.
+- Cache-Version auf 19.02 erhöht.
+
+
 - `index.html` ist jetzt die Produkt-/Landingpage.
 - Das eigentliche Berechnungstool wurde nach `app.html` verschoben.
 - Alle Start-/Tool-Links auf der Produktseite zeigen jetzt auf `app.html`.

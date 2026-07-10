@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 19.01 Produktseite / App-Trennung**.
+Aktueller Entwicklungsstand: **Phase 19.02 Produktseite / App-Trennung**.
 
 Die öffentliche Startseite ist jetzt die Produkt-/Landingpage. Das eigentliche Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt und PDF-/Berichtsexport.
 
@@ -16,7 +16,7 @@ Die öffentliche Startseite ist jetzt die Produkt-/Landingpage. Das eigentliche 
 
 
 
-## Phase 19.01 – Produktseite als Startseite
+## Phase 19.02 – Produktseite als Startseite
 
 - `index.html` ist jetzt die Produkt-/Landingpage für GitHub Pages.
 - Das Berechnungstool liegt neu unter `app.html`.
@@ -75,3 +75,9 @@ Die Formteil-Auswahl wurde erweitert. Sie zeigt nun eine Bibliotheks-QS, fachlic
 - Kategorien sind fachlicher gruppiert und verständlicher beschriftet.
 - α-/β-Werte bleiben Dropdown-Auswahlwerte statt freie Eingabe.
 - Der aktive Teilstreckenbezug wird direkt im Picker angezeigt.
+
+
+## Phase 19.02
+
+- Kurzanleitung auf der Hauptseite: Projekt → Teilstrecken → Formteile → Bericht.
+- Tool bleibt unter `app.html`, Produktseite bleibt `index.html`.

@@ -29,7 +29,7 @@
 - Phase 18.34: Demo-/Beispielprojekt und Vorführmodus
 - Phase 18.35: Release Candidate / Schlussprüfung
 - Phase 19.00: Produktseite / Landingpage
-- Phase 19.01: Produktseite als `index.html`, Tool unter `app.html`
+- Phase 19.02: Produktseite als `index.html`, Tool unter `app.html`
 
 ## Nächste sinnvolle Schritte
 
@@ -38,6 +38,6 @@
 - Phase 18.34: Demo-/Beispielprojekt und Vorführmodus **erledigt**
 - Phase 18.35: Release Candidate / Schlussprüfung **erledigt**
 - Phase 18.35a: Ribbon-QS-Schaltflächen ausgeblendet **erledigt**
-- Phase 19.01: Produktseite als Startseite und Tool unter `app.html` **erledigt**
+- Phase 19.02: Produktseite als Startseite und Tool unter `app.html` **erledigt**
 - Phase 19.02: Produktseite visuell weiter professionalisieren
 - Phase 20: Lizenz-/Abo-Vorbereitung
