@@ -1,8 +1,12 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 19.05 Footer-Copyright Produktseite**.
+Aktueller Entwicklungsstand: **Phase 19.06 integrierte Bedienungsanleitung**.
 
-Die öffentliche Startseite ist jetzt die Produkt-/Landingpage. Das eigentliche Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt und PDF-/Berichtsexport.
+Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport und eine integrierte Bedienungsanleitung im Tool.
+
+### Phase 19.06 – integrierte Bedienungsanleitung
+
+Der Ribbon-Button **Hilfe** öffnet jetzt eine eigene Hilfeseite im Arbeitsbereich. Die Anleitung erklärt kurz Projektangaben, Teilstrecken, Formteile, Sonderbauteile, QS, Bericht/PDF und wichtige Kurzbefehle. Von der Produktseite kann die Hilfe direkt über `app.html?help=1` geöffnet werden.
 
 ### Phase 19.05 – Footer-Copyright Produktseite
 
@@ -20,11 +24,11 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `19.05`.
-- Über den Ribbon-Button **Datei-QS** können Speichern, Öffnen, Dateiname, IDs, Zuordnungen und Import-Stabilität geprüft werden.
+- Die aktuelle Cache-Version ist `19.06`.
+- Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
-- Über den Ribbon-Button **RC prüfen** läuft die finale Schlussprüfung für den internen Teststand.
+- Interne RC- und Deployment-QS bleiben im Code verfügbar, sind aber in der Hauptnavigation ausgeblendet.
 - Bilder sind gegen Rechtsklick, Ziehen und Markieren geschützt.
 
 

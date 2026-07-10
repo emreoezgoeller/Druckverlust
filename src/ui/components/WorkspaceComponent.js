@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=19.05';
+import ReportEngine from '../../report/ReportEngine.js?v=19.06';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -40,6 +40,7 @@ export default class WorkspaceComponent {
 
     if (!selection || selection.type === 'none') return this.renderEmpty();
 
+    if (selection.type === 'help') return this.renderHelp(selection.data);
     if (selection.type === 'project') return this.renderProject(selection.data);
     if (selection.type === 'system') return this.renderSystem(selection.data);
     if (selection.type === 'section') return this.renderSection(selection.data);
@@ -60,6 +61,182 @@ export default class WorkspaceComponent {
       <h1>Arbeitsbereich</h1>
       <p>Bitte wähle links ein Element aus.</p>
     `;
+  }
+
+
+  renderHelp(context = null) {
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0] || null;
+    const sectionCount = system?.sections?.length || 0;
+    const formPartCount = system?.formParts?.length || 0;
+    const specialCount = system?.specialComponents?.length || 0;
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-help-header">
+        <div>
+          <span class="dp-overline">Bedienungsanleitung</span>
+          <h1>Druckverlust Pro richtig benutzen</h1>
+          <p>Kurzer Leitfaden für Projektstart, Teilstrecken, Formteile, Sonderbauteile, QS und Bericht.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-help-action="project">Projekt öffnen</button>
+          <button type="button" data-help-action="demo">Demo laden</button>
+        </div>
+      </div>
+
+      <section class="dp-help-hero">
+        <div>
+          <h2>Schnellstart in 4 Schritten</h2>
+          <p>Die Berechnung funktioniert am saubersten, wenn du immer von links nach rechts arbeitest: Projektdaten → Teilstrecken → Formteile/Sonderbauteile → Bericht.</p>
+        </div>
+        <div class="dp-help-status">
+          <span>Aktueller Stand</span>
+          <strong>${this.escapeHtml(sectionCount)} TS · ${this.escapeHtml(formPartCount)} Formteile · ${this.escapeHtml(specialCount)} Sonderbauteile</strong>
+        </div>
+      </section>
+
+      <section class="dp-help-grid" aria-label="Kurzanleitung">
+        <article>
+          <span>01</span>
+          <h3>Projekt erfassen</h3>
+          <p>Projektnummer, Projektname, BKP-Nummer und Anlage eintragen. Diese Daten erscheinen später im Bericht und Dateinamen.</p>
+          <button type="button" data-help-action="project">Zu den Projektangaben</button>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Teilstrecken eingeben</h3>
+          <p>Kanal oder Rohr wählen, Luftmenge, Länge und Abmessungen erfassen. Geschwindigkeit und Reibungsverlust werden automatisch berechnet.</p>
+          <button type="button" data-help-action="system">Zur Anlagenübersicht</button>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Formteile ergänzen</h3>
+          <p>Formteil auswählen und Teilstrecke zuordnen. Grössen und Luftmengen können automatisch übernommen und bei Bedarf manuell angepasst werden.</p>
+          <button type="button" data-help-action="formparts">Formteil-Assistent öffnen</button>
+        </article>
+        <article>
+          <span>04</span>
+          <h3>Bericht erstellen</h3>
+          <p>Berechnung prüfen, Projekt-QS kontrollieren und danach den Bericht öffnen. Im Bericht kann über Drucken / PDF gespeichert werden.</p>
+          <button type="button" data-help-action="report">Bericht öffnen</button>
+        </article>
+      </section>
+
+      <section class="dp-help-panel">
+        <div>
+          <span class="dp-overline">Wichtige Eingaben</span>
+          <h2>Was muss wo eingetragen werden?</h2>
+        </div>
+        <div class="dp-help-table" role="table" aria-label="Eingabefelder und Bedeutung">
+          <div role="row"><strong role="cell">Teilstrecke</strong><span role="cell">Luftmenge m³/h, Länge m, Kanal b/h oder Rohr Ø</span></div>
+          <div role="row"><strong role="cell">Formteil</strong><span role="cell">Typ, zugehörige Teilstrecke, ζ-/Auswahlwerte und bei Bedarf Anschlussgrössen</span></div>
+          <div role="row"><strong role="cell">Sonderbauteil</strong><span role="cell">Hersteller/Typ und bekannter Druckverlust in Pa</span></div>
+          <div role="row"><strong role="cell">Bericht</strong><span role="cell">Bericht-Nr., Revision, Umfang und PDF-Druck über Browserdialog</span></div>
+        </div>
+      </section>
+
+      <section class="dp-help-panel dp-help-two-col">
+        <div>
+          <span class="dp-overline">QS</span>
+          <h2>Vor dem Export kurz prüfen</h2>
+          <ul>
+            <li>Projektangaben vollständig?</li>
+            <li>Alle Teilstrecken mit Luftmenge und Geometrie?</li>
+            <li>Formteile den richtigen Teilstrecken zugeordnet?</li>
+            <li>Sonderbauteile mit realistischem Pa-Wert?</li>
+            <li>Gesamtdruckverlust im Bericht nachvollziehbar?</li>
+          </ul>
+        </div>
+        <div>
+          <span class="dp-overline">Kurzbefehle</span>
+          <h2>Schneller arbeiten</h2>
+          <ul>
+            <li><strong>Ctrl + S</strong> speichern</li>
+            <li><strong>Ctrl + N</strong> neues Projekt</li>
+            <li><strong>Ctrl + Enter</strong> neu berechnen</li>
+            <li><strong>Ctrl + B / Ctrl + P</strong> Bericht öffnen</li>
+            <li><strong>Alt + Home</strong> Startübersicht</li>
+          </ul>
+          <button type="button" data-help-action="copy-shortcuts">Kurzbefehle kopieren</button>
+        </div>
+      </section>
+
+      <section class="dp-help-panel dp-help-note">
+        <strong>Hinweis:</strong>
+        <span>Die Autosicherung läuft lokal im Browser. Für die echte Ablage trotzdem regelmässig als <code>.dvp</code>-Datei speichern.</span>
+      </section>
+    `;
+
+    this.bindHelpActions(context);
+  }
+
+  bindHelpActions(context = null) {
+    this.root.querySelectorAll('[data-help-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.helpAction;
+        const project = this.state.project;
+        const system = this.state.selectedSystem || project?.systems?.[0] || null;
+
+        if (action === 'project') {
+          this.state.setSelection?.('project', project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'system') {
+          if (system && typeof this.state.selectSystem === 'function') this.state.selectSystem(system);
+          else {
+            this.state.setSelection?.('system', system || project);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'formparts') {
+          if (typeof this.state.selectFormPartPicker === 'function') this.state.selectFormPartPicker(system);
+          else {
+            this.state.setSelection?.('formPartPicker', system);
+            this.state.notify?.();
+          }
+          return;
+        }
+
+        if (action === 'report') {
+          this.autoCalculateProject({ notify: false });
+          this.state.setSelection?.('report', system || project);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'demo') {
+          window.location.href = 'app.html?demo=1';
+          return;
+        }
+
+        if (action === 'copy-shortcuts') {
+          const text = [
+            'Druckverlust Pro – Tastaturkürzel',
+            '',
+            'Ctrl + S: Projekt speichern',
+            'Ctrl + O: Projekt öffnen',
+            'Ctrl + N: Neues Projekt',
+            'Ctrl + Enter: Neu berechnen',
+            'Ctrl + B oder Ctrl + P: Bericht öffnen',
+            'Ctrl + D: ausgewähltes Element duplizieren',
+            'Entf: ausgewähltes Element löschen',
+            'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',
+            'Alt + Home: Startübersicht',
+            'Esc: zurück zur Anlagenübersicht',
+          ].join('\n');
+
+          if (navigator?.clipboard?.writeText) {
+            navigator.clipboard.writeText(text).then(() => alert('Kurzbefehle wurden kopiert.')).catch(() => alert(text));
+          } else {
+            alert(text);
+          }
+        }
+      });
+    });
   }
 
   renderWorkflowDashboard(project = null, system = null, context = 'system') {

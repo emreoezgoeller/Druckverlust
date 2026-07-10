@@ -444,7 +444,16 @@ export default class RibbonActions {
 
 
   showShortcutHelp() {
-    alert([
+    this.state.helpContext = {
+      openedAt: new Date().toISOString(),
+      label: APP_BUILD_LABEL,
+    };
+    this.state.setSelection?.('help', this.state.helpContext);
+    this.state.notify?.();
+  }
+
+  copyShortcutHelp() {
+    const text = [
       `Tastaturkürzel ${APP_BUILD_LABEL}`,
       '',
       'Ctrl + S: Projekt speichern',
@@ -452,9 +461,7 @@ export default class RibbonActions {
       'Demo laden: Beispielprojekt mit Teilstrecken, Formteilen und Sonderbauteilen',
       'Ctrl + N: Neues Projekt',
       'Ctrl + Enter: Neu berechnen',
-      'Start: zurück zur Projekt-/Anlagenübersicht',
-      'Projekt prüfen: über Ribbon-Schaltfläche „Projekt prüfen“',
-      'Rechen-QS: prüft Summen, Einheiten, p_dyn und Rundungen',
+      'Alt + Home: zurück zur Startübersicht',
       'Ctrl + B oder Ctrl + P: Bericht öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',
@@ -463,7 +470,14 @@ export default class RibbonActions {
       '',
       'Autosicherung: Ungespeicherte Änderungen werden lokal im Browser gesichert.',
       'Nach dem Speichern wird diese lokale Sicherung automatisch gelöscht.',
-    ].join('\n'));
+    ].join('\n');
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => alert('Tastaturkürzel wurden kopiert.')).catch(() => alert(text));
+      return;
+    }
+
+    alert(text);
   }
 
 

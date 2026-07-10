@@ -33,6 +33,7 @@
 - Phase 19.03: Demo-Start von der Hauptseite
 - Phase 19.04: Produktseite Feinschliff und Abschluss-CTA
 - Phase 19.05: Footer-Copyright auf Produktseite
+- Phase 19.06: Integrierte Bedienungsanleitung im Tool
 
 ## Nächste sinnvolle Schritte
 
@@ -44,6 +45,7 @@
 - Phase 19.02: Produktseite als Startseite und Tool unter `app.html` **erledigt**
 - Phase 19.04: Produktseite visuell weiter professionalisieren **erledigt**
 - Phase 19.05: Footer-Copyright auf Produktseite **erledigt**
+- Phase 19.06: Hilfe-/Bedienungsanleitung im Tool **erledigt**
 - Phase 20: Lizenz-/Abo-Vorbereitung
 
 ### Phase 19.03 – Demo-Start von der Hauptseite
@@ -54,3 +56,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ### Phase 19.05 – Footer-Copyright
 
 Die Produktseite zeigt unten links den gewünschten Copyright-Hinweis mit Name und Edition.
+
+### Phase 19.06 – integrierte Bedienungsanleitung
+
+Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kann die Produktseite direkt `app.html?help=1` aufrufen.

@@ -1,3 +1,12 @@
+## Phase 19.06 – integrierte Bedienungsanleitung im Tool
+
+- Ribbon-Button **Hilfe** öffnet jetzt eine richtige Hilfeseite im Arbeitsbereich statt nur ein kurzes Popup.
+- Kurzanleitung mit 4 Schritten ergänzt: Projekt, Teilstrecken, Formteile, Bericht.
+- Hilfe enthält Eingabeübersicht, QS-Hinweise, Kurzbefehle und direkten Zugriff auf Projekt, Anlagenübersicht, Formteil-Assistent, Bericht und Demo.
+- Produktseite verlinkt direkt auf die Anleitung über `app.html?help=1`.
+- App erkennt den Hilfe-Startparameter und öffnet direkt die Hilfeseite.
+- Cache-Version auf `19.06` erhöht.
+
 ## Phase 19.05 – Footer-Copyright auf der Produktseite
 
 - Footer der Produktseite ergänzt: `© 2026 Emre Özgöller – Druckverlust Pro · Professional`.

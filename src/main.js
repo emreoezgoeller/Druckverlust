@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 19.05
+// Druckverlust Pro – Phase 19.06
 // Startet die professionelle Oberfläche als aktive Hauptanwendung.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.05';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=19.06';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
@@ -94,6 +94,30 @@ function cleanupDemoUrlFlag() {
   window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
 }
 
+
+function isHelpStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const helpParam = String(params.get('hilfe') || params.get('help') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'hilfe', 'help'].includes(helpParam) || hash.includes('hilfe') || hash.includes('help');
+}
+
+function cleanupHelpUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadHelp = url.searchParams.has('hilfe') || url.searchParams.has('help') || url.hash.toLowerCase().includes('hilfe') || url.hash.toLowerCase().includes('help');
+  if (!hadHelp) return;
+
+  url.searchParams.delete('hilfe');
+  url.searchParams.delete('help');
+  if (url.hash.toLowerCase().includes('hilfe') || url.hash.toLowerCase().includes('help')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
   const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
@@ -165,6 +189,12 @@ function bootstrap() {
   if (startup.demoRequested) {
     state.loadedFromLandingDemo = true;
     state.isProjectDirty = false;
+  }
+
+  const helpRequested = isHelpStartupRequested();
+  if (helpRequested) {
+    state.setSelection('help', { source: 'landing' });
+    cleanupHelpUrlFlag();
   }
 
   const shell = new ApplicationShell(root);

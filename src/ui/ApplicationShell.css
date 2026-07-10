@@ -4174,3 +4174,164 @@ canvas,
 .dp-rc-list .dp-project-check-item strong {
   letter-spacing: -0.01em;
 }
+
+/* Phase 19.06 – integrierte Bedienungsanleitung */
+.dp-help-header .workspace-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dp-help-hero,
+.dp-help-panel,
+.dp-help-grid article {
+  border: 1px solid var(--dp-border);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(8, 47, 87, 0.06);
+}
+
+.dp-help-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  margin: 18px 0;
+  background: linear-gradient(135deg, #fff 0%, #eef7ff 100%);
+}
+
+.dp-help-hero h2,
+.dp-help-panel h2,
+.dp-help-grid h3 {
+  margin: 0 0 8px;
+  color: var(--dp-blue-900);
+}
+
+.dp-help-hero p,
+.dp-help-panel p,
+.dp-help-grid p,
+.dp-help-table span,
+.dp-help-note span {
+  color: var(--dp-muted);
+  line-height: 1.55;
+}
+
+.dp-help-status {
+  min-width: 230px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(14, 90, 156, 0.18);
+}
+
+.dp-help-status span {
+  color: var(--dp-muted);
+  font-weight: 700;
+}
+
+.dp-help-status strong {
+  margin-top: 6px;
+  color: var(--dp-blue-900);
+  font-size: 18px;
+}
+
+.dp-help-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.dp-help-grid article {
+  padding: 20px;
+}
+
+.dp-help-grid article > span {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #e8f3ff;
+  color: var(--dp-blue-900);
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+
+.dp-help-grid button,
+.dp-help-panel button,
+.dp-help-header button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--dp-blue-800);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-help-grid button:hover,
+.dp-help-panel button:hover,
+.dp-help-header button:hover {
+  background: var(--dp-blue-700);
+}
+
+.dp-help-panel {
+  padding: 22px;
+  margin: 18px 0;
+}
+
+.dp-help-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dp-help-table > div {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fbff;
+  border: 1px solid #e4edf7;
+}
+
+.dp-help-two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.dp-help-two-col ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--dp-muted);
+  line-height: 1.7;
+}
+
+.dp-help-note {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #fffdf2;
+  border-color: #f2df91;
+}
+
+@media (max-width: 1100px) {
+  .dp-help-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dp-help-hero { flex-direction: column; }
+  .dp-help-status { min-width: 0; }
+}
+
+@media (max-width: 720px) {
+  .dp-help-grid,
+  .dp-help-two-col,
+  .dp-help-table > div { grid-template-columns: 1fr; }
+  .dp-help-header .workspace-actions { flex-wrap: wrap; }
+}
