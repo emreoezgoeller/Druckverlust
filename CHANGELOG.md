@@ -1,10 +1,16 @@
+## 19.01 – Produktseite als Startseite / Tool unter app.html
+
+- `index.html` ist jetzt die Produkt-/Landingpage.
+- Das eigentliche Berechnungstool wurde nach `app.html` verschoben.
+- Alle Start-/Tool-Links auf der Produktseite zeigen jetzt auf `app.html`.
+- `produkt.html` bleibt als Alias/zweite Produktadresse bestehen und verweist ebenfalls korrekt auf das Tool.
+- Cache-Busting auf `19.01` erhöht.
+
 ## 19.00 – Produktseite / Landingpage
 
-- Neue separate Produktseite `produkt.html` ergänzt.
-- Neues Styling für Produktauftritt unter `src/landing/landing.css`.
-- Tool bleibt weiterhin stabil unter `index.html` erreichbar.
-- Produktseite enthält Hero-Bereich, Funktionsübersicht, Arbeitsablauf und Bericht-/Export-Positionierung.
-- Cache-Busting auf `19.00` erhöht.
+- Separate Produktseite ergänzt.
+- Landingpage-CSS und Produktnavigation aufgebaut.
+- App blieb in 19.00 noch unter `index.html`.
 
 ## 18.35a – Ribbon-QS-Schaltflächen ausgeblendet
 
