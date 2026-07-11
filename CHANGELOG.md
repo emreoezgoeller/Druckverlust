@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## Phase 21.06 – Einheitliches Oberflächendesign
+
+- Berechnungstool optisch an die Produkt-/Hauptseite angeglichen.
+- Hellen, leicht transparenten Kopfbereich mit konsistenten Pillen-Schaltflächen ergänzt.
+- Den bestehenden Markenblock mit EO-Logo, „Druckverlust Pro“ und „Professional“ vollständig beibehalten.
+- Sidebar und Arbeitsbereich als schwebende, abgerundete Karten mit ruhigerem Schatten und mehr Abstand gestaltet.
+- Formulare, Tabellen, Statusleiste, Hinweise und Aktionsschaltflächen auf dieselbe Farb- und Formensprache vereinheitlicht.
+- Hauptaktionen im Ribbon klar hervorgehoben; Prüfaktionen bleiben dezent erkennbar.
+- Responsive Darstellung für kleinere Fenster verbessert.
+- Neue Styles bewusst als separates Override `src/ui/phase21_06.css` ergänzt, ohne Rechen- oder Projektlogik zu verändern.
+- Cache-Version auf 21.06 und App-Version auf 1.3.6 erhöht.
+
+## Phase 21.05 – Öffentliche Fachtest-Version und strukturiertes Prüfprotokoll
+
+- Fachtester-Protokoll mit 10 manuellen Prüfschritten für Projekt, Teilstrecken, Formteile, Sonderbauteile, `.dvp`, Bericht/PDF, Plausibilität und Bedienung ergänzt.
+- Automatischen Vorabcheck aus Referenztests, Formteil-QS, Formteil-Sync-QS, Vergleichsmatrix und Praxisprojekt-QS zusammengeführt.
+- Aktueller Vorabcheck umfasst 5/5 bestandene Prüfserien und 329/329 Einzelprüfungen.
+- Testerangaben, Umgebung, Status, Bemerkungen, Gesamtbewertung und Freigabeempfehlung lokal speicherbar gemacht.
+- TXT-, CSV- und Zwischenablage-Export für das Fachtester-Protokoll ergänzt.
+- Direkte Startadresse `app.html?fachtest=1` sowie Fachtest-Link auf der Produktseite ergänzt.
+- Eigenen Browser- und Node-Test für Protokollmodell, Fortschritt, Validierung und Export ergänzt.
+- `npm test` und Deployment-QS um die Fachtest-Dateien erweitert.
+- Cache-Version auf 21.05 und App-Version auf 1.3.5 erhöht.
+
+
 ## Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen
 
 - Zehn feste Handrechnungen für drei Rechteckkanäle, drei Rundrohre, Luftdichte-, Reibungszahl- und Summenfälle ergänzt.

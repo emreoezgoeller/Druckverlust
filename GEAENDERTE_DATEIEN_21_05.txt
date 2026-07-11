@@ -1,0 +1,28 @@
+Druckverlust Pro – Phase 21.05
+Nur geänderte / neue Dateien
+
+404.html
+CHANGELOG.md
+README.md
+ROADMAP.md
+app.html
+datenschutz.html
+docs/SPRINT21_05_FACHTEST_VERSION.md
+docs/TESTPLAN.md
+impressum.html
+index.html
+lizenz.html
+package.json
+produkt.html
+src/core/appVersion.js
+src/diagnostics/DeploymentDiagnostics.js
+src/diagnostics/ExpertTestDiagnostics.js
+src/main.js
+src/pdf/report.js
+src/testing/ExpertTestProtocol.js
+src/ui/components/StatusBarComponent.js
+src/ui/components/WorkspaceComponent.js
+src/ui/phase21_05.css
+tests/phase21-expert-test-protocol.html
+tests/phase21-expert-test-protocol.test.js
+tests/run-expert-test-protocol.js

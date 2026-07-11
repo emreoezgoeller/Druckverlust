@@ -151,3 +151,27 @@ Sollstatus: 10/10 Fälle und 92/92 Einzelprüfungen bestanden.
 
 Die Handwerte sind fest hinterlegt und werden nicht mit dem aktuellen Rechenkern erzeugt. Die Prüfung ist keine externe Normenzertifizierung.
 
+## Phase 21.05 – Öffentliche Fachtest-Version
+
+Automatischer Test des Protokollmodells:
+
+```bash
+npm run test:expert
+```
+
+Der öffentliche Fachtest ist direkt über `app.html?fachtest=1` oder im Tool unter **Rechen-QS → Fachtest-Protokoll** erreichbar.
+
+Geprüft werden:
+
+- 10 strukturierte manuelle Prüfpunkte
+- Statuswerte Nicht geprüft / OK / Auffällig / Fehler
+- Fortschritts- und Vollständigkeitsberechnung
+- Tester-, Firmen- und Umgebungsangaben
+- Gesamtbewertung und Freigabeempfehlung
+- Blockierstatus bei manuellen Fehlern
+- Text-, CSV- und Dateinamenausgabe
+- lokales Zwischenspeichern im Browser
+- automatischer Vorabcheck aus 5 Prüfserien mit insgesamt 329 Einzelprüfungen
+
+Das Fachtester-Protokoll ist eine strukturierte Rückmeldung aus der Praxis. Es ersetzt keine externe Normenzertifizierung oder unabhängige technische Zulassung.
+

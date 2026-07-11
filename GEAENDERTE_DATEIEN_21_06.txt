@@ -1,0 +1,24 @@
+Phase 21.06 – Einheitliches Oberflächendesign
+
+Geänderte/neue Dateien:
+- 404.html
+- CHANGELOG.md
+- README.md
+- ROADMAP.md
+- app.html
+- datenschutz.html
+- docs/SPRINT21_06_OBERFLAECHENDESIGN.md
+- impressum.html
+- index.html
+- lizenz.html
+- package.json
+- produkt.html
+- src/core/appVersion.js
+- src/main.js
+- src/pdf/report.js
+- src/ui/components/WorkspaceComponent.js
+- src/ui/phase21_06.css
+- tests/phase21-expert-test-protocol.html
+- tests/run-expert-test-protocol.js
+
+Hinweis: ZIP-Inhalt direkt über den bestehenden Projektordner kopieren.

@@ -1,9 +1,28 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen**.
+Aktueller Entwicklungsstand: **Phase 21.06 – Einheitliches Oberflächendesign für Produktseite und Berechnungstool**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
+
+
+### Phase 21.06 – Einheitliches Oberflächendesign
+
+Die Oberfläche des Berechnungstools verwendet jetzt dieselbe visuelle Sprache wie die Hauptseite: helle Glas-Navigation, blaue Verlaufsschaltflächen für Hauptaktionen, schwebende Karten, abgerundete Eingabefelder und ruhigere Tabellen. Der Markenbereich mit EO-Logo, **Druckverlust Pro** und **Professional** bleibt unverändert sichtbar. Die Anpassung ist rein gestalterisch; Rechenlogik, Projektdateien, Formteile und Berichte wurden nicht verändert.
+
+### Phase 21.05 – Öffentliche Fachtest-Version
+
+Für die externe Fachtest-Runde steht jetzt ein strukturiertes Protokoll direkt im Tool bereit. Der Fachtest kombiniert den automatischen Vorabcheck mit **5 Prüfserien und 329 Einzelprüfungen** sowie **10 manuellen Praxisschritten** für Projekt, Teilstrecken, Formteile, Sonderbauteile, `.dvp`, Bericht/PDF und Bedienung.
+
+Aufrufmöglichkeiten:
+
+- Produktseite/Footer: **Fachtest**
+- Direkt: `app.html?fachtest=1`
+- Tool: **Rechen-QS → Fachtest-Protokoll**
+- Browser-Test: `tests/phase21-expert-test-protocol.html`
+- Konsole: `npm run test:expert`
+
+Testerangaben, Bewertungen und Bemerkungen werden lokal im Browser zwischengespeichert. Das vollständige Protokoll kann als Text kopiert oder als TXT/CSV heruntergeladen werden. Es findet noch keine automatische Übermittlung an einen Server statt.
 
 ### Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen
 
@@ -74,7 +93,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `21.04`.
+- Die aktuelle Cache-Version ist `21.06`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

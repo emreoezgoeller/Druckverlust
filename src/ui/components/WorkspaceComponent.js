@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=21.04';
+import ReportEngine from '../../report/ReportEngine.js?v=21.06';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -14,6 +14,14 @@ import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationD
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js';
+import {
+  EXPERT_TEST_RECOMMENDATIONS,
+  EXPERT_TEST_STATUS_OPTIONS,
+  EXPERT_TEST_STORAGE_KEY,
+  createExpertTestDraft,
+  createExpertTestFilename,
+} from '../../testing/ExpertTestProtocol.js';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
@@ -61,6 +69,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'formPartSyncValidation') return this.renderFormPartSyncValidation(selection.data || this.state.formPartSyncValidation);
     if (selection.type === 'comparisonMatrixValidation') return this.renderComparisonMatrix(selection.data || this.state.comparisonMatrixValidation);
     if (selection.type === 'practiceProjectValidation') return this.renderPracticeProjectValidation(selection.data || this.state.practiceProjectValidation);
+    if (selection.type === 'expertTest') return this.renderExpertTestProtocol(selection.data?.draft ? selection.data : this.state.expertTestReport);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
@@ -274,6 +283,7 @@ export default class WorkspaceComponent {
         </div>
         <div class="dp-feedback-actions">
           <button type="button" data-help-action="copy-feedback">Feedback-Vorlage kopieren</button>
+          <button type="button" data-help-action="expert-test">Fachtest-Protokoll öffnen</button>
           <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
         </div>
       </section>
@@ -284,6 +294,8 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>21.06</span><strong>Einheitliches Oberflächendesign</strong><p>Berechnungstool optisch an die Produktseite angeglichen: helle Glas-Navigation, schwebende Karten, konsistente Buttons, Tabellen und Eingabefelder. Markenblock bleibt erhalten.</p></article>
+          <article><span>21.05</span><strong>Öffentliche Fachtest-Version</strong><p>Automatischer Vorabcheck, 10 manuelle Fachtest-Schritte, lokale Zwischenspeicherung sowie TXT-/CSV-Protokoll.</p></article>
           <article><span>21.04</span><strong>Fachliche Vergleichsmatrix</strong><p>10 feste Handrechnungen mit 92 Einzelprüfungen für Kanal, Rohr, Sensitivitäten, Summenbildung und Rundung.</p></article>
           <article><span>21.03</span><strong>Formteil-Sync-QS</strong><p>Alle 14 Formteile, Anschluss-Teilstrecken, manuelle Overrides und automatische Nachführung geprüft.</p></article>
           <article><span>21.02</span><strong>Praxisprojekt-QS</strong><p>48 Teilstrecken, 36 Formteile, 26 Sonderbauteile, .dvp-Roundtrip und 20 Berichtseiten automatisiert geprüft.</p></article>
@@ -346,6 +358,16 @@ export default class WorkspaceComponent {
 
         if (action === 'demo-report') {
           window.location.href = 'app.html?demo=1&report=1';
+          return;
+        }
+
+        if (action === 'expert-test') {
+          const draft = this.loadExpertTestDraft();
+          const report = ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || null);
+          this.state.expertTestAutomated = report.automated;
+          this.state.expertTestReport = report;
+          this.state.setSelection?.('expertTest', report);
+          this.state.notify?.();
           return;
         }
 
@@ -5446,6 +5468,7 @@ export default class WorkspaceComponent {
           <button type="button" data-calculation-detail-action="sync">Formteil-Sync-QS</button>
           <button type="button" data-calculation-detail-action="comparison">Vergleichsmatrix</button>
           <button type="button" data-calculation-detail-action="practice">Praxisprojekt-QS</button>
+          <button type="button" data-calculation-detail-action="expert">Fachtest-Protokoll</button>
           <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
         </div>
       </div>
@@ -5559,6 +5582,16 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'expert') {
+          const draft = this.loadExpertTestDraft();
+          const report = ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || null);
+          this.state.expertTestAutomated = report.automated;
+          this.state.expertTestReport = report;
+          this.state.setSelection?.('expertTest', report);
+          this.state.notify?.();
+          return;
+        }
+
         if (action === 'system') {
           this.state.selectSystem?.(system || this.state.selectedSystem || this.state.project?.systems?.[0]);
           return;
@@ -5579,6 +5612,322 @@ export default class WorkspaceComponent {
     });
   }
 
+
+
+  loadExpertTestDraft() {
+    if (typeof localStorage === 'undefined') return createExpertTestDraft();
+
+    try {
+      const raw = localStorage.getItem(EXPERT_TEST_STORAGE_KEY);
+      return raw ? createExpertTestDraft(JSON.parse(raw)) : createExpertTestDraft();
+    } catch (error) {
+      console.warn('Fachtester-Protokoll konnte nicht geladen werden:', error);
+      return createExpertTestDraft();
+    }
+  }
+
+  saveExpertTestDraft(draft = {}) {
+    const normalized = createExpertTestDraft({ ...draft, updatedAt: new Date().toISOString() });
+
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(EXPERT_TEST_STORAGE_KEY, JSON.stringify(normalized));
+      } catch (error) {
+        console.warn('Fachtester-Protokoll konnte nicht lokal gespeichert werden:', error);
+      }
+    }
+
+    return normalized;
+  }
+
+  collectExpertTestDraft(fallback = null) {
+    const draft = createExpertTestDraft(fallback || this.state.expertTestReport?.draft || this.loadExpertTestDraft());
+
+    this.root.querySelectorAll('[data-expert-field]').forEach(field => {
+      const path = String(field.dataset.expertField || '').split('.');
+      if (path.length !== 2) return;
+      const [group, key] = path;
+      if (!draft[group] || !(key in draft[group])) return;
+      draft[group][key] = field.value;
+    });
+
+    this.root.querySelectorAll('[data-expert-check-status]').forEach(field => {
+      const item = draft.checks.find(check => check.id === field.dataset.expertCheckStatus);
+      if (item) item.status = field.value;
+    });
+
+    this.root.querySelectorAll('[data-expert-check-note]').forEach(field => {
+      const item = draft.checks.find(check => check.id === field.dataset.expertCheckNote);
+      if (item) item.note = field.value;
+    });
+
+    return this.saveExpertTestDraft(draft);
+  }
+
+  renderExpertTestProtocol(report = null) {
+    const draft = report?.draft
+      ? createExpertTestDraft(report.draft)
+      : this.loadExpertTestDraft();
+    const current = report?.draft
+      ? report
+      : ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || null);
+
+    this.state.expertTestAutomated = current.automated;
+    this.state.expertTestReport = current;
+
+    const validationMessages = [
+      ...(current.validation?.errors || []).map(message => ({ type: 'error', message })),
+      ...(current.validation?.warnings || []).map(message => ({ type: 'warning', message })),
+    ];
+
+    const statusOptions = value => EXPERT_TEST_STATUS_OPTIONS.map(option => `
+      <option value="${this.escapeAttribute(option.id)}" ${option.id === value ? 'selected' : ''}>${this.escapeHtml(option.label)}</option>
+    `).join('');
+
+    const recommendationOptions = EXPERT_TEST_RECOMMENDATIONS.map(option => `
+      <option value="${this.escapeAttribute(option.id)}" ${option.id === draft.overall.recommendation ? 'selected' : ''}>${this.escapeHtml(option.label)}</option>
+    `).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-expert-test-header">
+        <div>
+          <span class="dp-overline">Öffentliche Testversion · Phase ${this.escapeHtml(APP_RELEASE)}</span>
+          <h1>Fachtester-Protokoll</h1>
+          <p>Strukturierter Praxistest für Lüftungsplaner: automatische Vorprüfung, manuelle Prüfschritte, Bemerkungen und Freigabeempfehlung.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-expert-action="rerun">Automatik neu prüfen</button>
+          <button type="button" data-expert-action="refresh">Stand aktualisieren</button>
+          <button type="button" data-expert-action="copy">Protokoll kopieren</button>
+          <button type="button" data-expert-action="download">TXT herunterladen</button>
+          <button type="button" data-expert-action="csv">CSV herunterladen</button>
+          <button type="button" data-expert-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-expert-summary dp-expert-summary-${this.escapeAttribute(current.status || 'in_progress')}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Fachtest-Status</span>
+            <h2>${this.escapeHtml(current.label)}</h2>
+            <p>${this.escapeHtml(current.summary)}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.manual?.completionPercent ?? 0)} %</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Automatik</span><strong>${this.escapeHtml(current.automated?.counts?.passedSuites ?? 0)}/${this.escapeHtml(current.automated?.counts?.suites ?? 0)}</strong></div>
+          <div><span>Manuell erledigt</span><strong>${this.escapeHtml(current.manual?.completed ?? 0)}/${this.escapeHtml(current.manual?.total ?? 0)}</strong></div>
+          <div><span>Auffällig</span><strong>${this.escapeHtml(current.manual?.notice ?? 0)}</strong></div>
+          <div><span>Fehler</span><strong>${this.escapeHtml(current.manual?.error ?? 0)}</strong></div>
+        </div>
+        <div class="dp-expert-progress" aria-label="Fachtest-Fortschritt">
+          <span style="width:${Math.max(0, Math.min(100, Number(current.manual?.completionPercent ?? 0)))}%"></span>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-expert-automated">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Automatischer Vorabcheck</span>
+            <h2>${this.escapeHtml(current.automated?.label || '-')}</h2>
+            <p>${this.escapeHtml(current.automated?.summary || '')}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.automated?.counts?.passedChecks ?? 0)}/${this.escapeHtml(current.automated?.counts?.checks ?? 0)} Prüfungen</span>
+        </div>
+        <div class="dp-expert-suite-grid">
+          ${(current.automated?.suites || []).map(suite => `
+            <article class="${suite.passed ? 'is-ok' : 'is-error'}">
+              <strong>${suite.passed ? '✓' : '✗'} ${this.escapeHtml(suite.label)}</strong>
+              <span>${this.escapeHtml(suite.summary)}</span>
+              <small>${this.escapeHtml(suite.passedChecks ?? 0)}/${this.escapeHtml(suite.checks ?? 0)} Einzelprüfungen</small>
+            </article>
+          `).join('')}
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-expert-tester">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Testperson und Umgebung</span>
+            <h2>Wer hat getestet?</h2>
+            <p>Die Angaben und Bemerkungen werden nur lokal in diesem Browser gespeichert, bis das Protokoll kopiert oder heruntergeladen wird.</p>
+          </div>
+          <span class="dp-expert-local-status" data-expert-save-status>Lokal gespeichert</span>
+        </div>
+        <div class="dp-expert-form-grid">
+          <label><span>Name</span><input data-expert-field="tester.name" value="${this.escapeAttribute(draft.tester.name)}" placeholder="Vorname Nachname"></label>
+          <label><span>Firma</span><input data-expert-field="tester.company" value="${this.escapeAttribute(draft.tester.company)}" placeholder="Planungsbüro / Unternehmen"></label>
+          <label><span>Funktion / Fachgebiet</span><input data-expert-field="tester.role" value="${this.escapeAttribute(draft.tester.role)}" placeholder="z. B. Gebäudetechnikplaner Lüftung"></label>
+          <label><span>E-Mail (optional)</span><input data-expert-field="tester.email" type="email" value="${this.escapeAttribute(draft.tester.email)}" placeholder="name@firma.ch"></label>
+        </div>
+        <div class="dp-expert-environment">
+          <span><strong>App:</strong> v${this.escapeHtml(draft.appVersion)} · Phase ${this.escapeHtml(draft.appRelease)}</span>
+          <span><strong>Ansicht:</strong> ${this.escapeHtml(draft.environment.viewport || '-')}</span>
+          <span><strong>Plattform:</strong> ${this.escapeHtml(draft.environment.platform || '-')}</span>
+          <span title="${this.escapeAttribute(draft.environment.browser || '-')}"><strong>Browser:</strong> ${this.escapeHtml((draft.environment.browser || '-').slice(0, 90))}</span>
+        </div>
+      </section>
+
+      <section class="dp-expert-checks" aria-label="Manuelle Fachtest-Prüfpunkte">
+        ${draft.checks.map((item, index) => `
+          <article class="dp-result-panel dp-expert-check dp-expert-check-${this.escapeAttribute(item.status)}">
+            <div class="dp-expert-check-head">
+              <div>
+                <span>${String(index + 1).padStart(2, '0')} · ${this.escapeHtml(item.area)}</span>
+                <h2>${this.escapeHtml(item.title)}</h2>
+              </div>
+              <select data-expert-check-status="${this.escapeAttribute(item.id)}" aria-label="Status ${this.escapeAttribute(item.title)}">
+                ${statusOptions(item.status)}
+              </select>
+            </div>
+            <div class="dp-expert-check-body">
+              <p><strong>Prüfung:</strong> ${this.escapeHtml(item.instruction)}</p>
+              <p><strong>Erwartet:</strong> ${this.escapeHtml(item.expected)}</p>
+              <label>
+                <span>Bemerkung / Abweichung</span>
+                <textarea data-expert-check-note="${this.escapeAttribute(item.id)}" rows="2" placeholder="Beobachtung, Zahlenwert, betroffene Teilstrecke oder Verbesserungsvorschlag …">${this.escapeHtml(item.note)}</textarea>
+              </label>
+            </div>
+          </article>
+        `).join('')}
+      </section>
+
+      <section class="dp-result-panel dp-expert-overall">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Gesamtbewertung</span>
+            <h2>Fachliche Freigabeempfehlung</h2>
+          </div>
+        </div>
+        <div class="dp-expert-form-grid">
+          <label><span>Gesamtbewertung</span><input data-expert-field="overall.rating" value="${this.escapeAttribute(draft.overall.rating)}" placeholder="z. B. sehr gut / gut / ausreichend"></label>
+          <label><span>Empfehlung</span><select data-expert-field="overall.recommendation">${recommendationOptions}</select></label>
+        </div>
+        <div class="dp-expert-text-grid">
+          <label><span>Stärken</span><textarea data-expert-field="overall.strengths" rows="3" placeholder="Was funktioniert besonders gut?">${this.escapeHtml(draft.overall.strengths)}</textarea></label>
+          <label><span>Verbesserungen</span><textarea data-expert-field="overall.improvements" rows="3" placeholder="Was sollte vor einer Freigabe verbessert werden?">${this.escapeHtml(draft.overall.improvements)}</textarea></label>
+          <label class="is-wide"><span>Weitere Hinweise</span><textarea data-expert-field="overall.notes" rows="3" placeholder="Zusätzliche fachliche oder technische Hinweise …">${this.escapeHtml(draft.overall.notes)}</textarea></label>
+        </div>
+      </section>
+
+      ${validationMessages.length ? `
+        <section class="dp-result-panel dp-expert-validation">
+          <h2>Offene Punkte im Protokoll</h2>
+          <div class="dp-project-check-list">
+            ${validationMessages.map(item => `
+              <div class="dp-project-check-item ${this.escapeAttribute(item.type)}"><strong>${item.type === 'error' ? 'Fehler' : 'Hinweis'}</strong><span>${this.escapeHtml(item.message)}</span></div>
+            `).join('')}
+          </div>
+        </section>
+      ` : `
+        <section class="dp-result-panel dp-expert-ready">
+          <strong>Protokoll vollständig.</strong>
+          <span>Alle Pflichtschritte sind bearbeitet und die Freigabeempfehlung ist dokumentiert.</span>
+        </section>
+      `}
+
+      <section class="dp-expert-footer-actions">
+        <button type="button" data-expert-action="refresh">Stand aktualisieren</button>
+        <button type="button" data-expert-action="copy">Protokoll kopieren</button>
+        <button type="button" data-expert-action="download">TXT herunterladen</button>
+        <button type="button" data-expert-action="csv">CSV herunterladen</button>
+        <button type="button" class="dp-button-danger" data-expert-action="reset">Protokoll zurücksetzen</button>
+      </section>
+    `;
+
+    this.bindExpertTestProtocol(current);
+  }
+
+  bindExpertTestProtocol(report = null) {
+    const persist = () => {
+      const draft = this.collectExpertTestDraft(report?.draft);
+      report.draft = draft;
+      const status = this.root.querySelector('[data-expert-save-status]');
+      if (status) {
+        status.textContent = `Lokal gespeichert · ${new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })}`;
+      }
+      return draft;
+    };
+
+    this.root.querySelectorAll('[data-expert-field], [data-expert-check-status], [data-expert-check-note]').forEach(field => {
+      field.addEventListener('change', persist);
+      if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') field.addEventListener('input', persist);
+    });
+
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    this.root.querySelectorAll('[data-expert-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.expertAction;
+
+        if (action === 'reset') {
+          if (!confirm('Fachtester-Protokoll und alle lokalen Bemerkungen wirklich zurücksetzen?')) return;
+          if (typeof localStorage !== 'undefined') localStorage.removeItem(EXPERT_TEST_STORAGE_KEY);
+          const next = ExpertTestDiagnostics.create(createExpertTestDraft(), this.state.expertTestAutomated || null);
+          this.state.expertTestReport = next;
+          this.state.setSelection?.('expertTest', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        const draft = persist();
+        const automated = action === 'rerun'
+          ? ExpertTestDiagnostics.runAutomatedPreflight()
+          : (this.state.expertTestAutomated || report?.automated || null);
+        const next = ExpertTestDiagnostics.create(draft, automated);
+        this.state.expertTestAutomated = next.automated;
+        this.state.expertTestReport = next;
+
+        if (action === 'rerun' || action === 'refresh') {
+          this.state.setSelection?.('expertTest', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = ExpertTestDiagnostics.toText(next);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'download') {
+          downloadText(createExpertTestFilename(draft, 'txt'), ExpertTestDiagnostics.toText(next), 'text/plain;charset=utf-8');
+          return;
+        }
+
+        if (action === 'csv') {
+          downloadText(createExpertTestFilename(draft, 'csv'), `\ufeff${ExpertTestDiagnostics.toCsv(next)}`, 'text/csv;charset=utf-8');
+        }
+      });
+    });
+  }
 
   renderReferenceTests(report = null) {
     const current = report || ReferenceTestDiagnostics.run();

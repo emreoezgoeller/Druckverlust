@@ -179,6 +179,10 @@ export default class StatusBarComponent {
       return 'Praxisprojekt-QS';
     }
 
+    if (selection.type === 'expertTest') {
+      return 'Fachtester-Protokoll';
+    }
+
     if (selection.type === 'projectFileCheck') {
       return 'Datei-QS';
     }

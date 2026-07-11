@@ -47,9 +47,10 @@
 - Phase 21.02: Praxisprojekt, .dvp-Roundtrip und 20-seitigen Bericht automatisiert geprüft
 - Phase 21.03: Grössen-/Anschluss-Synchronisation aller 14 Formteile mit 113 Einzelprüfungen abgesichert
 - Phase 21.04: Zehn Handrechnungen mit 92 Einzelprüfungen als fachliche Vergleichsmatrix abgesichert
+- Phase 21.05: Öffentliche Testversion mit strukturiertem Fachtester-Protokoll vorbereitet
+- Phase 21.06: Tool-Oberfläche an das Design der Hauptseite angeglichen
 
 ## Nächste sinnvolle Schritte
 
-- Phase 21.05: Öffentliche Testversion mit strukturiertem Fachtester-Protokoll vorbereiten
-- Phase 21.06: Rückmeldungen aus der Fachtest-Runde bündeln und Freigabeentscheidung vorbereiten
-- Danach: externe Fachtest-Runde und Freigabeentscheidung
+- Phase 21.07: Rückmeldungen aus der Fachtest-Runde bündeln und Freigabeentscheidung vorbereiten
+- Danach: fachliche Freigabeentscheidung und gezielte Korrekturrunde

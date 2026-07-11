@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 21.04
-// Startet Tool, Demo, Hilfe und Beispielbericht über URL-Parameter.
+// Druckverlust Pro – Phase 21.06
+// Startet Tool, Demo, Hilfe, Beispielbericht und Fachtest über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.04';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.06';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
@@ -158,6 +158,29 @@ function cleanupReportUrlFlag() {
   window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
 }
 
+function isExpertTestStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const value = String(params.get('fachtest') || params.get('expert-test') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'fachtest', 'expert'].includes(value) || hash.includes('fachtest');
+}
+
+function cleanupExpertTestUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadFlag = url.searchParams.has('fachtest') || url.searchParams.has('expert-test') || url.hash.toLowerCase().includes('fachtest');
+  if (!hadFlag) return;
+
+  url.searchParams.delete('fachtest');
+  url.searchParams.delete('expert-test');
+  if (url.hash.toLowerCase().includes('fachtest')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
   const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
@@ -234,8 +257,12 @@ function bootstrap() {
   const helpRequested = isHelpStartupRequested();
   const helpSection = getHelpStartupSection();
   const reportRequested = isReportStartupRequested();
+  const expertTestRequested = isExpertTestStartupRequested();
 
-  if (helpRequested) {
+  if (expertTestRequested) {
+    state.setSelection('expertTest', { source: 'public-test' });
+    cleanupExpertTestUrlFlag();
+  } else if (helpRequested) {
     state.setSelection('help', { source: 'landing' });
     cleanupHelpUrlFlag();
   } else if (reportRequested) {
