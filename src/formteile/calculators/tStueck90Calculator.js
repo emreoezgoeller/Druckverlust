@@ -198,7 +198,7 @@ export function calculateTStueck90Variante2(values = {}) {
   }
 
   const areaLookup = lookupValue(T_STUECK_90_2_AREA_ROWS, areaRatio, 'ceil');
-  const ratioLookup = lookupValue(T_STUECK_90_2_RATIO_COLUMNS, ratio, 'ceil');
+  const ratioLookup = lookupValue(T_STUECK_90_2_RATIO_COLUMNS, ratio, 'floor');
   const zeta = Number(T_STUECK_90_2_TABLE[areaLookup]?.[ratioLookup] ?? 0);
   const dynamicPressurePa = dynamicPressure(values.wA);
   const pressureLossPa = zeta * dynamicPressurePa;
@@ -222,8 +222,8 @@ export function calculateTStueck90Variante2(values = {}) {
       areaRatio: roundTo(areaRatio, 3),
       areaLookup,
       formula: 'ζA = Tabellenwert(AA/A, wA/w); Δp = ζA × pdyn(wA)',
-      lookupMode: 'ceil',
-      lookupModeLabel: 'exakt oder nächst grösserer Tabellenwert',
+      lookupMode: 'AA/A: ceil; wA/w: floor',
+      lookupModeLabel: 'AA/A auf nächst grössere Tabellenzeile; wA/w exakt oder nächst kleiner gemäss Excel',
       referenceRows: [
         ...referenceRows(values, values),
         { label: 'Flächenverhältnis AA/A', value: roundTo(areaRatio, 3), digits: 3 },

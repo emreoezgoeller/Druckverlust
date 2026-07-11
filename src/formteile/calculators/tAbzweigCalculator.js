@@ -322,10 +322,20 @@ export function calculateTAbzweigRund1(values = {}) {
   });
 }
 
+function lookupAreaBand(areaRatio) {
+  const ratio = toNumber(areaRatio);
+
+  // Excel-Vorlage: IF(AA/A <= 0.2, Tabelle 0.1,
+  //                    IF(AA/A <= 0.4, Tabelle 0.3, Tabelle 0.5))
+  if (ratio <= 0.2) return 0.1;
+  if (ratio <= 0.4) return 0.3;
+  return 0.5;
+}
+
 function lookupTAbzweigRund2(table, condition, areaRatio, alpha, velocityRatio, ratioColumns) {
-  const areaLookup = lookupValue(AA_A_ROWS, areaRatio, 'ceil');
-  const alphaLookup = lookupValue(ALPHA_ROWS, alpha, 'ceil');
-  const ratioLookup = lookupValue(ratioColumns, velocityRatio, 'ceil');
+  const areaLookup = lookupAreaBand(areaRatio);
+  const alphaLookup = lookupValue(ALPHA_ROWS, alpha, 'floor');
+  const ratioLookup = lookupValue(ratioColumns, velocityRatio, 'floor');
   const zeta = Number(table[condition]?.[areaLookup]?.[alphaLookup]?.[ratioLookup] ?? 0);
 
   return { areaLookup, alphaLookup, ratioLookup, zeta };
@@ -369,8 +379,8 @@ export function calculateTAbzweigDurchgangRund2(values = {}) {
       alphaLookup: lookup.alphaLookup,
       condition,
       conditionLabel: conditionLabel(condition),
-      lookupMode: 'ceil',
-      lookupModeLabel: 'exakt oder nächst grösserer Tabellenwert',
+      lookupMode: 'AA/A: Excel-Band; α und wA/w: floor',
+      lookupModeLabel: 'Flächenband gemäss Excel; α und wA/w exakt oder nächst kleiner',
       formula: 'ζD = Tabellenwert(AA/A, α, wA/w); Δp = ζD × pdyn(wD)',
       referenceRows: [
         ...referenceRows(values, values, { includeWaVelocityRatio: true, includeAreaRatio: true }),
@@ -419,8 +429,8 @@ export function calculateTAbzweigRund2(values = {}) {
       alphaLookup: lookup.alphaLookup,
       condition,
       conditionLabel: conditionLabel(condition),
-      lookupMode: 'ceil',
-      lookupModeLabel: 'exakt oder nächst grösserer Tabellenwert',
+      lookupMode: 'AA/A: Excel-Band; α und wA/w: floor',
+      lookupModeLabel: 'Flächenband gemäss Excel; α und wA/w exakt oder nächst kleiner',
       formula: 'ζA = Tabellenwert(AA/A, α, wA/w); Δp = ζA × pdyn(wA)',
       referenceRows: [
         ...referenceRows(values, values, { includeWaVelocityRatio: true, includeAreaRatio: true }),

@@ -5,10 +5,16 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=20.04';
+import ReportEngine from '../../report/ReportEngine.js?v=21.04';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
+import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
+import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
+import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
+import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
+import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
+import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
 import { APP_RELEASE } from '../../core/appVersion.js';
@@ -50,6 +56,11 @@ export default class WorkspaceComponent {
     if (selection.type === 'report') return this.renderReport();
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
+    if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
+    if (selection.type === 'formPartValidation') return this.renderFormPartValidation(selection.data || this.state.formPartValidation);
+    if (selection.type === 'formPartSyncValidation') return this.renderFormPartSyncValidation(selection.data || this.state.formPartSyncValidation);
+    if (selection.type === 'comparisonMatrixValidation') return this.renderComparisonMatrix(selection.data || this.state.comparisonMatrixValidation);
+    if (selection.type === 'practiceProjectValidation') return this.renderPracticeProjectValidation(selection.data || this.state.practiceProjectValidation);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
@@ -273,9 +284,11 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
-          <article><span>20.04</span><strong>Roadmap & Feedback</strong><p>Weiterentwicklung, Feedback-Vorlage und Versionsübersicht ergänzt.</p></article>
-          <article><span>20.03</span><strong>Lizenz-Gate</strong><p>Exportstatus und technische Lizenzschicht vorbereitet – noch ohne Sperre.</p></article>
-          <article><span>20.02</span><strong>Lizenzmatrix</strong><p>Feature-Flags und spätere Test-/Professional-Abgrenzung vorbereitet.</p></article>
+          <article><span>21.04</span><strong>Fachliche Vergleichsmatrix</strong><p>10 feste Handrechnungen mit 92 Einzelprüfungen für Kanal, Rohr, Sensitivitäten, Summenbildung und Rundung.</p></article>
+          <article><span>21.03</span><strong>Formteil-Sync-QS</strong><p>Alle 14 Formteile, Anschluss-Teilstrecken, manuelle Overrides und automatische Nachführung geprüft.</p></article>
+          <article><span>21.02</span><strong>Praxisprojekt-QS</strong><p>48 Teilstrecken, 36 Formteile, 26 Sonderbauteile, .dvp-Roundtrip und 20 Berichtseiten automatisiert geprüft.</p></article>
+          <article><span>21.01</span><strong>Formteil-QS</strong><p>14 Formteile strukturell geprüft und mit festen Excel-Referenzpunkten abgesichert.</p></article>
+          <article><span>21.00</span><strong>Rechenkern-Referenzen</strong><p>Kernformeln, Summenbildung, Rundung und TEST-001 automatisiert geprüft.</p></article>
         </div>
       </section>
 
@@ -2696,6 +2709,9 @@ export default class WorkspaceComponent {
 
     if (!entry) return connections;
 
+    const parameterIds = new Set((entry.parameters || []).map(parameter => parameter.id));
+    const hasAny = fields => fields.some(field => parameterIds.has(field));
+
     if (type.includes('uebergang_gross_klein')) {
       connections.push({
         field: 'transitionOtherSectionId',
@@ -2712,22 +2728,23 @@ export default class WorkspaceComponent {
       });
     }
 
-    if (
-      type.includes('hosenstueck') ||
-      type.includes('t_abzweig') ||
-      type.includes('t_stueck') ||
-      type.includes('sattelstueck')
-    ) {
-      if (type.includes('durchgang')) {
-        connections.push({
-          field: 'throughSectionId',
-          target: 'AD',
-          airflow: 'WD',
-          label: 'Durchgang AD/WD aus Teilstrecke',
-          help: 'Grösse AD und Luftmenge WD werden aus der gewählten Durchgangs-Teilstrecke übernommen.',
-        });
-      }
+    // Anschlussfelder werden aus der tatsächlichen Parameterdefinition erkannt.
+    // Damit erhält z. B. auch „T-Abzweig rund 1/2“ den Durchgang AD/WD,
+    // während „Durchgang rund 1“ keinen wirkungslosen Abzweig-Selector mehr zeigt.
+    const supportsThrough = parameterIds.has('WD') && hasAny(['AD_breite', 'AD_hoehe', 'AD_d']);
+    const supportsBranch = parameterIds.has('WA') && hasAny(['AA_breite', 'AA_hoehe', 'AA_d']);
 
+    if (supportsThrough) {
+      connections.push({
+        field: 'throughSectionId',
+        target: 'AD',
+        airflow: 'WD',
+        label: 'Durchgang AD/WD aus Teilstrecke',
+        help: 'Grösse AD und Luftmenge WD werden aus der gewählten Durchgangs-Teilstrecke übernommen.',
+      });
+    }
+
+    if (supportsBranch) {
       connections.push({
         field: 'branchSectionId',
         target: 'AA',
@@ -2754,6 +2771,7 @@ export default class WorkspaceComponent {
     }
 
     const force = Boolean(options.force);
+    const refresh = Boolean(options.refresh);
     const selected = connections.filter(connection => formPart?.[connection.field]);
 
     if (!selected.length) {
@@ -2779,7 +2797,7 @@ export default class WorkspaceComponent {
       };
     }
 
-    if (!force && formPart.connectionAutoSize?.signature === signature) {
+    if (!force && !refresh && formPart.connectionAutoSize?.signature === signature) {
       return {
         applied: false,
         status: 'unchanged',
@@ -3023,7 +3041,7 @@ export default class WorkspaceComponent {
     }
 
     // Durchgangsvarianten bekommen zusätzlich den Durchgang AD/WD aus der Teilstrecke.
-    if (type.includes('durchgang')) {
+    if (type.includes('durchgang') && !formPart?.throughSectionId) {
       setShape('AD');
       set('WD', geometry.q);
     }
@@ -5423,6 +5441,11 @@ export default class WorkspaceComponent {
         <div class="workspace-actions">
           <button type="button" data-calculation-detail-action="recheck">Neu prüfen</button>
           <button type="button" data-calculation-detail-action="copy">QS kopieren</button>
+          <button type="button" data-calculation-detail-action="reference">Referenztests</button>
+          <button type="button" data-calculation-detail-action="formparts">Formteil-QS</button>
+          <button type="button" data-calculation-detail-action="sync">Formteil-Sync-QS</button>
+          <button type="button" data-calculation-detail-action="comparison">Vergleichsmatrix</button>
+          <button type="button" data-calculation-detail-action="practice">Praxisprojekt-QS</button>
           <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
         </div>
       </div>
@@ -5496,6 +5519,46 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'reference') {
+          const report = ReferenceTestDiagnostics.run();
+          this.state.referenceTests = report;
+          this.state.setSelection?.('referenceTests', report);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'formparts') {
+          const report = FormPartValidationDiagnostics.run();
+          this.state.formPartValidation = report;
+          this.state.setSelection?.('formPartValidation', report);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'sync') {
+          const report = FormPartSyncDiagnostics.run();
+          this.state.formPartSyncValidation = report;
+          this.state.setSelection?.('formPartSyncValidation', report);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'comparison') {
+          const report = ComparisonMatrixDiagnostics.run();
+          this.state.comparisonMatrixValidation = report;
+          this.state.setSelection?.('comparisonMatrixValidation', report);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'practice') {
+          const report = PracticeProjectDiagnostics.run();
+          this.state.practiceProjectValidation = report;
+          this.state.setSelection?.('practiceProjectValidation', report);
+          this.state.notify?.();
+          return;
+        }
+
         if (action === 'system') {
           this.state.selectSystem?.(system || this.state.selectedSystem || this.state.project?.systems?.[0]);
           return;
@@ -5507,6 +5570,694 @@ export default class WorkspaceComponent {
             await navigator.clipboard.writeText(text);
             const original = button.textContent;
             button.textContent = 'QS kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
+
+  renderReferenceTests(report = null) {
+    const current = report || ReferenceTestDiagnostics.run();
+    const results = current?.results || [];
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Phase 21.00 / Validierung</span>
+          <h1>Automatische Referenztests</h1>
+          <p>${this.escapeHtml(current.summary || '')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-reference-action="rerun">Neu ausführen</button>
+          <button type="button" data-reference-action="copy">Protokoll kopieren</button>
+          <button type="button" data-reference-action="formparts">Formteil-QS</button>
+          <button type="button" data-reference-action="sync">Formteil-Sync-QS</button>
+          <button type="button" data-reference-action="comparison">Vergleichsmatrix</button>
+          <button type="button" data-reference-action="practice">Praxisprojekt-QS</button>
+          <button type="button" data-reference-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${this.escapeAttribute(current.status || 'error')}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(current.label || 'Referenztest')}</h2>
+            <p>Die Sollwerte sind fest hinterlegt und werden nicht aus den aktuellen Ergebnissen erzeugt.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.status === 'ok' ? 'BESTANDEN' : 'FEHLER')}</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Referenzfälle</span><strong>${this.escapeHtml(current.counts?.cases ?? 0)}</strong></div>
+          <div><span>Bestanden</span><strong>${this.escapeHtml(current.counts?.passedCases ?? 0)}</strong></div>
+          <div><span>Fehlgeschlagen</span><strong>${this.escapeHtml(current.counts?.failedCases ?? 0)}</strong></div>
+          <div><span>Einzelprüfungen</span><strong>${this.escapeHtml(current.counts?.checks ?? 0)}</strong></div>
+        </div>
+        <div class="dp-reference-test-note">
+          <strong>Einordnung:</strong>
+          <span>${this.escapeHtml(current.counts?.formulaCases ?? 0)} Formelreferenzen prüfen den Rechenkern. ${this.escapeHtml(current.counts?.externalCases ?? 0)} externer Vergleich prüft TEST-001 gegen den vorhandenen Excel-Wert.</span>
+        </div>
+      </section>
+
+      <section class="dp-reference-test-list">
+        ${results.map(result => `
+          <article class="dp-result-panel dp-reference-case ${result.passed ? 'is-ok' : 'is-error'}">
+            <div class="dp-reference-case-header">
+              <div>
+                <span>${this.escapeHtml(result.group)} · ${this.escapeHtml(result.id)}</span>
+                <h2>${this.escapeHtml(result.title)}</h2>
+              </div>
+              <strong>${result.passed ? '✓ Bestanden' : '✗ Fehlgeschlagen'}</strong>
+            </div>
+            <p class="dp-reference-source"><strong>Referenz:</strong> ${this.escapeHtml(result.source || '-')}</p>
+            ${result.error ? `<pre class="dp-reference-error">${this.escapeHtml(result.error)}</pre>` : ''}
+            <div class="dp-reference-check-table-wrap">
+              <table class="dp-table dp-reference-check-table">
+                <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th><th>Toleranz</th></tr></thead>
+                <tbody>
+                  ${(result.checks || []).map(check => `
+                    <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+                      <td><span class="dp-reference-status">${check.passed ? '✓' : '✗'}</span></td>
+                      <td><strong>${this.escapeHtml(check.label)}</strong></td>
+                      <td>${this.escapeHtml(check.actualText)}${check.unit ? ` ${this.escapeHtml(check.unit)}` : ''}</td>
+                      <td>${this.escapeHtml(check.expectedText)}${check.unit ? ` ${this.escapeHtml(check.unit)}` : ''}</td>
+                      <td>${check.exact ? 'exakt' : `± ${this.escapeHtml(check.tolerance)}`}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `).join('')}
+      </section>
+    `;
+
+    this.bindReferenceTests(current);
+  }
+
+  bindReferenceTests(report = null) {
+    this.root.querySelectorAll('[data-reference-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.referenceAction;
+
+        if (action === 'rerun') {
+          const next = ReferenceTestDiagnostics.run();
+          this.state.referenceTests = next;
+          this.state.setSelection?.('referenceTests', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'formparts') {
+          const next = FormPartValidationDiagnostics.run();
+          this.state.formPartValidation = next;
+          this.state.setSelection?.('formPartValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'sync') {
+          const next = FormPartSyncDiagnostics.run();
+          this.state.formPartSyncValidation = next;
+          this.state.setSelection?.('formPartSyncValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'comparison') {
+          const next = ComparisonMatrixDiagnostics.run();
+          this.state.comparisonMatrixValidation = next;
+          this.state.setSelection?.('comparisonMatrixValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'practice') {
+          const next = PracticeProjectDiagnostics.run();
+          this.state.practiceProjectValidation = next;
+          this.state.setSelection?.('practiceProjectValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = ReferenceTestDiagnostics.toText(report || ReferenceTestDiagnostics.run());
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
+
+  renderComparisonMatrix(report = null) {
+    const current = report || ComparisonMatrixDiagnostics.run();
+    const results = current?.results || [];
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Phase 21.04 / Handrechnungen</span>
+          <h1>Fachliche Vergleichsmatrix</h1>
+          <p>${this.escapeHtml(current.summary || '')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-comparison-action="rerun">Neu ausführen</button>
+          <button type="button" data-comparison-action="copy">Protokoll kopieren</button>
+          <button type="button" data-comparison-action="csv">Matrix als CSV kopieren</button>
+          <button type="button" data-comparison-action="reference">Kern-Referenztests</button>
+          <button type="button" data-comparison-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${this.escapeAttribute(current.status || 'error')}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(current.label || 'Vergleichsmatrix')}</h2>
+            <p>Feste Handrechnungen vergleichen Fläche, hydraulischen Durchmesser, Geschwindigkeit, p_dyn, Reibung, ζ-Verlust, Rundung und Systemsumme mit dem Rechenkern.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.status === 'ok' ? 'BESTANDEN' : 'FEHLER')}</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Handrechnungen</span><strong>${this.escapeHtml(current.counts?.cases ?? 0)}</strong></div>
+          <div><span>Bestanden</span><strong>${this.escapeHtml(current.counts?.passedCases ?? 0)}</strong></div>
+          <div><span>Einzelprüfungen</span><strong>${this.escapeHtml(current.counts?.checks ?? 0)}</strong></div>
+          <div><span>Gruppen</span><strong>${this.escapeHtml(current.counts?.groups ?? 0)}</strong></div>
+        </div>
+        <div class="dp-matrix-group-note">
+          <strong>Fachliche Einordnung</strong>
+          <span>${this.escapeHtml(current.scope || '')}</span>
+          <small>${this.escapeHtml(current.limitation || '')}</small>
+        </div>
+      </section>
+
+      <section class="dp-reference-test-list">
+        ${results.map(result => `
+          <article class="dp-result-panel dp-reference-case ${result.passed ? 'is-ok' : 'is-error'}">
+            <div class="dp-reference-case-header">
+              <div>
+                <span>${this.escapeHtml(result.group)} · ${this.escapeHtml(result.id)}</span>
+                <h2>${this.escapeHtml(result.title)}</h2>
+              </div>
+              <strong>${result.passed ? '✓ Bestanden' : '✗ Fehlgeschlagen'}</strong>
+            </div>
+            <div class="dp-matrix-case-meta">
+              <div><span>Geometrie</span><strong>${this.escapeHtml(result.matrix?.geometry ?? '-')}</strong></div>
+              <div><span>Luftmenge</span><strong>${this.escapeHtml(result.matrix?.q ?? '-')} m³/h</strong></div>
+              <div><span>Länge</span><strong>${this.escapeHtml(result.matrix?.length ?? '-')} m</strong></div>
+              <div><span>ζ</span><strong>${this.escapeHtml(result.matrix?.zeta ?? '-')}</strong></div>
+              <div><span>ρ</span><strong>${this.escapeHtml(result.matrix?.rho ?? '-')} kg/m³</strong></div>
+              <div><span>λ</span><strong>${this.escapeHtml(result.matrix?.lambda ?? '-')}</strong></div>
+            </div>
+            <p class="dp-reference-source"><strong>Handreferenz:</strong> ${this.escapeHtml(result.source || '-')}</p>
+            ${result.error ? `<pre class="dp-reference-error">${this.escapeHtml(result.error)}</pre>` : ''}
+            <div class="dp-reference-check-table-wrap">
+              <table class="dp-table dp-reference-check-table">
+                <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th><th>Toleranz</th></tr></thead>
+                <tbody>
+                  ${(result.checks || []).map(check => `
+                    <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+                      <td><span class="dp-reference-status">${check.passed ? '✓' : '✗'}</span></td>
+                      <td><strong>${this.escapeHtml(check.label)}</strong></td>
+                      <td>${this.escapeHtml(check.actualText)}${check.unit ? ` ${this.escapeHtml(check.unit)}` : ''}</td>
+                      <td>${this.escapeHtml(check.expectedText)}${check.unit ? ` ${this.escapeHtml(check.unit)}` : ''}</td>
+                      <td>${check.exact ? 'exakt' : `± ${this.escapeHtml(check.tolerance)}`}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `).join('')}
+      </section>
+    `;
+
+    this.bindComparisonMatrix(current);
+  }
+
+  bindComparisonMatrix(report = null) {
+    this.root.querySelectorAll('[data-comparison-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.comparisonAction;
+
+        if (action === 'rerun') {
+          const next = ComparisonMatrixDiagnostics.run();
+          this.state.comparisonMatrixValidation = next;
+          this.state.setSelection?.('comparisonMatrixValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'reference') {
+          const next = ReferenceTestDiagnostics.run();
+          this.state.referenceTests = next;
+          this.state.setSelection?.('referenceTests', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        const text = action === 'csv'
+          ? ComparisonMatrixDiagnostics.toCsv(report || ComparisonMatrixDiagnostics.run())
+          : ComparisonMatrixDiagnostics.toText(report || ComparisonMatrixDiagnostics.run());
+
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = action === 'csv' ? 'CSV kopiert ✓' : 'Protokoll kopiert ✓';
+          setTimeout(() => { button.textContent = original; }, 1400);
+        } catch {
+          alert(text);
+        }
+      });
+    });
+  }
+
+
+  renderFormPartValidation(report = null) {
+    const current = report || FormPartValidationDiagnostics.run();
+    const results = current?.referenceResults || [];
+    const failedStructure = (current?.structureChecks || []).filter(item => !item.passed);
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Phase 21.01 / Formteilvalidierung</span>
+          <h1>Formteil-QS</h1>
+          <p>${this.escapeHtml(current.summary || '')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-formpart-validation-action="rerun">Neu ausführen</button>
+          <button type="button" data-formpart-validation-action="copy">Protokoll kopieren</button>
+          <button type="button" data-formpart-validation-action="reference">Kern-Referenztests</button>
+          <button type="button" data-formpart-validation-action="sync">Formteil-Sync-QS</button>
+          <button type="button" data-formpart-validation-action="practice">Praxisprojekt-QS</button>
+          <button type="button" data-formpart-validation-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${this.escapeAttribute(current.status || 'error')}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(current.label || 'Formteil-QS')}</h2>
+            <p>Prüft Bibliotheksstruktur, Bild-/Excel-Pfade und feste Referenzpunkte aus den hinterlegten Excel-Vorlagen.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.status === 'ok' ? 'BESTANDEN' : 'FEHLER')}</span>
+        </div>
+        <div class="dp-project-check-stats dp-formpart-validation-stats">
+          <div><span>Formteile</span><strong>${this.escapeHtml(current.counts?.definitions ?? 0)}</strong></div>
+          <div><span>Abgedeckt</span><strong>${this.escapeHtml(current.counts?.coveredDefinitions ?? 0)}</strong></div>
+          <div><span>Excel-Fälle</span><strong>${this.escapeHtml(current.counts?.referenceCases ?? 0)}</strong></div>
+          <div><span>Einzelprüfungen</span><strong>${this.escapeHtml(current.counts?.referenceChecks ?? 0)}</strong></div>
+        </div>
+        <div class="dp-reference-test-note">
+          <strong>Einordnung:</strong>
+          <span>Die Tests sichern die aktuell aus den Excel-Dateien übernommenen Tabellenwerte und Suchregeln gegen unbeabsichtigte Codeänderungen ab. Sie ersetzen keine externe Normenzertifizierung.</span>
+        </div>
+      </section>
+
+      ${failedStructure.length ? `
+        <section class="dp-result-panel dp-formpart-structure-errors">
+          <h2>Strukturfehler</h2>
+          <div class="dp-project-check-list">
+            ${failedStructure.map(item => `<div class="dp-project-check-item error"><strong>${this.escapeHtml(item.partId)} · ${this.escapeHtml(item.label)}</strong><span>${this.escapeHtml(item.detail || '-')}</span></div>`).join('')}
+          </div>
+        </section>
+      ` : ''}
+
+      <section class="dp-reference-test-list">
+        ${results.map(result => `
+          <article class="dp-result-panel dp-reference-case ${result.passed ? 'is-ok' : 'is-error'}">
+            <div class="dp-reference-case-header">
+              <div>
+                <span>${this.escapeHtml(result.partId)} · ${this.escapeHtml(result.id)}</span>
+                <h2>${this.escapeHtml(result.title)}</h2>
+              </div>
+              <strong>${result.passed ? '✓ Bestanden' : '✗ Fehlgeschlagen'}</strong>
+            </div>
+            <p class="dp-reference-source"><strong>Excel-Referenz:</strong> ${this.escapeHtml(result.source || '-')}</p>
+            ${result.error ? `<pre class="dp-reference-error">${this.escapeHtml(result.error)}</pre>` : ''}
+            <div class="dp-reference-check-table-wrap">
+              <table class="dp-table dp-reference-check-table">
+                <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th><th>Toleranz</th></tr></thead>
+                <tbody>
+                  ${(result.checks || []).map(check => `
+                    <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+                      <td><span class="dp-reference-status">${check.passed ? '✓' : '✗'}</span></td>
+                      <td><strong>${this.escapeHtml(check.label)}</strong></td>
+                      <td>${this.escapeHtml(check.actualText)}</td>
+                      <td>${this.escapeHtml(check.expectedText)}</td>
+                      <td>${check.exact ? 'exakt' : `± ${this.escapeHtml(check.tolerance)}`}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `).join('')}
+      </section>
+    `;
+
+    this.bindFormPartValidation(current);
+  }
+
+  bindFormPartValidation(report = null) {
+    this.root.querySelectorAll('[data-formpart-validation-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.formpartValidationAction;
+
+        if (action === 'rerun') {
+          const next = FormPartValidationDiagnostics.run();
+          this.state.formPartValidation = next;
+          this.state.setSelection?.('formPartValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'reference') {
+          const next = ReferenceTestDiagnostics.run();
+          this.state.referenceTests = next;
+          this.state.setSelection?.('referenceTests', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'sync') {
+          const next = FormPartSyncDiagnostics.run();
+          this.state.formPartSyncValidation = next;
+          this.state.setSelection?.('formPartSyncValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'practice') {
+          const next = PracticeProjectDiagnostics.run();
+          this.state.practiceProjectValidation = next;
+          this.state.setSelection?.('practiceProjectValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = FormPartValidationDiagnostics.toText(report || FormPartValidationDiagnostics.run());
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
+
+  renderFormPartSyncValidation(report = null) {
+    const current = report || FormPartSyncDiagnostics.run();
+    const results = current?.results || [];
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Phase 21.03 / Grössen- und Anschluss-Sync</span>
+          <h1>Formteil-Sync-QS</h1>
+          <p>${this.escapeHtml(current.summary || '')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-formpart-sync-action="rerun">Neu ausführen</button>
+          <button type="button" data-formpart-sync-action="copy">Protokoll kopieren</button>
+          <button type="button" data-formpart-sync-action="formparts">Formteil-QS</button>
+          <button type="button" data-formpart-sync-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${this.escapeAttribute(current.status || 'error')} dp-sync-summary">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(current.label || 'Formteil-Sync-QS')}</h2>
+            <p>Prüft für jedes Formteil die automatische Hauptgrösse, zusätzliche Anschluss-Teilstrecken, Einheiten, manuelle Overrides und die Nachführung bei geänderten Teilstrecken.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.status === 'ok' ? 'BESTANDEN' : 'FEHLER')}</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Formteile</span><strong>${this.escapeHtml(current.counts?.coveredFormParts ?? 0)}/${this.escapeHtml(current.counts?.formParts ?? 0)}</strong></div>
+          <div><span>Testfälle</span><strong>${this.escapeHtml(current.counts?.passedCases ?? 0)}/${this.escapeHtml(current.counts?.cases ?? 0)}</strong></div>
+          <div><span>Einzelprüfungen</span><strong>${this.escapeHtml(current.counts?.passedChecks ?? 0)}/${this.escapeHtml(current.counts?.checks ?? 0)}</strong></div>
+          <div><span>Fehler</span><strong>${this.escapeHtml(current.counts?.failedChecks ?? 0)}</strong></div>
+        </div>
+        <div class="dp-reference-test-note">
+          <strong>Nachgeführt:</strong>
+          <span>Durchgang AD/WD wird jetzt auch bei T-Abzweig rund 1/2 angeboten. Anschlussfelder werden anhand der tatsächlichen Formteilparameter erkannt; wirkungslose Auswahlfelder werden nicht angezeigt.</span>
+        </div>
+      </section>
+
+      <section class="dp-sync-case-list">
+        ${results.map(result => `
+          <article class="dp-result-panel dp-reference-case ${result.passed ? 'is-ok' : 'is-error'}">
+            <div class="dp-reference-case-header">
+              <div>
+                <span>${this.escapeHtml(result.partId)} · ${this.escapeHtml(result.id)}</span>
+                <h2>${this.escapeHtml(result.title)}</h2>
+              </div>
+              <strong>${result.passed ? '✓ Bestanden' : '✗ Fehlgeschlagen'}</strong>
+            </div>
+            ${result.error ? `<pre class="dp-reference-error">${this.escapeHtml(result.error)}</pre>` : ''}
+            <div class="dp-reference-check-table-wrap">
+              <table class="dp-table dp-reference-check-table">
+                <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th></tr></thead>
+                <tbody>
+                  ${(result.checks || []).map(check => `
+                    <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+                      <td><span class="dp-reference-status">${check.passed ? '✓' : '✗'}</span></td>
+                      <td><strong>${this.escapeHtml(check.label)}</strong></td>
+                      <td>${this.escapeHtml(check.actualText)}</td>
+                      <td>${this.escapeHtml(check.expectedText)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        `).join('')}
+      </section>
+    `;
+
+    this.bindFormPartSyncValidation(current);
+  }
+
+  bindFormPartSyncValidation(report = null) {
+    this.root.querySelectorAll('[data-formpart-sync-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.formpartSyncAction;
+
+        if (action === 'rerun') {
+          const next = FormPartSyncDiagnostics.run();
+          this.state.formPartSyncValidation = next;
+          this.state.setSelection?.('formPartSyncValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'formparts') {
+          const next = FormPartValidationDiagnostics.run();
+          this.state.formPartValidation = next;
+          this.state.setSelection?.('formPartValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = FormPartSyncDiagnostics.toText(report || FormPartSyncDiagnostics.run());
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+        }
+      });
+    });
+  }
+
+
+  renderPracticeProjectValidation(report = null) {
+    const current = report || PracticeProjectDiagnostics.run();
+    const checks = current?.checks || [];
+
+    this.root.innerHTML = `
+      <div class="workspace-header">
+        <div>
+          <span class="dp-overline">Phase 21.02 / Praxis- und Berichtstest</span>
+          <h1>Praxisprojekt-QS</h1>
+          <p>${this.escapeHtml(current.summary || '')}</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-practice-action="rerun">Neu ausführen</button>
+          <button type="button" data-practice-action="copy">Protokoll kopieren</button>
+          <button type="button" data-practice-action="load">Praxisprojekt laden</button>
+          <button type="button" data-practice-action="report">Praxisbericht öffnen</button>
+          <button type="button" data-practice-action="calculation">Zurück zum Rechen-QS</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${this.escapeAttribute(current.status || 'error')} dp-practice-summary">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(current.label || 'Praxisprojekt-QS')}</h2>
+            <p>Prüft ein Grossprojekt mit mehr als 42 Teilstrecken, mehrseitigen Formteil-/Sonderbauteiltabellen, .dvp-Roundtrip und vollständigem Bericht.</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(current.status === 'ok' ? 'BESTANDEN' : 'FEHLER')}</span>
+        </div>
+        <div class="dp-project-check-stats dp-practice-stats">
+          <div><span>Teilstrecken</span><strong>${this.escapeHtml(current.counts?.sections ?? 0)}</strong></div>
+          <div><span>Formteile</span><strong>${this.escapeHtml(current.counts?.formParts ?? 0)}</strong></div>
+          <div><span>Sonderbauteile</span><strong>${this.escapeHtml(current.counts?.specialComponents ?? 0)}</strong></div>
+          <div><span>PDF-Seitenplan</span><strong>${this.escapeHtml(current.counts?.reportPages ?? 0)}</strong></div>
+          <div><span>Prüfungen</span><strong>${this.escapeHtml(current.counts?.checks ?? 0)}</strong></div>
+          <div><span>Fehler</span><strong>${this.escapeHtml(current.counts?.failed ?? 0)}</strong></div>
+        </div>
+        <div class="dp-audit-grid dp-practice-totals">
+          <div><span>Kanal / Rohr</span><strong>${this.formatNumber(current.totals?.friction, 1)} Pa</strong></div>
+          <div><span>Formteile</span><strong>${this.formatNumber(current.totals?.formParts, 1)} Pa</strong></div>
+          <div><span>Sonderbauteile</span><strong>${this.formatNumber(current.totals?.special, 1)} Pa</strong></div>
+          <div><span>Gesamtdruckverlust</span><strong>${this.formatNumber(current.totals?.total, 1)} Pa</strong></div>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-practice-check-list">
+        <h2>Praxis-, Speicher- und Berichtstests</h2>
+        <div class="dp-reference-check-table-wrap">
+          <table class="dp-table dp-reference-check-table">
+            <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th><th>Detail</th></tr></thead>
+            <tbody>
+              ${checks.map(check => `
+                <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+                  <td><span class="dp-reference-status">${check.passed ? '✓' : '✗'}</span></td>
+                  <td><strong>${this.escapeHtml(check.label)}</strong></td>
+                  <td>${this.escapeHtml(check.actual)}</td>
+                  <td>${this.escapeHtml(check.expected)}</td>
+                  <td>${this.escapeHtml(check.detail || '-')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+
+    this.bindPracticeProjectValidation(current);
+  }
+
+  loadPracticeProject(options = {}) {
+    if (this.state.isProjectDirty && !confirm('Das aktuelle Projekt enthält ungespeicherte Änderungen. Praxisprojekt trotzdem laden?')) {
+      return null;
+    }
+
+    const project = createPracticeProject();
+    project.calculationResult = ProjectCalculationService.calculate(project, project.systems?.[0]?.id || null);
+    this.state.setProject(project);
+    this.state.markProjectClean?.();
+
+    if (options.openReport) {
+      this.state.selectReport?.(project.systems?.[0] || project);
+    } else {
+      this.state.selectSystem?.(project.systems?.[0]);
+    }
+
+    return project;
+  }
+
+  bindPracticeProjectValidation(report = null) {
+    this.root.querySelectorAll('[data-practice-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.practiceAction;
+
+        if (action === 'rerun') {
+          const next = PracticeProjectDiagnostics.run();
+          this.state.practiceProjectValidation = next;
+          this.state.setSelection?.('practiceProjectValidation', next);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'load') {
+          this.loadPracticeProject();
+          return;
+        }
+
+        if (action === 'report') {
+          this.loadPracticeProject({ openReport: true });
+          return;
+        }
+
+        if (action === 'calculation') {
+          const project = this.state.project;
+          const system = this.state.selectedSystem || project?.systems?.[0] || null;
+          const check = this.createCalculationDiagnostics(system);
+          this.state.calculationCheck = check;
+          this.state.setSelection?.('calculationCheck', check);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = PracticeProjectDiagnostics.toText(report || PracticeProjectDiagnostics.run());
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
             alert(text);
@@ -5941,38 +6692,84 @@ export default class WorkspaceComponent {
     };
   }
 
+  getFormPartsConnectedToSection(sectionId) {
+    if (!sectionId) return [];
+
+    const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+    const formParts = system?.formParts || [];
+    const selectorFields = ['transitionOtherSectionId', 'branchSectionId', 'throughSectionId'];
+
+    return formParts.filter(formPart => selectorFields.some(field => formPart?.[field] === sectionId));
+  }
+
   syncAssignedFormPartsForSection(section = {}, options = {}) {
-    const formParts = this.getAssignedFormParts(section?.id);
+    const assignedFormParts = this.getAssignedFormParts(section?.id);
+    const connectedFormParts = this.getFormPartsConnectedToSection(section?.id);
+    const assignedIds = new Set(assignedFormParts.map(item => item.id));
+    const connectedIds = new Set(connectedFormParts.map(item => item.id));
+    const formParts = [...new Map([...assignedFormParts, ...connectedFormParts].map(item => [item.id, item])).values()];
     const summary = {
       total: formParts.length,
+      mainTotal: assignedFormParts.length,
+      connectionTotal: connectedFormParts.length,
       applied: 0,
       unchanged: 0,
       manual: 0,
       empty: 0,
       missing: 0,
+      connectionApplied: 0,
+      connectionUnchanged: 0,
+      connectionManual: 0,
+      connectionMissing: 0,
       failed: 0,
     };
 
     formParts.forEach(formPart => {
       try {
-        const result = this.applySectionDimensionsToFormPart(formPart, {
-          force: Boolean(options.force),
-          clearManualOverride: Boolean(options.force),
-        });
+        let changed = false;
 
-        const status = result?.status || (result?.applied ? 'applied' : 'missing');
+        if (assignedIds.has(formPart.id)) {
+          const result = this.applySectionDimensionsToFormPart(formPart, {
+            force: Boolean(options.force),
+            clearManualOverride: Boolean(options.force),
+          });
+          const status = result?.status || (result?.applied ? 'applied' : 'missing');
 
-        if (result?.applied) {
-          summary.applied += 1;
-          this.deriveAndStoreFormPart(formPart);
-          this.calculateAndStoreFormPart(formPart, { silent: true });
-          return;
+          if (result?.applied) {
+            summary.applied += 1;
+            changed = true;
+          } else if (status === 'unchanged') summary.unchanged += 1;
+          else if (status === 'manual') summary.manual += 1;
+          else if (status === 'empty') summary.empty += 1;
+          else summary.missing += 1;
         }
 
-        if (status === 'unchanged') summary.unchanged += 1;
-        else if (status === 'manual') summary.manual += 1;
-        else if (status === 'empty') summary.empty += 1;
-        else summary.missing += 1;
+        // Bestehende zweite Anschlüsse werden nach einer Änderung der Haupt- oder
+        // Anschluss-Teilstrecke erneut angewendet. Dadurch überschreibt ein Haupt-Sync
+        // keine separat gewählten Durchgangs-/Abzweiggrössen.
+        const hasSelectedConnection = this.getFormPartConnectionDefinitions(formPart)
+          .some(connection => formPart?.[connection.field]);
+
+        if (hasSelectedConnection && (assignedIds.has(formPart.id) || connectedIds.has(formPart.id))) {
+          const connectionResult = this.applyConnectionSectionsToFormPart(formPart, {
+            force: Boolean(options.force),
+            refresh: changed && !options.force,
+            clearManualOverride: Boolean(options.force),
+          });
+          const connectionStatus = connectionResult?.status || (connectionResult?.applied ? 'applied' : 'missing');
+
+          if (connectionResult?.applied) {
+            summary.connectionApplied += 1;
+            changed = true;
+          } else if (connectionStatus === 'unchanged') summary.connectionUnchanged += 1;
+          else if (connectionStatus === 'manual') summary.connectionManual += 1;
+          else if (!['idle', 'empty'].includes(connectionStatus)) summary.connectionMissing += 1;
+        }
+
+        if (changed) {
+          this.deriveAndStoreFormPart(formPart);
+          this.calculateAndStoreFormPart(formPart, { silent: true });
+        }
       } catch (error) {
         summary.failed += 1;
         console.warn('Formteil-Grössenübernahme fehlgeschlagen:', error);

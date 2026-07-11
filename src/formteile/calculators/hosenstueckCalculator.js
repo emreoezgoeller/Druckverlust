@@ -79,13 +79,13 @@ function getGeometry(values = {}) {
   };
 }
 
-function lookupCeilValue(list = [], value) {
-  return LookupEngine.lookup(list.map(x => ({ x, value: x })), value, { mode: 'ceil' });
+function lookupValue(list = [], value, mode = 'ceil') {
+  return LookupEngine.lookup(list.map(x => ({ x, value: x })), value, { mode });
 }
 
 function lookupZeta(alpha, ratio) {
-  const alphaLookup = lookupCeilValue(HOSENSTUECK_TABLE.map(row => row.alpha), alpha);
-  const ratioLookup = lookupCeilValue(RATIO_COLUMNS, ratio);
+  const alphaLookup = lookupValue(HOSENSTUECK_TABLE.map(row => row.alpha), alpha, 'ceil');
+  const ratioLookup = lookupValue(RATIO_COLUMNS, ratio, 'floor');
   const row = HOSENSTUECK_TABLE.find(item => Number(item.alpha) === Number(alphaLookup));
   const zeta = Number(row?.values?.[ratioLookup] ?? 0);
 
@@ -165,8 +165,8 @@ export function calculateHosenstueck(values = {}) {
       pressureReference: 'wA',
       lossMode: 'direct',
       formula: 'ζA = Tabellenwert(α, wA/w); Δp = ζA × pdyn(wA)',
-      lookupMode: 'ceil',
-      lookupModeLabel: 'exakt oder nächst grösserer Tabellenwert',
+      lookupMode: 'α: ceil; wA/w: floor',
+      lookupModeLabel: 'α aus Auswahl; wA/w exakt oder nächst kleiner gemäss Excel',
     },
     zeta: lookup.zeta,
     warnings,

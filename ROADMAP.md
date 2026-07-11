@@ -42,97 +42,14 @@
 - Phase 20.02: Lizenzmatrix und Feature-Flags
 - Phase 20.03: Lizenz-Gate und Exportstatus
 - Phase 20.04: Roadmap, Feedback und Versionshistorie
+- Phase 21.00: Fachliche Referenztests und automatischer Test-Runner
+- Phase 21.01: Formteilbibliothek, Excel-Referenzpunkte und Asset-Pfade validiert
+- Phase 21.02: Praxisprojekt, .dvp-Roundtrip und 20-seitigen Bericht automatisiert geprüft
+- Phase 21.03: Grössen-/Anschluss-Synchronisation aller 14 Formteile mit 113 Einzelprüfungen abgesichert
+- Phase 21.04: Zehn Handrechnungen mit 92 Einzelprüfungen als fachliche Vergleichsmatrix abgesichert
 
 ## Nächste sinnvolle Schritte
 
-- Phase 18.32: `.dvp` Projektdatei robuster machen mit Versionsprüfung und besseren Fehlermeldungen **erledigt**
-- Phase 18.33: Bedienung und Oberfläche weiter polieren **erledigt**
-- Phase 18.34: Demo-/Beispielprojekt und Vorführmodus **erledigt**
-- Phase 18.35: Release Candidate / Schlussprüfung **erledigt**
-- Phase 18.35a: Ribbon-QS-Schaltflächen ausgeblendet **erledigt**
-- Phase 19.02: Produktseite als Startseite und Tool unter `app.html` **erledigt**
-- Phase 19.04: Produktseite visuell weiter professionalisieren **erledigt**
-- Phase 19.05: Footer-Copyright auf Produktseite **erledigt**
-- Phase 19.06: Hilfe-/Bedienungsanleitung im Tool **erledigt**
-- Phase 19.07: Bedienung, Demo und Beispielnachweis **erledigt**
-- Phase 19.08: Professional-/Trust-Bereich **erledigt**
-- Phase 19.09: Kontakt und Rechtliches vorbereitet **erledigt**
-- Phase 20.00: Deployment-Feinschliff, Sitemap und App-Metadaten **erledigt**
-- Phase 20.00: Lizenz-/Abo-Vorbereitung **erledigt**
-- Phase 20.01: Lizenzstatus im Tool **erledigt**
-- Phase 20.01: Lizenzstatus im Tool vorbereiten **erledigt**
-- Phase 20.02: Free-/Professional-Grenzen und Exporthinweise vorbereiten
-
-### Phase 19.03 – Demo-Start von der Hauptseite
-
-Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öffnen (`app.html?demo=1`).
-
-
-### Phase 19.05 – Footer-Copyright
-
-Die Produktseite zeigt unten links den gewünschten Copyright-Hinweis mit Name und Edition.
-
-### Phase 19.06 – integrierte Bedienungsanleitung
-
-Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kann die Produktseite direkt `app.html?help=1` aufrufen.
-
-
-### Phase 19.08 – Professional-/Trust-Bereich
-
-- Produktseite professioneller gerahmt.
-- Einsatzbereiche für Planer, Kontrolle und Abgabe sichtbar.
-- Transparenzhinweis zur lokalen `.dvp`-Projektdatei ergänzt.
-- Footer mit Schnelllinks erweitert.
-
-### Phase 19.07 – Bedienung, Demo und Beispielnachweis
-
-- Produktseite um Demo-/Beispielnachweis-Bereich erweitert.
-- Beispielbericht kann direkt von der Hauptseite gestartet werden.
-- Hilfeseite mit Beispielwerten, Rechenverständnis und PDF-Hinweisen erweitert.
-- Demo-Projekt für Präsentation und Schulung klarer beschrieben.
-
-
-### Phase 19.09 – Kontakt und Rechtliches vorbereitet
-
-- Produktseite um Kontakt-/Feedbackbereich ergänzt.
-- Footer um Impressum und Datenschutz erweitert.
-- `impressum.html` und `datenschutz.html` als Platzhalterseiten vorbereitet.
-- Final rechtlich zu prüfende Angaben bleiben bewusst als Platzhalter markiert.
-
-
-### Phase 20.00 – Deployment-Feinschliff, Sitemap und App-Metadaten
-
-- `site.webmanifest` für Web-App-Erkennung ergänzt.
-- `robots.txt` und `sitemap.xml` für die öffentliche GitHub-Pages-Bereitstellung ergänzt.
-- `404.html` als eigene Fehlerseite mit Rücksprung zu Produktseite und Tool ergänzt.
-- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `20.01`.
-
-
-### Phase 20.00 – Lizenz-/Abo-Vorbereitung
-
-- Produktseite um Lizenz-/Ausblick-Bereich ergänzt.
-- `lizenz.html` als vorbereitete Lizenzübersicht erstellt.
-- `site.webmanifest` und `sitemap.xml` um Lizenzübersicht erweitert.
-- Technische Datei `src/licensing/licenseConfig.js` vorbereitet.
-- Noch keine Zahlung, kein Login und keine technische Sperre aktiv.
-
-
-### Phase 20.02 – Lizenzmatrix und Feature-Flags
-
-- Lizenzmatrix sichtbar gemacht.
-- Feature-Flags für spätere Free-/Professional-/Abo-Steuerung vorbereitet.
-- Weiterhin keine Zahlung, kein Login und keine technische Sperre aktiv.
-
-
-### Phase 20.03 – Lizenz-Gate und Exportstatus
-
-- Zentrale License-Gate-Schicht für spätere Free-/Professional-Grenzen vorbereitet.
-- Exportstatus in Tool, Bericht und QS sichtbar gemacht.
-- Noch keine technische Sperre aktiv; Vorbereitung bleibt bewusst nicht blockierend.
-
-
-### Phase 20.04 – Roadmap, Feedback und Versionshistorie
-
-- Kompakte Produkt-Roadmap auf der Hauptseite.
-- Feedback-Vorlage und letzte Versionen in der integrierten Hilfe.
-- Keine Backend-Abhängigkeit; Rückmeldungen werden strukturiert zum Kopieren vorbereitet.
+- Phase 21.05: Öffentliche Testversion mit strukturiertem Fachtester-Protokoll vorbereiten
+- Phase 21.06: Rückmeldungen aus der Fachtest-Runde bündeln und Freigabeentscheidung vorbereiten
+- Danach: externe Fachtest-Runde und Freigabeentscheidung

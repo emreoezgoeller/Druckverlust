@@ -1,0 +1,169 @@
+/* Druckverlust Pro – Phase 20.04: Roadmap, Feedback und Versionshistorie */
+.dp-product-roadmap-grid,
+.dp-version-history-grid,
+.dp-feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.dp-product-roadmap-grid article,
+.dp-version-history-grid article,
+.dp-feedback-grid article {
+  padding: 18px;
+  border: 1px solid rgba(11, 90, 153, .18);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.dp-product-roadmap-grid article > span,
+.dp-version-history-grid article > span {
+  display: inline-flex;
+  margin-bottom: 9px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eaf4ff;
+  color: #07528f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.dp-product-roadmap-grid strong,
+.dp-version-history-grid strong,
+.dp-feedback-grid strong {
+  display: block;
+  color: #073a6f;
+  font-size: 17px;
+}
+
+.dp-product-roadmap-grid p,
+.dp-version-history-grid p,
+.dp-feedback-grid p {
+  margin: 8px 0 0;
+  color: #52677a;
+  line-height: 1.5;
+}
+
+.dp-feedback-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .dp-product-roadmap-grid,
+  .dp-version-history-grid,
+  .dp-feedback-grid { grid-template-columns: 1fr; }
+}
+
+/* Phase 21.00 – automatische Referenztests */
+.dp-reference-test-summary {
+  border-top: 4px solid #166534;
+}
+
+.dp-reference-test-summary.dp-reference-test-error {
+  border-top-color: #b42318;
+}
+
+.dp-reference-test-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: #eef6ff;
+  color: #294a68;
+  line-height: 1.45;
+}
+
+.dp-reference-test-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.dp-reference-case {
+  border-left: 4px solid #198754;
+}
+
+.dp-reference-case.is-error {
+  border-left-color: #c0392b;
+}
+
+.dp-reference-case-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.dp-reference-case-header span {
+  color: #60758a;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.dp-reference-case-header h2 {
+  margin: 5px 0 0;
+  color: #073a6f;
+}
+
+.dp-reference-case-header > strong {
+  white-space: nowrap;
+  color: #166534;
+}
+
+.dp-reference-case.is-error .dp-reference-case-header > strong {
+  color: #b42318;
+}
+
+.dp-reference-source {
+  margin: 14px 0;
+  color: #52677a;
+  line-height: 1.5;
+}
+
+.dp-reference-check-table-wrap {
+  overflow-x: auto;
+}
+
+.dp-reference-check-table tr.is-error td {
+  background: #fff1f0;
+}
+
+.dp-reference-status {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e7f7ee;
+  color: #166534;
+  font-weight: 900;
+}
+
+.dp-reference-check-table tr.is-error .dp-reference-status {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.dp-reference-error {
+  overflow: auto;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff1f0;
+  color: #8a1c13;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 800px) {
+  .dp-reference-case-header,
+  .dp-reference-test-note {
+    flex-direction: column;
+  }
+}

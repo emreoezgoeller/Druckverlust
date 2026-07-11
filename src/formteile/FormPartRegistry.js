@@ -41,11 +41,11 @@ function isUsefulLookupValue(value) {
 }
 
 function formPartImage(id, fileName = `${id}.png`) {
-  return assetPath(`assets/formteile/${id}/${fileName}`);
+  return assetPath(`assets/formteile/${fileName}`);
 }
 
 function formPartExcel(id, fileName = `${id}.xlsx`) {
-  return assetPath(`assets/formteile/${id}/${fileName}`);
+  return assetPath(`assets/formteile/${fileName}`);
 }
 
 function imageSources(...paths) {
@@ -66,9 +66,10 @@ function imageSources(...paths) {
 
 function formPartImageSources(id, fileName = `${id}.png`, extra = []) {
   return imageSources([
+    `assets/formteile/${fileName}`,
+    `assets/formteile/${id}.png`,
     `assets/formteile/${id}/${fileName}`,
     `assets/formteile/${id}/${id}.png`,
-    `assets/formteile/${id}.png`,
     ...extra,
   ]);
 }

@@ -1,6 +1,6 @@
 /**
  * Druckverlust Pro – CalculationEngine
- * Version 0.4.2
+ * Version 0.5.0
  *
  * Zentrale, DOM-unabhängige Berechnungslogik.
  * Dieses Modul ist bewusst unabhängig von der Oberfläche, vom PDF-Export
@@ -32,7 +32,6 @@ export function round(value, digits = 3) {
   return Math.round((toNumber(value) + Number.EPSILON) * factor) / factor;
 }
 
-// <<< HIER EINFÜGEN >>>
 
 export function roundUpToStep(value, step = 0.5) {
   const n = toNumber(value);

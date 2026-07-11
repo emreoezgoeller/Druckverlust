@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 20.04
+// Druckverlust Pro – Phase 21.04
 // Startet Tool, Demo, Hilfe und Beispielbericht über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=20.04';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.04';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';

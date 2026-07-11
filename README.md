@@ -1,8 +1,46 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 20.01 Lizenzstatus im Tool vorbereitet**.
+Aktueller Entwicklungsstand: **Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
+
+
+### Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen
+
+Zehn feste Handrechnungen prüfen den Rechenkern jetzt über eine transparente Vergleichsmatrix. Abgedeckt sind Rechteckkanäle, Rundrohre, unterschiedliche Luftdichten und Reibungszahlen sowie eine komplette Systemsumme mit ζ-Formteilen, Direktverlust und Sonderbauteil. Insgesamt werden **92 Einzelprüfungen** ausgeführt.
+
+Aufrufmöglichkeiten:
+
+- Tool: **Rechen-QS → Vergleichsmatrix**
+- Browser: `tests/phase21-comparison-matrix.html`
+- Konsole: `npm run test:comparison`
+
+Die Sollwerte sind fest hinterlegte Handrechnungen und werden nicht aus dem aktuellen Rechenkern erzeugt. Die Matrix ist eine fachliche Regressions- und Plausibilitätsprüfung, jedoch keine externe Normenzertifizierung.
+
+
+### Phase 21.03 – Formteil-Grössen- und Anschluss-Synchronisation
+
+Die automatische Grössen- und Anschlussübernahme ist jetzt für **alle 14 Formteile** automatisiert abgesichert. **15 Testfälle mit 113 Einzelprüfungen** prüfen Hauptgrössen, Übergangsseiten, Durchgang `AD/WD`, Abzweig `AA/WA`, manuelle Overrides und die automatische Nachführung bei Änderungen an einer Anschluss-Teilstrecke.
+
+Aufrufmöglichkeiten:
+
+- Tool: **Rechen-QS → Formteil-Sync-QS**
+- Browser: `tests/phase21-formpart-sync.html`
+- Konsole: `npm run test:sync`
+
+Dabei wurde die Anschlusslogik fachlich bereinigt: T-Abzweig rund 1/2 erhalten jetzt die Durchgangszuordnung; wirkungslose Anschlussauswahlen werden nicht mehr angezeigt.
+
+### Phase 21.02 – Praxisprojekt, Speicher-Roundtrip und Berichtstest
+
+Ein deterministisches Grossprojekt prüft jetzt den kompletten Ablauf mit **48 Teilstrecken, 36 Formteilen und 26 Sonderbauteilen**. Der automatische Test kontrolliert Berechnung, Zuordnungen, `.dvp`-Speichern/Öffnen sowie einen **20-seitigen Bericht**. Er ist im Tool unter **Rechen-QS → Praxisprojekt-QS**, im Browser unter `tests/phase21-practice-project.html` und über `npm run test:practice` erreichbar.
+
+Der Test deckt bewusst Projekte mit mehr als 42 Teilstrecken ab. Das Praxisprojekt ist ein technischer Belastungstest und keine reale projektspezifische Auslegung.
+
+### Phase 21.01 – Formteilbibliothek und Excel-Referenzprüfung
+
+Alle 14 Formteile sind jetzt strukturell geprüft. 18 feste Referenzfälle kontrollieren 56 Tabellen-/Berechnungspunkte gegen die hinterlegten Excel-Vorlagen. Der Test ist im Tool unter **Rechen-QS → Formteil-QS**, im Browser unter `tests/phase21-formpart-validation.html` und über `npm run test:formparts` erreichbar.
+
+Wichtig: Die Referenztests sichern die aus den Projekt-Exceldateien übernommenen Werte und Suchregeln ab. Sie sind keine externe Normenzertifizierung.
 
 ### Phase 20.00 – Lizenz-/Abo-Vorbereitung
 
@@ -10,7 +48,7 @@ Der Lizenzstatus ist jetzt sichtbarer vorbereitet: Produktseite, Lizenzseite, To
 
 ### Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
-Für die öffentliche GitHub-Pages-Bereitstellung wurden `site.webmanifest`, `robots.txt`, `sitemap.xml` und eine eigene `404.html` ergänzt. Produkt-, Tool- und Rechtseiten verweisen jetzt auf das Manifest und tragen die aktuelle Cache-Version `20.01`.
+Für die öffentliche GitHub-Pages-Bereitstellung wurden `site.webmanifest`, `robots.txt`, `sitemap.xml` und eine eigene `404.html` ergänzt. Produkt-, Tool- und Rechtseiten verweisen auf das Manifest; diese Deployment-Stufe wurde damals mit Cache-Version `20.01` abgeschlossen.
 
 ### Phase 19.09 – Kontakt und Rechtliches vorbereitet
 
@@ -36,7 +74,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `20.01`.
+- Die aktuelle Cache-Version ist `21.04`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
@@ -140,3 +178,26 @@ Lizenz-Gate und Exportstatus sind zentral vorbereitet. Die App bleibt weiterhin 
 - Produktseite zeigt den nächsten fachlichen Ausbau kompakt.
 - Im Tool sind Roadmap, Feedback-Vorlage und letzte Versionsschritte über Hilfe erreichbar.
 - Feedback funktioniert weiterhin ohne Backend: Eine strukturierte Vorlage wird in die Zwischenablage kopiert.
+
+
+## Phase 21.00 – automatische Referenztests
+
+Der Rechenkern wird jetzt mit festen Sollwerten abgesichert. Die Tests prüfen:
+
+- Rechteckkanal und Rundrohr
+- Geschwindigkeit, dynamischen Druck und Reibungsverlust
+- ζ-Verluste
+- direkte Formteilverluste und Sonderbauteile
+- Summenbildung und Rundung auf 0.5 Pa
+- Dezimalkomma und Typ-Erkennung
+- den bestehenden Excel-Vergleich `TEST-001`
+
+Ausführung:
+
+```bash
+npm test
+```
+
+Alternativ kann `tests/phase21-reference-tests.html` im Browser geöffnet werden. Im Tool sind die Ergebnisse unter **Rechen-QS → Referenztests** sichtbar.
+
+Die Referenztests schützen den Rechenkern gegen unbeabsichtigte Änderungen. Die vollständige Einzelvalidierung aller Formteilkennwerte folgt separat.

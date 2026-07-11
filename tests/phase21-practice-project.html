@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Praxisprojekt-QS 21.02</title>
+  <link rel="stylesheet" href="../src/ui/ApplicationShell.css?v=21.04" />
+  <link rel="stylesheet" href="../src/ui/phase21_00.css?v=21.04" />
+  <link rel="stylesheet" href="../src/ui/phase21_02.css?v=21.04" />
+</head>
+<body>
+  <main class="dp-test-page">
+    <h1>Praxisprojekt-QS – Phase 21.02</h1>
+    <p>Prüft 48 Teilstrecken, 36 Formteile, 26 Sonderbauteile, den .dvp-Roundtrip und den mehrseitigen Bericht.</p>
+    <div id="result">Test wird ausgeführt …</div>
+  </main>
+
+  <script type="module">
+    import { runPracticeProjectValidation } from '../src/testing/PracticeProjectRunner.js?v=21.04';
+
+    const report = runPracticeProjectValidation();
+    const root = document.getElementById('result');
+    root.innerHTML = `
+      <section class="dp-result-panel dp-reference-test-summary dp-reference-test-${report.status}">
+        <h2>${report.label}</h2>
+        <p>${report.summary}</p>
+        <div class="dp-project-check-stats">
+          <div><span>Teilstrecken</span><strong>${report.counts.sections}</strong></div>
+          <div><span>Formteile</span><strong>${report.counts.formParts}</strong></div>
+          <div><span>Sonderbauteile</span><strong>${report.counts.specialComponents}</strong></div>
+          <div><span>Berichtseiten</span><strong>${report.counts.reportPages}</strong></div>
+        </div>
+      </section>
+      <section class="dp-result-panel">
+        <table class="dp-table">
+          <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th></tr></thead>
+          <tbody>${report.checks.map(check => `<tr><td>${check.passed ? '✓' : '✗'}</td><td>${check.label}</td><td>${check.actual}</td><td>${check.expected}</td></tr>`).join('')}</tbody>
+        </table>
+      </section>
+    `;
+  </script>
+</body>
+</html>

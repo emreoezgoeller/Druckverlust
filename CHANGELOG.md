@@ -1,5 +1,65 @@
 # CHANGELOG
 
+## Phase 21.04 – Fachliche Vergleichsmatrix und Handrechnungen
+
+- Zehn feste Handrechnungen für drei Rechteckkanäle, drei Rundrohre, Luftdichte-, Reibungszahl- und Summenfälle ergänzt.
+- 92 Einzelprüfungen für Fläche, hydraulischen Durchmesser, Geschwindigkeit, dynamischen Druck, Reibungsgefälle, Reibungsverlust, ζ-Verlust, Summenbildung und 0,5-Pa-Rundung ergänzt.
+- Sollwerte unabhängig vom Rechenkern fest hinterlegt; keine Laufzeit-Ableitung aus Ist-Ergebnissen.
+- Vergleichsmatrix direkt unter **Rechen-QS → Vergleichsmatrix** integriert.
+- Textprotokoll und semikolongetrennte CSV-Matrix können kopiert werden.
+- Separate Browser-Testseite und Node-Testlauf `npm run test:comparison` ergänzt.
+- `npm test` um die Vergleichsmatrix erweitert.
+- Deployment-QS um Diagnose, Runner, Fälle und Browser-Testseite erweitert.
+- Cache-Version auf 21.04 und App-Version auf 1.3.4 erhöht.
+
+
+## Phase 21.03 – Formteil-Grössen- und Anschluss-Synchronisation
+
+- Automatische Grössenübernahme aller 14 registrierten Formteile mit 15 Testfällen und 113 Einzelprüfungen abgesichert.
+- Anschlussdefinitionen werden jetzt aus den tatsächlich vorhandenen `AD/WD`- und `AA/WA`-Parametern abgeleitet.
+- T-Abzweig rund 1/2 um automatische Durchgangszuordnung `AD/WD` ergänzt.
+- Wirkungslosen Abzweig-Selector beim T-Abzweig Durchgang rund 1 entfernt.
+- Änderungen an Anschluss-Teilstrecken führen zugehörige Formteilgrössen und Luftmengen automatisch nach.
+- Haupt-Synchronisation erhält separat gewählte Durchgangs- und Abzweigwerte.
+- Manuelle Overrides und bewusst erzwungene Synchronisation automatisiert geprüft.
+- Neues Formteil-Sync-QS im Tool, als Browsertest und über `npm run test:sync` ergänzt.
+- Deployment-QS um Sync-Diagnose, Runner und Browsertest erweitert.
+- Cache-Version auf 21.03 und App-Version auf 1.3.3 erhöht.
+
+## Phase 21.02 – Praxisprojekt, Speicher-Roundtrip und Berichtstest
+
+- Deterministisches Grossprojekt mit 48 Teilstrecken, 36 Formteilen und 26 Sonderbauteilen ergänzt.
+- Automatischen Praxisprojekt-Runner mit 29 Einzelprüfungen ergänzt.
+- Früher kritischen Berichtsumfang mit mehr als 42 Teilstrecken abgesichert.
+- Mehrseitige Berichte geprüft: 2 Hauptnetzseiten, 9 Formteilseiten, 2 Sonderbauteilseiten und insgesamt 20 Seiten.
+- `.dvp`-Speicher-/Lese-Roundtrip auf vollständige Einträge und IDs geprüft.
+- Neues Praxisprojekt-QS direkt unter **Rechen-QS → Praxisprojekt-QS** ergänzt.
+- Browser-Testseite und Node-Testlauf `npm run test:practice` ergänzt.
+- `npm test` führt jetzt Kern-, Formteil- und Praxisprojekt-Tests gemeinsam aus.
+- Deployment-QS um Praxisprojekt-, Diagnose- und Testdateien erweitert.
+- Cache-Version auf 21.02 und App-Version auf 1.3.2 erhöht.
+
+## Phase 21.01 – Formteilbibliothek und Excel-Referenzprüfung
+
+- Alle 14 registrierten Formteile strukturell geprüft: IDs, Kategorien, Berechnungsfunktionen, Parameter, Bilder und Excel-Referenzdateien.
+- 18 feste Excel-Referenzfälle mit 56 Einzelprüfungen ergänzt.
+- Bild- und Excel-Pfade der Registry auf die tatsächlich verwendete Root-Struktur `assets/formteile/` korrigiert.
+- Excel-Suchlogik beim Hosenstück, T-Abzweig rund 2 und 90° T-Stück Variante 2 an die hinterlegten Vorlagen angepasst.
+- Neues Formteil-QS direkt unter **Rechen-QS → Formteil-QS** ergänzt.
+- Browser-Testseite und Node-Testlauf `npm run test:formparts` ergänzt.
+- Manifest auf alle 14 Formteile erweitert und mit Validierungsstatus versehen.
+- Cache-Version auf 21.01 und App-Version auf 1.3.1 erhöht.
+
+## Phase 21.00 – Fachliche Referenztests
+
+- Feste Referenzfälle für Rechteckkanal, Rundrohr, Summenbildung, Rundung und Eingaben ergänzt.
+- Bestehenden Excel-Vergleich `TEST-001` in denselben automatischen Testlauf integriert.
+- DOM-unabhängigen Test-Runner unter `src/testing/ReferenceTestRunner.js` ergänzt.
+- Ausführung über `npm test`, Browser-Testseite und direkt im Tool unter **Rechen-QS → Referenztests** ermöglicht.
+- Referenzarten transparent getrennt: mathematische Formelreferenzen und externer Excel-Vergleich.
+- Deployment-QS um die neuen Referenztest-Module erweitert.
+- Cache-Version auf 21.00 und App-Version auf 1.3 erhöht.
+
 ## Phase 20.04 – Roadmap, Feedback und Changelog
 
 - Produktseite um kompakten Bereich „Ständige Weiterentwicklung“ ergänzt.

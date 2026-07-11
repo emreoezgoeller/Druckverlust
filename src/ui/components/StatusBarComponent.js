@@ -163,6 +163,22 @@ export default class StatusBarComponent {
       return 'Rechen-QS';
     }
 
+    if (selection.type === 'referenceTests') {
+      return 'Referenztests';
+    }
+
+    if (selection.type === 'formPartValidation') {
+      return 'Formteil-QS';
+    }
+
+    if (selection.type === 'formPartSyncValidation') {
+      return 'Formteil-Sync-QS';
+    }
+
+    if (selection.type === 'practiceProjectValidation') {
+      return 'Praxisprojekt-QS';
+    }
+
     if (selection.type === 'projectFileCheck') {
       return 'Datei-QS';
     }
