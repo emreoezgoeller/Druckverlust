@@ -1,12 +1,12 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 19.10 SEO, Mobile und Startseiten-Feinschliff**.
+Aktueller Entwicklungsstand: **Phase 19.11 Deployment-Feinschliff, Sitemap und App-Metadaten**.
 
-Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten sowie SEO-/Mobile-Feinschliff.
+Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
-### Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+### Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
-Die Produktseite wurde für Suchmaschinen, Link-Vorschau und mobile Nutzung nachgezogen. Enthalten sind Open-Graph-/Twitter-Metadaten, strukturierte SoftwareApplication-Daten, Skip-Link, Fokuszustände und stabilere mobile Navigation.
+Für die öffentliche GitHub-Pages-Bereitstellung wurden `site.webmanifest`, `robots.txt`, `sitemap.xml` und eine eigene `404.html` ergänzt. Produkt-, Tool- und Rechtseiten verweisen jetzt auf das Manifest und tragen die aktuelle Cache-Version `19.11`.
 
 ### Phase 19.09 – Kontakt und Rechtliches vorbereitet
 
@@ -32,7 +32,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `19.10`.
+- Die aktuelle Cache-Version ist `19.11`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

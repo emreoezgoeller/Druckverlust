@@ -1,14 +1,12 @@
 # CHANGELOG
 
-## Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+## Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
-- Produktseite mit SEO-/Social-Media-Metadaten ergänzt.
-- Strukturierte SoftwareApplication-Daten für die Hauptseite vorbereitet.
-- Skip-Link und Fokuszustände für bessere Bedienbarkeit ergänzt.
-- Mobile Navigation, Buttons und Vorschautabelle stabilisiert.
-- `index.html` und `produkt.html` bleiben synchron.
-- App-, Impressum- und Datenschutzseiten mit passenden Metaangaben nachgezogen.
-- Cache-Busting auf `19.10` erhöht.
+- `site.webmanifest` ergänzt, damit Druckverlust Pro als Web-App sauber erkannt wird.
+- `robots.txt` und `sitemap.xml` für GitHub-Pages-Indexierung ergänzt.
+- `404.html` als eigene Fehlerseite mit Rücksprung zur Produktseite und zum Tool ergänzt.
+- Manifest-Link und mobile Web-App-Metadaten auf Produkt-, Tool- und Rechtseiten ergänzt.
+- Cache-Busting auf `19.11` erhöht.
 
 ## Phase 19.09 – Kontakt und Rechtliches vorbereitet
 

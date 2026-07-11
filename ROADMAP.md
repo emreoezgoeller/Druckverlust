@@ -37,7 +37,7 @@
 - Phase 19.07: Bedienung, Demo und Beispielnachweis
 - Phase 19.08: Professional-/Trust-Bereich
 - Phase 19.09: Kontakt und Rechtliches vorbereitet
-- Phase 19.10: SEO, Mobile und Startseiten-Feinschliff
+- Phase 19.11: Deployment-Feinschliff, Sitemap und App-Metadaten
 
 ## Nächste sinnvolle Schritte
 
@@ -53,7 +53,7 @@
 - Phase 19.07: Bedienung, Demo und Beispielnachweis **erledigt**
 - Phase 19.08: Professional-/Trust-Bereich **erledigt**
 - Phase 19.09: Kontakt und Rechtliches vorbereitet **erledigt**
-- Phase 19.10: SEO, Mobile und Startseiten-Feinschliff **erledigt**
+- Phase 19.11: Deployment-Feinschliff, Sitemap und App-Metadaten **erledigt**
 - Phase 20: Lizenz-/Abo-Vorbereitung
 
 ### Phase 19.03 – Demo-Start von der Hauptseite
@@ -93,6 +93,9 @@ Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kan
 - Final rechtlich zu prüfende Angaben bleiben bewusst als Platzhalter markiert.
 
 
-### Phase 19.10 – SEO, Mobile und Startseiten-Feinschliff
+### Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
-Die Startseite ist für GitHub Pages als öffentliche Produktseite optimiert. Metaangaben, Link-Vorschau, strukturierte Daten, Skip-Link, Fokuszustände und mobile Layoutdetails wurden ergänzt.
+- `site.webmanifest` für Web-App-Erkennung ergänzt.
+- `robots.txt` und `sitemap.xml` für die öffentliche GitHub-Pages-Bereitstellung ergänzt.
+- `404.html` als eigene Fehlerseite mit Rücksprung zu Produktseite und Tool ergänzt.
+- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `19.11`.

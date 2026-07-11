@@ -697,7 +697,7 @@ main { overflow: hidden; }
 }
 
 
-/* Phase 19.10 – SEO, Barrierefreiheit und Mobile-Feinschliff */
+/* Phase 19.11 – Mobile-Basis aus Phase 19.10 bleibt aktiv */
 .dp-skip-link {
   position: fixed;
   left: 16px;
@@ -823,4 +823,13 @@ main { overflow: hidden; }
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten */
+.dp-not-found-card {
+  text-align: left;
+}
+
+.dp-not-found-card h1 {
+  margin-bottom: 12px;
 }

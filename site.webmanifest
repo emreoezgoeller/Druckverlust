@@ -1,0 +1,47 @@
+{
+  "name": "Druckverlust Pro Professional",
+  "short_name": "Druckverlust Pro",
+  "description": "Professionelles Web-Tool für Druckverlustberechnung, Formteile, QS und PDF-Bericht.",
+  "lang": "de-CH",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f9fd",
+  "theme_color": "#073a6f",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "assets/logo/eo-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo/eo-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tool starten",
+      "short_name": "Tool",
+      "url": "./app.html",
+      "description": "Druckverlustberechnung öffnen"
+    },
+    {
+      "name": "Demo-Projekt testen",
+      "short_name": "Demo",
+      "url": "./app.html?demo=1",
+      "description": "Demo-Projekt direkt laden"
+    },
+    {
+      "name": "Anleitung öffnen",
+      "short_name": "Anleitung",
+      "url": "./app.html?help=1",
+      "description": "Bedienungsanleitung im Tool öffnen"
+    }
+  ]
+}
