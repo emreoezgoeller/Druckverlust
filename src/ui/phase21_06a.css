@@ -1,0 +1,368 @@
+/* Druckverlust Pro – Phase 21.06a
+   Farbwelt des Berechnungstools exakt an die bereitgestellte Hauptseite angeglichen.
+   Der Markenblock mit Logo, "Druckverlust Pro" und "Professional" bleibt vollständig erhalten. */
+
+:root {
+  --dp-ink: #071c35;
+  --dp-ink-2: #0b2b50;
+  --dp-blue: #1687ff;
+  --dp-blue-2: #48d7ff;
+  --dp-purple: #6f72ff;
+  --dp-green: #2ed4a7;
+  --dp-orange: #ffb45c;
+
+  --dp-blue-950: #071c35;
+  --dp-blue-900: #0b2b50;
+  --dp-blue-800: #0d3a68;
+  --dp-blue-700: #1687ff;
+  --dp-blue-600: #1687ff;
+  --dp-blue-100: #eaf5ff;
+  --dp-blue-050: #f3f7fb;
+  --dp-border: #dce6ef;
+  --dp-border-strong: #c8d7e5;
+  --dp-text: #10253e;
+  --dp-muted: #62758a;
+  --dp-panel: #ffffff;
+  --dp-bg: #f3f7fb;
+  --dp-shadow-sm: 0 14px 45px rgba(7, 28, 53, .08);
+  --dp-shadow-md: 0 22px 70px rgba(7, 28, 53, .12);
+  --dp-focus: 0 0 0 4px rgba(22, 135, 255, .16);
+}
+
+html,
+body {
+  color: var(--dp-text);
+  background:
+    radial-gradient(circle at 88% 0%, rgba(72, 215, 255, .12), transparent 30%),
+    radial-gradient(circle at 18% 8%, rgba(111, 114, 255, .08), transparent 28%),
+    linear-gradient(180deg, #f7faff 0%, #f3f7fb 52%, #ffffff 100%);
+}
+
+.dp-shell {
+  background: transparent;
+}
+
+/* Dunkler Kopfbereich wie auf der Hauptseite. */
+.dp-ribbon {
+  isolation: isolate;
+  color: #fff;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(22, 135, 255, .25), transparent 32%),
+    linear-gradient(120deg, #06182e 0%, #082344 52%, #071b35 100%);
+  border-bottom: 1px solid rgba(72, 215, 255, .16);
+  box-shadow: 0 18px 48px rgba(7, 28, 53, .24);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dp-ribbon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .14;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .12) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(90deg, rgba(0, 0, 0, .78), transparent 88%);
+  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, .78), transparent 88%);
+}
+
+/* Markenblock bleibt sichtbar und erhält die Farben der Hauptseite. */
+.dp-brand {
+  color: #fff;
+}
+
+.dp-brand-logo {
+  border-color: rgba(255, 255, 255, .28);
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 15px 36px rgba(0, 0, 0, .28);
+}
+
+.dp-brand strong {
+  color: #fff;
+}
+
+.dp-brand span {
+  color: #9eb7d1;
+}
+
+/* Sekundäre Ribbon-Aktionen als dunkle Glas-Schaltflächen. */
+.dp-tabs button,
+.ribbon-group button {
+  color: rgba(255, 255, 255, .92);
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .075);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dp-tabs button:hover,
+.ribbon-group button:hover {
+  color: #fff;
+  border-color: rgba(72, 215, 255, .34);
+  background: rgba(255, 255, 255, .14);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .18);
+}
+
+/* Hauptaktionen mit exakt der Blau-/Violett-Farbwelt der Hauptseite. */
+.dp-tabs button[data-action="addSection"],
+.dp-tabs button[data-action="addFormPart"],
+.dp-tabs button[data-action="addSpecialComponent"],
+.dp-tabs button[data-action="calculate"],
+.dp-tabs button[data-action="showReport"] {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #0c7aff, #485fff);
+  box-shadow: 0 12px 28px rgba(22, 135, 255, .30);
+}
+
+.dp-tabs button[data-action="addSection"]:hover,
+.dp-tabs button[data-action="addFormPart"]:hover,
+.dp-tabs button[data-action="addSpecialComponent"]:hover,
+.dp-tabs button[data-action="calculate"]:hover,
+.dp-tabs button[data-action="showReport"]:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #1687ff, #6f72ff);
+  box-shadow: 0 17px 35px rgba(22, 135, 255, .40);
+}
+
+.dp-tabs button[data-action="projectCheck"],
+.dp-tabs button[data-action="calculationCheck"] {
+  color: #dff9ff;
+  border-color: rgba(72, 215, 255, .28);
+  background: rgba(72, 215, 255, .10);
+}
+
+.dp-tabs button[data-action="projectCheck"]:hover,
+.dp-tabs button[data-action="calculationCheck"]:hover {
+  color: #fff;
+  border-color: rgba(72, 215, 255, .48);
+  background: rgba(72, 215, 255, .17);
+}
+
+/* Sidebar und Arbeitsfläche bleiben hell – wie die App-Vorschau auf der Hauptseite. */
+.dp-sidebar {
+  border-color: var(--dp-border);
+  background: rgba(255, 255, 255, .97);
+  box-shadow: var(--dp-shadow-md);
+}
+
+.dp-sidebar h3,
+.workspace-header h1,
+.dp-workspace h1,
+.workspace-card h2,
+.dp-panel-header h2,
+.dp-help-panel h2,
+.dp-formpart-info h2 {
+  color: var(--dp-ink);
+}
+
+.dp-tree-group {
+  border-top-color: #e6edf4;
+}
+
+.dp-tree-heading {
+  color: #5d7187;
+}
+
+.dp-tree-heading span,
+.dp-tree-subheading em,
+.dp-chip {
+  color: #0c6fcf;
+  background: #eaf5ff;
+}
+
+.dp-tree-item {
+  color: #38516a;
+}
+
+.dp-tree-item:hover {
+  color: var(--dp-ink);
+  border-color: #d8e6f2;
+  background: #f3f8fd;
+}
+
+.dp-tree-item.active,
+.dp-tree-item.selected,
+.tree-button.selected {
+  color: #fff;
+  background: linear-gradient(135deg, #0c7aff, #485fff);
+  box-shadow: 0 12px 28px rgba(22, 135, 255, .24);
+}
+
+.workspace-header p {
+  color: var(--dp-muted);
+}
+
+.workspace-card,
+.dp-editor-panel,
+.dp-help-panel,
+.dp-formpart-overview,
+.dp-parameter-group,
+.dp-reference-case,
+.dp-expert-check {
+  border-color: var(--dp-border);
+  background: rgba(255, 255, 255, .97);
+  box-shadow: var(--dp-shadow-sm);
+}
+
+.dp-parameter-group {
+  background: #f7faff;
+}
+
+.dp-overline,
+.dp-eyebrow {
+  color: #0d6fcf;
+  background: linear-gradient(135deg, rgba(72, 215, 255, .16), rgba(111, 114, 255, .12));
+}
+
+.workspace-actions button,
+.dp-help-panel button,
+.dp-editor-actions button,
+.dp-feedback-actions button,
+.dp-expert-footer-actions button {
+  color: var(--dp-ink-2);
+  border-color: var(--dp-border-strong);
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(7, 28, 53, .06);
+}
+
+.workspace-actions button:hover,
+.dp-help-panel button:hover,
+.dp-editor-actions button:hover,
+.dp-feedback-actions button:hover,
+.dp-expert-footer-actions button:hover {
+  color: #0c6fcf;
+  border-color: #b9d8f3;
+  background: #eef7ff;
+  box-shadow: 0 13px 28px rgba(7, 28, 53, .10);
+}
+
+/* Wichtige Aktionen im Arbeitsbereich erhalten denselben Hauptseiten-Verlauf. */
+.workspace-actions .primary,
+.workspace-actions [data-primary="true"],
+.dp-editor-actions .primary,
+.dp-help-panel button.primary,
+button.dp-primary {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #0c7aff, #485fff);
+  box-shadow: 0 12px 28px rgba(22, 135, 255, .24);
+}
+
+.workspace-actions .primary:hover,
+.workspace-actions [data-primary="true"]:hover,
+.dp-editor-actions .primary:hover,
+.dp-help-panel button.primary:hover,
+button.dp-primary:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #1687ff, #6f72ff);
+}
+
+input,
+select,
+textarea,
+.dp-form input,
+.dp-form select,
+.dp-editor-grid input,
+.dp-editor-grid select,
+.dp-param-field input,
+.dp-param-field select {
+  color: var(--dp-text);
+  border-color: #cddae6;
+  background: #fff;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: #9ec9ee;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--dp-blue);
+  box-shadow: var(--dp-focus);
+}
+
+.dp-table {
+  border-color: var(--dp-border);
+}
+
+.dp-table th,
+.dp-table td {
+  border-bottom-color: #e6edf4;
+}
+
+.dp-table thead th,
+.dp-table tr:first-child th {
+  color: #fff;
+  background: linear-gradient(120deg, #071c35, #0b2b50 62%, #123c6d);
+}
+
+.dp-table tbody tr:hover td {
+  background: #f5f9fd;
+}
+
+.dp-reference-note,
+.dp-reference-test-note,
+.dp-help-note {
+  border-color: #c8e4f7;
+  background: linear-gradient(135deg, #eff9ff, #f4f3ff);
+}
+
+/* Dunkle Statusleiste wie der Signal-/Service-Streifen der Hauptseite. */
+.dp-status {
+  color: #afc2d5;
+  border-color: rgba(72, 215, 255, .16);
+  background: linear-gradient(120deg, #06182e, #071c35 56%, #0b2b50);
+  box-shadow: 0 14px 34px rgba(7, 28, 53, .20);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dp-status-left {
+  color: #fff;
+}
+
+.dp-status-center {
+  color: #9eb7d1;
+}
+
+.dp-status-ok {
+  color: #baf5e4;
+  background: rgba(46, 212, 167, .14);
+}
+
+.dp-status-warning {
+  color: #ffe0ad;
+  background: rgba(255, 180, 92, .14);
+}
+
+.dp-status-danger {
+  color: #ffc2bd;
+  background: rgba(255, 124, 115, .14);
+}
+
+.dp-sidebar,
+.dp-workspace {
+  scrollbar-color: #9db7cc transparent;
+}
+
+.dp-sidebar::-webkit-scrollbar-thumb,
+.dp-workspace::-webkit-scrollbar-thumb {
+  background: #9db7cc;
+  background-clip: padding-box;
+}
+
+@media (max-width: 1080px) {
+  .dp-ribbon::before {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}

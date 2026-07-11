@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## Phase 21.06a – Farbwelt der Hauptseite
+
+- Berechnungstool farblich exakt an die bereitgestellte Hauptseite angepasst.
+- Kopfbereich wieder dunkelblau mit dem Hero-Verlauf der Hauptseite gestaltet.
+- Blau-/Violett-Verlauf für Hauptaktionen und Cyan-Akzente für Prüfaktionen übernommen.
+- Markenblock mit EO-Logo, „Druckverlust Pro“ und „Professional“ vollständig erhalten.
+- Helle Arbeitskarten, Eingabefelder und Tabellen mit der Hauptseiten-Palette vereinheitlicht.
+- Statusleiste als dunklen Signalstreifen gestaltet.
+- Theme-Color und Web-App-Metadaten auf die neue Farbwelt nachgezogen.
+- Rechen-, Projekt- und Berichtsfunktionen unverändert gelassen.
+- Cache-Version auf 21.06a und App-Version auf 1.3.6a erhöht.
+
 ## Phase 21.06 – Einheitliches Oberflächendesign
 
 - Berechnungstool optisch an die Produkt-/Hauptseite angeglichen.

@@ -294,6 +294,7 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>21.06a</span><strong>Farbwelt der Hauptseite</strong><p>Dunkelblauer Kopfbereich, Blau-/Violett-Verläufe, Cyan-Akzente und helle Arbeitskarten exakt an die bereitgestellte Hauptseite angepasst. Logo, „Druckverlust Pro“ und „Professional“ bleiben erhalten.</p></article>
           <article><span>21.06</span><strong>Einheitliches Oberflächendesign</strong><p>Berechnungstool optisch an die Produktseite angeglichen: helle Glas-Navigation, schwebende Karten, konsistente Buttons, Tabellen und Eingabefelder. Markenblock bleibt erhalten.</p></article>
           <article><span>21.05</span><strong>Öffentliche Fachtest-Version</strong><p>Automatischer Vorabcheck, 10 manuelle Fachtest-Schritte, lokale Zwischenspeicherung sowie TXT-/CSV-Protokoll.</p></article>
           <article><span>21.04</span><strong>Fachliche Vergleichsmatrix</strong><p>10 feste Handrechnungen mit 92 Einzelprüfungen für Kanal, Rohr, Sensitivitäten, Summenbildung und Rundung.</p></article>
