@@ -134,3 +134,9 @@ Lizenzmatrix und Feature-Flags sind vorbereitet. Zahlung, Login und Zugriffssper
 ## Phase 20.03
 
 Lizenz-Gate und Exportstatus sind zentral vorbereitet. Die App bleibt weiterhin ohne Login, Zahlung oder Zugriffssperre nutzbar. Berichte und QS können den aktuellen Modus **Professional Preview** sowie den vorbereiteten Exportstatus anzeigen.
+
+## Phase 20.04
+
+- Produktseite zeigt den nächsten fachlichen Ausbau kompakt.
+- Im Tool sind Roadmap, Feedback-Vorlage und letzte Versionsschritte über Hilfe erreichbar.
+- Feedback funktioniert weiterhin ohne Backend: Eine strukturierte Vorlage wird in die Zwischenablage kopiert.

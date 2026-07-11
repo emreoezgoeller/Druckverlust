@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=20.03';
+import ReportEngine from '../../report/ReportEngine.js?v=20.04';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -236,6 +236,49 @@ export default class WorkspaceComponent {
         </div>
       </section>
 
+
+      <section id="roadmap" class="dp-help-panel">
+        <div>
+          <span class="dp-overline">Roadmap</span>
+          <h2>Was kommt als Nächstes?</h2>
+          <p>Druckverlust Pro wird kontrolliert erweitert. Der fachliche Rechenkern bleibt zuerst stabil, danach folgen weitere Gebäudetechnik-Werkzeuge.</p>
+        </div>
+        <div class="dp-product-roadmap-grid" aria-label="Produkt-Roadmap">
+          <article><span>Priorität 1</span><strong>Fachlicher Kern</strong><p>Formteile ergänzen, Rechenwerte validieren und bekannte Referenzfälle sauber vergleichen.</p></article>
+          <article><span>Priorität 2</span><strong>Weitere Module</strong><p>Luftmengenberechnung, Schallberechnung, h,x-Diagramm und Kanalschieber.</p></article>
+          <article><span>Später</span><strong>Plattform</strong><p>Lizenzierung, Firmenzugänge, Cloud-Projekte und abgestufte Professional-Funktionen.</p></article>
+        </div>
+      </section>
+
+      <section id="feedback" class="dp-help-panel">
+        <div>
+          <span class="dp-overline">Feedback</span>
+          <h2>Rückmeldung strukturiert vorbereiten</h2>
+          <p>Ein gutes Feedback enthält den betroffenen Bereich, die ausgeführten Schritte, das erwartete Ergebnis und – bei Fehlern – einen Screenshot oder die passende .dvp-Datei.</p>
+        </div>
+        <div class="dp-feedback-grid" aria-label="Feedback-Arten">
+          <article><strong>Fehler melden</strong><p>Was wurde eingegeben, was ist passiert und wie sollte das Ergebnis aussehen?</p></article>
+          <article><strong>Formteil wünschen</strong><p>Bezeichnung, Bauform, benötigte Eingaben, Quelle der ζ-Werte und wenn möglich ein Bild nennen.</p></article>
+          <article><strong>Bedienung verbessern</strong><p>Beschreiben, welcher Arbeitsschritt zu lang, unklar oder unnötig kompliziert ist.</p></article>
+        </div>
+        <div class="dp-feedback-actions">
+          <button type="button" data-help-action="copy-feedback">Feedback-Vorlage kopieren</button>
+          <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
+        </div>
+      </section>
+
+      <section id="versionen" class="dp-help-panel">
+        <div>
+          <span class="dp-overline">Versionshistorie</span>
+          <h2>Aktueller Entwicklungsstand</h2>
+        </div>
+        <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>20.04</span><strong>Roadmap & Feedback</strong><p>Weiterentwicklung, Feedback-Vorlage und Versionsübersicht ergänzt.</p></article>
+          <article><span>20.03</span><strong>Lizenz-Gate</strong><p>Exportstatus und technische Lizenzschicht vorbereitet – noch ohne Sperre.</p></article>
+          <article><span>20.02</span><strong>Lizenzmatrix</strong><p>Feature-Flags und spätere Test-/Professional-Abgrenzung vorbereitet.</p></article>
+        </div>
+      </section>
+
       <section class="dp-help-panel dp-help-note">
         <strong>Hinweis:</strong>
         <span>Die Autosicherung läuft lokal im Browser. Für die echte Ablage trotzdem regelmässig als <code>.dvp</code>-Datei speichern.</span>
@@ -290,6 +333,34 @@ export default class WorkspaceComponent {
 
         if (action === 'demo-report') {
           window.location.href = 'app.html?demo=1&report=1';
+          return;
+        }
+
+        if (action === 'copy-feedback') {
+          const text = [
+            'Druckverlust Pro – Feedback',
+            '',
+            `Version: ${APP_RELEASE}`,
+            'Bereich: [Teilstrecke / Formteil / Bericht / Speichern / Oberfläche]',
+            'Art: [Fehler / Verbesserung / neues Formteil / Wunsch]',
+            '',
+            'Ausgeführte Schritte:',
+            '1. ',
+            '2. ',
+            '3. ',
+            '',
+            'Erwartetes Ergebnis:',
+            '',
+            'Tatsächliches Ergebnis:',
+            '',
+            'Zusatz: Screenshot oder .dvp-Datei beilegen, sofern möglich.',
+          ].join('\n');
+
+          if (navigator?.clipboard?.writeText) {
+            navigator.clipboard.writeText(text).then(() => alert('Feedback-Vorlage wurde kopiert.')).catch(() => alert(text));
+          } else {
+            alert(text);
+          }
           return;
         }
 

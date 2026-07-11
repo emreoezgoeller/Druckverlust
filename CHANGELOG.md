@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Phase 20.04 – Roadmap, Feedback und Changelog
+
+- Produktseite um kompakten Bereich „Ständige Weiterentwicklung“ ergänzt.
+- Roadmap für fachlichen Ausbau, weitere Gebäudetechnik-Module und spätere Plattformfunktionen sichtbar gemacht.
+- Hilfeseite im Tool um Roadmap, Feedback-Vorlage und Versionshistorie erweitert.
+- Direkte Links von der Produktseite zu Roadmap und Feedback im Tool ergänzt.
+- Cache-Version auf 20.04 erhöht.
+
+
 ## Phase 20.03 – Lizenz-Gate und Exportstatus
 
 - Syntax/Formatierung der Lizenz-Textausgabe bereinigt.

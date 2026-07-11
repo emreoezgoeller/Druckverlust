@@ -1,11 +1,11 @@
-// Druckverlust Pro – Phase 20.03
+// Druckverlust Pro – Phase 20.04
 // Startet Tool, Demo, Hilfe und Beispielbericht über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=20.03';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=20.04';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
@@ -105,6 +105,21 @@ function isHelpStartupRequested() {
   const hash = String(window.location.hash || '').toLowerCase();
 
   return ['1', 'true', 'ja', 'hilfe', 'help'].includes(helpParam) || hash.includes('hilfe') || hash.includes('help');
+}
+
+
+function getHelpStartupSection() {
+  if (typeof window === 'undefined') return '';
+  const params = new URLSearchParams(window.location.search || '');
+  return String(params.get('section') || '').trim().toLowerCase();
+}
+
+function scrollToHelpSection(sectionId) {
+  if (!sectionId || typeof document === 'undefined') return;
+  window.requestAnimationFrame(() => {
+    const target = document.getElementById(sectionId);
+    target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 function cleanupHelpUrlFlag() {
@@ -217,6 +232,7 @@ function bootstrap() {
   }
 
   const helpRequested = isHelpStartupRequested();
+  const helpSection = getHelpStartupSection();
   const reportRequested = isReportStartupRequested();
 
   if (helpRequested) {
@@ -237,6 +253,8 @@ function bootstrap() {
   new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
   new StatusBarComponent(document.querySelector('.dp-status'), state);
   new KeyboardShortcuts(state).install();
+
+  if (helpRequested) scrollToHelpSection(helpSection);
 
   AutoSaveEngine.install(state);
   installBeforeUnloadProtection(state);

@@ -38,6 +38,10 @@
 - Phase 19.08: Professional-/Trust-Bereich
 - Phase 19.09: Kontakt und Rechtliches vorbereitet
 - Phase 20.00: Deployment-Feinschliff, Sitemap und App-Metadaten
+- Phase 20.01: Lizenzstatus im Tool vorbereitet
+- Phase 20.02: Lizenzmatrix und Feature-Flags
+- Phase 20.03: Lizenz-Gate und Exportstatus
+- Phase 20.04: Roadmap, Feedback und Versionshistorie
 
 ## Nächste sinnvolle Schritte
 
@@ -125,3 +129,10 @@ Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kan
 - Zentrale License-Gate-Schicht für spätere Free-/Professional-Grenzen vorbereitet.
 - Exportstatus in Tool, Bericht und QS sichtbar gemacht.
 - Noch keine technische Sperre aktiv; Vorbereitung bleibt bewusst nicht blockierend.
+
+
+### Phase 20.04 – Roadmap, Feedback und Versionshistorie
+
+- Kompakte Produkt-Roadmap auf der Hauptseite.
+- Feedback-Vorlage und letzte Versionen in der integrierten Hilfe.
+- Keine Backend-Abhängigkeit; Rückmeldungen werden strukturiert zum Kopieren vorbereitet.
