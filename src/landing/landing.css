@@ -697,7 +697,7 @@ main { overflow: hidden; }
 }
 
 
-/* Phase 19.11 – Mobile-Basis aus Phase 19.10 bleibt aktiv */
+/* Phase 20.00 – Mobile-Basis aus Phase 19.10 bleibt aktiv */
 .dp-skip-link {
   position: fixed;
   left: 16px;
@@ -825,7 +825,7 @@ main { overflow: hidden; }
   }
 }
 
-/* Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten */
+/* Phase 20.00 – Deployment-Feinschliff, Sitemap und App-Metadaten */
 .dp-not-found-card {
   text-align: left;
 }

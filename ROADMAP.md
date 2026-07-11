@@ -37,7 +37,7 @@
 - Phase 19.07: Bedienung, Demo und Beispielnachweis
 - Phase 19.08: Professional-/Trust-Bereich
 - Phase 19.09: Kontakt und Rechtliches vorbereitet
-- Phase 19.11: Deployment-Feinschliff, Sitemap und App-Metadaten
+- Phase 20.00: Deployment-Feinschliff, Sitemap und App-Metadaten
 
 ## Nächste sinnvolle Schritte
 
@@ -53,8 +53,9 @@
 - Phase 19.07: Bedienung, Demo und Beispielnachweis **erledigt**
 - Phase 19.08: Professional-/Trust-Bereich **erledigt**
 - Phase 19.09: Kontakt und Rechtliches vorbereitet **erledigt**
-- Phase 19.11: Deployment-Feinschliff, Sitemap und App-Metadaten **erledigt**
-- Phase 20: Lizenz-/Abo-Vorbereitung
+- Phase 20.00: Deployment-Feinschliff, Sitemap und App-Metadaten **erledigt**
+- Phase 20.00: Lizenz-/Abo-Vorbereitung **erledigt**
+- Phase 20.01: Lizenzstatus im Tool vorbereiten
 
 ### Phase 19.03 – Demo-Start von der Hauptseite
 
@@ -93,9 +94,18 @@ Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kan
 - Final rechtlich zu prüfende Angaben bleiben bewusst als Platzhalter markiert.
 
 
-### Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
+### Phase 20.00 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
 - `site.webmanifest` für Web-App-Erkennung ergänzt.
 - `robots.txt` und `sitemap.xml` für die öffentliche GitHub-Pages-Bereitstellung ergänzt.
 - `404.html` als eigene Fehlerseite mit Rücksprung zu Produktseite und Tool ergänzt.
-- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `19.11`.
+- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `20.00`.
+
+
+### Phase 20.00 – Lizenz-/Abo-Vorbereitung
+
+- Produktseite um Lizenz-/Ausblick-Bereich ergänzt.
+- `lizenz.html` als vorbereitete Lizenzübersicht erstellt.
+- `site.webmanifest` und `sitemap.xml` um Lizenzübersicht erweitert.
+- Technische Datei `src/licensing/licenseConfig.js` vorbereitet.
+- Noch keine Zahlung, kein Login und keine technische Sperre aktiv.

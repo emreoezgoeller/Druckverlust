@@ -1,12 +1,21 @@
 # CHANGELOG
 
-## Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
+## Phase 20.00 – Lizenz-/Abo-Vorbereitung
+
+- Produktseite um kompakten Bereich **Lizenz / Ausblick** ergänzt.
+- Neue Seite `lizenz.html` mit vorbereiteten Nutzungsstufen erstellt.
+- Navigation, Footer, Sitemap und Web-App-Manifest um Lizenzübersicht ergänzt.
+- Neue technische Lizenz-Konfigurationsdatei `src/licensing/licenseConfig.js` vorbereitet.
+- Noch keine Zahlung, kein Login und keine Zugriffssperre aktiviert.
+- Cache-Busting auf `20.00` erhöht.
+
+## Phase 20.00 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
 - `site.webmanifest` ergänzt, damit Druckverlust Pro als Web-App sauber erkannt wird.
 - `robots.txt` und `sitemap.xml` für GitHub-Pages-Indexierung ergänzt.
 - `404.html` als eigene Fehlerseite mit Rücksprung zur Produktseite und zum Tool ergänzt.
 - Manifest-Link und mobile Web-App-Metadaten auf Produkt-, Tool- und Rechtseiten ergänzt.
-- Cache-Busting auf `19.11` erhöht.
+- Cache-Busting auf `20.00` erhöht.
 
 ## Phase 19.09 – Kontakt und Rechtliches vorbereitet
 

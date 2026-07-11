@@ -16,6 +16,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://emreoezgoeller.github.io/Druckverlust/lizenz.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://emreoezgoeller.github.io/Druckverlust/impressum.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>

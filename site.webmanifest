@@ -42,6 +42,12 @@
       "short_name": "Anleitung",
       "url": "./app.html?help=1",
       "description": "Bedienungsanleitung im Tool öffnen"
+    },
+    {
+      "name": "Lizenzübersicht",
+      "short_name": "Lizenz",
+      "url": "./lizenz.html",
+      "description": "Vorbereitete Lizenz- und Produktübersicht öffnen"
     }
   ]
 }
