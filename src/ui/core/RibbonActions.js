@@ -12,6 +12,7 @@ import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js'
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
 import { APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js';
+import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
 
 export default class RibbonActions {
   constructor(state) {
@@ -489,11 +490,15 @@ export default class RibbonActions {
     const formParts = system?.formParts?.length || 0;
     const specialComponents = system?.specialComponents?.length || 0;
 
+    const license = createLicenseStatus();
+
     alert([
       APP_BUILD_LABEL,
       '',
       `Cache-Version: ?v=${APP_RELEASE}`,
       `Adresse: ${info.href || 'lokal / unbekannt'}`,
+      `Lizenzstatus: ${license.modeLabel}`,
+      `Aktiver Plan: ${license.activePlan?.name || 'unbekannt'} – ${license.activePlan?.label || ''}`,
       '',
       `Aktuelles Projekt: ${project?.name || project?.meta?.name || 'kein Projekt'}${project?.demo?.isDemoProject ? ' (Demo)' : ''}`,
       `Aktive Anlage: ${system?.name || 'keine Anlage'}`,
@@ -501,6 +506,8 @@ export default class RibbonActions {
       `Formteile: ${formParts}`,
       `Sonderbauteile: ${specialComponents}`,
       `Projektdatei: ${StorageEngine.createFileName(project || {})}`,
+      '',
+      formatLicenseStatusText(license),
       '',
       'Hinweis: Nach dem Hochladen auf GitHub Pages bitte Ctrl+F5 drücken, damit die neue Cache-Version geladen wird.',
     ].join('\n'));

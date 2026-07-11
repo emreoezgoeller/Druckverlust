@@ -5,13 +5,15 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=20.00';
+import ReportEngine from '../../report/ReportEngine.js?v=20.03';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
 import { APP_RELEASE } from '../../core/appVersion.js';
+import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
+import LicenseGate from '../../licensing/LicenseGate.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -71,6 +73,12 @@ export default class WorkspaceComponent {
     const formPartCount = system?.formParts?.length || 0;
     const specialCount = system?.specialComponents?.length || 0;
     const isDemo = Boolean(project?.demo?.isDemoProject);
+    const licenseStatus = createLicenseStatus();
+    const licenseRows = getLicenseFeatureRows().slice(0, 6);
+    const exportNotice = LicenseGate.createExportNotice();
+    const licenseMatrixHtml = licenseRows.map(row => `
+      <article><strong>${this.escapeHtml(row.label)}</strong><span>Test: ${row.test ? 'aktiv' : 'später'} · Professional: ${row.professional ? 'aktiv' : 'später'}</span></article>
+    `).join('');
 
     this.root.innerHTML = `
       <div class="workspace-header dp-help-header">
@@ -94,6 +102,7 @@ export default class WorkspaceComponent {
         <div class="dp-help-status">
           <span>${isDemo ? 'Demo-Projekt aktiv' : 'Aktueller Stand'}</span>
           <strong>${this.escapeHtml(sectionCount)} TS · ${this.escapeHtml(formPartCount)} Formteile · ${this.escapeHtml(specialCount)} Sonderbauteile</strong>
+          <small>Lizenz: ${this.escapeHtml(licenseStatus.modeLabel)} · Export: ${this.escapeHtml(exportNotice.exportLabel)}</small>
         </div>
       </section>
 
@@ -208,6 +217,22 @@ export default class WorkspaceComponent {
             <li><strong>Alt + Home</strong> Startübersicht</li>
           </ul>
           <button type="button" data-help-action="copy-shortcuts">Kurzbefehle kopieren</button>
+        </div>
+      </section>
+
+
+      <section class="dp-help-panel dp-license-help-panel">
+        <div>
+          <span class="dp-overline">Lizenzstatus</span>
+          <h2>Aktuell: ${this.escapeHtml(licenseStatus.modeLabel)}</h2>
+          <p>Diese Web-Version ist weiterhin direkt testbar. Login, Zahlung und technische Zugriffssperre sind noch nicht aktiv. Der Exportstatus ist vorbereitet und wird im Bericht mitgeführt.</p>
+        </div>
+        <div class="dp-license-help-grid" aria-label="Lizenzstatus im Tool">
+          <article><strong>Aktiver Plan</strong><span>${this.escapeHtml(licenseStatus.activePlan?.name || 'Professional')} · ${this.escapeHtml(licenseStatus.activePlan?.label || 'Planung / Abgabe')}</span></article>
+          <article><strong>Speicherung</strong><span>Projektdateien werden lokal als .dvp gespeichert.</span></article>
+          <article><strong>Feature-Flags</strong><span>Vorbereitet, aber ohne aktive Sperre.</span></article>
+          <article><strong>Exportstatus</strong><span>${this.escapeHtml(exportNotice.exportLabel)}</span></article>
+          ${licenseMatrixHtml}
         </div>
       </section>
 

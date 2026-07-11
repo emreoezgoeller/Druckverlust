@@ -833,3 +833,214 @@ main { overflow: hidden; }
 .dp-not-found-card h1 {
   margin-bottom: 12px;
 }
+
+
+/* Phase 20.03 – Lizenzstatus */
+.dp-license-block {
+  background: linear-gradient(135deg, #ffffff 0%, #f5faff 100%);
+  border-top: 1px solid var(--dp-border);
+}
+
+.dp-license-block .dp-section-head p {
+  max-width: 880px;
+  margin: 16px 0 0;
+  color: var(--dp-muted);
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+.dp-license-status-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.dp-license-status-card div {
+  padding: 18px;
+  border: 1px solid rgba(11, 90, 153, 0.22);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(6, 45, 85, 0.06);
+}
+
+.dp-license-status-card span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--dp-muted);
+  font-weight: 850;
+}
+
+.dp-license-status-card strong {
+  color: var(--dp-blue-950);
+  font-size: 18px;
+}
+
+.dp-license-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dp-license-grid article {
+  min-height: 178px;
+  padding: 22px;
+  border: 1px solid var(--dp-border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 34px rgba(6, 45, 85, 0.07);
+}
+
+.dp-license-grid article > span {
+  display: inline-flex;
+  padding: 7px 10px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background: var(--dp-blue-100);
+  color: var(--dp-blue-900);
+  font-weight: 900;
+}
+
+.dp-license-grid strong {
+  display: block;
+  color: var(--dp-blue-950);
+  font-size: 20px;
+}
+
+.dp-license-grid p {
+  color: var(--dp-muted);
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+.dp-license-grid ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--dp-muted);
+  line-height: 1.7;
+}
+
+.dp-license-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(11, 90, 153, 0.22);
+  border-radius: 22px;
+  background: #edf6ff;
+  color: #193b59;
+  line-height: 1.55;
+}
+
+.dp-license-note strong { color: var(--dp-blue-950); }
+.dp-license-note a { color: var(--dp-blue-900); font-weight: 900; }
+
+.dp-license-status-card-page { margin-top: 24px; }
+
+@media (max-width: 980px) {
+  .dp-license-status-card, .dp-license-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .dp-license-status-card, .dp-license-grid { grid-template-columns: 1fr; }
+}
+
+/* Phase 20.03 – Lizenzmatrix / Exportstatus / Feature-Flags */
+.dp-license-matrix {
+  margin: 18px 0 0;
+  padding: 16px;
+  border: 1px solid rgba(11, 90, 153, 0.2);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 16px 36px rgba(6, 45, 85, 0.06);
+}
+
+.dp-license-matrix-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid rgba(11, 90, 153, 0.14);
+}
+
+.dp-license-matrix-head strong {
+  color: var(--dp-blue-950);
+  font-size: 18px;
+}
+
+.dp-license-matrix-head span {
+  color: var(--dp-muted);
+  font-weight: 750;
+}
+
+.dp-license-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 120px 140px 100px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(11, 90, 153, 0.1);
+}
+
+.dp-license-matrix-row:last-child {
+  border-bottom: 0;
+}
+
+.dp-license-matrix-row span {
+  color: var(--dp-blue-950);
+  font-weight: 900;
+}
+
+.dp-license-matrix-row b,
+.dp-license-matrix-row em {
+  display: inline-flex;
+  justify-content: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #edf6ff;
+  color: var(--dp-blue-900);
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.dp-license-matrix-row em {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.dp-license-matrix-row-title span,
+.dp-license-matrix-row-title b,
+.dp-license-matrix-row-title em {
+  background: transparent;
+  justify-content: flex-start;
+  padding: 0;
+  color: var(--dp-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.dp-license-matrix-page {
+  margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+  .dp-license-matrix-row {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .dp-license-matrix-row b,
+  .dp-license-matrix-row em {
+    justify-content: flex-start;
+    width: max-content;
+  }
+
+  .dp-license-matrix-row-title {
+    display: none;
+  }
+}

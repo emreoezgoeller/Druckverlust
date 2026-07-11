@@ -11,7 +11,7 @@
   <link rel="manifest" href="site.webmanifest" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Druckverlust Pro" />
-  <link rel="stylesheet" href="src/landing/landing.css?v=20.00" />
+  <link rel="stylesheet" href="src/landing/landing.css?v=20.03" />
 </head>
 <body class="dp-legal-page">
   <header class="dp-landing-header">
@@ -34,10 +34,17 @@
   <main class="dp-legal-main">
     <section class="dp-legal-card dp-license-page-card">
       <span class="dp-eyebrow">Lizenz / Ausblick</span>
-      <h1>Lizenzmodell in Vorbereitung.</h1>
+      <h1>Lizenzmatrix vorbereitet.</h1>
       <p class="dp-legal-note">
-        Diese Seite ist eine vorbereitete Produktstruktur. Sie aktiviert noch keine Zahlung, keinen Login und keine Zugriffsbeschränkung.
+        Diese Seite zeigt die vorbereitete Lizenzmatrix und die geplanten Feature-Flags. Zahlung, Login und Zugriffsbeschränkung sind weiterhin nicht aktiv.
       </p>
+
+      <div class="dp-license-status-card dp-license-status-card-page" aria-label="Aktueller Lizenzstatus">
+        <div><span>Aktueller Modus</span><strong>Professional Preview</strong></div>
+        <div><span>Aktiver Plan</span><strong>Professional</strong></div>
+        <div><span>Login</span><strong>nicht aktiv</strong></div>
+        <div><span>Technische Sperre</span><strong>nicht aktiv</strong></div>
+      </div>
 
       <div class="dp-license-grid dp-license-grid-page" aria-label="Vorbereitete Lizenzstufen">
         <article>
@@ -60,9 +67,26 @@
         </article>
       </div>
 
+
+      <section class="dp-license-matrix dp-license-matrix-page" aria-label="Lizenzmatrix">
+        <div class="dp-license-matrix-head">
+          <strong>Feature-Flags / Lizenzmatrix</strong>
+          <span>Die Funktionen sind sichtbar vorbereitet. Es wird aktuell nichts technisch gesperrt.</span>
+        </div>
+        <div class="dp-license-matrix-row dp-license-matrix-row-title"><span>Funktion</span><b>Test</b><b>Professional</b><em>Später</em></div>
+        <div class="dp-license-matrix-row"><span>Demo-Projekt und Anleitung</span><b>aktiv</b><b>aktiv</b><em>aktiv</em></div>
+        <div class="dp-license-matrix-row"><span>Projektbearbeitung</span><b>aktiv</b><b>aktiv</b><em>aktiv</em></div>
+        <div class="dp-license-matrix-row"><span>.dvp speichern / öffnen</span><b>aktiv</b><b>aktiv</b><em>aktiv</em></div>
+        <div class="dp-license-matrix-row"><span>Bericht / PDF</span><b>aktiv</b><b>aktiv</b><em>steuerbar</em></div>
+        <div class="dp-license-matrix-row"><span>Exportstatus / Lizenzhinweis</span><b>aktiv</b><b>aktiv</b><em>steuerbar</em></div>
+        <div class="dp-license-matrix-row"><span>Projekt-, Rechen- und Datei-QS</span><b>aktiv</b><b>aktiv</b><em>aktiv</em></div>
+        <div class="dp-license-matrix-row"><span>Firmenlizenz / Aktivierung</span><b>—</b><b>—</b><em>geplant</em></div>
+        <div class="dp-license-matrix-row"><span>Cloud-Projekte / Nutzerkonto</span><b>—</b><b>—</b><em>geplant</em></div>
+      </section>
+
       <div class="dp-license-note dp-license-note-page">
         <strong>Aktueller Stand:</strong>
-        <span>Druckverlust Pro befindet sich im Aufbau zur Professional-Version. Vor einer kommerziellen Veröffentlichung müssen Impressum, Datenschutz, Lizenzbedingungen und fachliche Freigabe final geprüft werden.</span>
+        <span>Druckverlust Pro läuft aktuell als Professional Preview. Die Lizenzmatrix und der Exportstatus sind vorbereitet, erzwingen aber noch keine Sperren. Vor einer kommerziellen Veröffentlichung müssen Impressum, Datenschutz, Lizenzbedingungen, Supportprozess und fachliche Freigabe final geprüft werden.</span>
       </div>
 
       <div class="dp-legal-actions">
@@ -75,7 +99,7 @@
 
   <footer class="dp-landing-footer">
     <span>© 2026 Emre Özgöller – Druckverlust Pro · Professional</span>
-    <span class="dp-footer-links"><a href="index.html">Startseite</a><a href="app.html">Tool</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Phase 20.00</em></span>
+    <span class="dp-footer-links"><a href="index.html">Startseite</a><a href="app.html">Tool</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Phase 20.03</em></span>
   </footer>
 
   <script>

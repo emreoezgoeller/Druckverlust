@@ -1,4 +1,5 @@
 import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js';
+import LicenseGate from '../licensing/LicenseGate.js';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -617,6 +618,8 @@ export class ReportEngine {
       formPartsBySection,
       formPartCatalog,
       specialComponents: specialRows,
+      license: LicenseGate.getStatus(),
+      exportNotice: LicenseGate.createExportNotice(),
       assets: {
         logo: toAbsoluteAssetUrl('assets/logo/eo-logo.png'),
         reportHero: toAbsoluteAssetUrl('assets/report/duct-network-hero.png'),
@@ -797,6 +800,7 @@ export class ReportEngine {
     const splitTotal = toNumber(model.totals?.friction) + toNumber(model.totals?.formParts) + toNumber(model.totals?.special);
     const totalDifference = Math.abs(splitTotal - toNumber(model.totals?.total));
     const hasLossBreakdown = hasCalculatedTotal && Number.isFinite(splitTotal) && totalDifference <= 0.1;
+    const exportNotice = model.exportNotice || LicenseGate.createExportNotice();
 
     const items = [
       {
@@ -840,6 +844,13 @@ export class ReportEngine {
         status: hasLossBreakdown ? 'ok' : 'warning',
         message: `Aufteilung ist konsistent: Kanal/Rohr ${formatNumber(model.totals?.friction, 1)} Pa + Formteile ${formatNumber(model.totals?.formParts, 1)} Pa + Sonderbauteile ${formatNumber(model.totals?.special, 1)} Pa.`,
         warning: `Aufteilung prüfen. Summe Einzelwerte weicht um ${formatNumber(totalDifference, 2)} Pa vom Gesamtdruckverlust ab.`,
+      },
+      {
+        id: 'license-export-status',
+        label: 'Lizenz-/Exportstatus',
+        status: exportNotice.restricted ? 'warning' : 'ok',
+        message: `${exportNotice.label} · ${exportNotice.exportLabel}`,
+        warning: 'Export ist lizenzseitig eingeschränkt oder muss geprüft werden.',
       },
       {
         id: 'calculation-content',
@@ -946,6 +957,7 @@ export class ReportEngine {
       `Status: ${checklist.status.toUpperCase()} · Fehler: ${checklist.errorCount} · Hinweise: ${checklist.warningCount}`,
       `PDF-Seiten: ${checklist.pagePlan?.totalPages ?? '-'}`,
       `PDF-Dateiname: ${checklist.pdfFileName || '-'}`,
+      `Lizenz-/Exportstatus: ${(model.exportNotice || LicenseGate.createExportNotice()).text}`,
       '',
       'PDF-Druckeinstellungen:',
       ...(checklist.printGuidance?.rows || []).map(row => `- ${row[0]}: ${row[1]}`),
@@ -998,6 +1010,7 @@ export class ReportEngine {
       ['PDF-Dateiname', createPdfFileName(completion.fileBaseName)],
       ['HTML-Dateiname', createHtmlFileName(completion.fileBaseName)],
       ['CSV-Dateiname', createCsvFileName(completion.fileBaseName)],
+      ['Lizenz-/Exportstatus', (model.exportNotice || LicenseGate.createExportNotice()).text],
     ];
   }
 
@@ -1849,6 +1862,8 @@ export class ReportEngine {
             ['Software', model.project.software],
             ['Projektversion', model.project.version],
             ['Softwarestand', APP_BUILD_LABEL],
+            ['Lizenzstatus', model.license?.modeLabel || '-'],
+            ['Exportstatus', model.license?.exportLabel || model.exportNotice?.exportLabel || '-'],
           ])}
         </div>
         <div>
@@ -1857,6 +1872,7 @@ export class ReportEngine {
             <li>Alle Angaben ohne Gewähr.</li>
             <li>Für die Richtigkeit der Eingabedaten ist der Planer verantwortlich.</li>
             <li>Diese Berechnung ersetzt keine Detailplanung.</li>
+            <li>Lizenz-/Exportstatus: ${escapeHtml(model.exportNotice?.text || model.license?.modeLabel || '-')}</li>
           </ul>
           ${model.project.note ? `<div class="report-user-note"><strong>Bemerkung:</strong><br>${escapeHtml(model.project.note)}</div>` : ''}
         </div>

@@ -1,16 +1,16 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 20.00 Lizenz-/Abo-Vorbereitung**.
+Aktueller Entwicklungsstand: **Phase 20.01 Lizenzstatus im Tool vorbereitet**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
 ### Phase 20.00 – Lizenz-/Abo-Vorbereitung
 
-Die Produktseite wurde um einen kompakten Lizenz-/Ausblick-Bereich ergänzt. Zusätzlich wurde `lizenz.html` als vorbereitete Lizenzübersicht erstellt. Diese Phase aktiviert noch keine Zahlung, keinen Login und keine Zugriffssperre; sie bereitet nur die spätere Produktstruktur vor.
+Der Lizenzstatus ist jetzt sichtbarer vorbereitet: Produktseite, Lizenzseite, Tool-Hilfe und Info-Dialog zeigen den Modus **Professional Preview**. Zahlung, Login und Zugriffssperre bleiben weiterhin deaktiviert.
 
 ### Phase 19.11 – Deployment-Feinschliff, Sitemap und App-Metadaten
 
-Für die öffentliche GitHub-Pages-Bereitstellung wurden `site.webmanifest`, `robots.txt`, `sitemap.xml` und eine eigene `404.html` ergänzt. Produkt-, Tool- und Rechtseiten verweisen jetzt auf das Manifest und tragen die aktuelle Cache-Version `20.00`.
+Für die öffentliche GitHub-Pages-Bereitstellung wurden `site.webmanifest`, `robots.txt`, `sitemap.xml` und eine eigene `404.html` ergänzt. Produkt-, Tool- und Rechtseiten verweisen jetzt auf das Manifest und tragen die aktuelle Cache-Version `20.01`.
 
 ### Phase 19.09 – Kontakt und Rechtliches vorbereitet
 
@@ -36,7 +36,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `20.00`.
+- Die aktuelle Cache-Version ist `20.01`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.
@@ -125,3 +125,12 @@ Die Produktseite kann jetzt nicht nur das Demo-Projekt öffnen, sondern auch dir
 - `app.html?help=1` öffnet direkt die integrierte Bedienungsanleitung.
 
 Die Hilfeseite enthält zusätzlich Beispielwerte und eine kurze Erklärung der Druckverlust-Aufteilung.
+
+## Phase 20.02
+
+Lizenzmatrix und Feature-Flags sind vorbereitet. Zahlung, Login und Zugriffssperre sind weiterhin deaktiviert.
+
+
+## Phase 20.03
+
+Lizenz-Gate und Exportstatus sind zentral vorbereitet. Die App bleibt weiterhin ohne Login, Zahlung oder Zugriffssperre nutzbar. Berichte und QS können den aktuellen Modus **Professional Preview** sowie den vorbereiteten Exportstatus anzeigen.

@@ -4336,6 +4336,48 @@ canvas,
   .dp-help-header .workspace-actions { flex-wrap: wrap; }
 }
 
+/* Phase 20.01 – Lizenzstatus in der Hilfe */
+.dp-help-status small {
+  display: block;
+  margin-top: 6px;
+  color: var(--dp-muted);
+  font-weight: 800;
+}
+
+.dp-license-help-panel {
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.dp-license-help-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.dp-license-help-grid article {
+  padding: 16px;
+  border: 1px solid #e4edf7;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.dp-license-help-grid strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--dp-blue-900);
+}
+
+.dp-license-help-grid span {
+  color: var(--dp-muted);
+  line-height: 1.45;
+  font-weight: 650;
+}
+
+@media (max-width: 900px) {
+  .dp-license-help-grid { grid-template-columns: 1fr; }
+}
+
 /* Phase 19.07 – Hilfe, Demo und Beispielnachweis */
 .dp-help-demo-panel {
   display: flex;

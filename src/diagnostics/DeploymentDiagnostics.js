@@ -103,6 +103,8 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'QS', label: 'Datei-QS', path: `src/diagnostics/ProjectFileDiagnostics.js?v=${version}` },
     { area: 'QS', label: 'Release-Candidate-QS', path: `src/diagnostics/ReleaseCandidateDiagnostics.js?v=${version}` },
     { area: 'Version', label: 'Versionszentrale', path: `src/core/appVersion.js?v=${version}` },
+    { area: 'Lizenz', label: 'Lizenz-Konfiguration', path: `src/licensing/licenseConfig.js?v=${version}` },
+    { area: 'Lizenz', label: 'License-Gate', path: `src/licensing/LicenseGate.js?v=${version}` },
     { area: 'Bericht', label: 'Bericht-Engine', path: `src/report/ReportEngine.js?v=${version}` },
     { area: 'PDF', label: 'PDF-Export', path: `src/pdf/report.js?v=${version}` },
     { area: 'Logo', label: 'EO-Logo', path: 'assets/logo/eo-logo.png' },

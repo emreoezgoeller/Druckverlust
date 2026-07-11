@@ -55,7 +55,9 @@
 - Phase 19.09: Kontakt und Rechtliches vorbereitet **erledigt**
 - Phase 20.00: Deployment-Feinschliff, Sitemap und App-Metadaten **erledigt**
 - Phase 20.00: Lizenz-/Abo-Vorbereitung **erledigt**
-- Phase 20.01: Lizenzstatus im Tool vorbereiten
+- Phase 20.01: Lizenzstatus im Tool **erledigt**
+- Phase 20.01: Lizenzstatus im Tool vorbereiten **erledigt**
+- Phase 20.02: Free-/Professional-Grenzen und Exporthinweise vorbereiten
 
 ### Phase 19.03 – Demo-Start von der Hauptseite
 
@@ -99,7 +101,7 @@ Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kan
 - `site.webmanifest` für Web-App-Erkennung ergänzt.
 - `robots.txt` und `sitemap.xml` für die öffentliche GitHub-Pages-Bereitstellung ergänzt.
 - `404.html` als eigene Fehlerseite mit Rücksprung zu Produktseite und Tool ergänzt.
-- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `20.00`.
+- Produkt-, Tool- und Rechtseiten verweisen auf das Manifest und verwenden Cache-Version `20.01`.
 
 
 ### Phase 20.00 – Lizenz-/Abo-Vorbereitung
@@ -109,3 +111,17 @@ Der Hilfe-Button öffnet eine echte Anleitung im Arbeitsbereich. Zusätzlich kan
 - `site.webmanifest` und `sitemap.xml` um Lizenzübersicht erweitert.
 - Technische Datei `src/licensing/licenseConfig.js` vorbereitet.
 - Noch keine Zahlung, kein Login und keine technische Sperre aktiv.
+
+
+### Phase 20.02 – Lizenzmatrix und Feature-Flags
+
+- Lizenzmatrix sichtbar gemacht.
+- Feature-Flags für spätere Free-/Professional-/Abo-Steuerung vorbereitet.
+- Weiterhin keine Zahlung, kein Login und keine technische Sperre aktiv.
+
+
+### Phase 20.03 – Lizenz-Gate und Exportstatus
+
+- Zentrale License-Gate-Schicht für spätere Free-/Professional-Grenzen vorbereitet.
+- Exportstatus in Tool, Bericht und QS sichtbar gemacht.
+- Noch keine technische Sperre aktiv; Vorbereitung bleibt bewusst nicht blockierend.

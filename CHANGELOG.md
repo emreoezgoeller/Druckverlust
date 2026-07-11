@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## Phase 20.03 – Lizenz-Gate und Exportstatus
+
+- Syntax/Formatierung der Lizenz-Textausgabe bereinigt.
+- Neues zentrales Modul `src/licensing/LicenseGate.js` ergänzt.
+- Exportstatus für PDF-/HTML-Berichte vorbereitet und im Berichtmodell mitgeführt.
+- Export-QS und Anlageninformationen zeigen den Lizenz-/Exportstatus.
+- Produktseite und Lizenzseite um Exportstatus-Hinweis erweitert.
+- Deployment-QS prüft jetzt auch Lizenz-Konfiguration und License-Gate.
+- Cache-Version auf 20.03 erhöht.
+
+## Phase 20.02 – Lizenzmatrix und Feature-Flags
+
+- Lizenzmatrix für Test, Professional und spätere Lizenz-/Abo-Stufe ergänzt.
+- Feature-Flags in `src/licensing/licenseConfig.js` vorbereitet.
+- Produktseite und Lizenzseite zeigen die vorbereitete Funktionsmatrix.
+- Tool-Hilfe zeigt den Lizenzstatus mit kompakten Feature-Hinweisen.
+- Cache-Version auf 20.02 erhöht.
+
+
+## Phase 20.01 – Lizenzstatus im Tool vorbereitet
+
+- Lizenzstatus **Professional Preview** sichtbar vorbereitet.
+- Produktseite und `lizenz.html` zeigen jetzt Statuskarten zu Modus, Login, Zahlung und technischer Sperre.
+- `src/licensing/licenseConfig.js` um aktiven Plan, Fähigkeiten, offene Punkte und Textausgabe erweitert.
+- Info-Dialog im Tool zeigt den aktuellen Lizenzstatus und die Lizenzhinweise.
+- Hilfeseite im Tool enthält neu einen kompakten Lizenzstatus-Block.
+- `window.DruckverlustPro.license` für spätere Diagnose/Weiterentwicklung ergänzt.
+- Weiterhin keine Zahlung, kein Login und keine Zugriffssperre aktiv.
+- Cache-Busting auf `20.01` erhöht.
+
+
 ## Phase 20.00 – Lizenz-/Abo-Vorbereitung
 
 - Produktseite um kompakten Bereich **Lizenz / Ausblick** ergänzt.
