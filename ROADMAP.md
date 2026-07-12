@@ -49,8 +49,9 @@
 - Phase 21.04: Zehn Handrechnungen mit 92 Einzelprüfungen als fachliche Vergleichsmatrix abgesichert
 - Phase 21.05: Öffentliche Testversion mit strukturiertem Fachtester-Protokoll vorbereitet
 - Phase 21.06: Tool-Oberfläche an das Design der Hauptseite angeglichen
+- Phase 21.07: Fachtest-Rückmeldungen gebündelt und Freigabeentscheidung vorbereitet
 
 ## Nächste sinnvolle Schritte
 
-- Phase 21.07: Rückmeldungen aus der Fachtest-Runde bündeln und Freigabeentscheidung vorbereiten
-- Danach: fachliche Freigabeentscheidung und gezielte Korrekturrunde
+- Phase 21.08: Fachliche Freigabeentscheidung dokumentieren und gezielte Korrekturrunde planen
+- Danach: öffentliche Testversion konsolidieren oder nächste Fachmodule starten

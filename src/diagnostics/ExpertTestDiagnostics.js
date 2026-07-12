@@ -1,4 +1,4 @@
-// Druckverlust Pro – Fachtester-Diagnose Phase 21.05
+// Druckverlust Pro – Fachtester-Diagnose Phase 21.07
 
 import ReferenceTestDiagnostics from './ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from './FormPartValidationDiagnostics.js';
@@ -7,11 +7,12 @@ import ComparisonMatrixDiagnostics from './ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from './PracticeProjectDiagnostics.js';
 import {
   createExpertTestCsv,
+  createExpertTestJson,
   createExpertTestDraft,
   formatExpertTestProtocol,
   summarizeExpertTestDraft,
   validateExpertTestDraft,
-} from '../testing/ExpertTestProtocol.js';
+} from '../testing/ExpertTestProtocol.js?v=21.07';
 
 function suiteResult(id, label, report = {}) {
   const checks = Number(
@@ -120,5 +121,10 @@ export default class ExpertTestDiagnostics {
   static toCsv(report = null) {
     const current = report || this.create();
     return createExpertTestCsv(current.draft, current.automated);
+  }
+
+  static toJson(report = null) {
+    const current = report || this.create();
+    return createExpertTestJson(current.draft, current.automated);
   }
 }

@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=21.06';
+import ReportEngine from '../../report/ReportEngine.js?v=21.07';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -14,14 +14,24 @@ import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationD
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.07';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js';
+} from '../../testing/ExpertTestProtocol.js?v=21.07';
+import {
+  EXPERT_FEEDBACK_STORAGE_KEY,
+  createFeedbackRound,
+  createFeedbackRoundCsv,
+  createFeedbackRoundFilename,
+  deserializeFeedbackRoundEntries,
+  formatFeedbackRound,
+  parseFeedbackJson,
+  serializeFeedbackRoundEntries,
+} from '../../testing/ExpertFeedbackRound.js?v=21.07';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
@@ -46,6 +56,7 @@ export default class WorkspaceComponent {
     this.specialLibraryCategory = 'all';
     this.libraryRecent = this.loadLibraryRecent();
     this.libraryFavorites = this.loadLibraryFavorites();
+    this.expertFeedbackEntries = this.loadExpertFeedbackEntries();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -70,6 +81,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'comparisonMatrixValidation') return this.renderComparisonMatrix(selection.data || this.state.comparisonMatrixValidation);
     if (selection.type === 'practiceProjectValidation') return this.renderPracticeProjectValidation(selection.data || this.state.practiceProjectValidation);
     if (selection.type === 'expertTest') return this.renderExpertTestProtocol(selection.data?.draft ? selection.data : this.state.expertTestReport);
+    if (selection.type === 'expertFeedbackRound') return this.renderExpertFeedbackRound(selection.data || null);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
@@ -284,6 +296,7 @@ export default class WorkspaceComponent {
         <div class="dp-feedback-actions">
           <button type="button" data-help-action="copy-feedback">Feedback-Vorlage kopieren</button>
           <button type="button" data-help-action="expert-test">Fachtest-Protokoll öffnen</button>
+          <button type="button" data-help-action="feedback-round">Fachtest-Auswertung öffnen</button>
           <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
         </div>
       </section>
@@ -294,6 +307,7 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>21.07</span><strong>Fachtest-Runde und Freigabeauswertung</strong><p>Mehrere JSON-Protokolle importieren, Auffälligkeiten bündeln, Prioritäten bilden und Freigabeentscheidung vorbereiten.</p></article>
           <article><span>21.06a</span><strong>Farbwelt der Hauptseite</strong><p>Dunkelblauer Kopfbereich, Blau-/Violett-Verläufe, Cyan-Akzente und helle Arbeitskarten exakt an die bereitgestellte Hauptseite angepasst. Logo, „Druckverlust Pro“ und „Professional“ bleiben erhalten.</p></article>
           <article><span>21.06</span><strong>Einheitliches Oberflächendesign</strong><p>Berechnungstool optisch an die Produktseite angeglichen: helle Glas-Navigation, schwebende Karten, konsistente Buttons, Tabellen und Eingabefelder. Markenblock bleibt erhalten.</p></article>
           <article><span>21.05</span><strong>Öffentliche Fachtest-Version</strong><p>Automatischer Vorabcheck, 10 manuelle Fachtest-Schritte, lokale Zwischenspeicherung sowie TXT-/CSV-Protokoll.</p></article>
@@ -368,6 +382,12 @@ export default class WorkspaceComponent {
           this.state.expertTestAutomated = report.automated;
           this.state.expertTestReport = report;
           this.state.setSelection?.('expertTest', report);
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'feedback-round') {
+          this.state.setSelection?.('expertFeedbackRound', {});
           this.state.notify?.();
           return;
         }
@@ -5470,6 +5490,7 @@ export default class WorkspaceComponent {
           <button type="button" data-calculation-detail-action="comparison">Vergleichsmatrix</button>
           <button type="button" data-calculation-detail-action="practice">Praxisprojekt-QS</button>
           <button type="button" data-calculation-detail-action="expert">Fachtest-Protokoll</button>
+          <button type="button" data-calculation-detail-action="feedback-round">Fachtest-Auswertung</button>
           <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
         </div>
       </div>
@@ -5593,6 +5614,12 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'feedback-round') {
+          this.state.setSelection?.('expertFeedbackRound', {});
+          this.state.notify?.();
+          return;
+        }
+
         if (action === 'system') {
           this.state.selectSystem?.(system || this.state.selectedSystem || this.state.project?.systems?.[0]);
           return;
@@ -5702,6 +5729,8 @@ export default class WorkspaceComponent {
           <button type="button" data-expert-action="copy">Protokoll kopieren</button>
           <button type="button" data-expert-action="download">TXT herunterladen</button>
           <button type="button" data-expert-action="csv">CSV herunterladen</button>
+          <button type="button" data-expert-action="json">JSON für Auswertung</button>
+          <button type="button" data-expert-action="round">Fachtest-Runde auswerten</button>
           <button type="button" data-expert-action="calculation">Zurück zum Rechen-QS</button>
         </div>
       </div>
@@ -5832,6 +5861,8 @@ export default class WorkspaceComponent {
         <button type="button" data-expert-action="copy">Protokoll kopieren</button>
         <button type="button" data-expert-action="download">TXT herunterladen</button>
         <button type="button" data-expert-action="csv">CSV herunterladen</button>
+        <button type="button" data-expert-action="json">JSON für Auswertung</button>
+        <button type="button" data-expert-action="round">Fachtest-Runde auswerten</button>
         <button type="button" class="dp-button-danger" data-expert-action="reset">Protokoll zurücksetzen</button>
       </section>
     `;
@@ -5891,6 +5922,15 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'round') {
+          const draft = persist();
+          const currentReport = ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || report?.automated || null);
+          this.state.expertTestReport = currentReport;
+          this.state.setSelection?.('expertFeedbackRound', { includeCurrent: currentReport });
+          this.state.notify?.();
+          return;
+        }
+
         const draft = persist();
         const automated = action === 'rerun'
           ? ExpertTestDiagnostics.runAutomatedPreflight()
@@ -5925,6 +5965,242 @@ export default class WorkspaceComponent {
 
         if (action === 'csv') {
           downloadText(createExpertTestFilename(draft, 'csv'), `\ufeff${ExpertTestDiagnostics.toCsv(next)}`, 'text/csv;charset=utf-8');
+          return;
+        }
+
+        if (action === 'json') {
+          downloadText(createExpertTestFilename(draft, 'json'), ExpertTestDiagnostics.toJson(next), 'application/json;charset=utf-8');
+        }
+      });
+    });
+  }
+
+
+  loadExpertFeedbackEntries() {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      return deserializeFeedbackRoundEntries(localStorage.getItem(EXPERT_FEEDBACK_STORAGE_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  saveExpertFeedbackEntries() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(EXPERT_FEEDBACK_STORAGE_KEY, serializeFeedbackRoundEntries(this.expertFeedbackEntries || []));
+    } catch (error) {
+      console.warn('Fachtest-Runde konnte nicht lokal gespeichert werden:', error);
+    }
+  }
+
+  renderExpertFeedbackRound(context = null) {
+    const includeCurrent = context?.includeCurrent || null;
+    if (includeCurrent?.draft) {
+      const currentId = `${includeCurrent.draft.tester?.email || includeCurrent.draft.tester?.name || 'aktuell'}-${includeCurrent.draft.updatedAt || includeCurrent.draft.createdAt}`;
+      const exists = (this.expertFeedbackEntries || []).some(entry => entry.id === currentId);
+      if (!exists) {
+        this.expertFeedbackEntries = [
+          ...(this.expertFeedbackEntries || []),
+          {
+            id: currentId,
+            sourceName: 'Aktuelles Fachtester-Protokoll',
+            draft: includeCurrent.draft,
+            automated: includeCurrent.automated,
+          },
+        ];
+        this.saveExpertFeedbackEntries();
+      }
+    }
+
+    const round = createFeedbackRound(this.expertFeedbackEntries || []);
+    const recommendationRows = EXPERT_TEST_RECOMMENDATIONS.map(option => {
+      const key = option.id || 'none';
+      return `<div><span>${this.escapeHtml(option.label)}</span><strong>${this.escapeHtml(round.recommendations[key] || 0)}</strong></div>`;
+    }).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-feedback-round-header">
+        <div>
+          <span class="dp-overline">Phase 21.07 · Fachtest-Auswertung</span>
+          <h1>Fachtest-Runde bündeln</h1>
+          <p>Mehrere maschinenlesbare JSON-Protokolle importieren, Auffälligkeiten zusammenführen und eine nachvollziehbare Freigabeentscheidung vorbereiten.</p>
+        </div>
+        <div class="workspace-actions">
+          <input type="file" data-feedback-import accept=".json,application/json" multiple hidden>
+          <button type="button" data-feedback-action="import">JSON-Protokolle importieren</button>
+          <button type="button" data-feedback-action="current">Aktuelles Protokoll übernehmen</button>
+          <button type="button" data-feedback-action="copy">Auswertung kopieren</button>
+          <button type="button" data-feedback-action="csv">CSV herunterladen</button>
+          <button type="button" data-feedback-action="expert">Zum Fachtest-Protokoll</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-feedback-round-summary dp-feedback-round-${this.escapeAttribute(round.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Freigabeentscheidung</span>
+            <h2>${this.escapeHtml(round.label)}</h2>
+            <p>${this.escapeHtml(round.recommendation)}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(round.counts.reports)} Rückmeldungen</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Tester/innen</span><strong>${this.escapeHtml(round.counts.testers)}</strong></div>
+          <div><span>Vollständig</span><strong>${this.escapeHtml(round.counts.completeReports)}/${this.escapeHtml(round.counts.reports)}</strong></div>
+          <div><span>Auffällig</span><strong>${this.escapeHtml(round.counts.notice)}</strong></div>
+          <div><span>Fehler</span><strong>${this.escapeHtml(round.counts.error)}</strong></div>
+        </div>
+      </section>
+
+      <section class="dp-feedback-round-grid">
+        <article class="dp-result-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Empfehlungen</span><h2>Stimmen der Fachtester</h2></div></div>
+          <div class="dp-feedback-recommendations">${recommendationRows}</div>
+        </article>
+        <article class="dp-result-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Importierte Protokolle</span><h2>Testpersonen</h2></div></div>
+          <div class="dp-feedback-entry-list">
+            ${round.entries.length ? round.entries.map((entry, index) => `
+              <div>
+                <span><strong>${this.escapeHtml(entry.draft.tester.name || `Fachtest ${index + 1}`)}</strong>${entry.draft.tester.company ? ` · ${this.escapeHtml(entry.draft.tester.company)}` : ''}</span>
+                <small>${this.escapeHtml(entry.sourceName || 'JSON-Protokoll')} · ${this.escapeHtml(entry.manual.completed)}/${this.escapeHtml(entry.manual.total)} geprüft</small>
+                <button type="button" data-feedback-remove="${this.escapeAttribute(entry.id)}" aria-label="Rückmeldung entfernen">Entfernen</button>
+              </div>
+            `).join('') : '<p>Noch keine Rückmeldungen importiert. Fachtester exportieren ihr Protokoll über „JSON für Auswertung“.</p>'}
+          </div>
+        </article>
+      </section>
+
+      <section class="dp-result-panel dp-feedback-priorities">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Prioritäten</span><h2>Auffälligkeiten und offene Prüfpunkte</h2></div>
+          <button type="button" class="dp-button-danger" data-feedback-action="clear" ${round.entries.length ? '' : 'disabled'}>Runde leeren</button>
+        </div>
+        ${round.priorities.length ? `
+          <div class="dp-feedback-priority-list">
+            ${round.priorities.map(item => `
+              <article class="${item.counts.error ? 'is-error' : item.counts.notice ? 'is-notice' : 'is-open'}">
+                <div>
+                  <span>${this.escapeHtml(item.area)}</span>
+                  <strong>${this.escapeHtml(item.title)}</strong>
+                </div>
+                <div class="dp-feedback-counts">
+                  <span>OK ${this.escapeHtml(item.counts.ok)}</span>
+                  <span>Auffällig ${this.escapeHtml(item.counts.notice)}</span>
+                  <span>Fehler ${this.escapeHtml(item.counts.error)}</span>
+                  <span>Offen ${this.escapeHtml(item.counts.not_tested)}</span>
+                </div>
+                ${item.notes.length ? `<ul>${item.notes.map(note => `<li><strong>${this.escapeHtml(note.tester)}:</strong> ${this.escapeHtml(note.note)}</li>`).join('')}</ul>` : ''}
+              </article>
+            `).join('')}
+          </div>
+        ` : '<div class="dp-feedback-empty"><strong>Keine offenen Punkte.</strong><span>Alle importierten Rückmeldungen sind ohne Fehler, Auffälligkeiten oder ungetestete Prüfpunkte.</span></div>'}
+      </section>
+
+      <section class="dp-result-panel dp-feedback-check-matrix">
+        <div class="dp-panel-header"><div><span class="dp-overline">Vergleichsmatrix</span><h2>Alle Prüfpunkte im Überblick</h2></div></div>
+        <div class="dp-table-wrap">
+          <table class="dp-table">
+            <thead><tr><th>Bereich</th><th>Prüfpunkt</th><th>OK</th><th>Auffällig</th><th>Fehler</th><th>Nicht geprüft</th></tr></thead>
+            <tbody>${round.checks.map(item => `<tr><td>${this.escapeHtml(item.area)}</td><td>${this.escapeHtml(item.title)}</td><td>${item.counts.ok}</td><td>${item.counts.notice}</td><td>${item.counts.error}</td><td>${item.counts.not_tested}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+
+    this.bindExpertFeedbackRound(round);
+  }
+
+  bindExpertFeedbackRound(round) {
+    const input = this.root.querySelector('[data-feedback-import]');
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    input?.addEventListener('change', async () => {
+      const files = Array.from(input.files || []);
+      const imported = [];
+      const failures = [];
+      for (const file of files) {
+        try {
+          imported.push(parseFeedbackJson(await file.text(), file.name));
+        } catch (error) {
+          failures.push(`${file.name}: ${error.message}`);
+        }
+      }
+      if (imported.length) {
+        const known = new Set((this.expertFeedbackEntries || []).map(entry => entry.id));
+        imported.forEach(entry => {
+          if (!known.has(entry.id)) {
+            this.expertFeedbackEntries.push(entry);
+            known.add(entry.id);
+          }
+        });
+        this.saveExpertFeedbackEntries();
+      }
+      if (failures.length) alert(`Einige Dateien konnten nicht importiert werden:\n\n${failures.join('\n')}`);
+      this.state.setSelection?.('expertFeedbackRound', {});
+      this.state.notify?.();
+    });
+
+    this.root.querySelectorAll('[data-feedback-remove]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.expertFeedbackEntries = (this.expertFeedbackEntries || []).filter(entry => entry.id !== button.dataset.feedbackRemove);
+        this.saveExpertFeedbackEntries();
+        this.state.setSelection?.('expertFeedbackRound', {});
+        this.state.notify?.();
+      });
+    });
+
+    this.root.querySelectorAll('[data-feedback-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.feedbackAction;
+        if (action === 'import') return input?.click();
+        if (action === 'clear') {
+          if (!confirm('Alle importierten Fachtest-Rückmeldungen aus dieser lokalen Auswertung entfernen?')) return;
+          this.expertFeedbackEntries = [];
+          this.saveExpertFeedbackEntries();
+          this.state.setSelection?.('expertFeedbackRound', {});
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'current') {
+          const draft = this.collectExpertTestDraft(this.state.expertTestReport?.draft || this.loadExpertTestDraft());
+          const currentReport = ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || null);
+          this.state.setSelection?.('expertFeedbackRound', { includeCurrent: currentReport });
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'expert') {
+          const report = ExpertTestDiagnostics.create(this.loadExpertTestDraft(), this.state.expertTestAutomated || null);
+          this.state.expertTestReport = report;
+          this.state.setSelection?.('expertTest', report);
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'copy') {
+          const text = formatFeedbackRound(round);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Auswertung kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+        if (action === 'csv') {
+          downloadText(createFeedbackRoundFilename('csv'), `\ufeff${createFeedbackRoundCsv(round)}`, 'text/csv;charset=utf-8');
         }
       });
     });

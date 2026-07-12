@@ -1,15 +1,16 @@
 {
   "name": "druckverlust-pro",
-  "version": "1.3.6-a",
+  "version": "1.3.7",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/run-reference-tests.js && node tests/run-formpart-validation.js && node tests/run-formpart-sync-tests.js && node tests/run-comparison-matrix-tests.js && node tests/run-practice-project-tests.js && node tests/run-expert-test-protocol.js",
+    "test": "node tests/run-reference-tests.js && node tests/run-formpart-validation.js && node tests/run-formpart-sync-tests.js && node tests/run-comparison-matrix-tests.js && node tests/run-practice-project-tests.js && node tests/run-expert-test-protocol.js && node tests/run-feedback-round-tests.js",
     "test:reference": "node tests/run-reference-tests.js",
     "test:formparts": "node tests/run-formpart-validation.js",
     "test:practice": "node tests/run-practice-project-tests.js",
     "test:sync": "node tests/run-formpart-sync-tests.js",
     "test:comparison": "node tests/run-comparison-matrix-tests.js",
-    "test:expert": "node tests/run-expert-test-protocol.js"
+    "test:expert": "node tests/run-expert-test-protocol.js",
+    "test:feedback-round": "node tests/run-feedback-round-tests.js"
   }
 }

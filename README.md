@@ -1,10 +1,24 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 21.06 – Einheitliches Oberflächendesign für Produktseite und Berechnungstool**.
+Aktueller Entwicklungsstand: **Phase 21.07 – Fachtest-Runde und Freigabeauswertung**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
 
+
+
+### Phase 21.07 – Fachtest-Runde und Freigabeauswertung
+
+Fachtester können ihr ausgefülltes Protokoll neu als **JSON für Auswertung** exportieren. Mehrere dieser Dateien lassen sich im Tool unter **Rechen-QS → Fachtest-Auswertung** zusammenführen. Die Auswertung zeigt Testerzahl, Vollständigkeit, Fehler, Auffälligkeiten, offene Prüfpunkte und die abgegebenen Freigabeempfehlungen.
+
+Die Rückmeldungen bleiben lokal im Browser. Eine abgeleitete Entscheidungshilfe markiert den Stand als **Freigabe vorbereitet**, **mit Hinweisen prüfen**, **Nachtest erforderlich** oder **blockiert**. Die gebündelte Auswertung kann als Text kopiert oder als CSV heruntergeladen werden.
+
+Aufrufmöglichkeiten:
+
+- Tool: **Rechen-QS → Fachtest-Auswertung**
+- Fachtester-Protokoll: **Fachtest-Runde auswerten**
+- Browser-Test: `tests/phase21-feedback-round.html`
+- Konsole: `npm run test:feedback-round`
 
 ### Phase 21.06 – Einheitliches Oberflächendesign
 
@@ -93,7 +107,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `21.06`.
+- Die aktuelle Cache-Version ist `21.07`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

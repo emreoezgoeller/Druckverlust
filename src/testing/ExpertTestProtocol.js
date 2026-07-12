@@ -327,6 +327,37 @@ export function createExpertTestCsv(draft = {}, automatedReport = null) {
   return rows.map(row => row.map(csvEscape).join(';')).join('\n');
 }
 
+
+export function createExpertTestJson(draft = {}, automatedReport = null) {
+  const current = createExpertTestDraft(draft);
+  return JSON.stringify({
+    kind: 'druckverlust-pro-expert-test',
+    schemaVersion: EXPERT_TEST_PROTOCOL_VERSION,
+    exportedAt: new Date().toISOString(),
+    draft: current,
+    automated: automatedReport || null,
+  }, null, 2);
+}
+
+export function parseExpertTestJson(text = '') {
+  let parsed;
+  try {
+    parsed = JSON.parse(String(text || ''));
+  } catch (error) {
+    throw new Error(`Fachtest-JSON konnte nicht gelesen werden: ${error.message}`);
+  }
+
+  if (parsed?.kind && parsed.kind !== 'druckverlust-pro-expert-test') {
+    throw new Error(`Nicht unterstützter Dateityp: ${parsed.kind}`);
+  }
+
+  return {
+    draft: createExpertTestDraft(parsed?.draft || parsed || {}),
+    automated: parsed?.automated || null,
+    exportedAt: safeString(parsed?.exportedAt),
+  };
+}
+
 export function createExpertTestFilename(draft = {}, extension = 'txt') {
   const normalized = createExpertTestDraft(draft);
   const tester = normalized.tester.name

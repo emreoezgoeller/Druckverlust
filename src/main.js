@@ -1,18 +1,18 @@
-// Druckverlust Pro – Phase 21.06a
+// Druckverlust Pro – Phase 21.07
 // Startet Tool, Demo, Hilfe, Beispielbericht und Fachtest über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.06a';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.07';
 import StatusBarComponent from './ui/components/StatusBarComponent.js';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
 import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.06a';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.07';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 

@@ -183,6 +183,10 @@ export default class StatusBarComponent {
       return 'Fachtester-Protokoll';
     }
 
+    if (selection.type === 'expertFeedbackRound') {
+      return 'Fachtest-Auswertung';
+    }
+
     if (selection.type === 'projectFileCheck') {
       return 'Datei-QS';
     }

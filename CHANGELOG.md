@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## Phase 21.07 – Fachtest-Runde und Freigabeauswertung
+
+- Maschinenlesbaren JSON-Export für einzelne Fachtester-Protokolle ergänzt.
+- Neue Fachtest-Auswertung zum Import mehrerer JSON-Rückmeldungen integriert.
+- Prüfpunkte, Status, Bemerkungen und Freigabeempfehlungen aller Tester zusammengeführt.
+- Automatische Priorisierung für Fehler, Auffälligkeiten und noch nicht geprüfte Punkte ergänzt.
+- Abgeleiteten Entscheidungsstatus ergänzt: Freigabe vorbereitet, Freigabe mit Hinweisen, Nachtest erforderlich oder blockiert.
+- Auswertung lokal im Browser gespeichert; einzelne Rückmeldungen können entfernt oder die Runde komplett geleert werden.
+- Text- und CSV-Ausgabe der gebündelten Auswertung ergänzt.
+- Direkter Zugang über Rechen-QS, Fachtester-Protokoll und Hilfe ergänzt.
+- Eigenen Browser-/Node-Test mit 16 Einzelprüfungen ergänzt und `npm test` erweitert.
+- Cache-Version auf 21.07 und App-Version auf 1.3.7 erhöht.
+
 ## Phase 21.06a – Farbwelt der Hauptseite
 
 - Berechnungstool farblich exakt an die bereitgestellte Hauptseite angepasst.
