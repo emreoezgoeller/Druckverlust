@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_RELEASE } from '../core/appVersion.js?v=21.09';
+import { APP_RELEASE } from '../core/appVersion.js?v=21.11';
 
 const DEFAULT_VERSION = APP_RELEASE;
 
@@ -130,6 +130,15 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Beta', label: 'Beta-Freigabestand-Oberfläche', path: `src/ui/phase21_09.css?v=${version}` },
     { area: 'Beta', label: 'Beta-Freigabestand-Browsertest', path: `tests/phase21-beta-release.html?v=${version}` },
     { area: 'Beta', label: 'Öffentliche Beta-Seite', path: `beta.html?v=${version}` },
+    { area: 'Beta', label: 'Beta-Feedback-Modul', path: `src/testing/BetaFeedbackReport.js?v=${version}` },
+    { area: 'Beta', label: 'Beta-Feedback-Diagnose', path: `src/diagnostics/BetaFeedbackDiagnostics.js?v=${version}` },
+    { area: 'Beta', label: 'Beta-Feedback-Oberfläche', path: `src/ui/phase21_10.css?v=${version}` },
+    { area: 'Beta', label: 'Öffentliches Feedback-Formular', path: `feedback.html?v=${version}` },
+    { area: 'Beta', label: 'Feedback-Formular-Script', path: `src/landing/beta-feedback-page.js?v=${version}` },
+    { area: 'Beta', label: 'Beta-Feedback-Browsertest', path: `tests/phase21-beta-feedback.html?v=${version}` },
+    { area: 'Beta', label: 'Beta-Feedback-Auswertung', path: `src/testing/BetaFeedbackInbox.js?v=${version}` },
+    { area: 'Beta', label: 'Feedback-Auswertungs-Oberfläche', path: `src/ui/phase21_11.css?v=${version}` },
+    { area: 'Beta', label: 'Feedback-Auswertungs-Browsertest', path: `tests/phase21-beta-feedback-inbox.html?v=${version}` },
     { area: 'QS', label: 'Datei-QS', path: `src/diagnostics/ProjectFileDiagnostics.js?v=${version}` },
     { area: 'QS', label: 'Release-Candidate-QS', path: `src/diagnostics/ReleaseCandidateDiagnostics.js?v=${version}` },
     { area: 'Version', label: 'Versionszentrale', path: `src/core/appVersion.js?v=${version}` },

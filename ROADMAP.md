@@ -52,9 +52,11 @@
 - Phase 21.07: Fachtest-Rückmeldungen gebündelt und Freigabeentscheidung vorbereitet
 - Phase 21.08: Fachliche Freigabeentscheidung, Korrekturmassnahmen und Nachtests dokumentiert
 - Phase 21.09: Öffentliche Beta-Testversion und konsolidierten Beta-Freigabestand vorbereitet
+- Phase 21.10: Strukturiertes Beta-Feedback und lokalen Export ergänzt
+- Phase 21.11: Beta-Rückmeldungen importiert, priorisiert und als lokale Fehlerliste verwaltbar gemacht
 
 ## Nächste sinnvolle Schritte
 
-- Reale Fachtest-Rückmeldungen mit der Beta-Version sammeln und priorisierte Korrekturen umsetzen.
+- Reale Beta-Rückmeldungen sammeln, in der Feedback-Auswertung priorisieren und gezielte Korrekturen umsetzen.
 - Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe final prüfen und vervollständigen.
 - Danach: nächste Fachmodule starten oder gezielte Korrekturen aus realen Fachtests umsetzen.

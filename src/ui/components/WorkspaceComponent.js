@@ -5,23 +5,23 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=21.09';
+import ReportEngine from '../../report/ReportEngine.js?v=21.11';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=21.09';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=21.11';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.09';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.11';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=21.09';
+} from '../../testing/ExpertTestProtocol.js?v=21.11';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -31,7 +31,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=21.09';
+} from '../../testing/ExpertFeedbackRound.js?v=21.11';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -45,7 +45,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=21.09';
+} from '../../testing/ReleaseDecisionPlan.js?v=21.11';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -54,11 +54,42 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=21.09';
+} from '../../testing/BetaReleaseReadiness.js?v=21.11';
+import {
+  BETA_FEEDBACK_CATEGORIES,
+  BETA_FEEDBACK_SEVERITIES,
+  BETA_FEEDBACK_STORAGE_KEY,
+  createBetaFeedbackCsv,
+  createBetaFeedbackDraft,
+  createBetaFeedbackFilename,
+  createBetaFeedbackJson,
+  formatBetaFeedback,
+  getBetaFeedbackCategoryLabel,
+  getBetaFeedbackSeverityLabel,
+  summarizeBetaFeedback,
+} from '../../testing/BetaFeedbackReport.js?v=21.11';
+import {
+  BETA_FEEDBACK_INBOX_STORAGE_KEY,
+  BETA_FEEDBACK_TRIAGE_STATUSES,
+  createBetaFeedbackInbox,
+  createBetaFeedbackInboxCsv,
+  createBetaFeedbackInboxFilename,
+  createBetaFeedbackIssueText,
+  deserializeBetaFeedbackInbox,
+  filterBetaFeedbackInbox,
+  formatBetaFeedbackInbox,
+  getBetaFeedbackTriageStatusLabel,
+  getDefaultBetaFeedbackInboxFilters,
+  getEffectiveSeverity,
+  parseBetaFeedbackInboxJson,
+  removeBetaFeedbackInboxItem,
+  serializeBetaFeedbackInbox,
+  updateBetaFeedbackInboxItem,
+} from '../../testing/BetaFeedbackInbox.js?v=21.11';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=21.09';
+import { APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=21.11';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 
@@ -82,6 +113,9 @@ export default class WorkspaceComponent {
     this.expertFeedbackEntries = this.loadExpertFeedbackEntries();
     this.expertReleaseDecision = this.loadExpertReleaseDecision();
     this.betaReleaseDraft = this.loadBetaReleaseDraft();
+    this.betaFeedbackDraft = this.loadBetaFeedbackDraft();
+    this.betaFeedbackInboxEntries = this.loadBetaFeedbackInboxEntries();
+    this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -109,6 +143,8 @@ export default class WorkspaceComponent {
     if (selection.type === 'expertFeedbackRound') return this.renderExpertFeedbackRound(selection.data || null);
     if (selection.type === 'expertReleaseDecision') return this.renderExpertReleaseDecision(selection.data || null);
     if (selection.type === 'betaReleaseReadiness') return this.renderBetaReleaseReadiness(selection.data || null);
+    if (selection.type === 'betaFeedback') return this.renderBetaFeedback(selection.data || null);
+    if (selection.type === 'betaFeedbackInbox') return this.renderBetaFeedbackInbox(selection.data || null);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
@@ -326,6 +362,8 @@ export default class WorkspaceComponent {
           <button type="button" data-help-action="feedback-round">Fachtest-Auswertung öffnen</button>
           <button type="button" data-help-action="release-decision">Freigabeentscheidung öffnen</button>
           <button type="button" data-help-action="beta-release">Beta-Freigabestand öffnen</button>
+          <button type="button" data-help-action="beta-feedback">Beta-Rückmeldung erfassen</button>
+          <button type="button" data-help-action="beta-feedback-inbox">Beta-Feedback auswerten</button>
           <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
         </div>
       </section>
@@ -336,6 +374,8 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>21.11</span><strong>Beta-Feedback-Auswertung</strong><p>Mehrere JSON-Rückmeldungen importieren, priorisieren, Verantwortliche und Zielversionen zuordnen sowie als Fehlerliste exportieren.</p></article>
+          <article><span>21.10</span><strong>Beta-Feedback und Fehlererfassung</strong><p>Einzelne Auffälligkeiten, Rechenabweichungen und Funktionswünsche lokal erfassen und als JSON, TXT oder CSV exportieren.</p></article>
           <article><span>21.09</span><strong>Öffentliche Beta konsolidiert</strong><p>Automatische Tests, Fachtest-Runde, Freigabeentscheidung und Deployment-Checkliste in einem Beta-Freigabestand zusammengeführt.</p></article>
           <article><span>21.08</span><strong>Fachliche Freigabeentscheidung</strong><p>Formelle Entscheidung, Verantwortlichkeiten, Korrekturmassnahmen, Termine und Nachtests in einem Freigabeprotokoll dokumentieren.</p></article>
           <article><span>21.07</span><strong>Fachtest-Runde und Freigabeauswertung</strong><p>Mehrere JSON-Protokolle importieren, Auffälligkeiten bündeln, Prioritäten bilden und Freigabeentscheidung vorbereiten.</p></article>
@@ -431,6 +471,18 @@ export default class WorkspaceComponent {
 
         if (action === 'beta-release') {
           this.state.setSelection?.('betaReleaseReadiness', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'beta-feedback') {
+          this.state.setSelection?.('betaFeedback', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'beta-feedback-inbox') {
+          this.state.setSelection?.('betaFeedbackInbox', {});
           this.state.notify?.();
           return;
         }
@@ -5536,6 +5588,8 @@ export default class WorkspaceComponent {
           <button type="button" data-calculation-detail-action="feedback-round">Fachtest-Auswertung</button>
           <button type="button" data-calculation-detail-action="release-decision">Freigabeentscheidung</button>
           <button type="button" data-calculation-detail-action="beta-release">Beta-Freigabestand</button>
+          <button type="button" data-calculation-detail-action="beta-feedback">Beta-Feedback</button>
+          <button type="button" data-calculation-detail-action="beta-feedback-inbox">Feedback-Auswertung</button>
           <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
         </div>
       </div>
@@ -5677,6 +5731,18 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'beta-feedback') {
+          this.state.setSelection?.('betaFeedback', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'beta-feedback-inbox') {
+          this.state.setSelection?.('betaFeedbackInbox', {});
+          this.state.notify?.();
+          return;
+        }
+
         if (action === 'system') {
           this.state.selectSystem?.(system || this.state.selectedSystem || this.state.project?.systems?.[0]);
           return;
@@ -5697,6 +5763,545 @@ export default class WorkspaceComponent {
     });
   }
 
+
+
+  loadBetaFeedbackDraft() {
+    if (typeof localStorage === 'undefined') return createBetaFeedbackDraft();
+
+    try {
+      const raw = localStorage.getItem(BETA_FEEDBACK_STORAGE_KEY);
+      return raw ? createBetaFeedbackDraft(JSON.parse(raw)) : createBetaFeedbackDraft();
+    } catch (error) {
+      console.warn('Beta-Rückmeldung konnte nicht geladen werden:', error);
+      return createBetaFeedbackDraft();
+    }
+  }
+
+  saveBetaFeedbackDraft(draft = {}) {
+    const normalized = createBetaFeedbackDraft({ ...draft, updatedAt: new Date().toISOString() });
+    this.betaFeedbackDraft = normalized;
+
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(BETA_FEEDBACK_STORAGE_KEY, JSON.stringify(normalized));
+      } catch (error) {
+        console.warn('Beta-Rückmeldung konnte nicht lokal gespeichert werden:', error);
+      }
+    }
+
+    return normalized;
+  }
+
+  collectBetaFeedbackDraft(fallback = null) {
+    const draft = createBetaFeedbackDraft(fallback || this.betaFeedbackDraft || this.loadBetaFeedbackDraft());
+
+    this.root.querySelectorAll('[data-beta-feedback-field]').forEach(field => {
+      const path = String(field.dataset.betaFeedbackField || '').split('.');
+      if (path.length !== 2) return;
+      const [group, key] = path;
+      if (!draft[group] || !(key in draft[group])) return;
+      draft[group][key] = field.type === 'checkbox' ? field.checked : field.value;
+    });
+
+    return this.saveBetaFeedbackDraft(draft);
+  }
+
+  renderBetaFeedback(context = null) {
+    const draft = createBetaFeedbackDraft(context?.draft || this.betaFeedbackDraft || this.loadBetaFeedbackDraft());
+    const result = summarizeBetaFeedback(draft);
+    const categoryOptions = BETA_FEEDBACK_CATEGORIES.map(item => `
+      <option value="${this.escapeAttribute(item.id)}" ${item.id === draft.issue.category ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>
+    `).join('');
+    const severityOptions = BETA_FEEDBACK_SEVERITIES.map(item => `
+      <option value="${this.escapeAttribute(item.id)}" ${item.id === draft.issue.severity ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>
+    `).join('');
+    const notices = [...result.validation.errors, ...result.validation.warnings];
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-beta-feedback-header">
+        <div>
+          <span class="dp-overline">Öffentliche Beta / Rückmeldung</span>
+          <h1>Beta-Feedback erfassen</h1>
+          <p>Auffälligkeit, Rechenabweichung oder Funktionswunsch strukturiert dokumentieren. Die Eingabe bleibt lokal, bis du sie exportierst.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-beta-feedback-action="public">Öffentliches Formular</button>
+          <button type="button" data-beta-feedback-action="copy">Text kopieren</button>
+          <button type="button" data-beta-feedback-action="json">JSON</button>
+          <button type="button" data-beta-feedback-action="txt">TXT</button>
+        </div>
+      </div>
+
+      <section class="dp-beta-feedback-summary">
+        <div>
+          <span class="dp-overline">Meldungs-ID</span>
+          <h2>${this.escapeHtml(draft.id)}</h2>
+          <p>App v${this.escapeHtml(draft.appVersion)} · Phase ${this.escapeHtml(draft.appRelease)} · automatische lokale Zwischenspeicherung.</p>
+        </div>
+        <div class="dp-beta-feedback-state is-${this.escapeAttribute(result.status)}">
+          <span class="dp-overline">Status</span>
+          <strong>${this.escapeHtml(result.label)}</strong>
+          <p>${this.escapeHtml(result.categoryLabel)} · Priorität ${this.escapeHtml(result.severityLabel)}</p>
+        </div>
+      </section>
+
+      <section class="dp-beta-feedback-form">
+        <div class="dp-beta-feedback-panel">
+          <h2>1. Rückmeldung</h2>
+          <p>Pflichtfelder: Kurztitel und Beschreibung. Bei blockierenden Fehlern sind Schritte zum Nachstellen erforderlich.</p>
+          <div class="dp-beta-feedback-fields">
+            <label>Kategorie<select data-beta-feedback-field="issue.category">${categoryOptions}</select></label>
+            <label>Priorität<select data-beta-feedback-field="issue.severity">${severityOptions}</select></label>
+            <label class="is-wide">Kurztitel *<input data-beta-feedback-field="issue.title" maxlength="160" value="${this.escapeAttribute(draft.issue.title)}" placeholder="Was ist aufgefallen?" /></label>
+            <label class="is-wide">Beschreibung *<textarea data-beta-feedback-field="issue.description" placeholder="Beschreibe die Auffälligkeit oder Idee.">${this.escapeHtml(draft.issue.description)}</textarea></label>
+            <label class="is-wide">Schritte zum Nachstellen<textarea data-beta-feedback-field="issue.steps" placeholder="1. Projekt öffnen …&#10;2. Teilstrecke wählen …">${this.escapeHtml(draft.issue.steps)}</textarea></label>
+            <label>Aktuelles Verhalten / Ergebnis<textarea data-beta-feedback-field="issue.actual">${this.escapeHtml(draft.issue.actual)}</textarea></label>
+            <label>Erwartetes Verhalten / Ergebnis<textarea data-beta-feedback-field="issue.expected">${this.escapeHtml(draft.issue.expected)}</textarea></label>
+            <label class="is-wide">Projektkontext<textarea data-beta-feedback-field="issue.projectContext" placeholder="z. B. Demo-Projekt, TS 4, Übergang gross → klein">${this.escapeHtml(draft.issue.projectContext)}</textarea></label>
+          </div>
+        </div>
+
+        <div class="dp-beta-feedback-panel">
+          <h2>2. Meldende Person</h2>
+          <p>Freiwillige Angaben für mögliche Rückfragen.</p>
+          <div class="dp-beta-feedback-fields">
+            <label>Name<input data-beta-feedback-field="reporter.name" value="${this.escapeAttribute(draft.reporter.name)}" /></label>
+            <label>Firma<input data-beta-feedback-field="reporter.company" value="${this.escapeAttribute(draft.reporter.company)}" /></label>
+            <label>Funktion / Fachgebiet<input data-beta-feedback-field="reporter.role" value="${this.escapeAttribute(draft.reporter.role)}" /></label>
+            <label>E-Mail<input type="email" data-beta-feedback-field="reporter.email" value="${this.escapeAttribute(draft.reporter.email)}" /></label>
+            <label class="is-wide dp-beta-feedback-checkbox"><input type="checkbox" data-beta-feedback-field="consent.includeTechnicalData" ${draft.consent.includeTechnicalData ? 'checked' : ''} /> Technische Umgebung im Export aufnehmen.</label>
+          </div>
+
+          ${notices.length ? `
+            <div class="dp-beta-feedback-notices">
+              <strong>Prüfhinweise</strong>
+              <ul>${notices.map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}</ul>
+            </div>
+          ` : ''}
+
+          <div class="workspace-actions" style="margin-top:18px">
+            <button type="button" data-beta-feedback-action="save">Zwischenspeichern</button>
+            <button type="button" data-beta-feedback-action="csv">CSV</button>
+            <button type="button" data-beta-feedback-action="reset">Zurücksetzen</button>
+          </div>
+        </div>
+      </section>
+    `;
+
+    this.bindBetaFeedback(draft);
+  }
+
+  bindBetaFeedback(initialDraft = null) {
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    const saveLive = () => {
+      this.collectBetaFeedbackDraft(initialDraft);
+    };
+
+    this.root.querySelectorAll('[data-beta-feedback-field]').forEach(field => {
+      field.addEventListener('change', saveLive);
+      field.addEventListener('input', saveLive);
+    });
+
+    this.root.querySelectorAll('[data-beta-feedback-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.betaFeedbackAction;
+
+        if (action === 'public') {
+          window.open('feedback.html', '_blank', 'noopener');
+          return;
+        }
+
+        if (action === 'reset') {
+          if (!confirm('Beta-Rückmeldung wirklich zurücksetzen?')) return;
+          if (typeof localStorage !== 'undefined') localStorage.removeItem(BETA_FEEDBACK_STORAGE_KEY);
+          this.betaFeedbackDraft = createBetaFeedbackDraft();
+          this.state.setSelection?.('betaFeedback', { draft: this.betaFeedbackDraft });
+          this.state.notify?.();
+          return;
+        }
+
+        const draft = this.collectBetaFeedbackDraft(initialDraft);
+        const result = summarizeBetaFeedback(draft);
+
+        if (action !== 'save' && !result.validation.valid) {
+          alert(['Bitte zuerst die Pflichtfelder ergänzen:', ...result.validation.errors].join('\n'));
+          return;
+        }
+
+        if (action === 'save') {
+          this.state.setSelection?.('betaFeedback', { draft });
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = formatBetaFeedback(draft);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'json') {
+          downloadText(createBetaFeedbackFilename(draft, 'json'), createBetaFeedbackJson(draft), 'application/json;charset=utf-8');
+          return;
+        }
+
+        if (action === 'txt') {
+          downloadText(createBetaFeedbackFilename(draft, 'txt'), formatBetaFeedback(draft), 'text/plain;charset=utf-8');
+          return;
+        }
+
+        if (action === 'csv') {
+          downloadText(createBetaFeedbackFilename(draft, 'csv'), `\ufeff${createBetaFeedbackCsv(draft)}`, 'text/csv;charset=utf-8');
+        }
+      });
+    });
+  }
+
+
+  loadBetaFeedbackInboxEntries() {
+    if (typeof localStorage === 'undefined') return [];
+
+    try {
+      return deserializeBetaFeedbackInbox(localStorage.getItem(BETA_FEEDBACK_INBOX_STORAGE_KEY) || '');
+    } catch (error) {
+      console.warn('Beta-Feedback-Auswertung konnte nicht geladen werden:', error);
+      return [];
+    }
+  }
+
+  saveBetaFeedbackInboxEntries(entries = []) {
+    const inbox = createBetaFeedbackInbox(entries);
+    this.betaFeedbackInboxEntries = inbox.entries;
+
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(BETA_FEEDBACK_INBOX_STORAGE_KEY, serializeBetaFeedbackInbox(inbox.entries));
+      } catch (error) {
+        console.warn('Beta-Feedback-Auswertung konnte nicht lokal gespeichert werden:', error);
+      }
+    }
+
+    return inbox.entries;
+  }
+
+  renderBetaFeedbackInbox(context = null) {
+    if (context?.filters) {
+      this.betaFeedbackInboxFilters = {
+        ...getDefaultBetaFeedbackInboxFilters(),
+        ...this.betaFeedbackInboxFilters,
+        ...context.filters,
+      };
+    }
+
+    const inbox = createBetaFeedbackInbox(this.betaFeedbackInboxEntries || this.loadBetaFeedbackInboxEntries());
+    const filters = { ...getDefaultBetaFeedbackInboxFilters(), ...this.betaFeedbackInboxFilters };
+    const visibleEntries = filterBetaFeedbackInbox(inbox, filters);
+
+    const categoryOptions = [
+      '<option value="all">Alle Kategorien</option>',
+      ...BETA_FEEDBACK_CATEGORIES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${filters.category === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`),
+    ].join('');
+    const severityOptions = [
+      '<option value="all">Alle Prioritäten</option>',
+      ...BETA_FEEDBACK_SEVERITIES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${filters.severity === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`),
+    ].join('');
+    const statusOptions = [
+      ['all', 'Alle Status'],
+      ['open', 'Nur offen'],
+      ['closed', 'Nur erledigt'],
+      ...BETA_FEEDBACK_TRIAGE_STATUSES.map(item => [item.id, item.label]),
+    ].map(([id, label]) => `<option value="${this.escapeAttribute(id)}" ${filters.status === id ? 'selected' : ''}>${this.escapeHtml(label)}</option>`).join('');
+
+    const itemRows = visibleEntries.map(entry => {
+      const effectiveSeverity = getEffectiveSeverity(entry);
+      const validationMessages = [...(entry.validation.errors || []), ...(entry.validation.warnings || [])];
+      const statusSelect = BETA_FEEDBACK_TRIAGE_STATUSES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${entry.triage.status === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`).join('');
+      const prioritySelect = [
+        `<option value="">Wie gemeldet (${this.escapeHtml(getBetaFeedbackSeverityLabel(entry.draft.issue.severity))})</option>`,
+        ...BETA_FEEDBACK_SEVERITIES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${entry.triage.priorityOverride === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`),
+      ].join('');
+
+      return `
+        <article class="dp-beta-inbox-item is-${this.escapeAttribute(entry.triage.status)} severity-${this.escapeAttribute(effectiveSeverity)}" data-beta-inbox-item="${this.escapeAttribute(entry.id)}">
+          <div class="dp-beta-inbox-item-head">
+            <div>
+              <div class="dp-beta-inbox-badges">
+                <span class="dp-beta-inbox-severity">${this.escapeHtml(getBetaFeedbackSeverityLabel(effectiveSeverity))}</span>
+                <span>${this.escapeHtml(getBetaFeedbackCategoryLabel(entry.draft.issue.category))}</span>
+                <span>${this.escapeHtml(getBetaFeedbackTriageStatusLabel(entry.triage.status))}</span>
+                ${entry.isDuplicateCandidate ? '<span class="is-duplicate">Duplikat-Kandidat</span>' : ''}
+                ${!entry.validation.valid ? '<span class="is-invalid">Unvollständig</span>' : ''}
+              </div>
+              <h3>${this.escapeHtml(entry.draft.issue.title || '(ohne Titel)')}</h3>
+              <p>${this.escapeHtml(entry.draft.issue.description || 'Keine Beschreibung vorhanden.')}</p>
+            </div>
+            <div class="dp-beta-inbox-item-actions">
+              <button type="button" data-beta-inbox-copy-issue="${this.escapeAttribute(entry.id)}">Issue-Text</button>
+              <button type="button" class="dp-button-danger" data-beta-inbox-remove="${this.escapeAttribute(entry.id)}">Entfernen</button>
+            </div>
+          </div>
+
+          <div class="dp-beta-inbox-meta">
+            <span><strong>ID:</strong> ${this.escapeHtml(entry.id)}</span>
+            <span><strong>Quelle:</strong> ${this.escapeHtml(entry.sourceName || '-')}</span>
+            <span><strong>Tester:</strong> ${this.escapeHtml(entry.draft.reporter.name || '-')}</span>
+            <span><strong>Version:</strong> v${this.escapeHtml(entry.draft.appVersion)} · ${this.escapeHtml(entry.draft.appRelease)}</span>
+          </div>
+
+          <details class="dp-beta-inbox-details">
+            <summary>Rückmeldung und Reproduktionsschritte anzeigen</summary>
+            <div class="dp-beta-inbox-detail-grid">
+              <div><strong>Schritte</strong><p>${this.escapeHtml(entry.draft.issue.steps || '-')}</p></div>
+              <div><strong>Aktuell</strong><p>${this.escapeHtml(entry.draft.issue.actual || '-')}</p></div>
+              <div><strong>Erwartet</strong><p>${this.escapeHtml(entry.draft.issue.expected || '-')}</p></div>
+              <div><strong>Projektkontext</strong><p>${this.escapeHtml(entry.draft.issue.projectContext || '-')}</p></div>
+            </div>
+          </details>
+
+          ${validationMessages.length ? `<div class="dp-beta-inbox-validation"><strong>Prüfhinweise:</strong> ${validationMessages.map(item => this.escapeHtml(item)).join(' · ')}</div>` : ''}
+
+          <div class="dp-beta-inbox-triage">
+            <label>Status
+              <select data-beta-inbox-field="status" data-beta-inbox-id="${this.escapeAttribute(entry.id)}">${statusSelect}</select>
+            </label>
+            <label>Priorität
+              <select data-beta-inbox-field="priorityOverride" data-beta-inbox-id="${this.escapeAttribute(entry.id)}">${prioritySelect}</select>
+            </label>
+            <label>Verantwortlich
+              <input data-beta-inbox-field="assignee" data-beta-inbox-id="${this.escapeAttribute(entry.id)}" value="${this.escapeAttribute(entry.triage.assignee)}" placeholder="Name / Team" />
+            </label>
+            <label>Zielversion
+              <input data-beta-inbox-field="targetVersion" data-beta-inbox-id="${this.escapeAttribute(entry.id)}" value="${this.escapeAttribute(entry.triage.targetVersion)}" placeholder="z. B. 21.12" />
+            </label>
+            <label class="is-wide">Interne Notiz
+              <textarea data-beta-inbox-field="note" data-beta-inbox-id="${this.escapeAttribute(entry.id)}" placeholder="Korrektur, Entscheid oder Nachtest dokumentieren.">${this.escapeHtml(entry.triage.note)}</textarea>
+            </label>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-beta-inbox-header">
+        <div>
+          <span class="dp-overline">Phase 21.11 · Beta-Auswertung</span>
+          <h1>Beta-Feedback auswerten</h1>
+          <p>JSON-Rückmeldungen importieren, Duplikate erkennen, priorisieren und als bearbeitbare Fehlerliste führen. Alle Daten bleiben lokal im Browser.</p>
+        </div>
+        <div class="workspace-actions">
+          <input type="file" data-beta-inbox-import accept=".json,application/json" multiple hidden />
+          <button type="button" data-beta-inbox-action="import">JSON importieren</button>
+          <button type="button" data-beta-inbox-action="feedback">Neue Rückmeldung</button>
+          <button type="button" data-beta-inbox-action="copy">Auswertung kopieren</button>
+          <button type="button" data-beta-inbox-action="json">JSON</button>
+          <button type="button" data-beta-inbox-action="csv">CSV</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-beta-inbox-summary is-${this.escapeAttribute(inbox.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <h2>${this.escapeHtml(inbox.label)}</h2>
+            <p>${inbox.counts.total ? `${this.escapeHtml(inbox.counts.open)} offene von ${this.escapeHtml(inbox.counts.total)} Rückmeldungen.` : 'Noch keine JSON-Rückmeldungen importiert.'}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(inbox.counts.total)} Meldungen</span>
+        </div>
+        <div class="dp-beta-inbox-metrics">
+          <div><span>Offen</span><strong>${this.escapeHtml(inbox.counts.open)}</strong></div>
+          <div><span>Erledigt</span><strong>${this.escapeHtml(inbox.counts.closed)}</strong></div>
+          <div><span>Blockierend</span><strong>${this.escapeHtml(inbox.counts.blocker)}</strong></div>
+          <div><span>Hoch / Blocker</span><strong>${this.escapeHtml(inbox.counts.high)}</strong></div>
+          <div><span>Duplikat-Kandidaten</span><strong>${this.escapeHtml(inbox.counts.duplicateCandidates)}</strong></div>
+          <div><span>Unvollständig</span><strong>${this.escapeHtml(inbox.counts.invalid)}</strong></div>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-beta-inbox-filters">
+        <div class="dp-beta-inbox-filter-grid">
+          <label>Suche<input data-beta-inbox-filter="search" value="${this.escapeAttribute(filters.search)}" placeholder="Titel, Kontext, Tester, Notiz …" /></label>
+          <label>Kategorie<select data-beta-inbox-filter="category">${categoryOptions}</select></label>
+          <label>Priorität<select data-beta-inbox-filter="severity">${severityOptions}</select></label>
+          <label>Status<select data-beta-inbox-filter="status">${statusOptions}</select></label>
+        </div>
+        <div class="dp-beta-inbox-filter-result">
+          <span>${this.escapeHtml(visibleEntries.length)} von ${this.escapeHtml(inbox.counts.total)} Rückmeldungen sichtbar</span>
+          <button type="button" data-beta-inbox-action="reset-filters">Filter zurücksetzen</button>
+          <button type="button" class="dp-button-danger" data-beta-inbox-action="clear" ${inbox.counts.total ? '' : 'disabled'}>Liste leeren</button>
+        </div>
+      </section>
+
+      <section class="dp-beta-inbox-list">
+        ${itemRows || `
+          <div class="dp-result-panel dp-beta-inbox-empty">
+            <strong>${inbox.counts.total ? 'Keine Rückmeldung passt zu den Filtern.' : 'Noch keine Rückmeldungen vorhanden.'}</strong>
+            <span>${inbox.counts.total ? 'Filter ändern oder zurücksetzen.' : 'Exportierte JSON-Dateien aus dem Beta-Feedback importieren.'}</span>
+          </div>
+        `}
+      </section>
+    `;
+
+    this.bindBetaFeedbackInbox(inbox);
+  }
+
+  bindBetaFeedbackInbox(inbox = createBetaFeedbackInbox()) {
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    const rerender = () => {
+      this.state.setSelection?.('betaFeedbackInbox', { filters: this.betaFeedbackInboxFilters });
+      this.state.notify?.();
+    };
+
+    const input = this.root.querySelector('[data-beta-inbox-import]');
+    input?.addEventListener('change', async () => {
+      const files = [...(input.files || [])];
+      if (!files.length) return;
+
+      const imported = [];
+      const errors = [];
+      for (const file of files) {
+        try {
+          const text = await file.text();
+          imported.push(...parseBetaFeedbackInboxJson(text, file.name));
+        } catch (error) {
+          errors.push(`${file.name}: ${error.message}`);
+        }
+      }
+
+      if (imported.length) {
+        this.saveBetaFeedbackInboxEntries([...(this.betaFeedbackInboxEntries || []), ...imported]);
+      }
+
+      if (errors.length) alert(['Einige Dateien konnten nicht importiert werden:', ...errors].join('\n'));
+      input.value = '';
+      rerender();
+    });
+
+    this.root.querySelectorAll('[data-beta-inbox-filter]').forEach(field => {
+      field.addEventListener('change', () => {
+        this.betaFeedbackInboxFilters = {
+          ...this.betaFeedbackInboxFilters,
+          [field.dataset.betaInboxFilter]: field.value,
+        };
+        rerender();
+      });
+    });
+
+    this.root.querySelectorAll('[data-beta-inbox-field]').forEach(field => {
+      field.addEventListener('change', () => {
+        const id = field.dataset.betaInboxId;
+        const patch = { [field.dataset.betaInboxField]: field.value };
+        this.saveBetaFeedbackInboxEntries(updateBetaFeedbackInboxItem(this.betaFeedbackInboxEntries || [], id, patch));
+        rerender();
+      });
+    });
+
+    this.root.querySelectorAll('[data-beta-inbox-copy-issue]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const entry = inbox.entries.find(item => item.id === button.dataset.betaInboxCopyIssue);
+        if (!entry) return;
+        const text = createBetaFeedbackIssueText(entry);
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = 'Kopiert ✓';
+          setTimeout(() => { button.textContent = original; }, 1400);
+        } catch {
+          alert(text);
+        }
+      });
+    });
+
+    this.root.querySelectorAll('[data-beta-inbox-remove]').forEach(button => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.betaInboxRemove;
+        const entry = inbox.entries.find(item => item.id === id);
+        if (!confirm(`Rückmeldung „${entry?.draft?.issue?.title || id}“ wirklich aus der Auswertung entfernen?`)) return;
+        this.saveBetaFeedbackInboxEntries(removeBetaFeedbackInboxItem(this.betaFeedbackInboxEntries || [], id));
+        rerender();
+      });
+    });
+
+    this.root.querySelectorAll('[data-beta-inbox-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.betaInboxAction;
+        const current = createBetaFeedbackInbox(this.betaFeedbackInboxEntries || []);
+
+        if (action === 'import') {
+          input?.click();
+          return;
+        }
+
+        if (action === 'feedback') {
+          this.state.setSelection?.('betaFeedback', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'reset-filters') {
+          this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
+          rerender();
+          return;
+        }
+
+        if (action === 'clear') {
+          if (!confirm('Gesamte Beta-Feedback-Auswertung wirklich leeren?')) return;
+          this.saveBetaFeedbackInboxEntries([]);
+          rerender();
+          return;
+        }
+
+        if (action === 'copy') {
+          const text = formatBetaFeedbackInbox(current);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+
+        if (action === 'json') {
+          downloadText(createBetaFeedbackInboxFilename('json'), serializeBetaFeedbackInbox(current.entries), 'application/json;charset=utf-8');
+          return;
+        }
+
+        if (action === 'csv') {
+          downloadText(createBetaFeedbackInboxFilename('csv'), `\ufeff${createBetaFeedbackInboxCsv(current)}`, 'text/csv;charset=utf-8');
+        }
+      });
+    });
+  }
 
 
   loadExpertTestDraft() {
@@ -6582,7 +7187,7 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <div class="workspace-header dp-beta-header">
         <div>
-          <span class="dp-overline">Phase 21.09 · Öffentliche Testversion</span>
+          <span class="dp-overline">Phase ${this.escapeHtml(APP_RELEASE)} · Öffentliche Testversion</span>
           <h1>Beta-Freigabestand</h1>
           <p>Automatische Tests, reale Fachtest-Rückmeldungen, Freigabeentscheidung und Deployment-Checkliste werden hier zu einem nachvollziehbaren Beta-Stand zusammengeführt.</p>
         </div>

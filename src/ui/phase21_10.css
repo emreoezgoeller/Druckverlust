@@ -1,0 +1,104 @@
+/* Druckverlust Pro – Phase 21.10: Beta-Feedback im Tool */
+.dp-beta-feedback-header .workspace-actions { align-items: center; }
+
+.dp-beta-feedback-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(250px, .75fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dp-beta-feedback-summary > div {
+  border: 1px solid rgba(22, 135, 255, .18);
+  border-radius: 20px;
+  padding: 22px;
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(239,247,255,.92));
+  box-shadow: 0 16px 38px rgba(7, 28, 53, .08);
+}
+
+.dp-beta-feedback-summary h2 { margin: 7px 0 8px; color: #071c35; }
+.dp-beta-feedback-summary p { margin: 0; color: #58738c; line-height: 1.6; }
+.dp-beta-feedback-summary .dp-beta-feedback-state {
+  color: #fff;
+  background: linear-gradient(145deg, #071c35, #0b2b50 60%, #174b7f);
+}
+.dp-beta-feedback-summary .dp-beta-feedback-state p { color: #c8d9e9; }
+.dp-beta-feedback-summary .dp-beta-feedback-state strong { display:block; margin: 8px 0; font-size: 1.25rem; }
+.dp-beta-feedback-summary .dp-beta-feedback-state.is-complete strong { color: #7cf3cf; }
+.dp-beta-feedback-summary .dp-beta-feedback-state.is-review strong { color: #ffd27d; }
+.dp-beta-feedback-summary .dp-beta-feedback-state.is-error strong { color: #ff9da6; }
+
+.dp-beta-feedback-form {
+  display: grid;
+  gap: 18px;
+}
+
+.dp-beta-feedback-panel {
+  border: 1px solid #d7e5f1;
+  border-radius: 20px;
+  padding: 22px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(7, 28, 53, .07);
+}
+
+.dp-beta-feedback-panel h2 { margin: 0 0 6px; color: #071c35; }
+.dp-beta-feedback-panel > p { margin: 0 0 18px; color: #678198; }
+
+.dp-beta-feedback-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.dp-beta-feedback-fields .is-wide { grid-column: 1 / -1; }
+.dp-beta-feedback-fields label {
+  display: grid;
+  gap: 6px;
+  color: #183a5d;
+  font-size: .9rem;
+  font-weight: 750;
+}
+.dp-beta-feedback-fields input,
+.dp-beta-feedback-fields select,
+.dp-beta-feedback-fields textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cdddea;
+  border-radius: 13px;
+  padding: 11px 12px;
+  color: #071c35;
+  background: #fbfdff;
+  font: inherit;
+}
+.dp-beta-feedback-fields textarea { min-height: 105px; resize: vertical; }
+.dp-beta-feedback-fields input:focus,
+.dp-beta-feedback-fields select:focus,
+.dp-beta-feedback-fields textarea:focus {
+  outline: none;
+  border-color: #1687ff;
+  box-shadow: 0 0 0 4px rgba(22,135,255,.12);
+  background: #fff;
+}
+
+.dp-beta-feedback-checkbox {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 9px !important;
+  color: #557188 !important;
+  font-weight: 600 !important;
+}
+.dp-beta-feedback-checkbox input { width: auto; margin-top: 3px; }
+
+.dp-beta-feedback-notices {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: #526e86;
+  background: #eff7ff;
+}
+.dp-beta-feedback-notices ul { margin: 6px 0 0; padding-left: 20px; }
+
+@media (max-width: 900px) {
+  .dp-beta-feedback-summary,
+  .dp-beta-feedback-fields { grid-template-columns: 1fr; }
+  .dp-beta-feedback-fields .is-wide { grid-column: auto; }
+}

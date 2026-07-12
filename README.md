@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 21.09 – öffentliche Beta-Testversion und konsolidierter Freigabestand**.
+Aktueller Entwicklungsstand: **Phase 21.11 – Beta-Feedback-Auswertung und priorisierte Fehlerliste**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
@@ -8,6 +8,24 @@ Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool is
 
 
 
+
+
+### Phase 21.11 – Beta-Feedback-Auswertung und Fehlerliste
+
+Mehrere aus `feedback.html` oder dem Tool exportierte JSON-Rückmeldungen können unter **Rechen-QS → Feedback-Auswertung** gemeinsam importiert werden. Die Liste priorisiert Blocker und hohe Meldungen, erkennt mögliche Duplikate und führt pro Eintrag Status, Verantwortliche, Zielversion und interne Notizen.
+
+Aufrufmöglichkeiten:
+
+- Tool: **Rechen-QS → Feedback-Auswertung**
+- Direkt: `app.html?feedback-auswertung=1`
+- Browser-Test: `tests/phase21-beta-feedback-inbox.html`
+- Konsole: `npm run test:beta-feedback-inbox`
+
+Die gesamte Auswertung bleibt lokal im Browser und kann als JSON oder CSV exportiert werden. Einzelne Rückmeldungen lassen sich zusätzlich als vorbereiteter Issue-Text kopieren. Der automatische Beta-Teststand umfasst jetzt **11 Prüfserien und 443 dokumentierte Einzelprüfungen**.
+
+### Phase 21.10 – Beta-Feedback und Fehlererfassung
+
+Beta-Tester können Auffälligkeiten, Rechenabweichungen und Funktionswünsche im Tool oder über `feedback.html` strukturiert erfassen. Die Rückmeldung bleibt lokal und kann als JSON, TXT oder CSV exportiert werden.
 
 ### Phase 21.09 – Öffentliche Beta-Testversion und konsolidierter Freigabestand
 
@@ -138,7 +156,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `21.09`.
+- Die aktuelle Cache-Version ist `21.11`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

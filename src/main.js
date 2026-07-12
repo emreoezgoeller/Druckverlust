@@ -1,18 +1,18 @@
-// Druckverlust Pro – Phase 21.09
+// Druckverlust Pro – Phase 21.11
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.09';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=21.09';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.11';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=21.11';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
 import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.09';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.11';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 
@@ -227,6 +227,59 @@ function cleanupBetaUrlFlag() {
   window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
 }
 
+
+function isBetaFeedbackStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const value = String(params.get('feedback') || params.get('beta-feedback') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'feedback', 'beta-feedback'].includes(value) || hash.includes('feedback');
+}
+
+function cleanupBetaFeedbackUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadFlag = url.searchParams.has('feedback') || url.searchParams.has('beta-feedback') || url.hash.toLowerCase().includes('feedback');
+  if (!hadFlag) return;
+
+  url.searchParams.delete('feedback');
+  url.searchParams.delete('beta-feedback');
+  if (url.hash.toLowerCase().includes('feedback')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
+
+function isBetaFeedbackInboxStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const value = String(params.get('feedback-auswertung') || params.get('feedback-inbox') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'auswertung', 'inbox'].includes(value)
+    || hash.includes('feedback-auswertung')
+    || hash.includes('feedback-inbox');
+}
+
+function cleanupBetaFeedbackInboxUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadFlag = url.searchParams.has('feedback-auswertung')
+    || url.searchParams.has('feedback-inbox')
+    || url.hash.toLowerCase().includes('feedback-auswertung')
+    || url.hash.toLowerCase().includes('feedback-inbox');
+  if (!hadFlag) return;
+
+  url.searchParams.delete('feedback-auswertung');
+  url.searchParams.delete('feedback-inbox');
+  if (url.hash.toLowerCase().includes('feedback-auswertung') || url.hash.toLowerCase().includes('feedback-inbox')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
   const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
@@ -306,8 +359,16 @@ function bootstrap() {
   const expertTestRequested = isExpertTestStartupRequested();
   const releaseDecisionRequested = isReleaseDecisionStartupRequested();
   const betaRequested = isBetaStartupRequested();
+  const betaFeedbackRequested = isBetaFeedbackStartupRequested();
+  const betaFeedbackInboxRequested = isBetaFeedbackInboxStartupRequested();
 
-  if (betaRequested) {
+  if (betaFeedbackInboxRequested) {
+    state.setSelection('betaFeedbackInbox', { source: 'beta-feedback-inbox-link' });
+    cleanupBetaFeedbackInboxUrlFlag();
+  } else if (betaFeedbackRequested) {
+    state.setSelection('betaFeedback', { source: 'beta-feedback-link' });
+    cleanupBetaFeedbackUrlFlag();
+  } else if (betaRequested) {
     state.setSelection('betaReleaseReadiness', { source: 'beta-link' });
     cleanupBetaUrlFlag();
   } else if (releaseDecisionRequested) {

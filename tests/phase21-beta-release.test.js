@@ -27,7 +27,7 @@ function releasedDecision(status = 'released') {
     decision: status === 'released' ? 'approved' : 'approved_with_conditions',
     decidedBy: 'Emre Özgöller',
     decisionDate: '2026-07-12',
-    targetVersion: '1.3.9',
+    targetVersion: '1.3.10',
     releaseNote: 'Beta-Test freigegeben.',
     actions: [],
   };
@@ -69,7 +69,7 @@ export function runBetaReleaseTests() {
   };
 
   const context = {
-    targetVersion: '1.3.9',
+    targetVersion: '1.3.10',
     publicUrl: 'https://emreoezgoeller.github.io/Druckverlust/',
     feedbackRound: feedbackRound('ready'),
     releaseDecision: releasedDecision('released'),
@@ -83,10 +83,10 @@ export function runBetaReleaseTests() {
   const ready = summarizeBetaRelease(draft, context);
 
   check('Schema wird gesetzt', () => assert(draft.schemaVersion === '1.0', draft.schemaVersion));
-  check('Zielversion wird übernommen', () => assert(draft.targetVersion === '1.3.9', draft.targetVersion));
+  check('Zielversion wird übernommen', () => assert(draft.targetVersion === '1.3.10', draft.targetVersion));
   check('Öffentliche URL wird übernommen', () => assert(draft.publicUrl.includes('github.io'), draft.publicUrl));
   check('Automatische Prüfserien vollständig', () => assert(draft.automated.passedSuites === BETA_AUTOMATED_BASELINE.suites, JSON.stringify(draft.automated)));
-  check('Dokumentierte Einzelprüfungen vollständig', () => assert(draft.automated.passedChecks === 396, draft.automated.passedChecks));
+  check('Dokumentierte Einzelprüfungen vollständig', () => assert(draft.automated.passedChecks === 443, draft.automated.passedChecks));
   check('Fachtestberichte werden übernommen', () => assert(draft.feedbackSnapshot.reports === 3, draft.feedbackSnapshot.reports));
   check('Freigabestatus wird übernommen', () => assert(draft.releaseSnapshot.status === 'released', draft.releaseSnapshot.status));
   check('Checkliste enthält alle Pflichtpunkte', () => assert(ready.checklist.total === BETA_RELEASE_CHECKLIST.length, ready.checklist.total));
@@ -96,7 +96,7 @@ export function runBetaReleaseTests() {
   check('Bereitschaft enthält keine Warnungen', () => assert(ready.warnings.length === 0, ready.warnings.join(' | ')));
 
   const incomplete = summarizeBetaRelease(createBetaReleaseDraft({}, {
-    targetVersion: '1.3.9',
+    targetVersion: '1.3.10',
     feedbackRound: { counts: { reports: 0 }, status: 'no_data', label: 'Keine Rückmeldungen' },
     releaseDecision: { decision: 'pending', roundSnapshot: { reports: 0 }, actions: [] },
   }));
@@ -137,7 +137,7 @@ export function runBetaReleaseTests() {
   check('Text enthält Checkliste', () => assert(text.includes('Beta-Checkliste'), text));
   const csv = createBetaReleaseCsv(draft, context);
   check('CSV enthält Pflichtpunkt', () => assert(csv.includes('Pflichtpunkt'), csv));
-  check('CSV enthält Zielversion', () => assert(csv.includes('1.3.9'), csv));
+  check('CSV enthält Zielversion', () => assert(csv.includes('1.3.10'), csv));
 
   const serialized = serializeBetaRelease(draft, context);
   const restored = deserializeBetaRelease(serialized, context);

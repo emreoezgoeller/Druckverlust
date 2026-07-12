@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## Phase 21.11 – Beta-Feedback-Auswertung und Fehlerliste
+
+- Mehrere JSON-Rückmeldungen aus dem Beta-Feedback können gemeinsam importiert werden.
+- Rückmeldungen werden nach Priorität sortiert und als offene, bearbeitbare Fehlerliste dargestellt.
+- Status, Prioritätskorrektur, Verantwortliche, Zielversion und interne Notiz je Rückmeldung ergänzt.
+- Duplikat-Kandidaten werden über Kategorie, Titel und Fehlerbild automatisch erkannt.
+- Filter für Suche, Kategorie, Priorität und Bearbeitungsstatus ergänzt.
+- Auswertung lokal im Browser gespeichert; Einzelmeldungen können entfernt oder die Liste komplett geleert werden.
+- Export als JSON und CSV sowie kopierbare Gesamt- und Issue-Texte ergänzt.
+- Direkter Aufruf über `app.html?feedback-auswertung=1` und Rechen-QS ergänzt.
+- Deployment-QS um Feedback-Auswertungsmodell, Oberfläche und Browsertest erweitert.
+- Eigenen Browser-/Node-Test mit 29 Einzelprüfungen ergänzt und `npm test` erweitert.
+- Automatischer Beta-Teststand auf 11 Prüfserien und 443 dokumentierte Einzelprüfungen aktualisiert.
+- Cache-Version auf 21.11 und App-Version auf 1.3.11 erhöht.
+
+## Phase 21.10 – Beta-Feedback und Fehlererfassung
+
+- Einzelne Beta-Rückmeldungen im Tool und auf `feedback.html` strukturiert erfassbar gemacht.
+- Kategorie, Priorität, Fehlerbeschreibung, Nachstellschritte, Ist-/Soll-Ergebnis und Projektkontext ergänzt.
+- Lokale Zwischenspeicherung sowie JSON-, TXT- und CSV-Export ergänzt.
+- Direkten Aufruf über `app.html?feedback=1` ergänzt.
+- Eigenen Test mit 18 Einzelprüfungen ergänzt.
+- Cache-Version auf 21.10 und App-Version auf 1.3.10 erhöht.
+
 ## Phase 21.09 – Öffentliche Beta konsolidiert
 
 - Eigene öffentliche Beta-Testseite `beta.html` mit Testablauf, bekannten Grenzen und direkten Einstiegen ergänzt.

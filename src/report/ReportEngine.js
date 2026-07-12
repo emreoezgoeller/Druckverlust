@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.09';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.10';
 import LicenseGate from '../licensing/LicenseGate.js';
 
 // Druckverlust Pro – ReportEngine

@@ -235,3 +235,24 @@ Geprüft werden:
 - JSON-Roundtrip und Ablehnung ungültiger Dateien
 
 Sollstatus: 27/27 Einzelprüfungen bestanden.
+
+## Phase 21.10 – Beta-Feedback und Fehlererfassung
+
+Automatischer Lauf:
+
+```bash
+npm run test:beta-feedback
+```
+
+Geprüft werden:
+
+- Beta-Feedback-Dateityp und Schema
+- Kategorien und Prioritäten
+- Pflichtfelder und Blocker-Regel
+- Status vollständig / mit Hinweisen / unvollständig
+- Textausgabe mit Datenschutz-Hinweis
+- JSON-Export und JSON-Roundtrip
+- Rückfall auf Standardwerte bei ungültigen Optionen
+- öffentliches Browser-Testformular
+
+Sollstatus: 18/18 Einzelprüfungen bestanden.

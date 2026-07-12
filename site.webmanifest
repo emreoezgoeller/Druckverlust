@@ -54,6 +54,18 @@
       "description": "Testhinweise und Fachtest-Zugang öffnen"
     },
     {
+      "name": "Beta-Feedback erfassen",
+      "short_name": "Feedback",
+      "url": "./feedback.html",
+      "description": "Auffälligkeit oder Funktionswunsch lokal dokumentieren"
+    },
+    {
+      "name": "Beta-Feedback auswerten",
+      "short_name": "Auswertung",
+      "url": "./app.html?feedback-auswertung=1",
+      "description": "Exportierte Beta-Rückmeldungen importieren und priorisieren"
+    },
+    {
       "name": "Lizenzübersicht",
       "short_name": "Lizenz",
       "url": "./lizenz.html",

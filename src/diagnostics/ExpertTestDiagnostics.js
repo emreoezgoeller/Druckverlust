@@ -1,10 +1,11 @@
-// Druckverlust Pro – Fachtester-Diagnose Phase 21.07
+// Druckverlust Pro – Fachtester-Diagnose Phase 21.10
 
 import ReferenceTestDiagnostics from './ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from './FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from './FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from './ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from './PracticeProjectDiagnostics.js';
+import BetaFeedbackDiagnostics from './BetaFeedbackDiagnostics.js?v=21.11';
 import {
   createExpertTestCsv,
   createExpertTestJson,
@@ -12,7 +13,7 @@ import {
   formatExpertTestProtocol,
   summarizeExpertTestDraft,
   validateExpertTestDraft,
-} from '../testing/ExpertTestProtocol.js?v=21.07';
+} from '../testing/ExpertTestProtocol.js?v=21.11';
 
 function suiteResult(id, label, report = {}) {
   const checks = Number(
@@ -51,6 +52,7 @@ export default class ExpertTestDiagnostics {
       suiteResult('sync', 'Formteil-Grössen- und Anschluss-Sync', FormPartSyncDiagnostics.run()),
       suiteResult('comparison', 'Handrechnungen / Vergleichsmatrix', ComparisonMatrixDiagnostics.run()),
       suiteResult('practice', 'Praxisprojekt / Bericht / .dvp', PracticeProjectDiagnostics.run()),
+      suiteResult('beta-feedback', 'Beta-Feedback / Fehlererfassung', BetaFeedbackDiagnostics.run()),
     ];
 
     const failedSuites = suites.filter(item => !item.passed).length;

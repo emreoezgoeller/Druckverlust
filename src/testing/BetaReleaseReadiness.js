@@ -1,4 +1,4 @@
-// Druckverlust Pro – Phase 21.09
+// Druckverlust Pro – Phase 21.11
 // Konsolidiert den öffentlichen Beta-Freigabestand aus Tests, Fachtest-Runde,
 // Freigabeentscheidung und einer kurzen Deployment-Checkliste.
 
@@ -9,13 +9,13 @@ import {
 } from './ReleaseDecisionPlan.js';
 
 export const BETA_RELEASE_SCHEMA_VERSION = '1.0';
-export const BETA_RELEASE_STORAGE_KEY = 'druckverlust-pro:beta-release:21.09';
+export const BETA_RELEASE_STORAGE_KEY = 'druckverlust-pro:beta-release:21.10';
 
 export const BETA_AUTOMATED_BASELINE = Object.freeze({
-  suites: 9,
-  passedSuites: 9,
-  documentedChecks: 396,
-  passedChecks: 396,
+  suites: 11,
+  passedSuites: 11,
+  documentedChecks: 443,
+  passedChecks: 443,
   structureChecks: 87,
   label: 'Automatischer Teststand bestanden',
 });
