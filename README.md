@@ -1,11 +1,42 @@
 # Druckverlust Pro
 
-Aktueller Entwicklungsstand: **Phase 21.07 – Fachtest-Runde und Freigabeauswertung**.
+Aktueller Entwicklungsstand: **Phase 21.09 – öffentliche Beta-Testversion und konsolidierter Freigabestand**.
 
 Die öffentliche Startseite ist die Produkt-/Landingpage. Das Berechnungstool ist unter `app.html` erreichbar. Zusätzlich ist eine vorbereitete Lizenz-/Produktübersicht unter `lizenz.html` vorhanden. Enthalten sind Projektangaben, Teilstrecken, Formteile, Sonderbauteile, automatische Berechnung, Bericht, Autosicherung, Projektcheck, Rechen-QS, robuste `.dvp`-Projektdateien, Demo-Projekt, PDF-/Berichtsexport, integrierte Bedienungsanleitung sowie vorbereitete Kontakt-/Rechtseiten, Sitemap, Robots-Datei, 404-Seite und Web-App-Metadaten.
 
 
 
+
+
+
+### Phase 21.09 – Öffentliche Beta-Testversion und konsolidierter Freigabestand
+
+Die öffentliche Testversion besitzt jetzt eine eigene kompakte Seite unter `beta.html`. Sie erklärt den Testablauf, bekannte Grenzen und führt direkt zu Demo, Fachtest-Protokoll und Beta-Status.
+
+Im Tool bündelt **Rechen-QS → Beta-Freigabestand**:
+
+- 9 automatisierte Prüfserien mit 396 dokumentierten Einzelprüfungen,
+- 87 zusätzliche Strukturprüfungen der Formteilbibliothek,
+- reale Fachtest-Rückmeldungen,
+- die formelle Freigabeentscheidung,
+- offene Korrekturmassnahmen und Nachtests,
+- eine achtteilige Deployment-/Veröffentlichungscheckliste.
+
+Der Beta-Stand kann lokal dokumentiert und als Text, JSON oder CSV exportiert werden. Direkter Aufruf: `app.html?beta=1`. Browser-Test: `tests/phase21-beta-release.html`. Konsolentest: `npm run test:beta-release`.
+
+### Phase 21.08 – Fachliche Freigabeentscheidung und Korrekturplan
+
+Die gebündelte Fachtest-Auswertung kann jetzt in ein formelles Freigabeprotokoll überführt werden. Dokumentiert werden Entscheidung, freigebende Person, Datum, Zielversion, Freigabevermerk sowie konkrete Korrektur- und Nachtestmassnahmen.
+
+Je offenem Prüfpunkt lassen sich Priorität, Status, Verantwortliche, Termin, Korrekturmassnahme und Nachtestergebnis festhalten. Die Daten bleiben lokal im Browser und können als Text, JSON oder CSV exportiert werden.
+
+Aufrufmöglichkeiten:
+
+- Tool: **Rechen-QS → Freigabeentscheidung**
+- Fachtest-Auswertung: **Freigabe dokumentieren**
+- Direkt: `app.html?freigabe=1`
+- Browser-Test: `tests/phase21-release-decision.html`
+- Konsole: `npm run test:release-decision`
 
 ### Phase 21.07 – Fachtest-Runde und Freigabeauswertung
 
@@ -107,7 +138,7 @@ Die Produktseite kann das Berechnungstool jetzt direkt mit dem Demo-Projekt öff
 ## Wichtige Hinweise
 
 - Für GitHub Pages nach dem Hochladen kurz warten und dann mit **Ctrl + F5** neu laden.
-- Die aktuelle Cache-Version ist `21.07`.
+- Die aktuelle Cache-Version ist `21.09`.
 - Interne Datei-QS bleibt im Code verfügbar, ist aber in der Hauptnavigation ausgeblendet.
 - Über den Ribbon-Button **Rechen-QS** können Summen, p_dyn, Geschwindigkeit, Reibung und Rundung geprüft werden.
 - Über den Ribbon-Button **Info** kann der aktive Stand direkt in der App geprüft werden.

@@ -1,0 +1,29 @@
+Druckverlust Pro – Phase 21.09
+Nur geänderte / neue Dateien
+
+CHANGELOG.md
+README.md
+ROADMAP.md
+app.html
+beta.html
+GEAENDERTE_DATEIEN_21_09.txt
+docs/SPRINT21_09_BETA_FREIGABESTAND.md
+docs/TESTPLAN.md
+index.html
+package.json
+produkt.html
+site.webmanifest
+sitemap.xml
+src/core/appVersion.js
+src/diagnostics/DeploymentDiagnostics.js
+src/landing/landing.css
+src/main.js
+src/pdf/report.js
+src/report/ReportEngine.js
+src/testing/BetaReleaseReadiness.js
+src/ui/components/StatusBarComponent.js
+src/ui/components/WorkspaceComponent.js
+src/ui/phase21_09.css
+tests/phase21-beta-release.html
+tests/phase21-beta-release.test.js
+tests/run-beta-release-tests.js

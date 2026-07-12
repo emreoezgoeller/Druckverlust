@@ -1,18 +1,18 @@
-// Druckverlust Pro – Phase 21.07
-// Startet Tool, Demo, Hilfe, Beispielbericht und Fachtest über URL-Parameter.
+// Druckverlust Pro – Phase 21.09
+// Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js';
 import RibbonComponent from './ui/components/RibbonComponent.js';
 import SidebarComponent from './ui/components/SidebarComponent.js';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.07';
-import StatusBarComponent from './ui/components/StatusBarComponent.js';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=21.09';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=21.09';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
 import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.07';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=21.09';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 
@@ -181,6 +181,52 @@ function cleanupExpertTestUrlFlag() {
   window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
 }
 
+function isReleaseDecisionStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const value = String(params.get('freigabe') || params.get('release-decision') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'freigabe', 'release'].includes(value) || hash.includes('freigabe');
+}
+
+function cleanupReleaseDecisionUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadFlag = url.searchParams.has('freigabe') || url.searchParams.has('release-decision') || url.hash.toLowerCase().includes('freigabe');
+  if (!hadFlag) return;
+
+  url.searchParams.delete('freigabe');
+  url.searchParams.delete('release-decision');
+  if (url.hash.toLowerCase().includes('freigabe')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
+function isBetaStartupRequested() {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search || '');
+  const value = String(params.get('beta') || params.get('beta-status') || '').toLowerCase();
+  const hash = String(window.location.hash || '').toLowerCase();
+
+  return ['1', 'true', 'ja', 'beta', 'status'].includes(value) || hash.includes('beta');
+}
+
+function cleanupBetaUrlFlag() {
+  if (typeof window === 'undefined' || !window.history?.replaceState) return;
+
+  const url = new URL(window.location.href);
+  const hadFlag = url.searchParams.has('beta') || url.searchParams.has('beta-status') || url.hash.toLowerCase().includes('beta');
+  if (!hadFlag) return;
+
+  url.searchParams.delete('beta');
+  url.searchParams.delete('beta-status');
+  if (url.hash.toLowerCase().includes('beta')) url.hash = '';
+  window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+}
+
 function resolveStartupProject() {
   const demoRequested = isDemoStartupRequested();
   const recovery = AutoSaveEngine.load();
@@ -258,8 +304,16 @@ function bootstrap() {
   const helpSection = getHelpStartupSection();
   const reportRequested = isReportStartupRequested();
   const expertTestRequested = isExpertTestStartupRequested();
+  const releaseDecisionRequested = isReleaseDecisionStartupRequested();
+  const betaRequested = isBetaStartupRequested();
 
-  if (expertTestRequested) {
+  if (betaRequested) {
+    state.setSelection('betaReleaseReadiness', { source: 'beta-link' });
+    cleanupBetaUrlFlag();
+  } else if (releaseDecisionRequested) {
+    state.setSelection('expertReleaseDecision', { source: 'release-decision-link' });
+    cleanupReleaseDecisionUrlFlag();
+  } else if (expertTestRequested) {
     state.setSelection('expertTest', { source: 'public-test' });
     cleanupExpertTestUrlFlag();
   } else if (helpRequested) {

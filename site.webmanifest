@@ -9,7 +9,11 @@
   "orientation": "any",
   "background_color": "#f3f7fb",
   "theme_color": "#071c35",
-  "categories": ["productivity", "utilities", "business"],
+  "categories": [
+    "productivity",
+    "utilities",
+    "business"
+  ],
   "icons": [
     {
       "src": "assets/logo/eo-logo.png",
@@ -42,6 +46,12 @@
       "short_name": "Anleitung",
       "url": "./app.html?help=1",
       "description": "Bedienungsanleitung im Tool öffnen"
+    },
+    {
+      "name": "Öffentliche Beta testen",
+      "short_name": "Beta",
+      "url": "./beta.html",
+      "description": "Testhinweise und Fachtest-Zugang öffnen"
     },
     {
       "name": "Lizenzübersicht",

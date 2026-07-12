@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## Phase 21.09 – Öffentliche Beta konsolidiert
+
+- Eigene öffentliche Beta-Testseite `beta.html` mit Testablauf, bekannten Grenzen und direkten Einstiegen ergänzt.
+- Konsolidierten Beta-Freigabestand im Tool unter **Rechen-QS → Beta-Freigabestand** ergänzt.
+- Automatischen Teststand, reale Fachtest-Rückmeldungen, Freigabeentscheidung, offene Massnahmen und Deployment-Checkliste zusammengeführt.
+- Beta-Verantwortung, Datum, Zielversion, öffentliche URL, Freigabehinweis und bekannte Grenzen dokumentierbar gemacht.
+- Lokale Speicherung sowie Text-, JSON- und CSV-Export des Beta-Protokolls ergänzt.
+- Direkten Start über `app.html?beta=1` ergänzt.
+- Hauptseite und Footer dezent mit der öffentlichen Beta verknüpft.
+- Sitemap und Web-App-Manifest um die Beta-Seite erweitert.
+- Eigenen Browser-/Node-Test mit 27 Einzelprüfungen ergänzt und `npm test` erweitert.
+- Cache-Version auf 21.09 und App-Version auf 1.3.9 erhöht.
+
+## Phase 21.08 – Fachliche Freigabeentscheidung und Korrekturplan
+
+- Formelles Freigabeprotokoll auf Basis der gebündelten Fachtest-Runde ergänzt.
+- Entscheidung, freigebende Person, Datum, Zielversion und Freigabevermerk dokumentierbar gemacht.
+- Automatischen Entscheidungsvorschlag aus Fehlern, Hinweisen und offenen Prüfpunkten ergänzt.
+- Korrektur- und Nachtestplan mit Priorität, Status, Verantwortlichen, Termin, Massnahme und Nachtestergebnis ergänzt.
+- Lokale Speicherung der Freigabeentscheidung im Browser integriert.
+- Text-, JSON- und CSV-Export des Freigabeprotokolls ergänzt.
+- Direkten Zugang über Rechen-QS, Fachtest-Auswertung, Hilfe und `app.html?freigabe=1` ergänzt.
+- Deployment-QS um Freigabemodul, Oberfläche und Browsertest erweitert.
+- Eigenen Browser-/Node-Test mit 24 Einzelprüfungen ergänzt und `npm test` erweitert.
+- Cache-Version auf 21.08 und App-Version auf 1.3.8 erhöht.
+
 ## Phase 21.07 – Fachtest-Runde und Freigabeauswertung
 
 - Maschinenlesbaren JSON-Export für einzelne Fachtester-Protokolle ergänzt.

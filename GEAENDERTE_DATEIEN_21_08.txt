@@ -1,0 +1,20 @@
+Phase 21.08 – nur geänderte / neue Dateien
+
+CHANGELOG.md
+README.md
+ROADMAP.md
+app.html
+package.json
+GEAENDERTE_DATEIEN_21_08.txt
+docs/SPRINT21_08_FREIGABEENTSCHEIDUNG.md
+docs/TESTPLAN.md
+src/core/appVersion.js
+src/diagnostics/DeploymentDiagnostics.js
+src/main.js
+src/testing/ReleaseDecisionPlan.js
+src/ui/components/StatusBarComponent.js
+src/ui/components/WorkspaceComponent.js
+src/ui/phase21_08.css
+tests/phase21-release-decision.html
+tests/phase21-release-decision.test.js
+tests/run-release-decision-tests.js

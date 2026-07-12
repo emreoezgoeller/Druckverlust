@@ -13,6 +13,8 @@ Browseransichten:
 - `tests/phase21-practice-project.html`
 - `tests/phase21-formpart-sync.html`
 - `tests/phase21-comparison-matrix.html`
+- `tests/phase21-feedback-round.html`
+- `tests/phase21-release-decision.html`
 
 Tool-Oberfläche:
 
@@ -21,6 +23,8 @@ Tool-Oberfläche:
 - **Rechen-QS → Praxisprojekt-QS**
 - **Rechen-QS → Formteil-Sync-QS**
 - **Rechen-QS → Vergleichsmatrix**
+- **Rechen-QS → Fachtest-Auswertung**
+- **Rechen-QS → Freigabeentscheidung**
 
 ## Phase 21.00 – aktive Referenzfälle
 
@@ -175,3 +179,59 @@ Geprüft werden:
 
 Das Fachtester-Protokoll ist eine strukturierte Rückmeldung aus der Praxis. Es ersetzt keine externe Normenzertifizierung oder unabhängige technische Zulassung.
 
+
+## Phase 21.07 – Fachtest-Runden-Auswertung
+
+Automatischer Lauf:
+
+```bash
+npm run test:feedback-round
+```
+
+Geprüft werden Import, Normalisierung und Zusammenführung mehrerer Fachtester-Protokolle, Priorisierung von Fehlern/Hinweisen/offenen Punkten sowie die abgeleitete Freigabeempfehlung.
+
+Sollstatus: 16/16 Einzelprüfungen bestanden.
+
+## Phase 21.08 – Fachliche Freigabeentscheidung
+
+Automatischer Lauf:
+
+```bash
+npm run test:release-decision
+```
+
+Geprüft werden:
+
+- Übernahme der Fachtest-Rückmeldungen und Prioritäten
+- automatische Einstufung kritisch / hoch / mittel
+- bewusste formelle Freigabeentscheidung
+- Erhalt bearbeiteter Massnahmen bei Aktualisierung der Fachtest-Runde
+- Status-, Verantwortungs-, Termin- und Nachtestdaten
+- Blockierung bei kritischen offenen Punkten oder fehlgeschlagenen Nachtests
+- vollständige Freigabe nach Abschluss aller Massnahmen
+- Text-, CSV- und JSON-Ausgabe
+- JSON-Roundtrip und Ablehnung ungültiger Dateien
+
+Sollstatus: 24/24 Einzelprüfungen bestanden.
+
+## Phase 21.09 – Öffentlicher Beta-Freigabestand
+
+Automatischer Lauf:
+
+```bash
+npm run test:beta-release
+```
+
+Geprüft werden:
+
+- Schema, Zielversion und öffentliche Testadresse
+- dokumentierter automatischer Teststand
+- Übernahme realer Fachtest-Rückmeldungen
+- Übernahme der formellen Freigabeentscheidung
+- acht Pflichtpunkte der Beta-/Deployment-Checkliste
+- Status **Vorbereitung**, **mit Auflagen**, **bereit** und **blockiert**
+- Blockierung bei kritischer Freigabe oder fehlgeschlagenem Nachtest
+- Text- und CSV-Ausgabe
+- JSON-Roundtrip und Ablehnung ungültiger Dateien
+
+Sollstatus: 27/27 Einzelprüfungen bestanden.

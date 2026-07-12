@@ -50,8 +50,11 @@
 - Phase 21.05: Öffentliche Testversion mit strukturiertem Fachtester-Protokoll vorbereitet
 - Phase 21.06: Tool-Oberfläche an das Design der Hauptseite angeglichen
 - Phase 21.07: Fachtest-Rückmeldungen gebündelt und Freigabeentscheidung vorbereitet
+- Phase 21.08: Fachliche Freigabeentscheidung, Korrekturmassnahmen und Nachtests dokumentiert
+- Phase 21.09: Öffentliche Beta-Testversion und konsolidierten Beta-Freigabestand vorbereitet
 
 ## Nächste sinnvolle Schritte
 
-- Phase 21.08: Fachliche Freigabeentscheidung dokumentieren und gezielte Korrekturrunde planen
-- Danach: öffentliche Testversion konsolidieren oder nächste Fachmodule starten
+- Reale Fachtest-Rückmeldungen mit der Beta-Version sammeln und priorisierte Korrekturen umsetzen.
+- Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe final prüfen und vervollständigen.
+- Danach: nächste Fachmodule starten oder gezielte Korrekturen aus realen Fachtests umsetzen.

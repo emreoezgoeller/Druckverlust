@@ -1,5 +1,5 @@
 import * as Engine from '../calculation/engine.js?v=21.06';
-import { APP_BUILD_LABEL } from '../core/appVersion.js';
+import { APP_BUILD_LABEL } from '../core/appVersion.js?v=21.09';
 import { getPartDefinition } from '../formteile/library.js';
 
 

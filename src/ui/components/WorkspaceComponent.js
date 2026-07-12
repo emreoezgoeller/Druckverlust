@@ -5,23 +5,23 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=21.07';
+import ReportEngine from '../../report/ReportEngine.js?v=21.09';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=21.09';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.07';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.09';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=21.07';
+} from '../../testing/ExpertTestProtocol.js?v=21.09';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -31,11 +31,34 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=21.07';
+} from '../../testing/ExpertFeedbackRound.js?v=21.09';
+import {
+  RELEASE_ACTION_STATUS_OPTIONS,
+  RELEASE_DECISION_OPTIONS,
+  RELEASE_DECISION_STORAGE_KEY,
+  RELEASE_RETEST_STATUS_OPTIONS,
+  createReleaseDecisionCsv,
+  createReleaseDecisionDraft,
+  createReleaseDecisionFilename,
+  deserializeReleaseDecision,
+  formatReleaseDecision,
+  serializeReleaseDecision,
+  summarizeReleaseDecision,
+  validateReleaseDecisionDraft,
+} from '../../testing/ReleaseDecisionPlan.js?v=21.09';
+import {
+  BETA_RELEASE_STORAGE_KEY,
+  createBetaReleaseCsv,
+  createBetaReleaseDraft,
+  createBetaReleaseFilename,
+  formatBetaRelease,
+  serializeBetaRelease,
+  summarizeBetaRelease,
+} from '../../testing/BetaReleaseReadiness.js?v=21.09';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_RELEASE } from '../../core/appVersion.js';
+import { APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=21.09';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 
@@ -57,6 +80,8 @@ export default class WorkspaceComponent {
     this.libraryRecent = this.loadLibraryRecent();
     this.libraryFavorites = this.loadLibraryFavorites();
     this.expertFeedbackEntries = this.loadExpertFeedbackEntries();
+    this.expertReleaseDecision = this.loadExpertReleaseDecision();
+    this.betaReleaseDraft = this.loadBetaReleaseDraft();
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -82,6 +107,8 @@ export default class WorkspaceComponent {
     if (selection.type === 'practiceProjectValidation') return this.renderPracticeProjectValidation(selection.data || this.state.practiceProjectValidation);
     if (selection.type === 'expertTest') return this.renderExpertTestProtocol(selection.data?.draft ? selection.data : this.state.expertTestReport);
     if (selection.type === 'expertFeedbackRound') return this.renderExpertFeedbackRound(selection.data || null);
+    if (selection.type === 'expertReleaseDecision') return this.renderExpertReleaseDecision(selection.data || null);
+    if (selection.type === 'betaReleaseReadiness') return this.renderBetaReleaseReadiness(selection.data || null);
     if (selection.type === 'projectFileCheck') return this.renderProjectFileCheck(selection.data || this.state.projectFileCheck);
     if (selection.type === 'releaseCandidateCheck') return this.renderReleaseCandidateCheck(selection.data || this.state.releaseCandidateCheck);
     if (selection.type === 'formPart') return this.renderFormPart(selection.data);
@@ -297,6 +324,8 @@ export default class WorkspaceComponent {
           <button type="button" data-help-action="copy-feedback">Feedback-Vorlage kopieren</button>
           <button type="button" data-help-action="expert-test">Fachtest-Protokoll öffnen</button>
           <button type="button" data-help-action="feedback-round">Fachtest-Auswertung öffnen</button>
+          <button type="button" data-help-action="release-decision">Freigabeentscheidung öffnen</button>
+          <button type="button" data-help-action="beta-release">Beta-Freigabestand öffnen</button>
           <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
         </div>
       </section>
@@ -307,6 +336,8 @@ export default class WorkspaceComponent {
           <h2>Aktueller Entwicklungsstand</h2>
         </div>
         <div class="dp-version-history-grid" aria-label="Letzte Versionen">
+          <article><span>21.09</span><strong>Öffentliche Beta konsolidiert</strong><p>Automatische Tests, Fachtest-Runde, Freigabeentscheidung und Deployment-Checkliste in einem Beta-Freigabestand zusammengeführt.</p></article>
+          <article><span>21.08</span><strong>Fachliche Freigabeentscheidung</strong><p>Formelle Entscheidung, Verantwortlichkeiten, Korrekturmassnahmen, Termine und Nachtests in einem Freigabeprotokoll dokumentieren.</p></article>
           <article><span>21.07</span><strong>Fachtest-Runde und Freigabeauswertung</strong><p>Mehrere JSON-Protokolle importieren, Auffälligkeiten bündeln, Prioritäten bilden und Freigabeentscheidung vorbereiten.</p></article>
           <article><span>21.06a</span><strong>Farbwelt der Hauptseite</strong><p>Dunkelblauer Kopfbereich, Blau-/Violett-Verläufe, Cyan-Akzente und helle Arbeitskarten exakt an die bereitgestellte Hauptseite angepasst. Logo, „Druckverlust Pro“ und „Professional“ bleiben erhalten.</p></article>
           <article><span>21.06</span><strong>Einheitliches Oberflächendesign</strong><p>Berechnungstool optisch an die Produktseite angeglichen: helle Glas-Navigation, schwebende Karten, konsistente Buttons, Tabellen und Eingabefelder. Markenblock bleibt erhalten.</p></article>
@@ -388,6 +419,18 @@ export default class WorkspaceComponent {
 
         if (action === 'feedback-round') {
           this.state.setSelection?.('expertFeedbackRound', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'release-decision') {
+          this.state.setSelection?.('expertReleaseDecision', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'beta-release') {
+          this.state.setSelection?.('betaReleaseReadiness', {});
           this.state.notify?.();
           return;
         }
@@ -5491,6 +5534,8 @@ export default class WorkspaceComponent {
           <button type="button" data-calculation-detail-action="practice">Praxisprojekt-QS</button>
           <button type="button" data-calculation-detail-action="expert">Fachtest-Protokoll</button>
           <button type="button" data-calculation-detail-action="feedback-round">Fachtest-Auswertung</button>
+          <button type="button" data-calculation-detail-action="release-decision">Freigabeentscheidung</button>
+          <button type="button" data-calculation-detail-action="beta-release">Beta-Freigabestand</button>
           <button type="button" data-calculation-detail-action="system">Zur Anlage</button>
         </div>
       </div>
@@ -5616,6 +5661,18 @@ export default class WorkspaceComponent {
 
         if (action === 'feedback-round') {
           this.state.setSelection?.('expertFeedbackRound', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'release-decision') {
+          this.state.setSelection?.('expertReleaseDecision', {});
+          this.state.notify?.();
+          return;
+        }
+
+        if (action === 'beta-release') {
+          this.state.setSelection?.('betaReleaseReadiness', {});
           this.state.notify?.();
           return;
         }
@@ -6032,6 +6089,7 @@ export default class WorkspaceComponent {
           <button type="button" data-feedback-action="current">Aktuelles Protokoll übernehmen</button>
           <button type="button" data-feedback-action="copy">Auswertung kopieren</button>
           <button type="button" data-feedback-action="csv">CSV herunterladen</button>
+          <button type="button" data-feedback-action="decision">Freigabe dokumentieren</button>
           <button type="button" data-feedback-action="expert">Zum Fachtest-Protokoll</button>
         </div>
       </div>
@@ -6187,6 +6245,11 @@ export default class WorkspaceComponent {
           this.state.notify?.();
           return;
         }
+        if (action === 'decision') {
+          this.state.setSelection?.('expertReleaseDecision', { round });
+          this.state.notify?.();
+          return;
+        }
         if (action === 'copy') {
           const text = formatFeedbackRound(round);
           try {
@@ -6201,6 +6264,491 @@ export default class WorkspaceComponent {
         }
         if (action === 'csv') {
           downloadText(createFeedbackRoundFilename('csv'), `\ufeff${createFeedbackRoundCsv(round)}`, 'text/csv;charset=utf-8');
+        }
+      });
+    });
+  }
+
+  loadExpertReleaseDecision() {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      return deserializeReleaseDecision(localStorage.getItem(RELEASE_DECISION_STORAGE_KEY) || '');
+    } catch {
+      return null;
+    }
+  }
+
+  saveExpertReleaseDecision(draft = null) {
+    this.expertReleaseDecision = draft || null;
+    if (typeof localStorage === 'undefined') return;
+    try {
+      if (!draft) localStorage.removeItem(RELEASE_DECISION_STORAGE_KEY);
+      else localStorage.setItem(RELEASE_DECISION_STORAGE_KEY, serializeReleaseDecision(draft));
+    } catch (error) {
+      console.warn('Freigabeentscheidung konnte nicht lokal gespeichert werden:', error);
+    }
+  }
+
+  collectExpertReleaseDecisionDraft(fallback = null) {
+    const base = fallback || this.expertReleaseDecision || createReleaseDecisionDraft(createFeedbackRound(this.expertFeedbackEntries || []), {}, APP_VERSION);
+    const next = JSON.parse(JSON.stringify(base));
+
+    this.root.querySelectorAll('[data-release-field]').forEach(input => {
+      next[input.dataset.releaseField] = input.value;
+    });
+
+    this.root.querySelectorAll('[data-release-action-id][data-release-action-field]').forEach(input => {
+      const action = next.actions.find(item => item.id === input.dataset.releaseActionId);
+      if (action) action[input.dataset.releaseActionField] = input.value;
+    });
+
+    next.updatedAt = new Date().toISOString();
+    return summarizeReleaseDecision(next).draft;
+  }
+
+  renderExpertReleaseDecision(context = null) {
+    const round = context?.round?.checks ? context.round : createFeedbackRound(this.expertFeedbackEntries || []);
+    const existing = context?.reset ? {} : (this.expertReleaseDecision || {});
+    const draft = createReleaseDecisionDraft(round, existing, APP_VERSION);
+    const validation = validateReleaseDecisionDraft(draft);
+    const summary = validation.summary;
+    const suggestedLabel = RELEASE_DECISION_OPTIONS.find(item => item.id === draft.suggestedDecision)?.label || 'Entscheidung offen';
+
+    this.saveExpertReleaseDecision(draft);
+
+    const decisionOptions = RELEASE_DECISION_OPTIONS.map(option => `
+      <option value="${this.escapeAttribute(option.id)}" ${draft.decision === option.id ? 'selected' : ''}>${this.escapeHtml(option.label)}</option>
+    `).join('');
+    const statusOptions = value => RELEASE_ACTION_STATUS_OPTIONS.map(option => `
+      <option value="${this.escapeAttribute(option.id)}" ${value === option.id ? 'selected' : ''}>${this.escapeHtml(option.label)}</option>
+    `).join('');
+    const retestOptions = value => RELEASE_RETEST_STATUS_OPTIONS.map(option => `
+      <option value="${this.escapeAttribute(option.id)}" ${value === option.id ? 'selected' : ''}>${this.escapeHtml(option.label)}</option>
+    `).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-release-decision-header">
+        <div>
+          <span class="dp-overline">Phase 21.08 · Fachliche Freigabe</span>
+          <h1>Freigabeentscheidung dokumentieren</h1>
+          <p>Fachtest-Auswertung, formelle Entscheidung, Verantwortlichkeiten, Korrekturen und Nachtests werden in einem nachvollziehbaren Protokoll zusammengeführt.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-release-action="refresh">Aus Fachtest aktualisieren</button>
+          <button type="button" data-release-action="suggestion">Vorschlag übernehmen</button>
+          <button type="button" data-release-action="copy">Protokoll kopieren</button>
+          <button type="button" data-release-action="json">JSON herunterladen</button>
+          <button type="button" data-release-action="csv">CSV herunterladen</button>
+          <button type="button" data-release-action="round">Zur Fachtest-Auswertung</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-release-decision-summary is-${this.escapeAttribute(summary.status)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Freigabestatus</span>
+            <h2>${this.escapeHtml(summary.label)}</h2>
+            <p>${this.escapeHtml(summary.recommendation)}</p>
+          </div>
+          <span class="dp-audit-badge">${this.escapeHtml(draft.roundSnapshot.reports || 0)} Rückmeldungen</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Massnahmen</span><strong>${this.escapeHtml(summary.counts.total)}</strong></div>
+          <div><span>Offen / in Arbeit</span><strong>${this.escapeHtml(summary.counts.open + summary.counts.inProgress)}</strong></div>
+          <div><span>Kritisch offen</span><strong>${this.escapeHtml(summary.counts.criticalOpen)}</strong></div>
+          <div><span>Nachtests offen</span><strong>${this.escapeHtml(summary.counts.retestOpen)}</strong></div>
+        </div>
+        <div class="dp-release-suggestion">
+          <span>Automatischer Vorschlag aus der Fachtest-Runde</span>
+          <strong>${this.escapeHtml(suggestedLabel)}</strong>
+          <small>${this.escapeHtml(draft.roundSnapshot.label || 'Noch keine Fachtest-Auswertung vorhanden.')}</small>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-release-decision-form">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Formelle Entscheidung</span><h2>Freigabevermerk</h2></div>
+          <span class="${validation.complete ? 'dp-status-ok' : 'dp-status-warning'}">${validation.complete ? 'Freigabeprotokoll vollständig' : 'Angaben prüfen'}</span>
+        </div>
+        <div class="dp-release-form-grid">
+          <label><span>Entscheidung</span><select data-release-field="decision">${decisionOptions}</select></label>
+          <label><span>Freigegeben durch</span><input type="text" data-release-field="decidedBy" value="${this.escapeAttribute(draft.decidedBy)}" placeholder="Name / Funktion"></label>
+          <label><span>Freigabedatum</span><input type="date" data-release-field="decisionDate" value="${this.escapeAttribute(draft.decisionDate)}"></label>
+          <label><span>Zielversion</span><input type="text" data-release-field="targetVersion" value="${this.escapeAttribute(draft.targetVersion)}" placeholder="z. B. 1.3.8"></label>
+          <label class="dp-release-form-wide"><span>Freigabevermerk / Bedingungen</span><textarea data-release-field="releaseNote" rows="3" placeholder="Begründung, Bedingungen oder Abgrenzungen festhalten …">${this.escapeHtml(draft.releaseNote)}</textarea></label>
+        </div>
+        ${(validation.errors.length || validation.warnings.length) ? `
+          <div class="dp-release-validation">
+            ${validation.errors.map(item => `<p class="is-error"><strong>Fehler:</strong> ${this.escapeHtml(item)}</p>`).join('')}
+            ${validation.warnings.map(item => `<p class="is-warning"><strong>Hinweis:</strong> ${this.escapeHtml(item)}</p>`).join('')}
+          </div>
+        ` : '<div class="dp-release-validation"><p class="is-ok"><strong>OK:</strong> Freigabeentscheidung und Massnahmenplan sind vollständig dokumentiert.</p></div>'}
+      </section>
+
+      <section class="dp-result-panel dp-release-actions-panel">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Korrektur- und Nachtestplan</span><h2>Gezielte Massnahmen</h2></div>
+          <button type="button" class="dp-button-danger" data-release-action="reset">Freigabeprotokoll zurücksetzen</button>
+        </div>
+        ${draft.actions.length ? `<div class="dp-release-action-list">
+          ${draft.actions.map((item, index) => `
+            <article class="dp-release-action is-${this.escapeAttribute(item.severity)}">
+              <div class="dp-release-action-heading">
+                <span class="dp-release-severity">${this.escapeHtml(item.severityLabel)}</span>
+                <div><small>${this.escapeHtml(item.area)}</small><h3>${index + 1}. ${this.escapeHtml(item.title)}</h3></div>
+                <div class="dp-feedback-counts">
+                  <span>Auffällig ${this.escapeHtml(item.counts.notice)}</span>
+                  <span>Fehler ${this.escapeHtml(item.counts.error)}</span>
+                  <span>Offen ${this.escapeHtml(item.counts.notTested)}</span>
+                </div>
+              </div>
+              ${item.sourceNotes.length ? `<ul class="dp-release-source-notes">${item.sourceNotes.map(note => `<li><strong>${this.escapeHtml(note.tester || 'Fachtest')}:</strong> ${this.escapeHtml(note.note || '')}</li>`).join('')}</ul>` : ''}
+              <div class="dp-release-action-grid">
+                <label><span>Status</span><select data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="status">${statusOptions(item.status)}</select></label>
+                <label><span>Verantwortlich</span><input type="text" data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="owner" value="${this.escapeAttribute(item.owner)}" placeholder="Name / Rolle"></label>
+                <label><span>Termin</span><input type="date" data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="dueDate" value="${this.escapeAttribute(item.dueDate)}"></label>
+                <label><span>Nachtest</span><select data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="retestStatus">${retestOptions(item.retestStatus)}</select></label>
+                <label class="dp-release-action-wide"><span>Korrektur / Massnahme</span><textarea rows="2" data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="correction" placeholder="Was wird konkret angepasst?">${this.escapeHtml(item.correction)}</textarea></label>
+                <label class="dp-release-action-wide"><span>Nachtest-Nachweis</span><textarea rows="2" data-release-action-id="${this.escapeAttribute(item.id)}" data-release-action-field="retestNote" placeholder="Ergebnis, Prüfer oder Verweis auf Nachweis …">${this.escapeHtml(item.retestNote)}</textarea></label>
+              </div>
+            </article>
+          `).join('')}
+        </div>` : `
+          <div class="dp-feedback-empty">
+            <strong>Keine Korrekturmassnahmen aus der Fachtest-Runde.</strong>
+            <span>Bei vollständig bestandener Fachtest-Runde kann die formelle Freigabe direkt dokumentiert werden.</span>
+          </div>
+        `}
+      </section>
+    `;
+
+    this.bindExpertReleaseDecision(draft, round);
+  }
+
+  bindExpertReleaseDecision(draft, round) {
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const persist = (rerender = false) => {
+      const next = this.collectExpertReleaseDecisionDraft(draft);
+      this.saveExpertReleaseDecision(next);
+      if (rerender) {
+        this.state.setSelection?.('expertReleaseDecision', { round });
+        this.state.notify?.();
+      }
+      return next;
+    };
+
+    this.root.querySelectorAll('[data-release-field], [data-release-action-id][data-release-action-field]').forEach(input => {
+      input.addEventListener('input', () => persist(false));
+      input.addEventListener('change', () => persist(true));
+    });
+
+    this.root.querySelectorAll('[data-release-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.releaseAction;
+        if (action === 'round') {
+          this.state.setSelection?.('expertFeedbackRound', {});
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'refresh') {
+          const current = persist(false);
+          const refreshed = createReleaseDecisionDraft(createFeedbackRound(this.expertFeedbackEntries || []), current, APP_VERSION);
+          this.saveExpertReleaseDecision(refreshed);
+          this.state.setSelection?.('expertReleaseDecision', { round: createFeedbackRound(this.expertFeedbackEntries || []) });
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'suggestion') {
+          const current = persist(false);
+          current.decision = current.suggestedDecision;
+          if (current.decision !== 'pending' && !current.decisionDate) current.decisionDate = new Date().toISOString().slice(0, 10);
+          this.saveExpertReleaseDecision(current);
+          this.state.setSelection?.('expertReleaseDecision', { round });
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'reset') {
+          if (!confirm('Freigabeentscheidung, Verantwortlichkeiten und Massnahmenstatus wirklich zurücksetzen?')) return;
+          const reset = createReleaseDecisionDraft(createFeedbackRound(this.expertFeedbackEntries || []), {}, APP_VERSION);
+          this.saveExpertReleaseDecision(reset);
+          this.state.setSelection?.('expertReleaseDecision', { round: createFeedbackRound(this.expertFeedbackEntries || []) });
+          this.state.notify?.();
+          return;
+        }
+
+        const current = persist(false);
+        if (action === 'copy') {
+          const text = formatReleaseDecision(current);
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+        if (action === 'json') {
+          downloadText(createReleaseDecisionFilename('json'), serializeReleaseDecision(current), 'application/json;charset=utf-8');
+          return;
+        }
+        if (action === 'csv') {
+          downloadText(createReleaseDecisionFilename('csv'), `\ufeff${createReleaseDecisionCsv(current)}`, 'text/csv;charset=utf-8');
+        }
+      });
+    });
+  }
+
+  loadBetaReleaseDraft() {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(BETA_RELEASE_STORAGE_KEY);
+      return raw ? createBetaReleaseDraft(JSON.parse(raw)) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  saveBetaReleaseDraft(draft = null) {
+    this.betaReleaseDraft = draft || null;
+    if (typeof localStorage === 'undefined') return;
+    try {
+      if (!draft) localStorage.removeItem(BETA_RELEASE_STORAGE_KEY);
+      else localStorage.setItem(BETA_RELEASE_STORAGE_KEY, JSON.stringify(draft));
+    } catch (error) {
+      console.warn('Beta-Freigabestand konnte nicht lokal gespeichert werden:', error);
+    }
+  }
+
+  collectBetaReleaseDraft(fallback = null) {
+    const round = createFeedbackRound(this.expertFeedbackEntries || []);
+    const releaseDecision = this.expertReleaseDecision || createReleaseDecisionDraft(round, {}, APP_VERSION);
+    const base = fallback || this.betaReleaseDraft || createBetaReleaseDraft({}, {
+      feedbackRound: round,
+      releaseDecision,
+      targetVersion: APP_VERSION,
+      publicUrl: typeof window !== 'undefined' ? new URL('./', window.location.href).href : '',
+    });
+    const next = JSON.parse(JSON.stringify(base));
+
+    this.root.querySelectorAll('[data-beta-field]').forEach(input => {
+      next[input.dataset.betaField] = input.value;
+    });
+    this.root.querySelectorAll('[data-beta-check]').forEach(input => {
+      next.checklist[input.dataset.betaCheck] = Boolean(input.checked);
+    });
+    next.updatedAt = new Date().toISOString();
+    return createBetaReleaseDraft(next, {
+      feedbackRound: round,
+      releaseDecision,
+      targetVersion: APP_VERSION,
+      publicUrl: next.publicUrl,
+    });
+  }
+
+  renderBetaReleaseReadiness(context = null) {
+    const round = createFeedbackRound(this.expertFeedbackEntries || []);
+    const releaseDecision = this.expertReleaseDecision || createReleaseDecisionDraft(round, {}, APP_VERSION);
+    const existing = context?.reset ? {} : (this.betaReleaseDraft || {});
+    const defaultPublicUrl = typeof window !== 'undefined' ? new URL('./', window.location.href).href : '';
+    const draft = createBetaReleaseDraft(existing, {
+      feedbackRound: round,
+      releaseDecision,
+      targetVersion: APP_VERSION,
+      publicUrl: defaultPublicUrl,
+    });
+    const result = summarizeBetaRelease(draft, { feedbackRound: round, releaseDecision });
+    this.saveBetaReleaseDraft(result.draft);
+
+    const checklistHtml = result.checklist.items.map(item => `
+      <label class="dp-beta-check ${item.checked ? 'is-checked' : 'is-open'}">
+        <input type="checkbox" data-beta-check="${this.escapeAttribute(item.id)}" ${item.checked ? 'checked' : ''}>
+        <span><strong>${this.escapeHtml(item.label)}</strong><small>${item.required ? 'Pflichtpunkt' : 'Optional'}</small></span>
+      </label>
+    `).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-beta-header">
+        <div>
+          <span class="dp-overline">Phase 21.09 · Öffentliche Testversion</span>
+          <h1>Beta-Freigabestand</h1>
+          <p>Automatische Tests, reale Fachtest-Rückmeldungen, Freigabeentscheidung und Deployment-Checkliste werden hier zu einem nachvollziehbaren Beta-Stand zusammengeführt.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-beta-action="refresh">Stand aktualisieren</button>
+          <button type="button" data-beta-action="copy">Protokoll kopieren</button>
+          <button type="button" data-beta-action="json">JSON herunterladen</button>
+          <button type="button" data-beta-action="csv">CSV herunterladen</button>
+          <button type="button" data-beta-action="page">Öffentliche Beta-Seite</button>
+          <button type="button" data-beta-action="release">Freigabeentscheidung</button>
+        </div>
+      </div>
+
+      <section class="dp-result-panel dp-beta-summary is-${this.escapeAttribute(result.status)}">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Konsolidierter Status</span><h2>${this.escapeHtml(result.label)}</h2><p>${this.escapeHtml(result.recommendation)}</p></div>
+          <span class="dp-audit-badge">Version ${this.escapeHtml(draft.targetVersion || APP_VERSION)}</span>
+        </div>
+        <div class="dp-project-check-stats">
+          <div><span>Prüfserien</span><strong>${this.escapeHtml(draft.automated.passedSuites)}/${this.escapeHtml(draft.automated.suites)}</strong></div>
+          <div><span>Einzelprüfungen</span><strong>${this.escapeHtml(draft.automated.passedChecks)}/${this.escapeHtml(draft.automated.documentedChecks)}</strong></div>
+          <div><span>Fachtest-Berichte</span><strong>${this.escapeHtml(draft.feedbackSnapshot.reports)}</strong></div>
+          <div><span>Beta-Checkliste</span><strong>${this.escapeHtml(result.checklist.checked)}/${this.escapeHtml(result.checklist.total)}</strong></div>
+        </div>
+      </section>
+
+      <section class="dp-beta-grid">
+        <article class="dp-result-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Automatische Absicherung</span><h2>Teststand</h2></div><span class="dp-status-ok">bestanden</span></div>
+          <div class="dp-beta-metrics">
+            <div><span>Prüfserien</span><strong>${this.escapeHtml(draft.automated.passedSuites)}/${this.escapeHtml(draft.automated.suites)}</strong></div>
+            <div><span>Dokumentierte Prüfungen</span><strong>${this.escapeHtml(draft.automated.passedChecks)}/${this.escapeHtml(draft.automated.documentedChecks)}</strong></div>
+            <div><span>Strukturprüfungen</span><strong>${this.escapeHtml(draft.automated.structureChecks)}</strong></div>
+          </div>
+          <p class="dp-beta-note">Enthalten sind Rechenkern, Formteilbibliothek, Anschluss-Sync, Handrechnungen, Grossprojekt, Fachtest-Runde und Freigabeentscheidung.</p>
+        </article>
+
+        <article class="dp-result-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Fachliche Entscheidung</span><h2>${this.escapeHtml(draft.releaseSnapshot.label || 'Entscheidung offen')}</h2></div></div>
+          <div class="dp-beta-metrics">
+            <div><span>Rückmeldungen</span><strong>${this.escapeHtml(draft.feedbackSnapshot.reports)}</strong></div>
+            <div><span>Offene Massnahmen</span><strong>${this.escapeHtml(draft.releaseSnapshot.openActions)}</strong></div>
+            <div><span>Offene Nachtests</span><strong>${this.escapeHtml(draft.releaseSnapshot.retestOpen)}</strong></div>
+          </div>
+          <p class="dp-beta-note">Freigegeben durch: ${this.escapeHtml(draft.releaseSnapshot.decidedBy || '-')} · Datum: ${this.escapeHtml(draft.releaseSnapshot.decisionDate || '-')}</p>
+        </article>
+      </section>
+
+      <section class="dp-result-panel dp-beta-form">
+        <div class="dp-panel-header"><div><span class="dp-overline">Beta-Kennzeichnung</span><h2>Öffentlichen Teststand dokumentieren</h2></div></div>
+        <div class="dp-beta-form-grid">
+          <label><span>Verantwortlich</span><input type="text" data-beta-field="owner" value="${this.escapeAttribute(draft.owner)}" placeholder="Name / Funktion"></label>
+          <label><span>Beta-Datum</span><input type="date" data-beta-field="betaDate" value="${this.escapeAttribute(draft.betaDate)}"></label>
+          <label><span>Zielversion</span><input type="text" data-beta-field="targetVersion" value="${this.escapeAttribute(draft.targetVersion)}"></label>
+          <label class="dp-beta-wide"><span>Öffentliche Testadresse</span><input type="url" data-beta-field="publicUrl" value="${this.escapeAttribute(draft.publicUrl)}" placeholder="https://..."></label>
+          <label class="dp-beta-wide"><span>Beta-/Freigabehinweis</span><textarea rows="3" data-beta-field="releaseNotes" placeholder="Zweck, Zielgruppe und Abgrenzung des Teststands …">${this.escapeHtml(draft.releaseNotes)}</textarea></label>
+          <label class="dp-beta-wide"><span>Bekannte Grenzen</span><textarea rows="4" data-beta-field="knownLimitations">${this.escapeHtml(draft.knownLimitations)}</textarea></label>
+        </div>
+      </section>
+
+      <section class="dp-result-panel dp-beta-checklist-panel">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Deployment / Veröffentlichung</span><h2>Beta-Checkliste</h2></div>
+          <button type="button" class="dp-button-danger" data-beta-action="reset">Beta-Protokoll zurücksetzen</button>
+        </div>
+        <div class="dp-beta-checklist">${checklistHtml}</div>
+      </section>
+
+      ${(result.errors.length || result.warnings.length) ? `
+        <section class="dp-result-panel dp-beta-open-items">
+          <div class="dp-panel-header"><div><span class="dp-overline">Offene Punkte</span><h2>Vor Veröffentlichung prüfen</h2></div></div>
+          ${result.errors.map(item => `<p class="is-error"><strong>Blockiert:</strong> ${this.escapeHtml(item)}</p>`).join('')}
+          ${result.warnings.map(item => `<p class="is-warning"><strong>Offen:</strong> ${this.escapeHtml(item)}</p>`).join('')}
+        </section>
+      ` : `
+        <section class="dp-result-panel dp-beta-open-items"><p class="is-ok"><strong>OK:</strong> Alle dokumentierten Voraussetzungen für den öffentlichen Beta-Stand sind erfüllt.</p></section>
+      `}
+    `;
+
+    this.bindBetaReleaseReadiness(result.draft, round, releaseDecision);
+  }
+
+  bindBetaReleaseReadiness(draft, round, releaseDecision) {
+    const downloadText = (filename, content, type) => {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const persist = (rerender = false) => {
+      const next = this.collectBetaReleaseDraft(draft);
+      this.saveBetaReleaseDraft(next);
+      if (rerender) {
+        this.state.setSelection?.('betaReleaseReadiness', {});
+        this.state.notify?.();
+      }
+      return next;
+    };
+
+    this.root.querySelectorAll('[data-beta-field]').forEach(input => {
+      input.addEventListener('input', () => persist(false));
+      input.addEventListener('change', () => persist(true));
+    });
+    this.root.querySelectorAll('[data-beta-check]').forEach(input => {
+      input.addEventListener('change', () => persist(true));
+    });
+
+    this.root.querySelectorAll('[data-beta-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.betaAction;
+        if (action === 'release') {
+          persist(false);
+          this.state.setSelection?.('expertReleaseDecision', { round });
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'page') {
+          window.open('beta.html', '_blank', 'noopener');
+          return;
+        }
+        if (action === 'refresh') {
+          const current = persist(false);
+          const refreshed = createBetaReleaseDraft(current, {
+            feedbackRound: createFeedbackRound(this.expertFeedbackEntries || []),
+            releaseDecision: this.expertReleaseDecision || releaseDecision,
+            targetVersion: APP_VERSION,
+            publicUrl: current.publicUrl,
+          });
+          this.saveBetaReleaseDraft(refreshed);
+          this.state.setSelection?.('betaReleaseReadiness', {});
+          this.state.notify?.();
+          return;
+        }
+        if (action === 'reset') {
+          if (!confirm('Beta-Kennzeichnung und Checkliste wirklich zurücksetzen?')) return;
+          this.saveBetaReleaseDraft(null);
+          this.state.setSelection?.('betaReleaseReadiness', { reset: true });
+          this.state.notify?.();
+          return;
+        }
+
+        const current = persist(false);
+        if (action === 'copy') {
+          const text = formatBetaRelease(current, { feedbackRound: round, releaseDecision });
+          try {
+            await navigator.clipboard.writeText(text);
+            const original = button.textContent;
+            button.textContent = 'Protokoll kopiert ✓';
+            setTimeout(() => { button.textContent = original; }, 1400);
+          } catch {
+            alert(text);
+          }
+          return;
+        }
+        if (action === 'json') {
+          downloadText(createBetaReleaseFilename('json'), serializeBetaRelease(current, { feedbackRound: round, releaseDecision }), 'application/json;charset=utf-8');
+          return;
+        }
+        if (action === 'csv') {
+          downloadText(createBetaReleaseFilename('csv'), `\ufeff${createBetaReleaseCsv(current, { feedbackRound: round, releaseDecision })}`, 'text/csv;charset=utf-8');
         }
       });
     });
