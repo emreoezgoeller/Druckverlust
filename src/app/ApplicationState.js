@@ -54,10 +54,12 @@ export default class ApplicationState {
   }
 
   setSelection(type, data = null) {
+    const resolvedData = type === 'project' ? this.project : data;
+
     this.selection = {
       type,
-      id: data?.id || null,
-      data
+      id: resolvedData?.id || null,
+      data: resolvedData
     };
   }
 

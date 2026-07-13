@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import ExpertTestDiagnostics from '../src/diagnostics/ExpertTestDiagnostics.js';
+import { APP_RELEASE } from '../src/core/appVersion.js';
 import {
   EXPERT_TEST_CHECKS,
   createExpertTestCsv,
@@ -50,7 +51,7 @@ assert.equal(report.status, 'ready', 'Vollständiger Fachtest mit bestandenem Vo
 assert.match(formatExpertTestProtocol(completed, mockAutomated), /Fachtester-Protokoll/);
 assert.match(formatExpertTestProtocol(completed, mockAutomated), /Automatischer Vorabcheck/);
 assert.match(createExpertTestCsv(completed, mockAutomated), /Prüfpunkt/);
-assert.match(createExpertTestFilename(completed, 'txt'), /^Druckverlust-Pro_21\.05_Fachtester_2026-07-11\.txt$/);
+assert.equal(createExpertTestFilename(completed, 'txt'), `Druckverlust-Pro_${APP_RELEASE}_Fachtester_2026-07-11.txt`);
 
 const blocked = createExpertTestDraft({
   ...completed,
@@ -59,7 +60,7 @@ const blocked = createExpertTestDraft({
 });
 assert.equal(ExpertTestDiagnostics.create(blocked, mockAutomated).status, 'blocked', 'Manueller Fehler muss Fachtest blockieren.');
 
-console.log('Druckverlust Pro – Fachtester-Protokoll Phase 21.05');
+console.log(`Druckverlust Pro – Fachtester-Protokoll ${APP_RELEASE}`);
 console.log(`✓ ${EXPERT_TEST_CHECKS.length} strukturierte manuelle Prüfpunkte`);
 console.log('✓ Fortschritt, Validierung, Text-, CSV- und Dateinamenausgabe');
 console.log('✓ Freigabe- und Blockierstatus korrekt');

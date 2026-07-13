@@ -12,11 +12,11 @@
 <main class="wrap">
   <h1>Formteil-QS – Phase 21.01</h1>
   <p>Feste Excel-Referenzpunkte und Strukturprüfung der Formteilbibliothek.</p>
-  <button id="run">Tests erneut ausführen</button>
+  <button id="run" type="button">Tests erneut ausführen</button>
   <div id="result"></div>
 </main>
 <script type="module">
-  import { runFormPartValidation } from '../src/testing/FormPartValidationRunner.js?v=21.04';
+  import { runFormPartValidation } from '../src/testing/FormPartValidationRunner.js?v=21.11';
   const root = document.querySelector('#result');
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   function render(){

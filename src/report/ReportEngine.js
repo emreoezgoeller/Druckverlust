@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.10';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.11';
 import LicenseGate from '../licensing/LicenseGate.js';
 
 // Druckverlust Pro – ReportEngine
@@ -798,7 +798,10 @@ export class ReportEngine {
     const csvFileName = createCsvFileName(fileBaseName);
     const printGuidance = this.createPrintGuidance(model, pdfFileName);
     const splitTotal = toNumber(model.totals?.friction) + toNumber(model.totals?.formParts) + toNumber(model.totals?.special);
-    const totalDifference = Math.abs(splitTotal - toNumber(model.totals?.total));
+    const comparisonTotal = Number.isFinite(Number(model.totals?.rawTotal))
+      ? toNumber(model.totals.rawTotal)
+      : toNumber(model.totals?.total);
+    const totalDifference = Math.abs(splitTotal - comparisonTotal);
     const hasLossBreakdown = hasCalculatedTotal && Number.isFinite(splitTotal) && totalDifference <= 0.1;
     const exportNotice = model.exportNotice || LicenseGate.createExportNotice();
 
