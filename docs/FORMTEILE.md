@@ -67,7 +67,7 @@ Eingabewerte → ζ aus Excel → ζ aus Web-App → bestanden/nicht bestanden
 
 ## Sprint 16.3 – Korrektur Bild, Excel-Hinweis und Live-Ergebnis
 
-- Formteilbilder liegen unter `assets/formteile/<formteil-id>/<datei>.png`.
+- Formteilbilder liegen kanonisch unter `assets/formteile/<formteil-id>.png`; die zugehörigen Excel-Referenzen liegen unter `assets/formteile/<formteil-id>.xlsx`.
 - Der Workspace versucht mehrere Bildpfade, damit alte und neue Ablagestrukturen funktionieren.
 - Der Excel-Hinweis zeigt dem Benutzer nur noch eine verständliche Referenzinformation. Der technische Dateipfad bleibt intern.
 - Beim Öffnen eines Formteils wird eine fehlende oder ungültige Teilstreckenzuordnung automatisch auf die erste vorhandene Teilstrecke gesetzt.

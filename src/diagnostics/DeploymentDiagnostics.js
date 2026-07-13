@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_RELEASE } from '../core/appVersion.js?v=21.11';
+import { APP_RELEASE } from '../core/appVersion.js?v=21.12';
 
 const DEFAULT_VERSION = APP_RELEASE;
 
@@ -95,7 +95,7 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
   return [
     { area: 'Start', label: 'Hauptmodul', path: `src/main.js?v=${version}` },
     { area: 'Layout', label: 'Shell-CSS', path: `src/ui/ApplicationShell.css?v=${version}` },
-    { area: 'Berechnung', label: 'Kompatibilitäts-Engine', path: `src/calculation/engine.js?v=${version}` },
+    { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
     { area: 'QS', label: 'Deployment-Diagnose', path: `src/diagnostics/DeploymentDiagnostics.js?v=${version}` },
@@ -145,7 +145,6 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Lizenz', label: 'Lizenz-Konfiguration', path: `src/licensing/licenseConfig.js?v=${version}` },
     { area: 'Lizenz', label: 'License-Gate', path: `src/licensing/LicenseGate.js?v=${version}` },
     { area: 'Bericht', label: 'Bericht-Engine', path: `src/report/ReportEngine.js?v=${version}` },
-    { area: 'PDF', label: 'PDF-Export', path: `src/pdf/report.js?v=${version}` },
     { area: 'Logo', label: 'EO-Logo', path: 'assets/logo/eo-logo.png' },
     { area: 'Bericht', label: 'Bericht-Hero', path: 'assets/report/duct-network-hero.png' },
     { area: 'Formteile', label: 'Übergang gross/klein', path: 'assets/formteile/uebergang_gross_klein.png' },

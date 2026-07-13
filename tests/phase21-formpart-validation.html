@@ -16,7 +16,7 @@
   <div id="result"></div>
 </main>
 <script type="module">
-  import { runFormPartValidation } from '../src/testing/FormPartValidationRunner.js?v=21.11';
+  import { runFormPartValidation } from '../src/testing/FormPartValidationRunner.js?v=21.12';
   const root = document.querySelector('#result');
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   function render(){

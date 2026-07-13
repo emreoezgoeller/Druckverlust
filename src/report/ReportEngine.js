@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.11';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.12';
 import LicenseGate from '../licensing/LicenseGate.js';
 
 // Druckverlust Pro – ReportEngine
@@ -722,14 +722,8 @@ export class ReportEngine {
 
     add(registryEntry?.image);
     (registryEntry?.imageFallbacks || []).forEach(add);
-    if (registryEntry?.id) {
-      add(`assets/formteile/${registryEntry.id}/${registryEntry.id}.png`);
-      add(`assets/formteile/${registryEntry.id}.png`);
-    }
-    if (formPart?.type) {
-      add(`assets/formteile/${formPart.type}/${formPart.type}.png`);
-      add(`assets/formteile/${formPart.type}.png`);
-    }
+    if (registryEntry?.id) add(`assets/formteile/${registryEntry.id}.png`);
+    if (formPart?.type) add(`assets/formteile/${formPart.type}.png`);
 
     return toAbsoluteAssetUrl(candidates[0] || '');
   }

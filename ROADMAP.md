@@ -54,6 +54,7 @@
 - Phase 21.09: Öffentliche Beta-Testversion und konsolidierten Beta-Freigabestand vorbereitet
 - Phase 21.10: Strukturiertes Beta-Feedback und lokalen Export ergänzt
 - Phase 21.11: Beta-Rückmeldungen importiert, priorisiert und als lokale Fehlerliste verwaltbar gemacht
+- Phase 21.12: Gesamtprojekt bereinigt, Altlasten entfernt und aktive Struktur konsolidiert
 
 ## Nächste sinnvolle Schritte
 

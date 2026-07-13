@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## Phase 21.12 – Projektbereinigung und konsolidierter Gesamtstand
+
+- Git-Verlaufsdaten und lokale Repository-Metadaten aus der auslieferbaren Projekt-ZIP entfernt.
+- Alte Änderungslisten, historische Sprint-Einzeldokumente und das frühere Cleanup-Skript entfernt.
+- Nicht mehr importierte Komponenten, frühere Kompatibilitäts-Rechen-/Berichtsmodule und ungenutztes CSS entfernt.
+- Doppelte Formteilbilder und Excel-Dateien auf eine kanonische flache Ablage unter `assets/formteile/` reduziert.
+- Nicht mehr verwendete Alias-Bilder und die doppelte Logo-Datei entfernt.
+- Historische und unreferenzierte Tests entfernt; aktive Browser- und Node-Testreihen vollständig beibehalten.
+- Deployment-Diagnose auf den aktiven Rechenkern `src/core/CalculationEngine.js` und die aktuelle Bericht-Engine ausgerichtet.
+- Bildpfade in Registry, Arbeitsbereich und Bericht auf die kanonische Asset-Struktur konsolidiert.
+- README und Architekturdokumentation auf den tatsächlichen Projektstand neu aufgebaut.
+- Cache-Version auf 21.12 und App-Version auf 1.3.12 erhöht.
+
 ## Phase 21.11 – Beta-Feedback-Auswertung und Fehlerliste
 
 - Mehrere JSON-Rückmeldungen aus dem Beta-Feedback können gemeinsam importiert werden.

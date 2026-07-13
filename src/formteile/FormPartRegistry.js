@@ -68,8 +68,6 @@ function formPartImageSources(id, fileName = `${id}.png`, extra = []) {
   return imageSources([
     `assets/formteile/${fileName}`,
     `assets/formteile/${id}.png`,
-    `assets/formteile/${id}/${fileName}`,
-    `assets/formteile/${id}/${id}.png`,
     ...extra,
   ]);
 }
@@ -1024,10 +1022,7 @@ export const defaultFormParts = [
     category: 'Übergänge',
     name: 'Übergang gross → klein',
     image: formPartImage('uebergang_gross_klein'),
-    imageFallbacks: formPartImageSources('uebergang_gross_klein', 'uebergang_klein.png', [
-      'assets/formteile/uebergang_klein.png',
-      'assets/formteile/uebergang_gross_klein.png',
-    ]),
+    imageFallbacks: formPartImageSources('uebergang_gross_klein'),
     referenceFile: formPartExcel('uebergang_gross_klein'),
     keywords: ['übergang', 'gross', 'klein', 'reduzierung', 'kanal', 'rohr', 'kanalkante'],
     description: 'Übergang von grossem auf kleinen Querschnitt. A1/A2 wird automatisch aus Kanal-/Rohrgrössen berechnet. Winkel β und Kanalkante werden gemeinsam berücksichtigt.',
@@ -1093,10 +1088,7 @@ export const defaultFormParts = [
     category: 'Übergänge',
     name: 'Übergang klein → gross',
     image: formPartImage('uebergang_klein_gross'),
-    imageFallbacks: formPartImageSources('uebergang_klein_gross', 'uebergang_gross.png', [
-      'assets/formteile/uebergang_gross.png',
-      'assets/formteile/uebergang_klein_gross.png',
-    ]),
+    imageFallbacks: formPartImageSources('uebergang_klein_gross'),
     referenceFile: formPartExcel('uebergang_klein_gross'),
     keywords: ['übergang', 'klein', 'gross', 'erweiterung', 'kanal', 'rohr'],
     description: 'Übergang von kleinem auf grossen Querschnitt. A1/A2 wird automatisch aus Kanal-/Rohrgrössen berechnet.',
