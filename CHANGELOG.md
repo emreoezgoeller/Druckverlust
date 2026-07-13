@@ -1,3 +1,11 @@
+# Phase 22.00 – Designsystem und visuelle Grundbereinigung
+
+- Einheitliche Marken-, Neutral- und Statusfarben als zentrale CSS-Variablen eingeführt.
+- Abstände, Rundungen, Schatten, Fokusdarstellung und Typografie vereinheitlicht.
+- Ribbon, Sidebar, Arbeitsbereich, Karten, Formulare, Tabellen und Statusleiste visuell beruhigt.
+- Bestehende Rechen-, Speicher-, Berichts- und Bedienlogik unverändert gelassen.
+- Responsive Grunddarstellung und reduzierte Animationen verbessert.
+
 # CHANGELOG
 
 ## Phase 21.12 – Projektbereinigung und konsolidierter Gesamtstand

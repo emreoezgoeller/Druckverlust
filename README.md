@@ -6,7 +6,9 @@ Druckverlust Pro ist eine browserbasierte Fachanwendung zur Berechnung von Druck
 
 ## Start
 
-Die Anwendung verwendet JavaScript-Module und sollte über einen lokalen Webserver oder GitHub Pages gestartet werden.
+Die Anwendung verwendet JavaScript-Module und muss über einen lokalen Webserver oder GitHub Pages gestartet werden. Unter Windows kann dazu ohne Installation direkt die mitgelieferte Datei `Druckverlust_starten.bat` doppelt angeklickt werden. Sie startet einen kleinen lokalen Webserver und öffnet das Tool automatisch im Browser.
+
+Alternativ:
 
 ```bash
 python -m http.server 8000
@@ -91,3 +93,8 @@ Das Projekt ist für relative Pfade und den Einsatz unter GitHub Pages vorbereit
 - `docs/TESTPLAN.md` – aktive Qualitätssicherung
 - `CHANGELOG.md` – Entwicklungshistorie
 - `ROADMAP.md` – weitere Planung
+
+
+## Lokal starten
+
+Unter Windows `Druckverlust_starten.bat` doppelklicken. Der lokale Webserver öffnet zuerst `index.html`; von dort startet `app.html` über die Schaltfläche „Tool starten“. Weitere Hinweise stehen in `LOKAL_STARTEN.txt`.

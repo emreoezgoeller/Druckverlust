@@ -349,6 +349,84 @@
   </footer>
 
   <script>
+    (() => {
+      if (location.protocol !== 'file:') return;
+
+      const style = document.createElement('style');
+      style.textContent = `
+        .dp-local-preview-note {
+          position: sticky; top: 0; z-index: 10000; display: flex; align-items: center;
+          justify-content: center; gap: 10px; padding: 10px 18px; background: #fff4d6;
+          border-bottom: 1px solid #e5c267; color: #5a4300; font: 600 14px/1.4 Inter, Segoe UI, Arial, sans-serif;
+          text-align: center; box-sizing: border-box;
+        }
+        .dp-local-dialog-backdrop {
+          position: fixed; inset: 0; z-index: 20000; display: grid; place-items: center;
+          padding: 20px; background: rgba(4, 18, 34, .72); box-sizing: border-box;
+        }
+        .dp-local-dialog {
+          width: min(620px, 100%); padding: 28px; border-radius: 18px; background: #fff;
+          box-shadow: 0 24px 70px rgba(0, 0, 0, .28); color: #10243e;
+          font-family: Inter, Segoe UI, Arial, sans-serif; box-sizing: border-box;
+        }
+        .dp-local-dialog h2 { margin: 0 0 12px; font-size: 25px; line-height: 1.2; }
+        .dp-local-dialog p { margin: 0 0 14px; line-height: 1.6; }
+        .dp-local-dialog code { padding: 2px 7px; border-radius: 6px; background: #eef4fa; }
+        .dp-local-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+        .dp-local-dialog-actions button, .dp-local-dialog-actions a {
+          min-height: 42px; padding: 10px 16px; border-radius: 9px; border: 1px solid #b9c9d8;
+          font: 700 14px/1 Inter, Segoe UI, Arial, sans-serif; text-decoration: none; cursor: pointer;
+        }
+        .dp-local-dialog-actions button { background: #073a6f; border-color: #073a6f; color: #fff; }
+        .dp-local-dialog-actions a { background: #fff; color: #073a6f; }
+      `;
+      document.head.appendChild(style);
+
+      const note = document.createElement('div');
+      note.className = 'dp-local-preview-note';
+      note.textContent = 'Lokale Vorschau: Zum Starten der Berechnung bitte Druckverlust_starten.bat verwenden.';
+      document.body.prepend(note);
+
+      const showLocalStartInfo = () => {
+        if (document.querySelector('.dp-local-dialog-backdrop')) return;
+        const backdrop = document.createElement('div');
+        backdrop.className = 'dp-local-dialog-backdrop';
+        backdrop.setAttribute('role', 'dialog');
+        backdrop.setAttribute('aria-modal', 'true');
+        backdrop.setAttribute('aria-labelledby', 'dp-local-dialog-title');
+        backdrop.innerHTML = `
+          <section class="dp-local-dialog">
+            <h2 id="dp-local-dialog-title">Berechnung über die Startdatei öffnen</h2>
+            <p>Die Produktseite kann direkt angezeigt werden. Das eigentliche Tool benötigt wegen der Browser-Sicherheitsregeln jedoch eine lokale Webadresse.</p>
+            <p>Bitte im Druckverlust-Ordner <code>Druckverlust_starten.bat</code> doppelklicken. Danach öffnet sich zuerst diese Startseite über <code>http://127.0.0.1</code>. Anschliessend funktionieren alle Schaltflächen wie „Tool starten“, „Demo“ und „Anleitung“.</p>
+            <div class="dp-local-dialog-actions">
+              <button type="button" data-close-local-dialog>Verstanden</button>
+              <a href="LOKAL_STARTEN.txt">Kurzanleitung öffnen</a>
+            </div>
+          </section>`;
+        document.body.appendChild(backdrop);
+        const close = () => backdrop.remove();
+        backdrop.querySelector('[data-close-local-dialog]').addEventListener('click', close);
+        backdrop.addEventListener('click', event => { if (event.target === backdrop) close(); });
+        document.addEventListener('keydown', function onKey(event) {
+          if (event.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
+        });
+        backdrop.querySelector('button').focus();
+      };
+
+      document.addEventListener('click', event => {
+        const link = event.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        if (/^app\.html(?:[?#]|$)/i.test(href)) {
+          event.preventDefault();
+          showLocalStartInfo();
+        }
+      }, true);
+    })();
+  </script>
+
+  <script>
     document.addEventListener('contextmenu', event => {
       if (event.target.closest('img, .dp-hero-card')) event.preventDefault();
     }, true);

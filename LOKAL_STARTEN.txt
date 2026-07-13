@@ -1,0 +1,34 @@
+DRUCKVERLUST PRO – LOKAL STARTEN
+================================
+
+Gewünschter Ablauf:
+
+1. Im Druckverlust-Ordner die Datei
+   Druckverlust_starten.bat
+   doppelklicken.
+
+2. Der lokale Webserver startet und öffnet automatisch zuerst die
+   Produkt-/Startseite index.html im Browser.
+
+3. Auf der Startseite „Tool starten“, „Demo-Projekt testen“ oder
+   „Anleitung“ anklicken.
+
+4. Das schwarze Serverfenster während der Arbeit geöffnet lassen.
+
+5. Zum Beenden das schwarze Fenster schliessen oder STRG+C drücken.
+
+WICHTIG
+-------
+Die Startseite index.html kann per Doppelklick als Vorschau geöffnet werden.
+Das Berechnungstool selbst kann aus einer file://-Adresse nicht direkt starten,
+weil Edge und Chrome moderne JavaScript-Module aus Sicherheitsgründen blockieren.
+
+Die Startdatei löst das automatisch und öffnet eine Adresse wie:
+http://127.0.0.1:8000/index.html
+
+Liegt der Druckverlust-Ordner innerhalb einer gemeinsamen Homepage, wird die
+Homepage-Struktur automatisch als Serverwurzel verwendet. Die Druckverlust-
+Startseite wird trotzdem zuerst geöffnet.
+
+Auf GitHub Pages ist keine Startdatei nötig. Dort wird index.html automatisch
+als Startseite geladen und „Tool starten“ öffnet app.html normal über HTTPS.
