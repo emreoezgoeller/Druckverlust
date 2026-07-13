@@ -7,12 +7,13 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=22.03';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=22.03';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
+import UiDialogService from './UiDialogService.js?v=22.03';
 
 export default class RibbonActions {
   constructor(state) {
@@ -24,9 +25,16 @@ export default class RibbonActions {
     this.commands = new ProjectCommands(state);
   }
 
-  confirmDiscardChanges(actionLabel = 'fortfahren') {
+  async confirmDiscardChanges(actionLabel = 'fortfahren') {
     if (!this.state.isProjectDirty) return true;
-    return confirm(`Das aktuelle Projekt enthält ungespeicherte Änderungen. Trotzdem ${actionLabel}?`);
+
+    return UiDialogService.confirm({
+      title: 'Ungespeicherte Änderungen',
+      message: `Das aktuelle Projekt enthält Änderungen, die noch nicht gespeichert wurden. Möchtest du trotzdem ${actionLabel}?`,
+      details: ['Nicht gespeicherte Änderungen gehen dabei verloren.'],
+      confirmLabel: 'Trotzdem fortfahren',
+      tone: 'warning',
+    });
   }
 
   showDashboard() {
@@ -44,8 +52,8 @@ export default class RibbonActions {
     }
   }
 
-  newProject() {
-    if (!this.confirmDiscardChanges('ein neues Projekt erstellen')) return;
+  async newProject() {
+    if (!await this.confirmDiscardChanges('ein neues Projekt erstellen')) return;
 
     this.commands.createProject({ projectNumber: 'Unbenannte Projektnummer' });
     this.calculate({ silent: true, keepDirty: false });
@@ -55,8 +63,8 @@ export default class RibbonActions {
   }
 
 
-  loadDemoProject() {
-    if (!this.confirmDiscardChanges('das Demo-Projekt laden')) return;
+  async loadDemoProject() {
+    if (!await this.confirmDiscardChanges('das Demo-Projekt laden')) return;
 
     const project = createDemoProject();
     this.state.setProject(project);
@@ -67,8 +75,8 @@ export default class RibbonActions {
     console.info('RibbonAction: Demo-Projekt geladen', project);
   }
 
-  openProject() {
-    if (!this.confirmDiscardChanges('ein anderes Projekt öffnen')) return;
+  async openProject() {
+    if (!await this.confirmDiscardChanges('ein anderes Projekt öffnen')) return;
 
     const input = document.createElement('input');
     input.type = 'file';
@@ -92,7 +100,7 @@ export default class RibbonActions {
         AutoSaveEngine.clear();
 
         if (importWarnings.length) {
-          alert([
+          UiDialogService.alert([
             'Projekt wurde geöffnet und automatisch bereinigt.',
             '',
             ...importWarnings.slice(0, 6).map(item => `• ${item}`),
@@ -104,7 +112,7 @@ export default class RibbonActions {
 
         console.info('RibbonAction: Projekt geöffnet', project);
       } catch (error) {
-        alert(`Projekt konnte nicht geöffnet werden: ${error.message}`);
+        UiDialogService.alert(`Projekt konnte nicht geöffnet werden: ${error.message}`);
       }
     });
 
@@ -115,7 +123,7 @@ export default class RibbonActions {
     const project = this.state.project;
 
     if (!project) {
-      alert('Kein Projekt zum Speichern vorhanden.');
+      UiDialogService.alert('Kein Projekt zum Speichern vorhanden.');
       return;
     }
 
@@ -126,7 +134,7 @@ export default class RibbonActions {
       AutoSaveEngine.clear();
       console.info('RibbonAction: Projekt gespeichert', project);
     } catch (error) {
-      alert(`Projekt konnte nicht gespeichert werden: ${error.message}`);
+      UiDialogService.alert(`Projekt konnte nicht gespeichert werden: ${error.message}`);
     }
   }
 
@@ -136,7 +144,7 @@ export default class RibbonActions {
       this.calculate({ silent: true, keepDirty: true });
       console.info('RibbonAction: Teilstrecke hinzugefügt', section);
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert(error.message);
     }
   }
 
@@ -145,7 +153,7 @@ export default class RibbonActions {
       const formPart = this.commands.addFormPart();
       console.info('RibbonAction: Formteil-Auswahl geöffnet', formPart);
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert(error.message);
     }
   }
 
@@ -155,7 +163,7 @@ export default class RibbonActions {
       this.calculate({ silent: true, keepDirty: true });
       console.info('RibbonAction: Sonderbauteil hinzugefügt', component);
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert(error.message);
     }
   }
 
@@ -163,7 +171,7 @@ export default class RibbonActions {
     const project = this.state.project;
 
     if (!project) {
-      if (!options.silent) alert('Kein Projekt vorhanden.');
+      if (!options.silent) UiDialogService.alert('Kein Projekt vorhanden.');
       return null;
     }
 
@@ -196,7 +204,7 @@ export default class RibbonActions {
       }
 
       if (!options.silent) {
-        alert(`Berechnung fehlgeschlagen: ${error.message}`);
+        UiDialogService.alert(`Berechnung fehlgeschlagen: ${error.message}`);
       }
 
       return null;
@@ -245,11 +253,11 @@ export default class RibbonActions {
 
       console.info('RibbonAction: Keine duplizierbare Auswahl vorhanden.');
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert(error.message);
     }
   }
 
-  deleteSelected() {
+  async deleteSelected() {
     const selection = this.getSelection();
     const system = this.getActiveSystem();
 
@@ -257,7 +265,14 @@ export default class RibbonActions {
       if (selection?.type === 'section') {
         const section = system?.sections?.find(item => item.id === selection.id);
         const name = section?.name || 'diese Teilstrecke';
-        if (!confirm(`Teilstrecke „${name}“ wirklich löschen? Zugeordnete Formteile werden der nächsten verfügbaren Teilstrecke zugewiesen.`)) return;
+        const confirmed = await UiDialogService.confirm({
+          title: 'Teilstrecke löschen',
+          message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+          details: ['Zugeordnete Formteile werden der nächsten verfügbaren Teilstrecke zugewiesen.'],
+          confirmLabel: 'Teilstrecke löschen',
+          tone: 'danger',
+        });
+        if (!confirmed) return;
         this.commands.deleteSection(selection.id);
         this.calculate({ silent: true, keepDirty: true });
         return;
@@ -266,7 +281,13 @@ export default class RibbonActions {
       if (selection?.type === 'formPart') {
         const formPart = system?.formParts?.find(item => item.id === selection.id);
         const name = formPart?.name || 'dieses Formteil';
-        if (!confirm(`Formteil „${name}“ wirklich löschen?`)) return;
+        const confirmed = await UiDialogService.confirm({
+          title: 'Formteil löschen',
+          message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+          confirmLabel: 'Formteil löschen',
+          tone: 'danger',
+        });
+        if (!confirmed) return;
         this.commands.deleteFormPart(selection.id);
         this.calculate({ silent: true, keepDirty: true });
         return;
@@ -275,7 +296,14 @@ export default class RibbonActions {
       if (selection?.type === 'specialComponent') {
         const component = system?.specialComponents?.find(item => item.id === selection.id);
         const name = component?.name || 'dieses Sonderbauteil';
-        if (!confirm(`Sonderbauteil „${name}“ wirklich löschen?`)) return;
+        const confirmed = await UiDialogService.confirm({
+          title: 'Sonderbauteil löschen',
+          message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+          details: ['Der hinterlegte Druckverlust wird danach nicht mehr berücksichtigt.'],
+          confirmLabel: 'Sonderbauteil löschen',
+          tone: 'danger',
+        });
+        if (!confirmed) return;
         this.commands.deleteSpecialComponent(selection.id);
         this.calculate({ silent: true, keepDirty: true });
         return;
@@ -283,7 +311,7 @@ export default class RibbonActions {
 
       console.info('RibbonAction: Keine löschbare Auswahl vorhanden.');
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert({ title: 'Aktion nicht möglich', message: error.message, tone: 'danger' });
     }
   }
 
@@ -317,7 +345,7 @@ export default class RibbonActions {
         return;
       }
     } catch (error) {
-      alert(error.message);
+      UiDialogService.alert(error.message);
     }
   }
 
@@ -326,7 +354,7 @@ export default class RibbonActions {
     const system = this.getActiveSystem();
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 
@@ -340,7 +368,7 @@ export default class RibbonActions {
     }
 
     const text = ProjectDiagnostics.toText(check);
-    alert(text || 'Projektcheck abgeschlossen.');
+    UiDialogService.alert(text || 'Projektcheck abgeschlossen.');
   }
 
 
@@ -349,7 +377,7 @@ export default class RibbonActions {
     const system = this.getActiveSystem();
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 
@@ -373,7 +401,7 @@ export default class RibbonActions {
     const project = this.state.project;
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 
@@ -395,14 +423,14 @@ export default class RibbonActions {
     const project = this.state.project;
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 
     this.calculate({ silent: true, keepDirty: true });
 
     try {
-      const check = await DeploymentDiagnostics.run({ project, version: APP_RELEASE });
+      const check = await DeploymentDiagnostics.run({ project, version: APP_ASSET_VERSION });
       this.state.deploymentCheck = check;
       this.state.setSelection?.('deploymentCheck', check);
       this.state.notify?.();
@@ -413,7 +441,7 @@ export default class RibbonActions {
         console.info(DeploymentDiagnostics.toText(check));
       }
     } catch (error) {
-      alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
+      UiDialogService.alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
     }
   }
 
@@ -422,7 +450,7 @@ export default class RibbonActions {
     const system = this.getActiveSystem();
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 
@@ -439,7 +467,7 @@ export default class RibbonActions {
         console.info(text);
       }
     } catch (error) {
-      alert(`Release-Candidate-QS konnte nicht ausgeführt werden: ${error.message}`);
+      UiDialogService.alert(`Release-Candidate-QS konnte nicht ausgeführt werden: ${error.message}`);
     }
   }
 
@@ -474,11 +502,11 @@ export default class RibbonActions {
     ].join('\n');
 
     if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(text).then(() => alert('Tastaturkürzel wurden kopiert.')).catch(() => alert(text));
+      navigator.clipboard.writeText(text).then(() => UiDialogService.alert('Tastaturkürzel wurden kopiert.')).catch(() => UiDialogService.alert(text));
       return;
     }
 
-    alert(text);
+    UiDialogService.alert(text);
   }
 
 
@@ -492,10 +520,10 @@ export default class RibbonActions {
 
     const license = createLicenseStatus();
 
-    alert([
+    UiDialogService.alert([
       APP_BUILD_LABEL,
       '',
-      `Cache-Version: ?v=${APP_RELEASE}`,
+      `Cache-Version: ?v=${APP_ASSET_VERSION}`,
       `Adresse: ${info.href || 'lokal / unbekannt'}`,
       `Lizenzstatus: ${license.modeLabel}`,
       `Aktiver Plan: ${license.activePlan?.name || 'unbekannt'} – ${license.activePlan?.label || ''}`,
@@ -517,7 +545,7 @@ export default class RibbonActions {
     const project = this.state.project;
 
     if (!project) {
-      alert('Kein Projekt vorhanden.');
+      UiDialogService.alert('Kein Projekt vorhanden.');
       return;
     }
 

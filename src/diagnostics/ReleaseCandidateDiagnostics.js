@@ -4,11 +4,11 @@
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
 import ProjectDiagnostics from './ProjectDiagnostics.js';
 import CalculationDiagnostics from './CalculationDiagnostics.js';
-import DeploymentDiagnostics from './DeploymentDiagnostics.js';
+import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=22.03';
 import ProjectFileDiagnostics from './ProjectFileDiagnostics.js';
 import ReportEngine from '../report/ReportEngine.js';
 import createDemoProject from '../project/demoProject.js';
-import { APP_RELEASE, APP_BUILD_LABEL } from '../core/appVersion.js';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_BUILD_LABEL } from '../core/appVersion.js?v=22.03';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };
@@ -190,7 +190,7 @@ export default class ReleaseCandidateDiagnostics {
 
     if (includeDeployment) {
       try {
-        deploymentCheck = await DeploymentDiagnostics.run({ project: activeProject, version: APP_RELEASE });
+        deploymentCheck = await DeploymentDiagnostics.run({ project: activeProject, version: APP_ASSET_VERSION });
         if (state) state.deploymentCheck = deploymentCheck;
       } catch (error) {
         deploymentCheck = null;

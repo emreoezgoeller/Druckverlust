@@ -1,3 +1,41 @@
+# Phase 22.03 – Bibliotheken und Dialogfenster
+
+- Formteilbibliothek mit klarerem Seitenkopf, aktiver Teilstrecken-Zusammenfassung und kompakter Bibliotheksnavigation überarbeitet.
+- Suche so stabilisiert, dass Fokus, Cursorposition und Scrollstand beim Filtern erhalten bleiben.
+- Kategorie-Filter um Trefferzahlen, Suchfeld um Löschfunktion und Bibliotheksstatus ergänzt.
+- Formteilkarten mit technischer Skizzenfläche, Bauform-Hinweis, Funktionsmerkmalen und klarer Auswahlaktion neu gestaltet.
+- Favoriten und zuletzt verwendete Formteile auf die aktive Teilstrecke bezogen dargestellt.
+- Sonderbauteilbibliothek mit Vorlagen-/Projektzähler, Herstellerhinweisen, Druckverlustansatz und eindeutiger Einfügeaktion verbessert.
+- Bibliotheksgruppen, Favoriten, zuletzt verwendete Einträge sowie Verwaltungszeilen visuell vereinheitlicht.
+- Einheitlichen, barrierearmen Dialogdienst für Hinweise, Fehler, Löschabfragen, Neunummerierung, ungespeicherte Änderungen und Exportwarnungen ergänzt.
+- Dialoge unterstützen Tastaturfokus, Escape, Fokusbegrenzung, mobile Darstellung und reduzierte Animationen.
+- UI-Cachekennung 22.03 eingeführt, ohne Rechen-, Speicher- oder Berichtlogik zu verändern.
+
+# Phase 22.02 – Arbeitsbereich, Eingaben und Ergebnisse
+
+- Seitenköpfe für Projekt, Anlage, Teilstrecke, Formteil und Sonderbauteil mit klarer Kontext- und Ergebniszusammenfassung überarbeitet.
+- Eingabebereiche als ruhige, technische Feldgruppen mit besserer Beschriftung und Hilfetexten gestaltet.
+- Einheiten direkt an Zahlenfeldern geführt, unter anderem für m³/h, m, mm, m/s, Pa und Winkel.
+- Dynamische Formteilparameter automatisch mit passenden Einheitselementen ausgestattet; berechnete Felder klar gekennzeichnet.
+- Ergebnisbereiche mit stärkerer Kennzahlenhierarchie, hervorgehobenen Totalkarten und Systemanteilen überarbeitet.
+- Druckverlustaufteilung um proportionale Balkendarstellung für Reibung, ζ-Verluste, Direktverluste und Sonderbauteile ergänzt.
+- Tabellen mit scrollbaren Containern, fixierten Kopfzeilen, besserer Zahlenführung und hervorgehobenen Summenzeilen verbessert.
+- Darstellung für Tablet und Mobilgeräte angepasst, ohne Rechen-, Speicher- oder Berichtlogik zu verändern.
+- UI-Cachekennung 22.02 eingeführt.
+
+# Phase 22.01 – Ribbon und Projektstruktur
+
+- Oberes Ribbon in die Bereiche Projekt, Einfügen, Berechnung, Ausgabe und Hilfe gegliedert.
+- Einheitliche Vektorsymbole, klar erkennbare Hauptaktionen und aktive Ansichten ergänzt.
+- Speicher- und Berechnungsstatus direkt im Ribbon sichtbar gemacht.
+- Kompaktes Werkzeugmenü für kleinere Fenster und mobile Ansichten ergänzt.
+- Sidebar um Projektsuche, Trefferanzeige sowie Alle-öffnen-/Alle-schliessen-Funktionen erweitert.
+- Teilstrecken, Formteile, Sonderbauteile und Auswertung dauerhaft ein- und ausklappbar gemacht.
+- Projektbaum mit einheitlichen Symbolen, Zusatzinformationen und klarerer Auswahlmarkierung neu aufgebaut.
+- Sidebar vollständig einklappbar und zwischen 238 und 440 Pixel Breite verstellbar gemacht; Einstellung wird lokal gespeichert.
+- Tastenkürzel `/` zum Fokussieren der Projektsuche und `Esc` zum Leeren ergänzt.
+- UI-Cachekennung 22.01 eingeführt, ohne Rechen-, Speicher- oder Berichtlogik zu verändern.
+
 # Phase 22.00 – Designsystem und visuelle Grundbereinigung
 
 - Einheitliche Marken-, Neutral- und Statusfarben als zentrale CSS-Variablen eingeführt.

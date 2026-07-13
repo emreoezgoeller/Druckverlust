@@ -7,7 +7,7 @@ import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.
 import ProjectCommands from '../../app/ProjectCommands.js';
 import ReportEngine from '../../report/ReportEngine.js?v=21.12';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=21.12';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=22.03';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,9 +89,10 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=21.12';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=22.03';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
+import UiDialogService from '../core/UiDialogService.js?v=22.03';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -508,9 +509,9 @@ export default class WorkspaceComponent {
           ].join('\n');
 
           if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(text).then(() => alert('Feedback-Vorlage wurde kopiert.')).catch(() => alert(text));
+            navigator.clipboard.writeText(text).then(() => UiDialogService.alert('Feedback-Vorlage wurde kopiert.')).catch(() => UiDialogService.alert(text));
           } else {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -532,9 +533,9 @@ export default class WorkspaceComponent {
           ].join('\n');
 
           if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(text).then(() => alert('Kurzbefehle wurden kopiert.')).catch(() => alert(text));
+            navigator.clipboard.writeText(text).then(() => UiDialogService.alert('Kurzbefehle wurden kopiert.')).catch(() => UiDialogService.alert(text));
           } else {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -1016,10 +1017,16 @@ export default class WorkspaceComponent {
     const specialComponents = activeSystem?.specialComponents || [];
 
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Projektstamm</span>
           <h1>${this.escapeHtml(meta.object || meta.name || 'Projekt')}</h1>
           <p>Projektangaben und Grunddaten für Berechnung, Speicherung und Bericht.</p>
+        </div>
+        <div class="dp-page-summary" aria-label="Aktiver Projektstand">
+          <span>Aktive Anlage</span>
+          <strong>${this.escapeHtml(activeSystem?.name || meta.anlage || 'Anlage')}</strong>
+          <small>${sections.length} Teilstrecken · ${formParts.length} Formteile · ${specialComponents.length} Sonderbauteile</small>
         </div>
       </div>
 
@@ -1223,8 +1230,18 @@ export default class WorkspaceComponent {
     const total = calculation?.totals?.totalRounded ?? calculation?.totals?.total ?? null;
 
     this.root.innerHTML = `
-      <h1>${system?.name ?? 'Anlage'}</h1>
-      <p>Übersicht der gewählten Anlage.</p>
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Anlagenübersicht</span>
+          <h1>${this.escapeHtml(system?.name ?? 'Anlage')}</h1>
+          <p>Projektübersicht, Bearbeitung und aktueller Berechnungsstand der gewählten Anlage.</p>
+        </div>
+        <div class="dp-page-summary dp-page-summary-result" aria-label="Aktueller Anlagendruckverlust">
+          <span>Gesamtdruckverlust</span>
+          <strong>${total === null ? '–' : `${this.formatNumber(total, 1)} Pa`}</strong>
+          <small>${sections.length} TS · ${formParts.length} Formteile · ${specialComponents.length} Sonderbauteile</small>
+        </div>
+      </div>
 
       ${this.renderUiGuidancePanel(this.state.project, system, 'system')}
       ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
@@ -1284,10 +1301,16 @@ export default class WorkspaceComponent {
     const index = sections.findIndex(item => item.id === section?.id);
 
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Teilstrecke ${index >= 0 ? index + 1 : '–'} von ${sections.length}</span>
           <h1>${this.escapeHtml(section?.name ?? 'Teilstrecke')}</h1>
-          <p>Teilstrecke bearbeiten, duplizieren, löschen oder innerhalb der Anlage verschieben.</p>
+          <p>Geometrie und Luftmenge bearbeiten; Ergebnisse und zugeordnete Formteile werden automatisch aktualisiert.</p>
+        </div>
+        <div class="dp-page-summary dp-page-summary-result" aria-label="Aktuelles Teilstreckenergebnis">
+          <span>Summe Teilstrecke</span>
+          <strong>${result ? `${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss, 1)} Pa` : '–'}</strong>
+          <small>${result ? `${this.formatNumber(result.velocity, 2)} m/s · ${this.formatAirflow(section?.q ?? 0)} m³/h` : 'Noch keine gültige Berechnung'}</small>
         </div>
         <div class="workspace-actions">
           <button type="button" data-section-action="duplicate" data-section-id="${this.escapeAttribute(section?.id)}">Duplizieren</button>
@@ -1300,42 +1323,60 @@ export default class WorkspaceComponent {
       ${this.renderValidationMessages(this.getSectionValidationWarnings(section))}
       ${this.renderSectionInputQuality(section)}
 
-      <section class="dp-editor-panel">
-        <h2>Eingabedaten</h2>
+      <section class="dp-editor-panel dp-section-editor-panel">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Grunddaten und Geometrie</span>
+            <h2>Eingabedaten</h2>
+            <p>Einheiten sind direkt am Feld geführt. Änderungen werden ohne zusätzlichen Berechnungsbutton übernommen.</p>
+          </div>
+          <span class="dp-chip">${this.isPipeSection(section) ? 'Rundrohr' : 'Rechteckkanal'}</span>
+        </div>
 
-        <div class="dp-editor-grid">
-          <label>
+        <div class="dp-editor-grid dp-section-input-grid">
+          <label class="dp-field-card dp-field-card-name">
             <span>Name / Nummer</span>
             <input data-field="name" value="${this.escapeAttribute(section?.name ?? '')}">
+            <small class="dp-field-meta">Eindeutige Bezeichnung im Projektbaum und Bericht</small>
           </label>
 
-          <label>
-            <span>Luftmenge [m³/h]</span>
-            <input data-field="q" type="number" step="1" value="${this.formatAirflowInput(section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0)}">
+          <label class="dp-field-card">
+            <span>Luftmenge</span>
+            <div class="dp-unit-control">
+              <input data-field="q" type="number" step="1" value="${this.formatAirflowInput(section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0)}">
+              <span class="dp-unit">m³/h</span>
+            </div>
+            <small class="dp-field-meta">Volumenstrom dieser Teilstrecke</small>
           </label>
 
-          <label>
-            <span>Typ</span>
+          <label class="dp-field-card">
+            <span>Querschnittstyp</span>
             <select data-field="type">
               <option value="duct" ${this.isDuctSection(section) ? 'selected' : ''}>Rechteckkanal</option>
               <option value="pipe" ${this.isPipeSection(section) ? 'selected' : ''}>Rundrohr</option>
             </select>
+            <small class="dp-field-meta">Steuert die sichtbaren Geometriefelder</small>
           </label>
 
-          <label>
-            <span>Länge [m]</span>
-            <input data-field="l" type="number" step="0.01" value="${section?.l ?? section?.length ?? 0}">
+          <label class="dp-field-card">
+            <span>Länge</span>
+            <div class="dp-unit-control">
+              <input data-field="l" type="number" step="0.01" value="${section?.l ?? section?.length ?? 0}">
+              <span class="dp-unit">m</span>
+            </div>
+            <small class="dp-field-meta">Gerade Länge für den Reibungsverlust</small>
           </label>
 
           ${this.renderGeometryFields(section)}
 
-          <label class="dp-project-meta-wide">
+          <label class="dp-field-card dp-project-meta-wide">
             <span>Beschreibung / Hinweis</span>
             <input data-field="description" value="${this.escapeAttribute(section?.description ?? section?.note ?? '')}">
+            <small class="dp-field-meta">Optionaler Text für Nachvollziehbarkeit und Bericht</small>
           </label>
         </div>
 
-        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
+        <p class="dp-auto-calc-note"><strong>Live-Berechnung:</strong> Änderungen werden automatisch übernommen; zugeordnete Formteile werden nachgeführt.</p>
       </section>
 
       ${this.renderSectionResult(result, calculationItem, section)}
@@ -1420,7 +1461,7 @@ export default class WorkspaceComponent {
 
   bindSectionManagement() {
     this.root.querySelectorAll('[data-section-action]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.sectionAction;
         const sectionId = button.dataset.sectionId;
         const system = this.state.selectedSystem || this.state.project?.systems?.[0];
@@ -1447,7 +1488,14 @@ export default class WorkspaceComponent {
           if (action === 'delete') {
             const section = system?.sections?.find(item => item.id === sectionId);
             const name = section?.name || 'diese Teilstrecke';
-            if (!confirm(`Teilstrecke „${name}“ wirklich löschen? Zugeordnete Formteile werden der nächsten verfügbaren Teilstrecke zugewiesen.`)) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Teilstrecke löschen',
+              message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+              details: ['Zugeordnete Formteile werden der nächsten verfügbaren Teilstrecke zugewiesen.'],
+              confirmLabel: 'Teilstrecke löschen',
+              tone: 'danger',
+            });
+            if (!confirmed) return;
             this.commands.deleteSection(sectionId);
             this.autoCalculateProject();
             return;
@@ -1460,12 +1508,19 @@ export default class WorkspaceComponent {
           }
 
           if (action === 'renumber') {
-            if (!confirm('Alle Teilstrecken neu als ts1, ts2, ts3 ... nummerieren? Manuelle Namen werden überschrieben.')) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Teilstrecken neu nummerieren',
+              message: 'Alle Teilstrecken werden in der aktuellen Reihenfolge als ts1, ts2, ts3 … benannt.',
+              details: ['Manuell vergebene Teilstreckennamen werden überschrieben.'],
+              confirmLabel: 'Neu nummerieren',
+              tone: 'warning',
+            });
+            if (!confirmed) return;
             this.commands.renumberSections({ force: true });
             this.autoCalculateProject();
           }
         } catch (error) {
-          alert(error.message);
+          UiDialogService.alert({ title: 'Aktion nicht möglich', message: error.message, tone: 'danger' });
         }
       });
     });
@@ -1675,7 +1730,7 @@ export default class WorkspaceComponent {
 
   bindFormPartManagement() {
     this.root.querySelectorAll('[data-formpart-action]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.formpartAction;
         const formPartId = button.dataset.formpartId;
         const system = this.state.selectedSystem || this.state.project?.systems?.[0];
@@ -1701,7 +1756,14 @@ export default class WorkspaceComponent {
           if (action === 'delete') {
             const formPart = system?.formParts?.find(item => item.id === formPartId);
             const name = formPart?.name || 'dieses Formteil';
-            if (!confirm(`Formteil „${name}“ wirklich löschen?`)) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Formteil löschen',
+              message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+              details: ['Die zugehörige Teilstrecke bleibt unverändert bestehen.'],
+              confirmLabel: 'Formteil löschen',
+              tone: 'danger',
+            });
+            if (!confirmed) return;
             this.commands.deleteFormPart(formPartId);
             this.autoCalculateProject();
             return;
@@ -1714,12 +1776,19 @@ export default class WorkspaceComponent {
           }
 
           if (action === 'renumber') {
-            if (!confirm('Alle Formteile neu durchnummerieren? Manuelle Formteilnamen werden überschrieben.')) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Formteile neu nummerieren',
+              message: 'Alle Formteile werden in der aktuellen Reihenfolge neu benannt.',
+              details: ['Manuell vergebene Formteilnamen werden überschrieben.'],
+              confirmLabel: 'Neu nummerieren',
+              tone: 'warning',
+            });
+            if (!confirmed) return;
             this.commands.renumberFormParts({ force: true });
             this.autoCalculateProject();
           }
         } catch (error) {
-          alert(error.message);
+          UiDialogService.alert({ title: 'Aktion nicht möglich', message: error.message, tone: 'danger' });
         }
       });
     });
@@ -1751,12 +1820,15 @@ export default class WorkspaceComponent {
 
     return `
       <section class="dp-editor-panel dp-special-management-panel">
-        <div class="dp-panel-header">
+        <div class="dp-panel-header dp-library-panel-header">
           <div>
+            <span class="dp-overline">Technische Bauteile</span>
             <h2>Sonderbauteile / Bauteilbibliothek</h2>
-            <p>Wähle ein Sonderbauteil aus der Bibliothek. Danach öffnet sich automatisch der passende Editor.</p>
+            <p>Vorlage wählen, Herstellerwert prüfen und anschliessend im Editor an die Anlage anpassen.</p>
           </div>
-          <div class="dp-panel-actions dp-special-add-actions">
+          <div class="dp-library-panel-meta">
+            <span><strong>${allGroups.reduce((sum, group) => sum + group.items.length, 0)}</strong> Vorlagen</span>
+            <span><strong>${specialComponents.length}</strong> erfasst</span>
             <button type="button" data-special-action="renumber" ${specialComponents.length ? '' : 'disabled'}>Neu nummerieren</button>
           </div>
         </div>
@@ -1885,45 +1957,83 @@ export default class WorkspaceComponent {
   }
 
   renderLibraryFilterToolbar({ type, search, category, groups, total, filtered, placeholder }) {
-    const categories = groups.map(group => group.category);
+    const categories = groups.map(group => ({
+      name: group.category,
+      count: Array.isArray(group.items) ? group.items.length : 0,
+    }));
     const normalizedCategory = category || 'all';
+    const hasFilters = Boolean(search || normalizedCategory !== 'all');
 
     return `
       <div class="dp-library-filter" data-library-filter="${this.escapeAttribute(type)}">
-        <label class="dp-library-search">
-          <span>Suchen</span>
-          <input
-            type="search"
-            data-library-search="${this.escapeAttribute(type)}"
-            value="${this.escapeAttribute(search || '')}"
-            placeholder="${this.escapeAttribute(placeholder || 'Suchen…')}">
-        </label>
+        <div class="dp-library-filter-main">
+          <label class="dp-library-search">
+            <span>Suchen</span>
+            <span class="dp-library-search-control">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+              <input
+                type="search"
+                autocomplete="off"
+                spellcheck="false"
+                data-library-search="${this.escapeAttribute(type)}"
+                value="${this.escapeAttribute(search || '')}"
+                placeholder="${this.escapeAttribute(placeholder || 'Suchen…')}">
+              ${search ? `<button type="button" class="dp-library-search-clear" data-library-search-clear="${this.escapeAttribute(type)}" aria-label="Suche leeren" title="Suche leeren">×</button>` : ''}
+            </span>
+          </label>
 
-        <div class="dp-library-categories" role="group" aria-label="Kategorien filtern">
-          ${this.renderLibraryCategoryChip(type, 'all', 'Alle', normalizedCategory === 'all')}
-          ${categories.map(item => this.renderLibraryCategoryChip(type, item, item, normalizedCategory === item)).join('')}
+          <div class="dp-library-filter-summary" aria-live="polite">
+            <span><strong>${filtered}</strong> von ${total} Einträgen sichtbar</span>
+            ${hasFilters ? `
+              <button type="button" data-library-reset="${this.escapeAttribute(type)}">Alle anzeigen</button>
+            ` : '<span class="dp-library-filter-ready">Bibliothek vollständig</span>'}
+          </div>
         </div>
 
-        <div class="dp-library-filter-summary">
-          <strong>${filtered}</strong> von ${total} sichtbar
-          ${(search || normalizedCategory !== 'all') ? `
-            <button type="button" data-library-reset="${this.escapeAttribute(type)}">Filter zurücksetzen</button>
-          ` : ''}
+        <div class="dp-library-categories" role="group" aria-label="Kategorien filtern">
+          ${this.renderLibraryCategoryChip(type, 'all', 'Alle', normalizedCategory === 'all', total)}
+          ${categories.map(item => this.renderLibraryCategoryChip(type, item.name, item.name, normalizedCategory === item.name, item.count)).join('')}
         </div>
       </div>
     `;
   }
 
-  renderLibraryCategoryChip(type, value, label, active = false) {
+  renderLibraryCategoryChip(type, value, label, active = false, count = null) {
     return `
       <button
         type="button"
         class="dp-library-chip ${active ? 'active' : ''}"
         data-library-category="${this.escapeAttribute(type)}"
-        data-library-category-value="${this.escapeAttribute(value)}">
-        ${this.escapeHtml(label)}
+        data-library-category-value="${this.escapeAttribute(value)}"
+        aria-pressed="${active ? 'true' : 'false'}">
+        <span>${this.escapeHtml(label)}</span>
+        ${Number.isFinite(Number(count)) ? `<em>${this.escapeHtml(count)}</em>` : ''}
       </button>
     `;
+  }
+
+  refreshLibraryView(type, options = {}) {
+    const scrollTop = this.root?.scrollTop || 0;
+    const cursor = Number.isFinite(options.cursor) ? options.cursor : null;
+    const focusSearch = Boolean(options.focusSearch);
+
+    this.render();
+
+    if (typeof window === 'undefined') return;
+
+    window.requestAnimationFrame(() => {
+      if (this.root) this.root.scrollTop = scrollTop;
+      if (!focusSearch) return;
+
+      const input = this.root?.querySelector(`[data-library-search="${type}"]`);
+      if (!input) return;
+
+      input.focus();
+      if (cursor !== null && typeof input.setSelectionRange === 'function') {
+        const safeCursor = Math.min(cursor, String(input.value || '').length);
+        input.setSelectionRange(safeCursor, safeCursor);
+      }
+    });
   }
 
   loadLibraryRecent() {
@@ -1963,7 +2073,7 @@ export default class WorkspaceComponent {
     const key = type === 'special' ? 'special' : 'formpart';
     this.libraryRecent[key] = [];
     this.saveLibraryRecent();
-    this.render();
+    this.refreshLibraryView(key);
   }
 
   getRecentLibraryItems(type, library = []) {
@@ -2017,14 +2127,14 @@ export default class WorkspaceComponent {
       : [id, ...current].slice(0, 12);
 
     this.saveLibraryFavorites();
-    this.render();
+    this.refreshLibraryView(key);
   }
 
   clearLibraryFavorites(type) {
     const key = type === 'special' ? 'special' : 'formpart';
     this.libraryFavorites[key] = [];
     this.saveLibraryFavorites();
-    this.render();
+    this.refreshLibraryView(key);
   }
 
   getFavoriteLibraryItems(type, library = []) {
@@ -2079,9 +2189,28 @@ export default class WorkspaceComponent {
     this.root.querySelectorAll('[data-library-search]').forEach(input => {
       input.addEventListener('input', () => {
         const type = input.dataset.librarySearch;
+        const cursor = input.selectionStart;
         if (type === 'formpart') this.formPartLibrarySearch = input.value || '';
         if (type === 'special') this.specialLibrarySearch = input.value || '';
-        this.render();
+        this.refreshLibraryView(type, { focusSearch: true, cursor });
+      });
+
+      input.addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || !input.value) return;
+        event.preventDefault();
+        const type = input.dataset.librarySearch;
+        if (type === 'formpart') this.formPartLibrarySearch = '';
+        if (type === 'special') this.specialLibrarySearch = '';
+        this.refreshLibraryView(type, { focusSearch: true, cursor: 0 });
+      });
+    });
+
+    this.root.querySelectorAll('[data-library-search-clear]').forEach(button => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.librarySearchClear;
+        if (type === 'formpart') this.formPartLibrarySearch = '';
+        if (type === 'special') this.specialLibrarySearch = '';
+        this.refreshLibraryView(type, { focusSearch: true, cursor: 0 });
       });
     });
 
@@ -2091,7 +2220,7 @@ export default class WorkspaceComponent {
         const value = button.dataset.libraryCategoryValue || 'all';
         if (type === 'formpart') this.formPartLibraryCategory = value;
         if (type === 'special') this.specialLibraryCategory = value;
-        this.render();
+        this.refreshLibraryView(type);
       });
     });
 
@@ -2107,7 +2236,7 @@ export default class WorkspaceComponent {
           this.specialLibrarySearch = '';
           this.specialLibraryCategory = 'all';
         }
-        this.render();
+        this.refreshLibraryView(type, { focusSearch: true, cursor: 0 });
       });
     });
 
@@ -2134,9 +2263,11 @@ export default class WorkspaceComponent {
 
   renderSpecialComponentLibraryCard(item = {}) {
     const favorite = this.isLibraryFavorite('special', item.id);
+    const note = String(item.note || item.description || '').trim();
+    const pressureLoss = Number(item.unitPressureLoss ?? 0);
 
     return `
-      <div class="dp-library-card-shell">
+      <div class="dp-library-card-shell dp-special-card-shell">
         <button
           class="dp-library-favorite-toggle ${favorite ? 'active' : ''}"
           type="button"
@@ -2151,9 +2282,16 @@ export default class WorkspaceComponent {
             ${this.renderSpecialComponentIcon(item)}
           </div>
           <div class="dp-special-card-body">
-            <span>${this.escapeHtml(item.category || 'Sonderbauteil')}</span>
+            <div class="dp-library-card-kicker">
+              <span>${this.escapeHtml(item.category || 'Sonderbauteil')}</span>
+              <em>${this.formatNumber(pressureLoss, 1)} Pa</em>
+            </div>
             <strong>${this.escapeHtml(item.name || item.type || 'Sonderbauteil')}</strong>
-            <em>${this.formatNumber(item.unitPressureLoss ?? 0, 1)} Pa Ansatz</em>
+            ${note ? `<p>${this.escapeHtml(this.truncateText(note, 118))}</p>` : ''}
+            <div class="dp-library-card-action">
+              <span>Bauteil einfügen</span>
+              <b aria-hidden="true">→</b>
+            </div>
           </div>
         </button>
       </div>
@@ -2207,7 +2345,7 @@ export default class WorkspaceComponent {
     this.bindLibraryFilterControls();
 
     this.root.querySelectorAll('[data-special-action]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
         const action = button.dataset.specialAction;
         const componentId = button.dataset.specialId;
         const specialType = button.dataset.specialType;
@@ -2237,7 +2375,14 @@ export default class WorkspaceComponent {
           if (action === 'delete') {
             const component = system?.specialComponents?.find(item => item.id === componentId);
             const name = component?.name || 'dieses Sonderbauteil';
-            if (!confirm(`Sonderbauteil „${name}“ wirklich löschen?`)) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Sonderbauteil löschen',
+              message: `„${name}“ wird dauerhaft aus der Anlage entfernt.`,
+              details: ['Der hinterlegte Druckverlust wird danach nicht mehr in der Anlagensumme berücksichtigt.'],
+              confirmLabel: 'Sonderbauteil löschen',
+              tone: 'danger',
+            });
+            if (!confirmed) return;
             this.commands.deleteSpecialComponent(componentId);
             this.autoCalculateProject();
             return;
@@ -2250,12 +2395,19 @@ export default class WorkspaceComponent {
           }
 
           if (action === 'renumber') {
-            if (!confirm('Alle Sonderbauteile neu nummerieren? Manuelle Namen können überschrieben werden.')) return;
+            const confirmed = await UiDialogService.confirm({
+              title: 'Sonderbauteile neu nummerieren',
+              message: 'Alle Sonderbauteile werden in der aktuellen Reihenfolge neu benannt.',
+              details: ['Manuell vergebene Namen können dabei überschrieben werden.'],
+              confirmLabel: 'Neu nummerieren',
+              tone: 'warning',
+            });
+            if (!confirmed) return;
             this.commands.renumberSpecialComponents({ force: true });
             this.autoCalculateProject();
           }
         } catch (error) {
-          alert(error.message);
+          UiDialogService.alert({ title: 'Aktion nicht möglich', message: error.message, tone: 'danger' });
         }
       });
     });
@@ -2270,11 +2422,16 @@ export default class WorkspaceComponent {
     const audit = this.getFormPartLibraryAudit(allGroups);
 
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
+      <div class="workspace-header dp-page-header dp-library-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Formteilbibliothek</span>
           <h1>Formteil auswählen</h1>
-          <p>Wähle zuerst ein Formteil aus der Bibliothek. Danach öffnet sich automatisch der passende Editor.</p>
-          <p class="dp-library-context">Aktive Teilstrecke: <strong>${this.escapeHtml(selectedSection ? this.getSectionNameById(selectedSection.id) : 'keine')}</strong>${selectedSection ? ` · ${this.escapeHtml(this.getSectionShapeLabel(selectedSection))}` : ''}</p>
+          <p>Bibliothek nach Bauform und Funktion filtern. Nach der Auswahl öffnet sich direkt der passende Fachparameter-Editor.</p>
+        </div>
+        <div class="dp-page-summary dp-library-context-card" aria-label="Aktive Teilstrecke">
+          <span>Aktive Teilstrecke</span>
+          <strong>${this.escapeHtml(selectedSection ? this.getSectionNameById(selectedSection.id) : 'Keine Teilstrecke')}</strong>
+          <small>${selectedSection ? this.escapeHtml(this.getSectionShapeLabel(selectedSection)) : 'Formteil wird zunächst ohne Zuordnung erstellt'}</small>
         </div>
       </div>
 
@@ -2303,14 +2460,14 @@ export default class WorkspaceComponent {
           type: 'formpart',
           title: 'Favorisierte Formteile',
           items: this.getFavoriteLibraryItems('formpart', this.registry.all()),
-          renderCard: item => this.renderFormPartPickerCard(item),
+          renderCard: item => this.renderFormPartPickerCard(item, selectedSection),
         })}
 
         ${this.renderLibraryRecentSection({
           type: 'formpart',
           title: 'Zuletzt verwendete Formteile',
           items: this.getRecentLibraryItems('formpart', this.registry.all()),
-          renderCard: item => this.renderFormPartPickerCard(item),
+          renderCard: item => this.renderFormPartPickerCard(item, selectedSection),
         })}
 
         ${groups.length ? groups.map(group => {
@@ -2419,20 +2576,20 @@ export default class WorkspaceComponent {
   }
 
   getFormPartCardMeta(item = {}, selectedSection = null) {
+    const hasSectionContext = Boolean(selectedSection);
     const compatible = this.isFormPartCompatibleWithSection(item, selectedSection);
     const badges = [];
 
     badges.push({
-      label: compatible ? 'passt zur TS' : 'andere Bauform',
-      className: compatible ? 'ok' : 'muted',
+      label: !hasSectionContext ? 'ohne TS-Filter' : (compatible ? 'passt zur TS' : 'andere Bauform'),
+      className: !hasSectionContext ? 'soft' : (compatible ? 'ok' : 'muted'),
     });
 
-    if (this.hasLockedAngleSelection(item)) badges.push({ label: 'α/β Dropdown', className: 'ok' });
+    if (this.hasLockedAngleSelection(item)) badges.push({ label: 'α/β-Auswahl', className: 'ok' });
     if (this.supportsFormPartAutoSync(item)) badges.push({ label: 'Grössen-Sync', className: 'ok' });
     if (this.getFormPartConnectionDefinitions({ type: item.id }).length) badges.push({ label: 'Anschluss-Sync', className: 'ok' });
-    if (this.getFormPartImageSources(item).length) badges.push({ label: 'Bild', className: 'soft' });
 
-    return { compatible, badges };
+    return { compatible, hasSectionContext, badges };
   }
 
   getFormPartCategoryMeta(category = '') {
@@ -2491,9 +2648,12 @@ export default class WorkspaceComponent {
     const favorite = this.isLibraryFavorite('formpart', item.id);
     const cardMeta = this.getFormPartCardMeta(item, selectedSection);
     const description = String(item?.description || '').trim();
+    const compatibilityLabel = cardMeta.hasSectionContext
+      ? (cardMeta.compatible ? 'Passend zur aktiven Teilstrecke' : 'Abweichende Bauform – manuell prüfen')
+      : 'Formteil ohne aktive Teilstrecke wählen';
 
     return `
-      <div class="dp-library-card-shell">
+      <div class="dp-library-card-shell dp-formpart-card-shell">
         <button
           class="dp-library-favorite-toggle ${favorite ? 'active' : ''}"
           type="button"
@@ -2505,14 +2665,22 @@ export default class WorkspaceComponent {
         </button>
         <button class="dp-formpart-card ${cardMeta.compatible ? 'dp-formpart-card-compatible' : 'dp-formpart-card-muted'}" type="button" data-formpart-type="${this.escapeAttribute(item.id)}">
           <div class="dp-formpart-card-image">
+            <span class="dp-formpart-card-status ${cardMeta.compatible ? 'is-compatible' : 'is-alternate'}">${this.escapeHtml(compatibilityLabel)}</span>
             ${this.renderFormPartCardImage(item)}
           </div>
           <div class="dp-formpart-card-body">
-            <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
+            <div class="dp-library-card-kicker">
+              <span>${this.escapeHtml(item.category ?? 'Formteil')}</span>
+              <em>${this.getFormPartImageSources(item).length ? 'Skizze vorhanden' : 'ohne Skizze'}</em>
+            </div>
             <strong>${this.escapeHtml(item.name)}</strong>
-            ${description ? `<p>${this.escapeHtml(this.truncateText(description, 110))}</p>` : ''}
+            ${description ? `<p>${this.escapeHtml(this.truncateText(description, 118))}</p>` : ''}
             <div class="dp-formpart-card-badges">
               ${cardMeta.badges.map(badge => `<em class="${this.escapeAttribute(badge.className || '')}">${this.escapeHtml(badge.label)}</em>`).join('')}
+            </div>
+            <div class="dp-library-card-action">
+              <span>Formteil auswählen</span>
+              <b aria-hidden="true">→</b>
             </div>
           </div>
         </button>
@@ -2547,7 +2715,7 @@ export default class WorkspaceComponent {
     this.root.querySelectorAll('[data-formpart-fit]').forEach(button => {
       button.addEventListener('click', () => {
         this.formPartLibraryFit = button.dataset.formpartFit || 'all';
-        this.render();
+        this.refreshLibraryView('formpart');
       });
     });
 
@@ -2559,7 +2727,11 @@ export default class WorkspaceComponent {
           this.commands.createFormPart(type);
           this.autoCalculateProject();
         } catch (error) {
-          alert(`Formteil konnte nicht erstellt werden: ${error.message}`);
+          UiDialogService.alert({
+            title: 'Formteil konnte nicht erstellt werden',
+            message: error.message,
+            tone: 'danger',
+          });
         }
       });
     });
@@ -2630,10 +2802,16 @@ export default class WorkspaceComponent {
     const formPartIndex = system?.formParts?.findIndex(item => item.id === formPart?.id) ?? -1;
 
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Formteil ${formPartIndex >= 0 ? formPartIndex + 1 : '–'} von ${system?.formParts?.length || 0}</span>
           <h1>${this.escapeHtml(formPart?.name ?? 'Formteil')}</h1>
-          <p>Formteil bearbeiten, duplizieren, löschen oder innerhalb der Formteilliste verschieben.</p>
+          <p>Formteiltyp, Teilstreckenzuordnung und Fachparameter bearbeiten; der Druckverlust wird live nachgeführt.</p>
+        </div>
+        <div class="dp-page-summary dp-page-summary-result" aria-label="Aktuelles Formteilergebnis">
+          <span>Aktueller ζ-Wert</span>
+          <strong>${this.formatNumber(formPart?.zeta ?? formPart?.calculationResult?.zeta ?? 0, 3)}</strong>
+          <small>${this.escapeHtml(this.getSectionNameById(formPart?.sectionId))}</small>
         </div>
         <div class="workspace-actions">
           <button type="button" data-formpart-action="duplicate" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Duplizieren</button>
@@ -2646,28 +2824,31 @@ export default class WorkspaceComponent {
       ${this.renderValidationMessages(this.getFormPartValidationWarnings(formPart))}
       ${this.renderFormPartOverview(formPart)}
 
-      <section class="dp-editor-panel">
+      <section class="dp-editor-panel dp-formpart-editor-panel">
         <div class="dp-panel-header">
           <div>
+            <span class="dp-overline">Zuordnung und Fachparameter</span>
             <h2>Formteil bearbeiten</h2>
             <p>Die Eingabefelder werden automatisch aus der Formteilbibliothek erzeugt.</p>
           </div>
         </div>
 
         <div class="dp-editor-grid dp-formpart-main-grid">
-          <label>
+          <label class="dp-field-card">
             <span>Name</span>
             <input data-field="name" value="${this.escapeAttribute(formPart?.name ?? '')}">
+            <small class="dp-field-meta">Bezeichnung im Projektbaum und Bericht</small>
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Formteiltyp</span>
             <select data-field="type">
               ${this.renderFormPartTypeOptions(formPart)}
             </select>
+            <small class="dp-field-meta">Bestimmt Fachrechner und verfügbare Parameter</small>
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Teilstrecke</span>
             <select data-field="sectionId">
               ${sections.map(section => `
@@ -2676,6 +2857,7 @@ export default class WorkspaceComponent {
                 </option>
               `).join('')}
             </select>
+            <small class="dp-field-meta">Luftmenge und Geometrie werden automatisch übernommen</small>
           </label>
         </div>
 
@@ -2685,7 +2867,7 @@ export default class WorkspaceComponent {
 
         ${this.renderFormPartParameters(formPart)}
 
-        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und berechnet.</p>
+        <p class="dp-auto-calc-note"><strong>Live-Berechnung:</strong> Parameteränderungen werden sofort in ζ-Wert und Druckverlust übernommen.</p>
       </section>
 
       ${this.renderFormPartResult(formPart)}
@@ -2743,14 +2925,14 @@ export default class WorkspaceComponent {
           result = this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
 
           if (!result?.applied) {
-            alert(result?.message || 'Es konnten keine Grössen aus der Teilstrecke übernommen werden.');
+            UiDialogService.alert(result?.message || 'Es konnten keine Grössen aus der Teilstrecke übernommen werden.');
             return;
           }
         } else if (action === 'apply-connections') {
           result = this.applyConnectionSectionsToFormPart(formPart, { force: true, clearManualOverride: true });
 
           if (!result?.applied) {
-            alert(result?.summary || result?.message || 'Es konnten keine zusätzlichen Anschlussgrössen übernommen werden.');
+            UiDialogService.alert(result?.summary || result?.message || 'Es konnten keine zusätzlichen Anschlussgrössen übernommen werden.');
             return;
           }
         } else {
@@ -3333,6 +3515,7 @@ export default class WorkspaceComponent {
       <section class="dp-result-panel dp-formpart-result-panel">
         <div class="dp-panel-header">
           <div>
+            <span class="dp-overline">Live-Ergebnis</span>
             <h2>Formteil-Ergebnis</h2>
             ${sectionInfo?.isLive ? '<p>Die Teilstreckenwerte werden aktuell direkt aus der zugewiesenen Teilstrecke berechnet.</p>' : ''}
           </div>
@@ -3356,8 +3539,9 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
-        <table class="dp-table">
-          <tbody>
+        <div class="dp-table-scroll">
+          <table class="dp-table dp-key-value-table">
+            <tbody>
             <tr>
               <th>Teilstrecke</th>
               <td>${this.escapeHtml(sectionName)}</td>
@@ -3391,8 +3575,9 @@ export default class WorkspaceComponent {
               <th>Druckverlust Formteil</th>
               <td><strong>${this.formatNumber(pressureLoss)} Pa</strong></td>
             </tr>
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
 
         ${warnings.length ? `
           <div class="dp-warning-list">
@@ -3453,12 +3638,13 @@ export default class WorkspaceComponent {
     const value = formPart?.[parameter.id] ?? parameter.default ?? 0;
     const fieldId = this.escapeAttribute(parameter.id);
     const label = this.escapeHtml(parameter.label ?? parameter.id);
+    const unit = String(parameter.unit || '').trim();
 
     if (parameter.type === 'select') {
       const options = Array.isArray(parameter.options) ? parameter.options : [];
 
       return `
-        <label class="dp-param-field dp-param-select">
+        <label class="dp-param-field dp-param-select dp-field-card">
           <span>${label}</span>
           <select data-field="${fieldId}">
             ${options.map(option => {
@@ -3467,7 +3653,7 @@ export default class WorkspaceComponent {
 
               return `
                 <option value="${this.escapeAttribute(optionValue)}" ${String(value) === String(optionValue) ? 'selected' : ''}>
-                  ${this.escapeHtml(optionLabel)}${parameter.unit ? ` ${this.escapeHtml(parameter.unit)}` : ''}
+                  ${this.escapeHtml(optionLabel)}${unit ? ` ${this.escapeHtml(unit)}` : ''}
                 </option>
               `;
             }).join('')}
@@ -3484,18 +3670,26 @@ export default class WorkspaceComponent {
       ? 'readonly aria-readonly="true"'
       : '';
     const readOnlyClass = parameter.readOnly ? ' dp-param-readonly' : '';
+    const input = `
+      <input
+        data-field="${fieldId}"
+        type="number"
+        step="${this.escapeAttribute(parameter.step ?? 0.001)}"
+        ${parameter.min !== undefined ? `min="${this.escapeAttribute(parameter.min)}"` : ''}
+        ${parameter.max !== undefined ? `max="${this.escapeAttribute(parameter.max)}"` : ''}
+        ${readOnlyAttributes}
+        value="${this.escapeAttribute(displayValue)}">
+    `;
 
     return `
-      <label class="dp-param-field${readOnlyClass}">
+      <label class="dp-param-field dp-field-card${readOnlyClass}">
         <span>${label}</span>
-        <input
-          data-field="${fieldId}"
-          type="number"
-          step="${this.escapeAttribute(parameter.step ?? 0.001)}"
-          ${parameter.min !== undefined ? `min="${this.escapeAttribute(parameter.min)}"` : ''}
-          ${parameter.max !== undefined ? `max="${this.escapeAttribute(parameter.max)}"` : ''}
-          ${readOnlyAttributes}
-          value="${this.escapeAttribute(displayValue)}">
+        ${unit ? `
+          <div class="dp-unit-control${parameter.readOnly ? ' is-readonly' : ''}">
+            ${input}
+            <span class="dp-unit">${this.escapeHtml(unit)}</span>
+          </div>
+        ` : input}
         ${this.renderParameterHelp(parameter)}
       </label>
     `;
@@ -4103,7 +4297,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Kopiert ✓';
             setTimeout(() => { button.textContent = 'Datei-QS kopieren'; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -4208,7 +4402,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -4229,7 +4423,7 @@ export default class WorkspaceComponent {
             this.state.setSelection?.('releaseCandidateCheck', check);
             this.state.notify?.();
           } catch (error) {
-            alert(`RC-Check konnte nicht ausgeführt werden: ${error.message}`);
+            UiDialogService.alert(`RC-Check konnte nicht ausgeführt werden: ${error.message}`);
           } finally {
             button.disabled = false;
             button.textContent = originalText;
@@ -4349,7 +4543,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Kopiert ✓';
             setTimeout(() => { button.textContent = 'Zusammenfassung kopieren'; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -4360,12 +4554,12 @@ export default class WorkspaceComponent {
           button.textContent = 'Prüfung läuft…';
 
           try {
-            const check = await DeploymentDiagnostics.run({ project: this.state.project, version: APP_RELEASE });
+            const check = await DeploymentDiagnostics.run({ project: this.state.project, version: APP_ASSET_VERSION });
             this.state.deploymentCheck = check;
             this.state.setSelection?.('deploymentCheck', check);
             this.state.notify?.();
           } catch (error) {
-            alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
+            UiDialogService.alert(`Deployment-QS konnte nicht ausgeführt werden: ${error.message}`);
           } finally {
             button.disabled = false;
             button.textContent = originalText;
@@ -5022,23 +5216,33 @@ export default class WorkspaceComponent {
     return 'Export';
   }
 
-  confirmReportExport(model, action) {
+  async confirmReportExport(model, action) {
     const checklist = ReportEngine.createExportChecklist(model);
     const actionLabel = this.getReportActionLabel(action);
 
     if (checklist.status === 'ok') return true;
 
-    const failedItems = checklist.items
+    const failedRows = checklist.items
       .filter(item => item.status !== 'ok')
-      .map(item => `• ${item.label}: ${item.warning}`)
-      .join('\n');
+      .map(item => `${item.label}: ${item.warning}`);
 
     if (checklist.status === 'error') {
-      alert(`Der Export „${actionLabel}“ wurde gesperrt.\n\nBitte zuerst korrigieren:\n${failedItems}`);
+      await UiDialogService.alert({
+        title: `${actionLabel} gesperrt`,
+        message: 'Der Export kann erst erstellt werden, wenn die kritischen Prüfpunkte korrigiert sind.',
+        details: failedRows,
+        tone: 'danger',
+      });
       return false;
     }
 
-    return confirm(`Der Export „${actionLabel}“ enthält noch Hinweise.\n\n${failedItems}\n\nTrotzdem fortfahren?`);
+    return UiDialogService.confirm({
+      title: `${actionLabel} mit Hinweisen erstellen`,
+      message: 'Die Ausgabe ist möglich, enthält aber noch offene Prüfpunkte.',
+      details: failedRows,
+      confirmLabel: 'Trotzdem fortfahren',
+      tone: 'warning',
+    });
   }
 
   bindReportActions(model) {
@@ -5054,12 +5258,12 @@ export default class WorkspaceComponent {
             button.textContent = 'QS kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
 
-        if (!this.confirmReportExport(model, action)) return;
+        if (!await this.confirmReportExport(model, action)) return;
 
         const originalText = button.textContent;
         button.disabled = true;
@@ -5080,7 +5284,7 @@ export default class WorkspaceComponent {
             ReportEngine.downloadCsv(model);
           }
         } catch (error) {
-          alert(error.message);
+          UiDialogService.alert(error.message);
         } finally {
           button.disabled = false;
           button.textContent = originalText;
@@ -5104,10 +5308,16 @@ export default class WorkspaceComponent {
     const quantity = Number(normalized?.quantity ?? 1) || 1;
 
     this.root.innerHTML = `
-      <div class="workspace-header">
-        <div>
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Sonderbauteil ${index >= 0 ? index + 1 : '–'} von ${components.length}</span>
           <h1>${this.escapeHtml(normalized?.name ?? 'Sonderbauteil')}</h1>
-          <p>Sonderbauteil bearbeiten, einer Teilstrecke zuweisen und den Druckverlust erfassen.</p>
+          <p>Bauteildaten, Teilstreckenzuordnung und Hersteller-Druckverlust übersichtlich erfassen.</p>
+        </div>
+        <div class="dp-page-summary dp-page-summary-result" aria-label="Aktuelles Sonderbauteilergebnis">
+          <span>Gesamtdruckverlust</span>
+          <strong>${this.formatNumber(totalLoss, 1)} Pa</strong>
+          <small>${quantity} × ${this.formatNumber(unitLoss, 1)} Pa</small>
         </div>
         <div class="workspace-actions">
           <button type="button" data-special-action="duplicate" data-special-id="${this.escapeAttribute(normalized?.id)}">Duplizieren</button>
@@ -5122,19 +5332,20 @@ export default class WorkspaceComponent {
       <section class="dp-editor-panel dp-special-editor-panel">
         <div class="dp-panel-header">
           <div>
+            <span class="dp-overline">Bauteildaten und Herstellerwert</span>
             <h2>Eingabedaten</h2>
             <p>Druckverlust wird automatisch aus Anzahl × Druckverlust je Stück berechnet.</p>
           </div>
           <span class="dp-chip">Sonderbauteil</span>
         </div>
 
-        <div class="dp-editor-grid">
-          <label>
+        <div class="dp-editor-grid dp-special-input-grid">
+          <label class="dp-field-card">
             <span>Name</span>
             <input data-special-field="name" value="${this.escapeAttribute(normalized?.name ?? '')}">
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Bauteiltyp</span>
             <select data-special-field="componentType">
               ${library.map(item => `
@@ -5143,17 +5354,17 @@ export default class WorkspaceComponent {
             </select>
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Kategorie</span>
             <input data-special-field="category" value="${this.escapeAttribute(normalized?.category ?? '')}">
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Typ / Beschreibung</span>
             <input data-special-field="type" value="${this.escapeAttribute(normalized?.type ?? '')}">
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Zugeordnete Teilstrecke</span>
             <select data-special-field="sectionId">
               <option value="" ${!normalized?.sectionId ? 'selected' : ''}>Anlage / nicht zugeordnet</option>
@@ -5163,38 +5374,44 @@ export default class WorkspaceComponent {
             </select>
           </label>
 
-          <label>
-            <span>Luftmenge [m³/h]</span>
-            <input data-special-field="q" type="number" step="1" value="${this.formatAirflowInput(normalized?.q ?? 0)}">
+          <label class="dp-field-card">
+            <span>Luftmenge</span>
+            <div class="dp-unit-control">
+              <input data-special-field="q" type="number" step="1" value="${this.formatAirflowInput(normalized?.q ?? 0)}">
+              <span class="dp-unit">m³/h</span>
+            </div>
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Anzahl</span>
             <input data-special-field="quantity" type="number" step="1" min="1" value="${this.escapeAttribute(quantity)}">
           </label>
 
-          <label>
-            <span>Druckverlust je Stück [Pa]</span>
-            <input data-special-field="unitPressureLoss" type="number" step="0.1" value="${this.escapeAttribute(unitLoss)}">
+          <label class="dp-field-card">
+            <span>Druckverlust je Stück</span>
+            <div class="dp-unit-control">
+              <input data-special-field="unitPressureLoss" type="number" step="0.1" value="${this.escapeAttribute(unitLoss)}">
+              <span class="dp-unit">Pa</span>
+            </div>
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Hersteller</span>
             <input data-special-field="manufacturer" value="${this.escapeAttribute(normalized?.manufacturer ?? '')}">
           </label>
 
-          <label>
+          <label class="dp-field-card">
             <span>Modell / Typ-Nr.</span>
             <input data-special-field="model" value="${this.escapeAttribute(normalized?.model ?? '')}">
           </label>
 
-          <label class="dp-project-meta-wide">
+          <label class="dp-field-card dp-project-meta-wide">
             <span>Bemerkung / Datenblatt-Hinweis</span>
             <textarea data-special-field="note" rows="3">${this.escapeHtml(normalized?.note ?? '')}</textarea>
           </label>
         </div>
 
-        <p class="dp-auto-calc-note">Änderungen werden automatisch übernommen und in Bericht sowie Gesamtberechnung berücksichtigt.</p>
+        <p class="dp-auto-calc-note"><strong>Live-Berechnung:</strong> Änderungen fliessen automatisch in Bericht und Gesamtberechnung ein.</p>
       </section>
 
       <section class="dp-result-panel dp-special-result-panel">
@@ -5317,11 +5534,14 @@ export default class WorkspaceComponent {
 
     return `
       <section class="dp-result-panel dp-total-panel">
-        <h2>Berechnungsergebnis</h2>
-
+        <div class="dp-total-panel-copy">
+          <span class="dp-overline">Systemergebnis</span>
+          <h2>Gesamtdruckverlust</h2>
+          <p>Gerundete Summe aus Teilstrecken, Formteilen und Sonderbauteilen.</p>
+        </div>
         <div class="dp-result-value">
-          <strong>${this.formatNumber(total, 1)} Pa</strong>
-          <span>Gesamtdruckverlust</span>
+          <strong>${this.formatNumber(total, 1)} <small>Pa</small></strong>
+          <span>Aktueller Berechnungsstand</span>
         </div>
       </section>
     `;
@@ -5339,9 +5559,18 @@ export default class WorkspaceComponent {
     const specialLoss = Number(totals.special ?? 0);
     const totalLoss = Number(totals.totalRounded ?? totals.total ?? 0);
 
+    const shareOf = value => totalLoss ? Math.abs(Number(value || 0)) / Math.abs(totalLoss) * 100 : 0;
+
     return `
-      <section class="dp-result-panel">
-        <h2>Aufteilung Druckverlust</h2>
+      <section class="dp-result-panel dp-loss-breakdown-panel">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Ergebnisaufteilung</span>
+            <h2>Aufteilung Druckverlust</h2>
+            <p>Die Balken zeigen den relativen Anteil der einzelnen Verlustarten am gerundeten Systemtotal.</p>
+          </div>
+          <span class="dp-result-detail-badge">Total ${this.formatNumber(totalLoss, 1)} Pa</span>
+        </div>
 
         <div class="dp-result-cards">
           <div class="dp-result-card">
@@ -5364,6 +5593,23 @@ export default class WorkspaceComponent {
             <span>Gesamt gerundet</span>
             <strong>${this.formatNumber(totalLoss, 1)} Pa</strong>
           </div>
+        </div>
+
+        <div class="dp-loss-bars" aria-label="Anteile der Druckverlustarten">
+          ${[
+            ['Reibung', frictionLoss, 'friction'],
+            ['ζ-Formteile', zetaLoss, 'zeta'],
+            ['Direktverluste', directLoss, 'direct'],
+            ['Sonderbauteile', specialLoss, 'special'],
+          ].map(([label, value, type]) => {
+            const percent = shareOf(value);
+            return `
+              <div class="dp-loss-bar is-${type}">
+                <div><span>${label}</span><strong>${this.formatNumber(value, 1)} Pa · ${this.formatNumber(percent, 1)} %</strong></div>
+                <div class="dp-loss-bar-track"><span style="width:${Math.max(0, Math.min(100, percent))}%"></span></div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </section>
     `;
@@ -5546,7 +5792,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Rechen-QS kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -5753,7 +5999,7 @@ export default class WorkspaceComponent {
             button.textContent = 'QS kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -5932,7 +6178,7 @@ export default class WorkspaceComponent {
         const result = summarizeBetaFeedback(draft);
 
         if (action !== 'save' && !result.validation.valid) {
-          alert(['Bitte zuerst die Pflichtfelder ergänzen:', ...result.validation.errors].join('\n'));
+          UiDialogService.alert(['Bitte zuerst die Pflichtfelder ergänzen:', ...result.validation.errors].join('\n'));
           return;
         }
 
@@ -5950,7 +6196,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -6196,7 +6442,7 @@ export default class WorkspaceComponent {
         this.saveBetaFeedbackInboxEntries([...(this.betaFeedbackInboxEntries || []), ...imported]);
       }
 
-      if (errors.length) alert(['Einige Dateien konnten nicht importiert werden:', ...errors].join('\n'));
+      if (errors.length) UiDialogService.alert(['Einige Dateien konnten nicht importiert werden:', ...errors].join('\n'));
       input.value = '';
       rerender();
     });
@@ -6231,7 +6477,7 @@ export default class WorkspaceComponent {
           button.textContent = 'Kopiert ✓';
           setTimeout(() => { button.textContent = original; }, 1400);
         } catch {
-          alert(text);
+          UiDialogService.alert(text);
         }
       });
     });
@@ -6283,7 +6529,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -6612,7 +6858,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -6807,7 +7053,7 @@ export default class WorkspaceComponent {
         });
         this.saveExpertFeedbackEntries();
       }
-      if (failures.length) alert(`Einige Dateien konnten nicht importiert werden:\n\n${failures.join('\n')}`);
+      if (failures.length) UiDialogService.alert(`Einige Dateien konnten nicht importiert werden:\n\n${failures.join('\n')}`);
       this.state.setSelection?.('expertFeedbackRound', {});
       this.state.notify?.();
     });
@@ -6860,7 +7106,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Auswertung kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -7098,7 +7344,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -7341,7 +7587,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
           return;
         }
@@ -7497,7 +7743,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -7631,7 +7877,7 @@ export default class WorkspaceComponent {
           button.textContent = action === 'csv' ? 'CSV kopiert ✓' : 'Protokoll kopiert ✓';
           setTimeout(() => { button.textContent = original; }, 1400);
         } catch {
-          alert(text);
+          UiDialogService.alert(text);
         }
       });
     });
@@ -7780,7 +8026,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -7900,7 +8146,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -8036,7 +8282,7 @@ export default class WorkspaceComponent {
             button.textContent = 'Protokoll kopiert ✓';
             setTimeout(() => { button.textContent = original; }, 1400);
           } catch {
-            alert(text);
+            UiDialogService.alert(text);
           }
         }
       });
@@ -8082,7 +8328,7 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
-        <table class="dp-table dp-result-detail-table">
+        <div class="dp-table-scroll"><table class="dp-table dp-result-detail-table">
           <thead>
             <tr>
               <th>TS</th>
@@ -8097,7 +8343,7 @@ export default class WorkspaceComponent {
           <tbody>
             ${rows.map(row => this.renderSectionResultDetailRow(row, critical?.id)).join('')}
           </tbody>
-        </table>
+          </table></div>
       </section>
     `;
   }
@@ -8288,7 +8534,7 @@ export default class WorkspaceComponent {
       <section class="dp-result-panel">
         <h2>Teilstrecken-Ergebnisse</h2>
 
-        <table class="dp-table dp-calculation-table">
+        <div class="dp-table-scroll"><table class="dp-table dp-calculation-table">
           <thead>
             <tr>
               <th>Teilstrecke</th>
@@ -8348,7 +8594,7 @@ export default class WorkspaceComponent {
               `;
             }).join('')}
           </tbody>
-        </table>
+        </table></div>
       </section>
     `;
   }
@@ -8566,12 +8812,12 @@ export default class WorkspaceComponent {
         this.autoCalculateProject();
 
         if (!summary.total) {
-          alert('Dieser Teilstrecke sind noch keine Formteile zugeordnet.');
+          UiDialogService.alert('Dieser Teilstrecke sind noch keine Formteile zugeordnet.');
           return;
         }
 
         if (summary.failed) {
-          alert(`Grössenübernahme teilweise fehlgeschlagen. Aktualisiert: ${summary.applied}, Fehler: ${summary.failed}.`);
+          UiDialogService.alert(`Grössenübernahme teilweise fehlgeschlagen. Aktualisiert: ${summary.applied}, Fehler: ${summary.failed}.`);
         }
       });
     });
@@ -8677,27 +8923,39 @@ export default class WorkspaceComponent {
   }
 
   renderGeometryFields(section) {
-  if (this.isPipeSection(section)) {
+    if (this.isPipeSection(section)) {
+      return `
+        <label class="dp-field-card">
+          <span>Durchmesser</span>
+          <div class="dp-unit-control">
+            <input data-field="d" type="number" step="0.001" value="${section?.d ?? section?.diameter ?? 0}">
+            <span class="dp-unit">m</span>
+          </div>
+          <small class="dp-field-meta">Innendurchmesser des Rundrohrs</small>
+        </label>
+      `;
+    }
+
     return `
-      <label>
-        <span>Durchmesser [m]</span>
-        <input data-field="d" type="number" step="0.001" value="${section?.d ?? section?.diameter ?? 0}">
+      <label class="dp-field-card">
+        <span>Breite</span>
+        <div class="dp-unit-control">
+          <input data-field="b" type="number" step="0.001" value="${section?.b ?? section?.width ?? 0}">
+          <span class="dp-unit">m</span>
+        </div>
+        <small class="dp-field-meta">Innenmass des Rechteckkanals</small>
+      </label>
+
+      <label class="dp-field-card">
+        <span>Höhe</span>
+        <div class="dp-unit-control">
+          <input data-field="h" type="number" step="0.001" value="${section?.h ?? section?.height ?? 0}">
+          <span class="dp-unit">m</span>
+        </div>
+        <small class="dp-field-meta">Innenmass des Rechteckkanals</small>
       </label>
     `;
   }
-
-  return `
-    <label>
-      <span>Breite [m]</span>
-      <input data-field="b" type="number" step="0.001" value="${section?.b ?? section?.width ?? 0}">
-    </label>
-
-    <label>
-      <span>Höhe [m]</span>
-      <input data-field="h" type="number" step="0.001" value="${section?.h ?? section?.height ?? 0}">
-    </label>
-  `;
-}
 
   renderSectionResult(result, item, section = null) {
     if (!result) {
@@ -8716,7 +8974,14 @@ export default class WorkspaceComponent {
 
     return `
       <section class="dp-result-panel dp-section-result-panel">
-        <h2>Berechnungsergebnis</h2>
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Live-Ergebnis</span>
+            <h2>Berechnungsergebnis</h2>
+            <p>Reibung, Formteilverluste und Systemanteil der aktuellen Teilstrecke.</p>
+          </div>
+          <span class="dp-result-detail-badge">${this.formatNumber(share, 1)} % Systemanteil</span>
+        </div>
 
         <div class="dp-result-cards dp-section-result-cards">
           <div class="dp-result-card">
@@ -8736,40 +9001,47 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
-        <table class="dp-table">
-          <tbody>
-            <tr>
-              <th>Geschwindigkeit</th>
-              <td>${this.formatNumber(result.velocity)} m/s</td>
-            </tr>
-            <tr>
-              <th>Dynamischer Druck</th>
-              <td>${this.formatNumber(result.dynamicPressure)} Pa</td>
-            </tr>
-            <tr>
-              <th>Reibungsverlust</th>
-              <td>${this.formatNumber(result.frictionLoss)} Pa</td>
-            </tr>
-            <tr>
-              <th>ζ Formteile</th>
-              <td>${this.formatNumber(item?.zetaFromParts)}</td>
-            </tr>
-            <tr>
-              <th>ζ-Verlust</th>
-              <td>${this.formatNumber(result.zetaLoss)} Pa</td>
-            </tr>
-            ${result.directFormPartLoss ? `
+        <div class="dp-share-meter" aria-label="Anteil der Teilstrecke am Systemtotal">
+          <div><span>Systemanteil</span><strong>${this.formatNumber(share, 1)} %</strong></div>
+          <div class="dp-share-meter-track"><span style="width:${Math.max(0, Math.min(100, share))}%"></span></div>
+        </div>
+
+        <div class="dp-table-scroll">
+          <table class="dp-table dp-key-value-table">
+            <tbody>
               <tr>
-                <th>Formteil-Direktverlust</th>
-                <td>${this.formatNumber(result.directFormPartLoss)} Pa</td>
+                <th>Geschwindigkeit</th>
+                <td>${this.formatNumber(result.velocity)} m/s</td>
               </tr>
-            ` : ''}
-            <tr>
-              <th>Gesamt</th>
-              <td><strong>${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss)} Pa</strong></td>
-            </tr>
-          </tbody>
-        </table>
+              <tr>
+                <th>Dynamischer Druck</th>
+                <td>${this.formatNumber(result.dynamicPressure)} Pa</td>
+              </tr>
+              <tr>
+                <th>Reibungsverlust</th>
+                <td>${this.formatNumber(result.frictionLoss)} Pa</td>
+              </tr>
+              <tr>
+                <th>ζ Formteile</th>
+                <td>${this.formatNumber(item?.zetaFromParts)}</td>
+              </tr>
+              <tr>
+                <th>ζ-Verlust</th>
+                <td>${this.formatNumber(result.zetaLoss)} Pa</td>
+              </tr>
+              ${result.directFormPartLoss ? `
+                <tr>
+                  <th>Formteil-Direktverlust</th>
+                  <td>${this.formatNumber(result.directFormPartLoss)} Pa</td>
+                </tr>
+              ` : ''}
+              <tr class="dp-total-row">
+                <th>Gesamt</th>
+                <td><strong>${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss)} Pa</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         ${this.renderValidationMessages(result?.warnings || [])}
       </section>
