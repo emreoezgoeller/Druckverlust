@@ -1,7 +1,8 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=26.28';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=29.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=26.28';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=26.28';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=29.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=29.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=29.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -1144,7 +1145,7 @@ export class ReportEngine {
       ? chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length
       : 0;
     const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
-    const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / 8)) : 0;
+    const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / ReportSchematicRenderer.nodesPerPage)) : 0;
     const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
     const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
 
@@ -1421,69 +1422,42 @@ export class ReportEngine {
 
   static renderNetworkSchematicPages(model, nextPage, totalPages) {
     const nodes = model.networkSchematic?.nodes || [];
-    const chunks = nodes.length ? chunkArray(nodes, 8) : [[]];
+    const chunks = ReportSchematicRenderer.chunk(nodes);
 
     return chunks.map((chunk, chunkIndex) => {
+      const startPosition = chunkIndex * ReportSchematicRenderer.nodesPerPage;
+      const summary = model.networkSchematic?.summary || {};
       const content = `
-        ${this.renderReportSchematicSvg(model, chunk, chunkIndex, chunks.length)}
-        <div class="report-schematic-summary">
+        ${ReportSchematicRenderer.render(model.networkSchematic, chunk, {
+          chunkIndex,
+          chunkCount: chunks.length,
+          startPosition,
+        })}
+        <div class="report-schematic-summary is-five-columns">
           <div><span>Gesamtdruckverlust</span><strong>${formatNumber(model.totals.total, 1)} Pa</strong></div>
-          <div><span>Teilstrecken</span><strong>${model.counts.sections}</strong></div>
+          <div><span>Einlassluftmenge</span><strong>${formatAirflow(summary.inletAirflow)} m³/h</strong></div>
+          <div><span>Max. Geschwindigkeit</span><strong>${formatNumber(summary.maxVelocity, 2)} m/s</strong></div>
           <div><span>Formteile</span><strong>${model.counts.formParts}</strong></div>
           <div><span>Sonderbauteile</span><strong>${model.counts.specialComponents}</strong></div>
         </div>
-        <p class="report-schematic-disclaimer">Automatisch erzeugtes Funktionsschema auf Basis der Teilstreckenreihenfolge. Keine massstäbliche CAD- oder Montagezeichnung.</p>
+        <p class="report-schematic-disclaimer">Automatisch erzeugtes, herstellerneutrales Funktionsschema auf Basis der Teilstreckenreihenfolge. Kanalhöhen und Übergänge werden schematisch dargestellt; die Ausgabe ist keine massstäbliche CAD- oder Montagezeichnung.</p>
       `;
-      const title = chunkIndex ? 'Anlagenschema Fortsetzung' : 'Anlagenschema';
-      const subtitle = chunks.length > 1 ? `Teilstrecken ${chunkIndex * 8 + 1}–${chunkIndex * 8 + chunk.length} von ${nodes.length}` : 'Herstellerneutrale Funktionsdarstellung der Anlage';
+      const title = chunkIndex ? 'Anlagenschema - Fortsetzung' : 'Anlagenschema';
+      const rangeStart = startPosition + 1;
+      const rangeEnd = startPosition + chunk.length;
+      const subtitle = chunks.length > 1
+        ? `Anlagenabschnitt ${chunkIndex + 1} von ${chunks.length} · Teilstrecken ${rangeStart}-${rangeEnd} von ${nodes.length}`
+        : 'Herstellerneutrale Funktionsdarstellung mit Kanalzügen, Übergängen und Bauteilzuordnung';
       return this.renderPage(model, nextPage(), title, subtitle, content, totalPages);
     });
   }
 
   static renderReportSchematicSvg(model, nodes = [], chunkIndex = 0, chunkCount = 1) {
-    if (!nodes.length) return '<div class="report-empty report-schematic-empty">Keine Teilstrecken für das Anlagenschema vorhanden.</div>';
-    const width = 720;
-    const height = 350;
-    const left = 48;
-    const right = 672;
-    const baseline = 172;
-    const step = nodes.length > 1 ? (right - left) / (nodes.length - 1) : 0;
-    const allAttachments = model.networkSchematic?.attachments || [];
-    const positions = nodes.map((node, index) => ({ node, x: nodes.length === 1 ? width / 2 : left + index * step }));
-    const duct = positions.map(({ node, x }) => `${formatNumber(x, 1)},${formatNumber(baseline - Math.max(20, Math.min(45, toNumber(node.ductHeight) * .32)), 1)} ${formatNumber(x, 1)},${formatNumber(baseline + Math.max(20, Math.min(45, toNumber(node.ductHeight) * .32)), 1)}`).join(' ');
-
-    return `
-      <div class="report-schematic-wrap">
-        <svg viewBox="0 0 ${width} ${height}" class="report-schematic-svg" role="img" aria-label="Anlagenschema Seite ${chunkIndex + 1} von ${chunkCount}">
-          <defs>
-            <linearGradient id="report-duct-${chunkIndex}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8fbff"/><stop offset=".5" stop-color="#dfeaf4"/><stop offset="1" stop-color="#f8fbff"/></linearGradient>
-            <marker id="report-arrow-${chunkIndex}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#315b7d"/></marker>
-          </defs>
-          <rect x="18" y="18" width="684" height="300" rx="14" class="report-schematic-grid"/>
-          <path d="M30 ${baseline} H690" class="report-schematic-flowline" marker-end="url(#report-arrow-${chunkIndex})"/>
-          <text x="32" y="${baseline - 64}" class="report-schematic-terminal">LUFTSTROM</text>
-          <text x="32" y="${baseline - 46}" class="report-schematic-terminal-value">${formatAirflow(nodes[0]?.airflow || 0)} m³/h</text>
-          ${positions.map(({ node, x }, index) => {
-            const nodeAttachments = allAttachments.filter(item => item.sectionId === node.id);
-            const formPartCount = nodeAttachments.filter(item => item.kind === 'formPart').length;
-            const specialCount = nodeAttachments.filter(item => item.kind === 'special').length;
-            const cardX = x - 38;
-            return `<g class="report-schematic-node">
-              <rect x="${formatNumber(cardX, 1)}" y="${baseline - 52}" width="76" height="104" rx="9"/>
-              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline - 31}" class="report-schematic-node-title">${escapeHtml(node.label)}</text>
-              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline - 13}" class="report-schematic-node-line">${escapeHtml(node.dimension)}</text>
-              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 5}" class="report-schematic-node-line">${formatAirflow(node.airflow)} m³/h</text>
-              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 23}" class="report-schematic-node-line">${formatNumber(node.velocity, 2)} m/s</text>
-              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 41}" class="report-schematic-node-line strong">${formatNumber(node.pressureLoss, 1)} Pa</text>
-              ${formPartCount ? `<line x1="${x}" y1="${baseline - 52}" x2="${x}" y2="${baseline - 78}" class="report-schematic-attachment-line"/><circle cx="${x}" cy="${baseline - 88}" r="9" class="report-schematic-formpart"/><text x="${x}" y="${baseline - 84}" text-anchor="middle" class="report-schematic-count">${formPartCount}</text>` : ''}
-              ${specialCount ? `<line x1="${x}" y1="${baseline + 52}" x2="${x}" y2="${baseline + 78}" class="report-schematic-attachment-line"/><circle cx="${x}" cy="${baseline + 88}" r="9" class="report-schematic-special"/><text x="${x}" y="${baseline + 92}" text-anchor="middle" class="report-schematic-count">${specialCount}</text>` : ''}
-              ${index < positions.length - 1 ? `<path d="M${x + 41} ${baseline} H${positions[index + 1].x - 43}" class="report-schematic-arrow" marker-end="url(#report-arrow-${chunkIndex})"/>` : ''}
-            </g>`;
-          }).join('')}
-          <g class="report-schematic-legend"><circle cx="480" cy="302" r="6" class="report-schematic-formpart"/><text x="492" y="306">Formteile</text><circle cx="568" cy="302" r="6" class="report-schematic-special"/><text x="580" y="306">Sonderbauteile</text></g>
-        </svg>
-      </div>
-    `;
+    return ReportSchematicRenderer.render(model.networkSchematic || {}, nodes, {
+      chunkIndex,
+      chunkCount,
+      startPosition: chunkIndex * ReportSchematicRenderer.nodesPerPage,
+    });
   }
 
   static renderLossAnalysisPage(model, page, totalPages = 6) {
@@ -2365,7 +2339,7 @@ export class ReportEngine {
       .report-executive-kpis span{font-size:8px;color:var(--report-muted);font-weight:900;text-transform:uppercase}.report-executive-kpis strong{font-size:17px;color:var(--report-blue);line-height:1.08}.report-executive-kpis small{font-size:8px;color:#536a83;line-height:1.25}
       .report-executive-score.ok{background:#f2fbf5;border-color:#bde5ce}.report-executive-score.warn{background:#fff8ed;border-color:#f2c282}.report-executive-score.error{background:#fff4f4;border-color:#efb7b7}
       .report-executive-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.report-executive-grid .report-info-box{margin-top:0;min-height:82mm}.report-executive-priority ol{margin:0;padding-left:18px}.report-executive-priority li{margin:0 0 9px}.report-executive-priority li strong,.report-executive-priority li span{display:block}.report-executive-priority li strong{color:#123b64;font-size:9.2px}.report-executive-priority li span{color:#52677e;font-size:8.4px;line-height:1.35;margin-top:2px}.report-top-loss-table td{font-size:8px}.report-executive-note{margin-top:10px;padding:9px 12px}
-      .report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-flowline{stroke:#7d96ad;stroke-width:18;fill:none;opacity:.2}.report-schematic-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-node rect{fill:#fff;stroke:#0b6cae;stroke-width:1.8}.report-schematic-node-title{font-size:10px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:7.6px;fill:#425b74}.report-schematic-node-line.strong{font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:9px;font-weight:900;fill:#425b74}.report-schematic-terminal-value{font-size:8px;font-weight:800;fill:#073f7a}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2}.report-schematic-formpart{fill:#e28a0c}.report-schematic-special{fill:#6e55ad}.report-schematic-count{font-size:7px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:7px;fill:#536a83}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:7px 9px}.report-schematic-summary span{display:block;font-size:7.5px;color:var(--report-muted);text-transform:uppercase;font-weight:900}.report-schematic-summary strong{display:block;font-size:12px;color:var(--report-blue);margin-top:3px}.report-schematic-disclaimer{font-size:8px;color:#5c6f87;margin:8px 0 0}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
+      .report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node rect{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-title{font-size:8.6px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.7px;fill:#425b74}.report-schematic-node-line.strong{font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2}.report-schematic-formpart{fill:#e28a0c}.report-schematic-special{fill:#6e55ad}.report-schematic-count{font-size:6.3px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6.2px;fill:#536a83}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:7px 9px}.report-schematic-summary span{display:block;font-size:7px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:11px;color:var(--report-blue);margin-top:3px;white-space:nowrap}.report-schematic-disclaimer{font-size:7.7px;color:#5c6f87;margin:8px 0 0;line-height:1.35}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
       .report-loss-analysis-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.report-loss-analysis-grid .report-info-box{margin-top:0;min-height:56mm}.report-chart-row{margin:0 0 10px}.report-chart-row>div{display:flex;justify-content:space-between;gap:10px;font-size:8.5px}.report-chart-row>div span{color:#536a83}.report-chart-row i{display:block;height:8px;background:#e8eff7;border-radius:999px;overflow:hidden;margin-top:4px}.report-chart-row i b{display:block;height:100%;background:linear-gradient(90deg,#0b559c,#45a2d8);border-radius:999px}.report-section-ranking{margin-top:12px}.report-ranking-row{display:grid;grid-template-columns:18px 38mm 1fr 20mm;align-items:center;gap:7px;margin:7px 0;font-size:8.6px}.report-ranking-row>span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf2fb;color:#073f7a;font-weight:900}.report-ranking-row>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-ranking-row i{height:7px;background:#e8eff7;border-radius:999px;overflow:hidden}.report-ranking-row i b{display:block;height:100%;background:#0b6cae;border-radius:999px}.report-ranking-row em{font-style:normal;text-align:right;font-weight:900;color:#073f7a}
       .report-engineering-overview{display:grid;grid-template-columns:38mm 1fr;gap:14px;margin-bottom:12px}.report-engineering-score{border:1px solid #b9d8ee;border-radius:9px;background:linear-gradient(135deg,#edf7ff,#f8fbff);padding:10px;display:flex;flex-direction:column;justify-content:center}.report-engineering-score span{font-size:7.8px;text-transform:uppercase;color:#536a83;font-weight:900}.report-engineering-score strong{font-size:34px;line-height:1;color:#073f7a}.report-engineering-score small{font-size:8px;color:#536a83;margin-top:3px}.report-engineering-overview>div:last-child{border:1px solid var(--report-line);border-radius:9px;padding:10px;background:#fbfdff}.report-engineering-table th:nth-child(1){width:18mm}.report-engineering-table th:nth-child(2){width:25mm}.report-engineering-table th:nth-child(3){width:66mm}.report-engineering-table td{font-size:7.6px;line-height:1.25}.report-engineering-table td span{color:#536a83}.report-engineering-table .engineering-critical td:first-child{color:#a52828;font-weight:900}.report-engineering-table .engineering-warning td:first-child{color:#9a5a00;font-weight:900}.report-engineering-disclaimer{font-size:8px;color:#5c6f87;margin:10px 0 0;font-style:italic}
       @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}

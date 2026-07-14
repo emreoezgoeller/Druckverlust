@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.5.0 · kombinierte Phase 26–28 · Professional Report und Live-Simulation.
+**Aktueller Stand:** Version 1.6.0 · Phase 29.00 · Anlagenanalyse und PDF-Schema Pro.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung, eine nicht-destruktive Live-Simulation, `.dvp`-Projektdateien, Autosicherung sowie ein professioneller mehrseitiger Bericht mit Management-Zusammenfassung, Verlustanalyse und QS-Nachweis.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung mit neutralen Analysemodi, eine nicht-destruktive Live-Simulation, `.dvp`-Projektdateien, Autosicherung sowie ein professioneller mehrseitiger Bericht mit Management-Zusammenfassung, Verlustanalyse, überarbeitetem PDF-Anlagenschema und QS-Nachweis.
 
 ## Start
 
@@ -74,13 +74,13 @@ Die Gesamtsuite prüft unter anderem:
 - Grössen- und Anschluss-Synchronisation,
 - Handrechnungen und Summenbildung,
 - ein Grossprojekt mit 48 Teilstrecken,
-- Anlagenzeichnung mit Kanal-/Rohrwechseln, Bauteilsymbolen und UI-Ausgabe,
+- Anlagenzeichnung mit Kanal-/Rohrwechseln, Bauteilsymbolen, Analysemodi und UI-Ausgabe,
 - Live-Simulation für Luftmengen- und Dimensionsvarianten inklusive UI-Ausgabe,
-- Professional Report mit Management-Zusammenfassung, Anlagenschema, Verlustanalyse und Engineering-QS,
+- Professional Report mit Management-Zusammenfassung, mehrseitigem PDF-Anlagenschema, Verlustanalyse und Engineering-QS,
 - Speichern/Öffnen und Berichtserstellung,
 - Fachtest-, Freigabe- und Beta-Workflows.
 
-Einzelne Testgruppen können über die in `package.json` definierten `npm run test:*`-Befehle gestartet werden.
+Einzelne Testgruppen können über die in `package.json` definierten `npm run test:*`-Befehle gestartet werden. Die neue Anlagenanalyse und das PDF-Schema lassen sich gezielt mit `npm run test:phase29` prüfen.
 
 
 ## Bewusste Produktgrenzen

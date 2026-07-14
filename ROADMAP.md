@@ -59,6 +59,7 @@
 - Phase 23–24: Herstellerneutrale Engineering-QS und interaktives Anlagenschema
 - Phase 24.10: Anlagenzeichnung Pro mit SVG-Kanalzügen, Bauteilsymbolen, Zoom und Pan
 - Phase 26–28: Professional Report und nicht-destruktive Live-Simulation
+- Phase 29.00: Anlagenanalyse mit Standard-/Geschwindigkeits-/Druckverlustmodus und neuem mehrseitigem PDF-Anlagenschema
 
 ## Bewusst ausgeschlossen
 
@@ -69,6 +70,6 @@
 ## Nächste sinnvolle Schritte
 
 - Reale Beta-Rückmeldungen sammeln, in der Feedback-Auswertung priorisieren und gezielte Korrekturen umsetzen.
-- Professional Report und Live-Simulation mit eigenen Praxisprojekten fachlich gegenprüfen.
+- Anlagenanalyse, Professional Report und Live-Simulation mit eigenen Praxisprojekten fachlich gegenprüfen.
 - Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe final prüfen und vervollständigen.
 - Danach nur Erweiterungen umsetzen, die Berechnung, Nachweis oder Bedienung herstellerneutral verbessern.

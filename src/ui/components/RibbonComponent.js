@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=26.28';
+import RibbonActions from '../core/RibbonActions.js?v=29.00';
 
 const RIBBON_GROUPS = [
   {

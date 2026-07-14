@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=26.28';
+import ReportEngine from '../../report/ReportEngine.js?v=29.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=26.28';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=29.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,13 +89,13 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=26.28';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=29.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=26.28';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=26.28';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=26.28';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=29.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=29.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=29.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -9747,10 +9747,39 @@ formatNumber(value, digits = 2) {
     return `<g class="dp-schema-symbol" transform="translate(${x} ${y})">${paths[icon] || paths.component}</g>`;
   }
 
-  renderSchematicNode(node) {
+  getSchematicVisualLevel(node = {}, mode = 'standard', context = {}) {
+    if (mode === 'velocity') {
+      const value = Number(node.velocity) || 0;
+      if (value > 7) return 'critical';
+      if (value > 5) return 'high';
+      if (value > 3) return 'medium';
+      return 'low';
+    }
+
+    if (mode === 'pressure') {
+      const maximum = Math.max(.001, Number(context.maxPressureLoss) || 0);
+      const ratio = (Number(node.pressureLoss) || 0) / maximum;
+      if (ratio > .75) return 'critical';
+      if (ratio > .5) return 'high';
+      if (ratio > .25) return 'medium';
+      return 'low';
+    }
+
+    return 'standard';
+  }
+
+  renderSchematicNode(node, mode = 'standard', context = {}) {
+    const level = this.getSchematicVisualLevel(node, mode, context);
+    const modeLabel = mode === 'velocity'
+      ? `Geschwindigkeit ${this.formatNumber(node.velocity, 2)} m/s`
+      : mode === 'pressure'
+        ? `Druckverlust ${this.formatNumber(node.pressureLoss, 1)} Pa`
+        : 'Standarddarstellung';
+
     return `
-      <g class="dp-schema-node" tabindex="0" role="button" data-schema-section="${this.escapeAttribute(node.id)}" aria-label="${this.escapeAttribute(node.label)} öffnen">
+      <g class="dp-schema-node is-${level}" data-schema-mode="${this.escapeAttribute(mode)}" tabindex="0" role="button" data-schema-section="${this.escapeAttribute(node.id)}" aria-label="${this.escapeAttribute(`${node.label} öffnen · ${modeLabel}`)}">
         <rect class="dp-schema-card" x="${node.cardX}" y="${node.cardY}" width="${node.cardWidth}" height="${node.cardHeight}" rx="14"></rect>
+        <rect class="dp-schema-card-accent" x="${node.cardX}" y="${node.cardY}" width="6" height="${node.cardHeight}" rx="3"></rect>
         <text x="${node.cardX + 16}" y="${node.cardY + 28}" class="dp-schema-title">${this.escapeHtml(node.label)}</text>
         <text x="${node.cardX + 16}" y="${node.cardY + 53}" class="dp-schema-card-line">${this.escapeHtml(node.dimension)}</text>
         <text x="${node.cardX + 16}" y="${node.cardY + 76}" class="dp-schema-card-line">${this.formatAirflow(node.airflow)} m³/h</text>
@@ -9781,7 +9810,9 @@ formatNumber(value, digits = 2) {
     const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
     const calculation = project.calculationResult?.calculation || null;
     const schematic = NetworkSchematicEngine.create(activeSystem || {}, calculation);
-    const nodes = schematic.nodes.map(node => this.renderSchematicNode(node)).join('');
+    const viewMode = this.networkSchematicMode || 'standard';
+    const visualContext = { maxPressureLoss: Math.max(.001, ...schematic.nodes.map(node => Number(node.pressureLoss) || 0)) };
+    const nodes = schematic.nodes.map(node => this.renderSchematicNode(node, viewMode, visualContext)).join('');
     const transitions = schematic.transitions.map(item => `
       <path class="dp-schema-transition${item.changesGeometry ? ' has-change' : ''}"
         d="M ${item.x1} ${item.fromTop} L ${item.x2} ${item.toTop} L ${item.x2} ${item.toBottom} L ${item.x1} ${item.fromBottom} Z"></path>
@@ -9813,9 +9844,9 @@ formatNumber(value, digits = 2) {
     this.root.innerHTML = `
       <div class="workspace-header dp-page-header dp-schema-page-header">
         <div class="dp-page-heading">
-          <span class="dp-overline">Phase 24.10 · Anlagenzeichnung Pro</span>
+          <span class="dp-overline">Phase 29.00 · Anlagenanalyse Pro</span>
           <h1>Technische Anlagenansicht</h1>
-          <p>Interaktives, herstellerneutrales Funktionsschema mit Kanalzügen, Bauteilen und Live-Kennwerten.</p>
+          <p>Interaktives, herstellerneutrales Funktionsschema mit Kanalzügen, Bauteilen, Analysemodus und Live-Kennwerten.</p>
         </div>
         <div class="dp-page-summary dp-schema-page-summary">
           <div>
@@ -9835,10 +9866,17 @@ formatNumber(value, digits = 2) {
       </div>
 
       <section class="dp-schema-toolbar">
-        <div class="dp-schema-legend">
-          <span><i class="is-section"></i> Teilstrecke</span>
-          <span><i class="is-formpart"></i> Formteil</span>
-          <span><i class="is-special"></i> Sonderbauteil</span>
+        <div class="dp-schema-toolbar-main">
+          <div class="dp-schema-legend">
+            <span><i class="is-section"></i> Teilstrecke</span>
+            <span><i class="is-formpart"></i> Formteil</span>
+            <span><i class="is-special"></i> Sonderbauteil</span>
+          </div>
+          <div class="dp-schema-mode-switch" role="group" aria-label="Darstellungsmodus">
+            <button type="button" class="${viewMode === 'standard' ? 'is-active' : ''}" data-schema-mode-action="standard">Standard</button>
+            <button type="button" class="${viewMode === 'velocity' ? 'is-active' : ''}" data-schema-mode-action="velocity">Geschwindigkeit</button>
+            <button type="button" class="${viewMode === 'pressure' ? 'is-active' : ''}" data-schema-mode-action="pressure">Druckverlust</button>
+          </div>
         </div>
         <div class="workspace-actions">
           <button type="button" data-schema-action="quality">Engineering-QS</button>
@@ -9863,7 +9901,7 @@ formatNumber(value, digits = 2) {
               </marker>
             </defs>
             ${startMarkup}
-            ${schematic.nodes.map(node => `<g class="dp-schema-segment-base"><rect x="${node.x}" y="${node.top}" width="${node.width}" height="${node.ductHeight}" rx="${node.type === 'round' ? node.ductHeight / 2 : 4}"></rect></g>`).join('')}
+            ${schematic.nodes.map(node => `<g class="dp-schema-segment-base is-${this.getSchematicVisualLevel(node, viewMode, visualContext)}" data-schema-mode="${this.escapeAttribute(viewMode)}"><rect x="${node.x}" y="${node.top}" width="${node.width}" height="${node.ductHeight}" rx="${node.type === 'round' ? node.ductHeight / 2 : 4}"></rect></g>`).join('')}
             ${transitions}
             ${endMarkup}
             ${nodes}
@@ -9971,6 +10009,15 @@ formatNumber(value, digits = 2) {
           event.preventDefault();
           showAttachment(node.dataset.schemaAttachment);
         }
+      });
+    });
+
+    this.root.querySelectorAll('[data-schema-mode-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const nextMode = button.dataset.schemaModeAction || 'standard';
+        if (nextMode === viewMode) return;
+        this.networkSchematicMode = nextMode;
+        this.renderNetworkSchematic(activeSystem);
       });
     });
 

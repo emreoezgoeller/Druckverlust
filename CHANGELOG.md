@@ -1,5 +1,19 @@
 # Änderungsverlauf
 
+## Phase 29.00 – Anlagenanalyse und PDF-Schema Pro
+
+- Technische Anlagenansicht um drei neutrale Darstellungsmodi erweitert: Standard, Geschwindigkeit und Druckverlust.
+- Teilstrecken und Kanalzüge werden im Analysemodus abgestuft hervorgehoben, ohne Hersteller- oder Produktbezug.
+- PDF-Anlagenschema vollständig neu aufgebaut: maximal fünf Teilstrecken je Seite, getrennte Einlass-/Endbereiche und klarere Kartenanordnung.
+- Kanalhöhen und Dimensionswechsel werden im Bericht als durchgehender schematischer Kanalzug mit Übergängen dargestellt.
+- Lange Anlagen erhalten automatisch Fortsetzungsseiten mit eindeutigem Teilstreckenbereich und Fortsetzungsangaben.
+- Formteile und Sonderbauteile werden im Schema mit getrennten Zählern ober- und unterhalb der zugeordneten Teilstrecke dargestellt.
+- Kennwertleiste des PDF-Schemas um Einlassluftmenge und maximale Geschwindigkeit erweitert.
+- SVG-Ausgabe mit expliziten Füll-, Linien- und Textattributen für stabilere Darstellung in unterschiedlichen PDF-Renderern abgesichert.
+- Neue automatisierte Prüfungen für Seitenaufteilung, Überlagerungsfreiheit, Fortsetzungen und Analysemodi ergänzt.
+- App-Version auf 1.6.0 und Cachekennung auf 29.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 26–28 – Professional Report und Live-Simulation
 
 - Professional Report um eine Management-Zusammenfassung mit zentralen Projekt-, Anlagen- und QS-Kennwerten erweitert.

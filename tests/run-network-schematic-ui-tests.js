@@ -28,7 +28,7 @@ workspace.networkSchematicZoom = 1;
 workspace.renderNetworkSchematic(system);
 
 assert.match(html, /Technische Anlagenansicht/);
-assert.match(html, /Phase 24\.10/);
+assert.match(html, /Phase 29\.00/);
 assert.match(html, /800 × 450 mm/);
 assert.doesNotMatch(html, /0\.8 × 0\.45 mm/);
 assert.match(html, /Gesamtdruckverlust/);
@@ -41,7 +41,7 @@ assert.match(html, /dp-schema-attachment is-formpart/);
 assert.match(html, /dp-schema-attachment is-special/);
 assert.match(html, /dp-schema-terminal is-start/);
 assert.match(html, /dp-schema-terminal is-end/);
-assert.match(html, /Kanalzügen, Bauteilen und Live-Kennwerten/);
+assert.match(html, /Kanalzügen, Bauteilen, Analysemodus und Live-Kennwerten/);
 assert.equal((html.match(/data-schema-section=/g) || []).length, 5);
 assert.equal((html.match(/data-schema-attachment=/g) || []).length, 8);
 assert.equal((html.match(/class="dp-schema-card"/g) || []).length, 5);
