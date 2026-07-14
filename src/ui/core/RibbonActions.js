@@ -564,4 +564,26 @@ export default class RibbonActions {
   exportPdf() {
     this.showReport();
   }
+  showEngineeringQuality() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+    this.calculate({ silent: true, keepDirty: true });
+    this.state.setSelection?.('engineeringQuality', this.getActiveSystem());
+    this.state.notify?.();
+  }
+
+  showNetworkSchematic() {
+    const system = this.getActiveSystem();
+    if (!system) {
+      UiDialogService.alert('Keine Anlage vorhanden.');
+      return;
+    }
+    this.calculate({ silent: true, keepDirty: true });
+    this.state.setSelection?.('networkSchematic', system);
+    this.state.notify?.();
+  }
+
 }

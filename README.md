@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.3.12 · Phase 21.12 · bereinigter und geprüfter Projektstand.
+**Aktueller Stand:** Version 1.4.1 · Phase 24.10 · Anlagenzeichnung Pro.
 
-Druckverlust Pro ist eine browserbasierte Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Projektprüfung, Referenztests, `.dvp`-Projektdateien, Autosicherung sowie mehrseitige Berichte und PDF-Ausgabe.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung, `.dvp`-Projektdateien, Autosicherung sowie mehrseitige Berichte und PDF-Ausgabe.
 
 ## Start
 
@@ -45,7 +45,9 @@ Druckverlust/
 │   ├── landing/               Gestaltung und Logik der öffentlichen Seiten
 │   ├── licensing/             vorbereitete Lizenzlogik
 │   ├── project/               Standard-, Demo- und Praxisprojekte
+│   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── report/                aktive Bericht- und PDF-Engine
+│   ├── schematic/             SVG-Modell der Anlagenzeichnung
 │   ├── storage/               Speichern, Öffnen und Autosicherung
 │   ├── testing/               aktive Referenz- und Freigabetests
 │   ├── ui/                    Oberfläche und Komponenten
@@ -71,6 +73,7 @@ Die Gesamtsuite prüft unter anderem:
 - Grössen- und Anschluss-Synchronisation,
 - Handrechnungen und Summenbildung,
 - ein Grossprojekt mit 48 Teilstrecken,
+- Anlagenzeichnung mit Kanal-/Rohrwechseln, Bauteilsymbolen und UI-Ausgabe,
 - Speichern/Öffnen und Berichtserstellung,
 - Fachtest-, Freigabe- und Beta-Workflows.
 

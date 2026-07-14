@@ -30,6 +30,8 @@ const RIBBON_GROUPS = [
       { action: 'calculate', label: 'Berechnen', icon: 'refresh', title: 'Berechnung aktualisieren (Strg+Enter)', emphasis: 'calculate' },
       { action: 'projectCheck', label: 'Projektcheck', icon: 'clipboardCheck', title: 'Projekt auf fehlende oder unplausible Angaben prüfen' },
       { action: 'calculationCheck', label: 'Rechen-QS', icon: 'shieldCheck', title: 'Berechnung fachlich kontrollieren' },
+      { action: 'showEngineeringQuality', label: 'Engineering-QS', icon: 'pulse', title: 'Priorisierte, herstellerneutrale Engineering-Prüfung öffnen' },
+      { action: 'showNetworkSchematic', label: 'Anlagenschema', icon: 'network', title: 'Schematische Anlagenansicht öffnen' },
     ],
   },
   {
@@ -183,6 +185,8 @@ export default class RibbonComponent {
     const calculateButton = this.root.querySelector('[data-action="calculate"]');
     const dashboardButton = this.root.querySelector('.dp-ribbon-groups [data-action="showDashboard"]');
     const reportButton = this.root.querySelector('[data-action="showReport"]');
+    const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
+    const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -199,7 +203,13 @@ export default class RibbonComponent {
       button.removeAttribute('aria-current');
     });
 
-    if (selectionType === 'report') {
+    if (selectionType === 'engineeringQuality') {
+      qualityButton?.classList.add('is-current');
+      qualityButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'networkSchematic') {
+      schematicButton?.classList.add('is-current');
+      schematicButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'report') {
       reportButton?.classList.add('is-current');
       reportButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'project' || selectionType === 'system') {
@@ -255,6 +265,8 @@ export default class RibbonComponent {
       sparkles: '<path d="m12 3 1.1 3.1L16 7.2l-2.9 1.1L12 11.5l-1.1-3.2L8 7.2l2.9-1.1zM6 13l.8 2.2L9 16l-2.2.8L6 19l-.8-2.2L3 16l2.2-.8zM18 13l.8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8z"/>',
       help: '<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.5 2.1c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
       info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v7M12 7h.01"/>',
+      pulse: '<path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="10"/>',
+      network: '<rect x="2" y="8" width="6" height="8" rx="1"/><rect x="16" y="3" width="6" height="8" rx="1"/><rect x="16" y="13" width="6" height="8" rx="1"/><path d="M8 12h4c2 0 2-5 4-5M12 12c2 0 2 5 4 5"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     };
 

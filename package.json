@@ -1,10 +1,10 @@
 {
   "name": "druckverlust-pro",
-  "version": "1.3.12",
+  "version": "1.4.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node tests/run-reference-tests.js && node tests/run-formpart-validation.js && node tests/run-formpart-sync-tests.js && node tests/run-comparison-matrix-tests.js && node tests/run-practice-project-tests.js && node tests/run-expert-test-protocol.js && node tests/run-feedback-round-tests.js && node tests/run-release-decision-tests.js && node tests/run-beta-release-tests.js && node tests/run-beta-feedback-tests.js && node tests/run-beta-feedback-inbox-tests.js",
+    "test": "node tests/run-engineering-quality-tests.js && node tests/run-network-schematic-tests.js && node tests/run-network-schematic-ui-tests.js && node tests/run-reference-tests.js && node tests/run-formpart-validation.js && node tests/run-formpart-sync-tests.js && node tests/run-comparison-matrix-tests.js && node tests/run-practice-project-tests.js && node tests/run-expert-test-protocol.js && node tests/run-feedback-round-tests.js && node tests/run-release-decision-tests.js && node tests/run-beta-release-tests.js && node tests/run-beta-feedback-tests.js && node tests/run-beta-feedback-inbox-tests.js",
     "test:reference": "node tests/run-reference-tests.js",
     "test:formparts": "node tests/run-formpart-validation.js",
     "test:practice": "node tests/run-practice-project-tests.js",

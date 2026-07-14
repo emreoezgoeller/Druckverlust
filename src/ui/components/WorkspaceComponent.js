@@ -89,10 +89,12 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=22.03';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=24.10';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=24.10';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=24.10';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -117,6 +119,7 @@ export default class WorkspaceComponent {
     this.betaFeedbackDraft = this.loadBetaFeedbackDraft();
     this.betaFeedbackInboxEntries = this.loadBetaFeedbackInboxEntries();
     this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
+    this.networkSchematicZoom = 1;
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -133,6 +136,8 @@ export default class WorkspaceComponent {
     if (selection.type === 'section') return this.renderSection(selection.data);
     if (selection.type === 'formPartPicker') return this.renderFormPartPicker();
     if (selection.type === 'report') return this.renderReport();
+    if (selection.type === 'engineeringQuality') return this.renderEngineeringQuality(selection.data);
+    if (selection.type === 'networkSchematic') return this.renderNetworkSchematic(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
@@ -6510,6 +6515,7 @@ export default class WorkspaceComponent {
 
         if (action === 'reset-filters') {
           this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
+    this.networkSchematicZoom = 1;
           rerender();
           return;
         }
@@ -9345,4 +9351,384 @@ formatNumber(value, digits = 2) {
 
   return Number(value).toFixed(digits);
 }
+
+  renderEngineeringQuality(system = null) {
+    const project = this.state.project || {};
+    const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
+    const calculation = project.calculationResult?.calculation || null;
+    const analysis = EngineeringQualityEngine.analyze(project, activeSystem, calculation);
+    const statusLabel = analysis.status === 'critical' ? 'Kritisch' : analysis.status === 'warning' ? 'Prüfen' : analysis.status === 'info' ? 'Hinweise' : 'Plausibel';
+    const findingHtml = analysis.findings.length ? analysis.findings.map((finding, index) => `
+      <article class="dp-quality-finding is-${this.escapeAttribute(finding.severity)}" data-quality-index="${index}">
+        <div class="dp-quality-finding-head">
+          <span class="dp-quality-severity">${this.escapeHtml(finding.severity === 'critical' ? 'Kritisch' : finding.severity === 'warning' ? 'Prüfen' : 'Hinweis')}</span>
+          <code>${this.escapeHtml(finding.code)}</code>
+        </div>
+        <h3>${this.escapeHtml(finding.title)}</h3>
+        <p>${this.escapeHtml(finding.message)}</p>
+        <div class="dp-quality-recommendation"><strong>Empfehlung</strong><span>${this.escapeHtml(finding.recommendation)}</span></div>
+        ${finding.sectionId ? `<button type="button" data-quality-section="${this.escapeAttribute(finding.sectionId)}">Teilstrecke öffnen</button>` : ''}
+      </article>
+    `).join('') : `
+      <div class="dp-quality-empty">
+        <strong>Keine auffälligen Punkte erkannt</strong>
+        <p>Die herstellerneutrale Plausibilitätsprüfung hat im aktuellen Datenstand keine priorisierten Hinweise erzeugt.</p>
+      </div>`;
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Phase 23 · Engineering-QS</span>
+          <h1>Intelligente Qualitätskontrolle</h1>
+          <p>Priorisierte Plausibilitätsprüfung für Geschwindigkeit, Reibungsgradient, Verlustkonzentration und Datenqualität.</p>
+        </div>
+        <div class="dp-page-summary dp-quality-score is-${this.escapeAttribute(analysis.status)}">
+          <span>Engineering-Score</span>
+          <strong>${analysis.score}/100</strong>
+          <small>${statusLabel} · ${analysis.analyzedSectionCount} Teilstrecken</small>
+        </div>
+      </div>
+
+      <section class="dp-quality-overview">
+        <article><span>Kritisch</span><strong>${analysis.counts.critical}</strong></article>
+        <article><span>Zu prüfen</span><strong>${analysis.counts.warning}</strong></article>
+        <article><span>Hinweise</span><strong>${analysis.counts.info}</strong></article>
+        <article><span>Anlagendruckverlust</span><strong>${this.formatNumber(analysis.totalLoss, 1)} Pa</strong></article>
+      </section>
+
+      <section class="dp-quality-toolbar">
+        <div><strong>Priorisierte Prüfpunkte</strong><span>Schwerwiegende Punkte werden zuerst dargestellt.</span></div>
+        <div class="workspace-actions">
+          <button type="button" data-quality-action="schematic">Anlagenschema</button>
+          <button type="button" data-quality-action="refresh">Neu prüfen</button>
+        </div>
+      </section>
+
+      <section class="dp-quality-findings">${findingHtml}</section>
+      <p class="dp-quality-disclaimer">${this.escapeHtml(analysis.disclaimer)}</p>
+    `;
+
+    this.root.querySelectorAll('[data-quality-section]').forEach(button => {
+      button.addEventListener('click', () => {
+        const section = activeSystem?.sections?.find(item => item.id === button.dataset.qualitySection);
+        if (section) this.state.selectSection(section);
+      });
+    });
+    this.root.querySelector('[data-quality-action="schematic"]')?.addEventListener('click', () => {
+      this.state.setSelection('networkSchematic', activeSystem);
+      this.state.notify();
+    });
+    this.root.querySelector('[data-quality-action="refresh"]')?.addEventListener('click', () => {
+      try {
+        project.calculationResult = ProjectCalculationService.calculate(project);
+        this.state.lastCalculationAt = project.calculationResult.timestamp;
+        this.state.isCalculationDirty = false;
+        this.state.notify();
+      } catch (error) {
+        UiDialogService.alert({ title: 'QS konnte nicht aktualisiert werden', message: error.message, tone: 'danger' });
+      }
+    });
+  }
+
+  renderSchematicAttachmentIcon(icon = 'component', x = 0, y = 0) {
+    const paths = {
+      bend: `<path d="M -8 7 V 0 A 8 8 0 0 1 0 -8 H 8"></path>`,
+      transition: `<path d="M -9 -7 L -2 -4 V 4 L -9 7 M 9 -9 L 1 -5 V 5 L 9 9"></path>`,
+      branch: `<path d="M -9 5 H 0 V -7 M 0 0 H 9"></path>`,
+      offset: `<path d="M -9 7 H -3 L 3 -7 H 9"></path>`,
+      tap: `<path d="M -9 5 H 9 M 0 5 V -8 M -5 -3 L 0 -8 L 5 -3"></path>`,
+      fitting: `<path d="M -8 6 H -2 V -6 H 8 M 3 -10 L 8 -6 L 3 -2"></path>`,
+      filter: `<rect x="-8" y="-8" width="16" height="16" rx="2"></rect><path d="M -5 -5 L 5 5 M 0 -7 V 7 M 5 -5 L -5 5"></path>`,
+      silencer: `<rect x="-9" y="-7" width="18" height="14" rx="2"></rect><path d="M -6 -4 V 4 M -2 -4 V 4 M 2 -4 V 4 M 6 -4 V 4"></path>`,
+      damper: `<circle cx="0" cy="0" r="8"></circle><path d="M -6 5 L 6 -5"></path>`,
+      coil: `<path d="M -9 -5 C -6 -9 -3 -1 0 -5 C 3 -9 6 -1 9 -5 M -9 5 C -6 1 -3 9 0 5 C 3 1 6 9 9 5"></path>`,
+      outlet: `<rect x="-8" y="-8" width="16" height="16" rx="2"></rect><path d="M -5 -4 H 5 M -5 0 H 5 M -5 4 H 5"></path>`,
+      valve: `<path d="M -9 -7 L 0 0 L -9 7 Z M 9 -7 L 0 0 L 9 7 Z"></path>`,
+      component: `<rect x="-8" y="-8" width="16" height="16" rx="3"></rect><path d="M -4 0 H 4 M 0 -4 V 4"></path>`,
+    };
+
+    return `<g class="dp-schema-symbol" transform="translate(${x} ${y})">${paths[icon] || paths.component}</g>`;
+  }
+
+  renderSchematicNode(node) {
+    return `
+      <g class="dp-schema-node" tabindex="0" role="button" data-schema-section="${this.escapeAttribute(node.id)}" aria-label="${this.escapeAttribute(node.label)} öffnen">
+        <rect class="dp-schema-card" x="${node.cardX}" y="${node.cardY}" width="${node.cardWidth}" height="${node.cardHeight}" rx="14"></rect>
+        <text x="${node.cardX + 16}" y="${node.cardY + 28}" class="dp-schema-title">${this.escapeHtml(node.label)}</text>
+        <text x="${node.cardX + 16}" y="${node.cardY + 53}" class="dp-schema-card-line">${this.escapeHtml(node.dimension)}</text>
+        <text x="${node.cardX + 16}" y="${node.cardY + 76}" class="dp-schema-card-line">${this.formatAirflow(node.airflow)} m³/h</text>
+        <text x="${node.cardX + 16}" y="${node.cardY + 99}" class="dp-schema-card-line">${this.formatNumber(node.velocity, 2)} m/s</text>
+        <text x="${node.cardX + 16}" y="${node.cardY + 121}" class="dp-schema-card-loss">${this.formatNumber(node.pressureLoss, 1)} Pa</text>
+      </g>`;
+  }
+
+  renderSchematicAttachment(item) {
+    const toneClass = item.kind === 'special' ? ' is-special' : ' is-formpart';
+    const detail = item.kind === 'special'
+      ? `${item.label}${item.pressureLoss ? ` · ${this.formatNumber(item.pressureLoss, 1)} Pa` : ''}`
+      : `${item.label}${item.zeta ? ` · ζ ${this.formatNumber(item.zeta, 2)}` : ''}`;
+    return `
+      <g class="dp-schema-attachment${toneClass}" tabindex="0" role="button"
+        data-schema-attachment="${this.escapeAttribute(item.id)}"
+        data-schema-section-id="${this.escapeAttribute(item.sectionId)}"
+        aria-label="${this.escapeAttribute(detail)}">
+        <path class="dp-schema-attachment-line" d="M ${item.x} ${item.anchorY} L ${item.x} ${item.y}"></path>
+        <circle cx="${item.x}" cy="${item.y}" r="22"></circle>
+        ${this.renderSchematicAttachmentIcon(item.icon, item.x, item.y)}
+        <title>${this.escapeHtml(detail)}</title>
+      </g>`;
+  }
+
+  renderNetworkSchematic(system = null) {
+    const project = this.state.project || {};
+    const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
+    const calculation = project.calculationResult?.calculation || null;
+    const schematic = NetworkSchematicEngine.create(activeSystem || {}, calculation);
+    const nodes = schematic.nodes.map(node => this.renderSchematicNode(node)).join('');
+    const transitions = schematic.transitions.map(item => `
+      <path class="dp-schema-transition${item.changesGeometry ? ' has-change' : ''}"
+        d="M ${item.x1} ${item.fromTop} L ${item.x2} ${item.toTop} L ${item.x2} ${item.toBottom} L ${item.x1} ${item.fromBottom} Z"></path>
+      <path class="dp-schema-flow-arrow" d="M ${item.x1 + 13} ${item.y} H ${item.x2 - 13}"></path>
+    `).join('');
+    const attachments = schematic.attachments.map(item => this.renderSchematicAttachment(item)).join('');
+    const firstNode = schematic.nodes[0];
+    const lastNode = schematic.nodes[schematic.nodes.length - 1];
+    const startMarkup = schematic.start && firstNode ? `
+      <g class="dp-schema-terminal is-start">
+        <path d="M ${schematic.start.x + 18} ${schematic.start.y - firstNode.ductHeight / 2}
+          H ${firstNode.x - 28} L ${firstNode.x} ${firstNode.top}
+          V ${firstNode.bottom} L ${firstNode.x - 28} ${schematic.start.y + firstNode.ductHeight / 2}
+          H ${schematic.start.x + 18} Z"></path>
+        <path class="dp-schema-terminal-arrow" d="M ${schematic.start.x - 8} ${schematic.start.y} H ${schematic.start.x + 18}"></path>
+        <text x="${schematic.start.x + 38}" y="${schematic.start.y - 8}" class="dp-schema-terminal-title">LUFTSTROM</text>
+        <text x="${schematic.start.x + 38}" y="${schematic.start.y + 15}" class="dp-schema-terminal-value">${this.formatAirflow(schematic.summary.inletAirflow)} m³/h</text>
+      </g>` : '';
+    const endMarkup = schematic.end && lastNode ? `
+      <g class="dp-schema-terminal is-end">
+        <path d="M ${schematic.end.x} ${lastNode.top} H ${schematic.end.arrowX - 22}
+          V ${lastNode.bottom} H ${schematic.end.x} Z"></path>
+        <path class="dp-schema-terminal-arrow" d="M ${schematic.end.arrowX - 34} ${schematic.end.y} H ${schematic.end.arrowX + 18}"></path>
+        <circle cx="${schematic.end.arrowX - 34}" cy="${schematic.end.y}" r="8"></circle>
+        <text x="${schematic.end.arrowX - 58}" y="${schematic.end.y + 76}" class="dp-schema-terminal-title">ANLAGENENDE</text>
+        <text x="${schematic.end.arrowX - 58}" y="${schematic.end.y + 99}" class="dp-schema-terminal-value">${this.formatAirflow(schematic.summary.outletAirflow)} m³/h</text>
+      </g>` : '';
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-page-header dp-schema-page-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Phase 24.10 · Anlagenzeichnung Pro</span>
+          <h1>Technische Anlagenansicht</h1>
+          <p>Interaktives, herstellerneutrales Funktionsschema mit Kanalzügen, Bauteilen und Live-Kennwerten.</p>
+        </div>
+        <div class="dp-page-summary dp-schema-page-summary">
+          <div>
+            <span>${this.escapeHtml(activeSystem?.name || 'Anlage')}</span>
+            <strong>${schematic.summary.sectionCount} Teilstrecken</strong>
+            <small>${schematic.summary.formPartCount + schematic.summary.specialCount} zugeordnete Bauteile</small>
+          </div>
+          <span class="dp-schema-summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="30" height="30">
+              <circle cx="16" cy="16" r="3"></circle>
+              <path d="M16 13 C13 8 15 4 19 4 C23 4 24 8 21 12 C19 14 18 14 16 13 Z"></path>
+              <path d="M19 17 C25 16 28 19 26 23 C24 27 19 26 17 22 C16 20 17 18 19 17 Z"></path>
+              <path d="M14 18 C11 23 7 24 5 20 C3 16 6 12 11 13 C14 14 15 16 14 18 Z"></path>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <section class="dp-schema-toolbar">
+        <div class="dp-schema-legend">
+          <span><i class="is-section"></i> Teilstrecke</span>
+          <span><i class="is-formpart"></i> Formteil</span>
+          <span><i class="is-special"></i> Sonderbauteil</span>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" data-schema-action="quality">Engineering-QS</button>
+          <button type="button" class="is-primary" data-schema-action="fit">Alles anzeigen</button>
+        </div>
+      </section>
+
+      <section class="dp-schema-panel">
+        <div class="dp-schema-viewport" tabindex="0" aria-label="Anlagenzeichnung. Mit gedrückter Maustaste verschieben; Plus und Minus ändern den Zoom.">
+          ${schematic.nodes.length ? `<svg class="dp-schema-canvas" viewBox="0 0 ${schematic.width} ${schematic.height}" width="${schematic.width}" height="${schematic.height}" role="img" aria-label="Technische Darstellung der Anlage">
+            <defs>
+              <linearGradient id="dp-schema-duct-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f9fcff"></stop>
+                <stop offset="0.5" stop-color="#eaf1f7"></stop>
+                <stop offset="1" stop-color="#f8fbfe"></stop>
+              </linearGradient>
+              <filter id="dp-schema-card-shadow" x="-20%" y="-20%" width="140%" height="160%">
+                <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#15304c" flood-opacity=".14"></feDropShadow>
+              </filter>
+              <marker id="dp-schema-arrow" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="10" refY="5.5" orient="auto">
+                <path d="M0,0 L11,5.5 L0,11 z"></path>
+              </marker>
+            </defs>
+            ${startMarkup}
+            ${schematic.nodes.map(node => `<g class="dp-schema-segment-base"><rect x="${node.x}" y="${node.top}" width="${node.width}" height="${node.ductHeight}" rx="${node.type === 'round' ? node.ductHeight / 2 : 4}"></rect></g>`).join('')}
+            ${transitions}
+            ${endMarkup}
+            ${nodes}
+            ${attachments}
+          </svg>` : `<div class="dp-quality-empty"><strong>Noch keine Teilstrecken</strong><p>Lege Teilstrecken an, damit die technische Anlagenansicht erzeugt werden kann.</p></div>`}
+        </div>
+
+        ${schematic.nodes.length ? `<div class="dp-schema-summarybar">
+          <div class="dp-schema-zoom-controls" aria-label="Zoomsteuerung">
+            <button type="button" data-schema-action="zoom-out" title="Verkleinern" aria-label="Verkleinern">−</button>
+            <button type="button" class="dp-schema-zoom-value" data-schema-action="zoom-reset" title="Auf 100 Prozent zurücksetzen">100 %</button>
+            <button type="button" data-schema-action="zoom-in" title="Vergrössern" aria-label="Vergrössern">+</button>
+            <button type="button" data-schema-action="center" title="Auswahl zentrieren">Zentrieren</button>
+          </div>
+          <div class="dp-schema-kpis">
+            <span>Gesamtdruckverlust <strong>${this.formatNumber(schematic.summary.totalLoss, 1)} Pa</strong></span>
+            <span>Gesamtluftmenge Einlass <strong>${this.formatAirflow(schematic.summary.inletAirflow)} m³/h</strong></span>
+            <span>Max. Geschwindigkeit <strong>${this.formatNumber(schematic.summary.maxVelocity, 2)} m/s</strong></span>
+          </div>
+        </div>` : ''}
+      </section>
+      <p class="dp-quality-disclaimer">Die Darstellung ist ein automatisches Funktionsschema und keine massstäbliche CAD- oder Montagezeichnung.</p>
+    `;
+
+    const viewport = this.root.querySelector('.dp-schema-viewport');
+    const canvas = this.root.querySelector('.dp-schema-canvas');
+    const zoomValue = this.root.querySelector('.dp-schema-zoom-value');
+    let drag = null;
+
+    const clampZoom = value => Math.min(1.65, Math.max(0.45, Number(value) || 1));
+    const applyZoom = (value, options = {}) => {
+      if (!canvas || !viewport) return;
+      const previous = this.networkSchematicZoom || 1;
+      const next = clampZoom(value);
+      const centerX = options.centerX ?? viewport.clientWidth / 2;
+      const centerY = options.centerY ?? viewport.clientHeight / 2;
+      const logicalX = (viewport.scrollLeft + centerX) / previous;
+      const logicalY = (viewport.scrollTop + centerY) / previous;
+
+      this.networkSchematicZoom = next;
+      canvas.style.width = `${schematic.width * next}px`;
+      canvas.style.height = `${schematic.height * next}px`;
+      canvas.setAttribute('width', String(schematic.width * next));
+      canvas.setAttribute('height', String(schematic.height * next));
+      if (zoomValue) zoomValue.textContent = `${Math.round(next * 100)} %`;
+
+      requestAnimationFrame(() => {
+        viewport.scrollLeft = Math.max(0, logicalX * next - centerX);
+        viewport.scrollTop = Math.max(0, logicalY * next - centerY);
+      });
+    };
+
+    const centerView = () => {
+      if (!viewport) return;
+      viewport.scrollTo({
+        left: Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2),
+        top: Math.max(0, (viewport.scrollHeight - viewport.clientHeight) / 2),
+        behavior: 'smooth',
+      });
+    };
+
+    const fitView = () => {
+      if (!viewport || !canvas) return;
+      const availableWidth = Math.max(320, viewport.clientWidth - 32);
+      const availableHeight = Math.max(260, viewport.clientHeight - 32);
+      const zoom = clampZoom(Math.min(availableWidth / schematic.width, availableHeight / schematic.height, 1.1));
+      applyZoom(zoom);
+      requestAnimationFrame(centerView);
+    };
+
+    const openSection = id => {
+      const section = activeSystem?.sections?.find(item => item.id === id);
+      if (section) this.state.selectSection(section);
+    };
+
+    const showAttachment = id => {
+      const item = schematic.attachments.find(entry => entry.id === id);
+      if (!item) return;
+      const typeLabel = item.kind === 'special' ? 'Sonderbauteil' : 'Formteil';
+      const details = [];
+      if (item.kind === 'formPart' && item.zeta) details.push(`ζ-Wert: ${this.formatNumber(item.zeta, 2)}`);
+      if (item.pressureLoss) details.push(`Druckverlust: ${this.formatNumber(item.pressureLoss, 1)} Pa`);
+      if (item.kind === 'special' && item.quantity > 1) details.push(`Anzahl: ${item.quantity}`);
+      UiDialogService.alert({
+        title: item.label,
+        message: `${typeLabel}${details.length ? `\n${details.join('\n')}` : ''}`,
+        tone: 'info',
+      });
+    };
+
+    this.root.querySelectorAll('[data-schema-section]').forEach(node => {
+      node.addEventListener('click', event => { event.stopPropagation(); openSection(node.dataset.schemaSection); });
+      node.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openSection(node.dataset.schemaSection);
+        }
+      });
+    });
+
+    this.root.querySelectorAll('[data-schema-attachment]').forEach(node => {
+      node.addEventListener('click', event => { event.stopPropagation(); showAttachment(node.dataset.schemaAttachment); });
+      node.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showAttachment(node.dataset.schemaAttachment);
+        }
+      });
+    });
+
+    this.root.querySelector('[data-schema-action="quality"]')?.addEventListener('click', () => {
+      this.state.setSelection('engineeringQuality', activeSystem);
+      this.state.notify();
+    });
+    this.root.querySelector('[data-schema-action="fit"]')?.addEventListener('click', fitView);
+    this.root.querySelector('[data-schema-action="center"]')?.addEventListener('click', centerView);
+    this.root.querySelector('[data-schema-action="zoom-in"]')?.addEventListener('click', () => applyZoom(this.networkSchematicZoom + 0.1));
+    this.root.querySelector('[data-schema-action="zoom-out"]')?.addEventListener('click', () => applyZoom(this.networkSchematicZoom - 0.1));
+    this.root.querySelector('[data-schema-action="zoom-reset"]')?.addEventListener('click', () => applyZoom(1));
+
+    viewport?.addEventListener('wheel', event => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const rect = viewport.getBoundingClientRect();
+      applyZoom(this.networkSchematicZoom + (event.deltaY < 0 ? 0.1 : -0.1), {
+        centerX: event.clientX - rect.left,
+        centerY: event.clientY - rect.top,
+      });
+    }, { passive: false });
+
+    viewport?.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.target.closest?.('[data-schema-section], [data-schema-attachment], button')) return;
+      drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
+      viewport.classList.add('is-panning');
+      viewport.setPointerCapture?.(event.pointerId);
+    });
+    viewport?.addEventListener('pointermove', event => {
+      if (!drag) return;
+      viewport.scrollLeft = drag.left - (event.clientX - drag.x);
+      viewport.scrollTop = drag.top - (event.clientY - drag.y);
+    });
+    const stopPanning = event => {
+      if (!drag) return;
+      drag = null;
+      viewport.classList.remove('is-panning');
+      viewport.releasePointerCapture?.(event.pointerId);
+    };
+    viewport?.addEventListener('pointerup', stopPanning);
+    viewport?.addEventListener('pointercancel', stopPanning);
+    viewport?.addEventListener('keydown', event => {
+      if (event.key === '+' || event.key === '=') { event.preventDefault(); applyZoom(this.networkSchematicZoom + 0.1); }
+      if (event.key === '-') { event.preventDefault(); applyZoom(this.networkSchematicZoom - 0.1); }
+      if (event.key === '0') { event.preventDefault(); applyZoom(1); }
+    });
+
+    if (canvas) {
+      applyZoom(this.networkSchematicZoom || 1);
+      requestAnimationFrame(() => {
+        if (schematic.width * this.networkSchematicZoom > viewport.clientWidth - 24) fitView();
+        else centerView();
+      });
+    }
+  }
+
 }

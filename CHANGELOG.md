@@ -1,3 +1,35 @@
+# Änderungsverlauf
+
+## Phase 24.10 – Anlagenzeichnung Pro
+
+- Bisherige lineare Punkt-/Kartenansicht durch einen neuen SVG-Zeichenkern ersetzt.
+- Rechteckkanäle und Rundrohre als zusammenhängende Kanalzüge mit dimensionsabhängiger Darstellung umgesetzt.
+- Übergänge zwischen unterschiedlichen Bauformen und Dimensionen automatisch sichtbar gemacht.
+- Einlass, Anlagenende und feste Strömungspfeile ergänzt; Überlagerungen am Beginn und Ende beseitigt.
+- Teilstreckenkarten mit korrekt in Millimeter umgerechneten Dimensionen, Luftmenge, Geschwindigkeit und Druckverlust neu aufgebaut.
+- Herstellerneutrale Vektorsymbole für Bögen, Übergänge, Abzweige, Filter, Schalldämpfer, Klappen, Register und Luftdurchlässe ergänzt.
+- Bauteile per Maus und Tastatur anwählbar gemacht; Detaildialoge zeigen verfügbare ζ- und Druckverlustwerte.
+- Zoom, Zurücksetzen, Zentrieren, Alles-anzeigen, Strg/Mausrad und Verschieben mit gedrückter Maustaste ergänzt.
+- Untere Kennwertleiste für Gesamtdruckverlust, Einlassluftmenge und maximale Geschwindigkeit ergänzt.
+- Responsive Tablet-/Mobilansicht sowie Druckdarstellung ergänzt.
+- Automatische Anfangsanpassung sorgt dafür, dass auch breite Anlagen vollständig sichtbar starten.
+- Engine- und UI-Testreihen auf 58 Einzelprüfungen für die Anlagenzeichnung erweitert.
+- App-Version auf 1.4.1 und Cachekennung auf 24.10 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben weiterhin vollständig ausgeschlossen.
+
+## Phase 23–24 – Engineering-QS und Anlagenschema
+
+- Herstellerneutrale Engineering-Qualitätskontrolle mit priorisierten Hinweisen eingeführt.
+- Prüfungen für Geschwindigkeit, Reibungsgradient, Verlustkonzentration, negative Verluste und Datenqualität ergänzt.
+- Engineering-Score von 0 bis 100 mit Kritisch-/Warn-/Hinweis-Zusammenfassung ergänzt.
+- Direkte Navigation von einem QS-Hinweis zur betroffenen Teilstrecke umgesetzt.
+- Interaktive schematische Anlagenansicht aus der Teilstreckenreihenfolge ergänzt.
+- Teilstrecken zeigen Dimension, Luftmenge, Geschwindigkeit und Druckverlust.
+- Formteile und Sonderbauteile werden neutral als Zuordnungspunkte dargestellt.
+- Neue Ribbon-Aktionen „Engineering-QS“ und „Anlagenschema“ ergänzt.
+- Zwei neue Engine-Testreihen mit 17 Einzelprüfungen ergänzt.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben bewusst ausgeschlossen.
+
 # Phase 22.04 – Responsive Darstellung und Design-Feinschliff
 
 - Mobile Projektstruktur als seitlich einblendbares Panel mit Hintergrundabdunklung umgesetzt.
