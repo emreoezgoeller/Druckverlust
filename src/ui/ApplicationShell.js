@@ -6,6 +6,7 @@ const SIDEBAR_COLLAPSED_KEY = 'druckverlust-pro.sidebar.collapsed';
 const DEFAULT_SIDEBAR_WIDTH = 304;
 const MIN_SIDEBAR_WIDTH = 238;
 const MAX_SIDEBAR_WIDTH = 440;
+const MOBILE_LAYOUT_QUERY = '(max-width: 760px)';
 
 export default class ApplicationShell {
   constructor(rootElement) {
@@ -20,10 +21,15 @@ export default class ApplicationShell {
     this.isSidebarCollapsed = false;
     this.boundPointerMove = event => this.handlePointerMove(event);
     this.boundPointerUp = event => this.handlePointerUp(event);
+    this.mobileMedia = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(MOBILE_LAYOUT_QUERY) : null;
+    this.isMobileLayout = Boolean(this.mobileMedia?.matches);
+    this.boundMobileChange = event => this.handleMobileLayoutChange(event);
+    this.boundKeydown = event => this.handleGlobalKeydown(event);
   }
 
   render() {
     this.root.innerHTML = `
+      <a class="dp-skip-link" href="#dp-workspace-main">Zum Arbeitsbereich springen</a>
       <div class="dp-shell">
         <header class="dp-ribbon"></header>
 
@@ -39,7 +45,9 @@ export default class ApplicationShell {
           tabindex="0"
         ></div>
 
-        <main class="dp-workspace"></main>
+        <button class="dp-sidebar-backdrop" type="button" data-shell-action="closeSidebar" aria-label="Projektstruktur schliessen" tabindex="-1"></button>
+
+        <main class="dp-workspace" id="dp-workspace-main" tabindex="-1"></main>
 
         <footer class="dp-status"></footer>
       </div>
@@ -55,14 +63,42 @@ export default class ApplicationShell {
 
   bindLayoutEvents() {
     this.root.addEventListener('click', event => {
-      const button = event.target.closest?.('[data-shell-action="toggleSidebar"]');
+      const button = event.target.closest?.('[data-shell-action]');
       if (!button) return;
-      this.setSidebarCollapsed(!this.isSidebarCollapsed);
+
+      const action = button.dataset.shellAction;
+      if (action === 'toggleSidebar') this.setSidebarCollapsed(!this.isSidebarCollapsed);
+      if (action === 'closeSidebar') this.setSidebarCollapsed(true);
     });
 
     this.resizer?.addEventListener('pointerdown', event => this.handlePointerDown(event));
     this.resizer?.addEventListener('dblclick', () => this.setSidebarWidth(DEFAULT_SIDEBAR_WIDTH));
     this.resizer?.addEventListener('keydown', event => this.handleResizerKeydown(event));
+    this.mobileMedia?.addEventListener?.('change', this.boundMobileChange);
+    window.addEventListener('keydown', this.boundKeydown);
+
+    if (this.isMobileLayout) this.isSidebarCollapsed = true;
+  }
+
+
+  handleMobileLayoutChange(event) {
+    this.isMobileLayout = Boolean(event.matches);
+
+    if (this.isMobileLayout) {
+      this.isSidebarCollapsed = true;
+    } else {
+      this.restoreCollapsedPreference();
+    }
+
+    this.applyLayoutState();
+  }
+
+  handleGlobalKeydown(event) {
+    if (event.key === 'Escape' && this.isMobileLayout && !this.isSidebarCollapsed) {
+      event.preventDefault();
+      this.setSidebarCollapsed(true);
+      this.root.querySelector('[data-shell-action="toggleSidebar"]')?.focus?.();
+    }
   }
 
   handlePointerDown(event) {
@@ -137,7 +173,7 @@ export default class ApplicationShell {
     this.applyLayoutState();
 
     try {
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(this.isSidebarCollapsed));
+      if (!this.isMobileLayout) localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(this.isSidebarCollapsed));
     } catch {
       // Blockierter Speicher darf die Bedienung nicht verhindern.
     }
@@ -145,6 +181,8 @@ export default class ApplicationShell {
 
   applyLayoutState() {
     this.shell?.classList.toggle('sidebar-collapsed', this.isSidebarCollapsed);
+    this.shell?.classList.toggle('is-mobile-layout', this.isMobileLayout);
+    document.body.classList.toggle('dp-mobile-sidebar-open', this.isMobileLayout && !this.isSidebarCollapsed);
     this.shell?.style.setProperty('--dp-sidebar-width', `${this.sidebarWidth}px`);
     this.resizer?.setAttribute('aria-hidden', String(this.isSidebarCollapsed));
     this.updateSidebarToggleButtons();
@@ -166,9 +204,17 @@ export default class ApplicationShell {
         this.sidebarWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, storedWidth));
       }
 
-      this.isSidebarCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+      this.isSidebarCollapsed = this.isMobileLayout ? true : localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
     } catch {
       this.sidebarWidth = DEFAULT_SIDEBAR_WIDTH;
+      this.isSidebarCollapsed = false;
+    }
+  }
+
+  restoreCollapsedPreference() {
+    try {
+      this.isSidebarCollapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+    } catch {
       this.isSidebarCollapsed = false;
     }
   }

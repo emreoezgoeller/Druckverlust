@@ -1,3 +1,14 @@
+# Phase 22.04 – Responsive Darstellung und Design-Feinschliff
+
+- Mobile Projektstruktur als seitlich einblendbares Panel mit Hintergrundabdunklung umgesetzt.
+- Sidebar auf kleinen Bildschirmen standardmässig geschlossen; Öffnen, Schliessen per Hintergrund und Escape ergänzt.
+- Desktop-Einstellung der Sidebar bleibt unabhängig vom mobilen Zustand gespeichert.
+- Arbeitsbereich, Statusleiste und Dialoge auf dynamische Viewport-Höhen und Gerätesicherheitsränder abgestimmt.
+- Dialoge auf Mobilgeräten als gut bedienbare Bottom-Sheets mit fest erreichbaren Aktionen gestaltet.
+- Touch-Ziele, Fokusmarkierungen, horizontale Tabellen, Filterchips und kleine Bildschirmbreiten verbessert.
+- Sprunglink zum Arbeitsbereich und klarere Tastaturbedienung ergänzt.
+- UI-Cachekennung 22.04 eingeführt; Rechen-, Speicher- und Berichtlogik unverändert.
+
 # Phase 22.03 – Bibliotheken und Dialogfenster
 
 - Formteilbibliothek mit klarerem Seitenkopf, aktiver Teilstrecken-Zusammenfassung und kompakter Bibliotheksnavigation überarbeitet.
