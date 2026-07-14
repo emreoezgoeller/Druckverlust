@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=21.12';
+import ReportEngine from '../../report/ReportEngine.js?v=26.28';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=22.03';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=26.28';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,12 +89,13 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=24.10';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=26.28';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=24.10';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=24.10';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=26.28';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=26.28';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=26.28';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -120,6 +121,8 @@ export default class WorkspaceComponent {
     this.betaFeedbackInboxEntries = this.loadBetaFeedbackInboxEntries();
     this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
     this.networkSchematicZoom = 1;
+    this.liveSimulationOptions = { scope: 'all', sectionId: '', airflowPercent: 100, dimensionPercent: 100 };
+    this.liveSimulationResult = null;
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -138,6 +141,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'report') return this.renderReport();
     if (selection.type === 'engineeringQuality') return this.renderEngineeringQuality(selection.data);
     if (selection.type === 'networkSchematic') return this.renderNetworkSchematic(selection.data);
+    if (selection.type === 'liveSimulation') return this.renderLiveSimulation(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
@@ -4824,6 +4828,10 @@ export default class WorkspaceComponent {
   getDefaultReportOptions() {
     return [
       { id: 'includeToc', label: 'Inhaltsverzeichnis', default: true },
+      { id: 'includeExecutiveSummary', label: 'Management-Zusammenfassung', default: true },
+      { id: 'includeNetworkSchematic', label: 'Anlagenschema', default: true },
+      { id: 'includeLossAnalysis', label: 'Druckverlustanalyse', default: true },
+      { id: 'includeEngineeringQuality', label: 'Engineering-QS', default: true },
       { id: 'includeMainNetwork', label: 'Hauptberechnung – Luftnetz', default: true },
       { id: 'includeAssignedFormParts', label: 'Zugeordnete Formteile', default: true },
       { id: 'includeSpecialComponents', label: 'Sonderbauteile', default: true },
@@ -4844,6 +4852,10 @@ export default class WorkspaceComponent {
         description: 'Alle Seiten inkl. QS, Anhang und Freigabe.',
         options: {
           includeToc: true,
+          includeExecutiveSummary: true,
+          includeNetworkSchematic: true,
+          includeLossAnalysis: true,
+          includeEngineeringQuality: true,
           includeMainNetwork: true,
           includeAssignedFormParts: true,
           includeSpecialComponents: true,
@@ -4860,6 +4872,10 @@ export default class WorkspaceComponent {
         description: 'Technischer Nachweis mit Haupttabellen und Zusammenfassung.',
         options: {
           includeToc: true,
+          includeExecutiveSummary: true,
+          includeNetworkSchematic: true,
+          includeLossAnalysis: true,
+          includeEngineeringQuality: true,
           includeMainNetwork: true,
           includeAssignedFormParts: true,
           includeSpecialComponents: true,
@@ -4876,6 +4892,10 @@ export default class WorkspaceComponent {
         description: 'Kompakte Abgabe mit Deckblatt, Zusammenfassung und Freigabe.',
         options: {
           includeToc: false,
+          includeExecutiveSummary: true,
+          includeNetworkSchematic: false,
+          includeLossAnalysis: true,
+          includeEngineeringQuality: false,
           includeMainNetwork: false,
           includeAssignedFormParts: false,
           includeSpecialComponents: false,
@@ -6515,7 +6535,6 @@ export default class WorkspaceComponent {
 
         if (action === 'reset-filters') {
           this.betaFeedbackInboxFilters = getDefaultBetaFeedbackInboxFilters();
-    this.networkSchematicZoom = 1;
           rerender();
           return;
         }
@@ -9351,6 +9370,284 @@ formatNumber(value, digits = 2) {
 
   return Number(value).toFixed(digits);
 }
+
+  renderLiveSimulation(system = null) {
+    const project = this.state.project || {};
+    const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
+
+    if (!activeSystem) {
+      this.root.innerHTML = '<h1>Live-Simulation</h1><p>Keine Anlage vorhanden.</p>';
+      return;
+    }
+
+    const sections = Array.isArray(activeSystem.sections) ? activeSystem.sections : [];
+    const selectedSectionId = this.liveSimulationOptions.sectionId
+      || this.state.selectedSection?.id
+      || sections[0]?.id
+      || '';
+    this.liveSimulationOptions = LiveSimulationEngine.normalizeOptions({
+      ...this.liveSimulationOptions,
+      sectionId: selectedSectionId,
+    });
+
+    let simulation;
+    try {
+      simulation = LiveSimulationEngine.create(project, activeSystem.id, this.liveSimulationOptions);
+      this.liveSimulationResult = simulation;
+    } catch (error) {
+      this.root.innerHTML = `
+        <div class="dp-phase-hero is-simulation">
+          <div><span class="dp-phase-kicker">PHASE 28 · LIVE-SIMULATION</span><h1>Variantenvergleich</h1></div>
+        </div>
+        <div class="dp-quality-empty"><strong>Simulation nicht möglich</strong><p>${this.escapeHtml(error.message)}</p></div>
+      `;
+      return;
+    }
+
+    this.root.innerHTML = `
+      <section class="dp-phase-hero is-simulation">
+        <div>
+          <span class="dp-phase-kicker">PHASE 28 · LIVE-SIMULATION</span>
+          <h1>Neutraler Variantenvergleich</h1>
+          <p>Luftmenge und Kanalabmessungen verändern, ohne das Projekt zu überschreiben. Erst „Werte übernehmen“ schreibt die Variante in die Anlage.</p>
+        </div>
+        <div class="dp-phase-hero-stat">
+          <span>${this.escapeHtml(activeSystem.name || 'Anlage')}</span>
+          <strong>${sections.length} Teilstrecken</strong>
+          <small>${simulation.affectedCount} im Vergleich verändert</small>
+        </div>
+      </section>
+
+      <section class="dp-simulation-layout">
+        <aside class="dp-simulation-controls" aria-label="Simulationsparameter">
+          <div class="dp-simulation-control-head">
+            <div><span>Variante</span><strong>Parameter einstellen</strong></div>
+            <button type="button" data-simulation-action="reset">Zurücksetzen</button>
+          </div>
+
+          <label class="dp-simulation-field">
+            <span>Geltungsbereich</span>
+            <select data-simulation-field="scope">
+              <option value="all" ${simulation.options.scope === 'all' ? 'selected' : ''}>Gesamte Anlage</option>
+              <option value="selected" ${simulation.options.scope === 'selected' ? 'selected' : ''}>Eine Teilstrecke</option>
+            </select>
+          </label>
+
+          <label class="dp-simulation-field" data-simulation-section-field>
+            <span>Teilstrecke</span>
+            <select data-simulation-field="sectionId" ${simulation.options.scope === 'all' ? 'disabled' : ''}>
+              ${sections.map((section, index) => `<option value="${this.escapeAttribute(section.id)}" ${section.id === simulation.options.sectionId ? 'selected' : ''}>${this.escapeHtml(section.name || section.ts || `TS ${index + 1}`)}</option>`).join('')}
+            </select>
+          </label>
+
+          <label class="dp-simulation-range">
+            <span><strong>Luftmenge</strong><output data-simulation-output="airflow">${this.formatNumber(simulation.options.airflowPercent, 0)} %</output></span>
+            <input data-simulation-field="airflowPercent" type="range" min="50" max="150" step="1" value="${simulation.options.airflowPercent}">
+            <small>50 % bis 150 % des aktuellen Volumenstroms</small>
+          </label>
+
+          <label class="dp-simulation-range">
+            <span><strong>Abmessungen</strong><output data-simulation-output="dimension">${this.formatNumber(simulation.options.dimensionPercent, 0)} %</output></span>
+            <input data-simulation-field="dimensionPercent" type="range" min="75" max="160" step="1" value="${simulation.options.dimensionPercent}">
+            <small>Breite und Höhe beziehungsweise Durchmesser werden proportional verändert.</small>
+          </label>
+
+          <div class="dp-simulation-note">
+            <strong>Nicht-destruktive Vorschau</strong>
+            <p>Formteile werden in der Kopie neu berechnet. Sonderbauteile bleiben als feste Druckverlustwerte unverändert.</p>
+          </div>
+
+          <button type="button" class="is-primary dp-simulation-apply" data-simulation-action="apply" ${simulation.affectedCount && (simulation.options.airflowPercent !== 100 || simulation.options.dimensionPercent !== 100) ? '' : 'disabled'}>
+            Werte in Projekt übernehmen
+          </button>
+        </aside>
+
+        <div class="dp-simulation-results" data-simulation-results>
+          ${this.renderLiveSimulationResults(simulation)}
+        </div>
+      </section>
+    `;
+
+    this.bindLiveSimulation(activeSystem);
+  }
+
+  renderLiveSimulationResults(simulation = {}) {
+    const before = simulation.baseline || {};
+    const after = simulation.scenario || {};
+    const delta = simulation.delta || {};
+    const deltaClass = value => Number(value) > 0.0001 ? 'is-increase' : Number(value) < -0.0001 ? 'is-decrease' : 'is-neutral';
+    const deltaText = (value, unit = '', digits = 1) => {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return '–';
+      const sign = numeric > 0 ? '+' : '';
+      return `${sign}${this.formatNumber(numeric, digits)}${unit}`;
+    };
+    const percentText = value => Number.isFinite(Number(value)) ? `${deltaText(value, ' %', 1)}` : '–';
+    const metrics = [
+      { label: 'Gesamtdruckverlust', before: before.totalLoss, after: after.totalLoss, unit: 'Pa', digits: 1 },
+      { label: 'Max. Geschwindigkeit', before: before.maxVelocity, after: after.maxVelocity, unit: 'm/s', digits: 2 },
+      { label: 'Reibungsverlust', before: before.frictionLoss, after: after.frictionLoss, unit: 'Pa', digits: 1 },
+      { label: 'Formteilverluste', before: before.formPartLoss, after: after.formPartLoss, unit: 'Pa', digits: 1 },
+    ];
+    const changedRows = [...(simulation.rows || [])]
+      .sort((a, b) => Math.abs(Number(b.delta?.pressureLoss || 0)) - Math.abs(Number(a.delta?.pressureLoss || 0)));
+
+    return `
+      <div class="dp-simulation-kpis">
+        <article>
+          <span>Gesamtdruckverlust</span>
+          <strong>${this.formatNumber(after.totalLoss, 1)} Pa</strong>
+          <small class="${deltaClass(delta.totalLoss)}">${deltaText(delta.totalLoss, ' Pa', 1)} · ${percentText(delta.totalLossPercent)}</small>
+        </article>
+        <article>
+          <span>Max. Geschwindigkeit</span>
+          <strong>${this.formatNumber(after.maxVelocity, 2)} m/s</strong>
+          <small class="${deltaClass(delta.maxVelocity)}">${deltaText(delta.maxVelocity, ' m/s', 2)} · ${percentText(delta.maxVelocityPercent)}</small>
+        </article>
+        <article>
+          <span>Kritische Teilstrecke</span>
+          <strong>${this.escapeHtml(after.criticalSectionName || '-')}</strong>
+          <small>${this.formatNumber(after.criticalSectionLoss, 1)} Pa</small>
+        </article>
+        <article>
+          <span>Vergleichsumfang</span>
+          <strong>${simulation.affectedCount}</strong>
+          <small>von ${simulation.rows?.length || 0} Teilstrecken verändert</small>
+        </article>
+      </div>
+
+      <section class="dp-simulation-comparison-card">
+        <div class="dp-simulation-section-head">
+          <div><span>Direkter Vergleich</span><h2>Bestand und Variante</h2></div>
+          <div class="dp-simulation-legend"><span class="is-baseline">Bestand</span><span class="is-scenario">Variante</span></div>
+        </div>
+        <div class="dp-simulation-bars">
+          ${metrics.map(metric => {
+            const maximum = Math.max(Number(metric.before || 0), Number(metric.after || 0), 0.001);
+            const beforeWidth = Math.max(2, Number(metric.before || 0) / maximum * 100);
+            const afterWidth = Math.max(2, Number(metric.after || 0) / maximum * 100);
+            return `<div class="dp-simulation-bar-row">
+              <div class="dp-simulation-bar-label"><strong>${metric.label}</strong><span>${this.formatNumber(metric.before, metric.digits)} → ${this.formatNumber(metric.after, metric.digits)} ${metric.unit}</span></div>
+              <div class="dp-simulation-bar-track"><i class="is-baseline" style="width:${beforeWidth}%"></i><i class="is-scenario" style="width:${afterWidth}%"></i></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </section>
+
+      <section class="dp-simulation-table-card">
+        <div class="dp-simulation-section-head">
+          <div><span>Teilstreckenvergleich</span><h2>Auswirkung auf die Berechnung</h2></div>
+          <small>Sortiert nach grösster Druckverluständerung</small>
+        </div>
+        <div class="dp-table-scroll">
+          <table class="dp-table dp-simulation-table">
+            <thead><tr><th>TS</th><th>Luftmenge</th><th>v Bestand</th><th>v Variante</th><th>Δp Bestand</th><th>Δp Variante</th><th>Änderung</th></tr></thead>
+            <tbody>
+              ${changedRows.map(row => `<tr data-simulation-section="${this.escapeAttribute(row.id)}">
+                <td><button type="button" data-simulation-open-section="${this.escapeAttribute(row.id)}">${this.escapeHtml(row.name)}</button></td>
+                <td>${this.formatAirflow(row.scenario.airflow)} m³/h</td>
+                <td>${this.formatNumber(row.baseline.velocity, 2)} m/s</td>
+                <td>${this.formatNumber(row.scenario.velocity, 2)} m/s</td>
+                <td>${this.formatNumber(row.baseline.pressureLoss, 1)} Pa</td>
+                <td><strong>${this.formatNumber(row.scenario.pressureLoss, 1)} Pa</strong></td>
+                <td class="${deltaClass(row.delta.pressureLoss)}">${deltaText(row.delta.pressureLoss, ' Pa', 1)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  bindLiveSimulation(activeSystem) {
+    const resultsRoot = this.root.querySelector('[data-simulation-results]');
+    const scopeField = this.root.querySelector('[data-simulation-field="scope"]');
+    const sectionField = this.root.querySelector('[data-simulation-field="sectionId"]');
+    const airflowField = this.root.querySelector('[data-simulation-field="airflowPercent"]');
+    const dimensionField = this.root.querySelector('[data-simulation-field="dimensionPercent"]');
+    const airflowOutput = this.root.querySelector('[data-simulation-output="airflow"]');
+    const dimensionOutput = this.root.querySelector('[data-simulation-output="dimension"]');
+    const applyButton = this.root.querySelector('[data-simulation-action="apply"]');
+    let scheduled = 0;
+
+    const bindResultLinks = () => {
+      this.root.querySelectorAll('[data-simulation-open-section]').forEach(button => {
+        button.addEventListener('click', () => {
+          const section = activeSystem.sections?.find(item => item.id === button.dataset.simulationOpenSection);
+          if (section) this.state.selectSection(section);
+        });
+      });
+    };
+
+    const readOptions = () => LiveSimulationEngine.normalizeOptions({
+      scope: scopeField?.value,
+      sectionId: sectionField?.value,
+      airflowPercent: airflowField?.value,
+      dimensionPercent: dimensionField?.value,
+    });
+
+    const update = () => {
+      scheduled = 0;
+      const options = readOptions();
+      this.liveSimulationOptions = options;
+      sectionField.disabled = options.scope === 'all';
+      if (airflowOutput) airflowOutput.textContent = `${this.formatNumber(options.airflowPercent, 0)} %`;
+      if (dimensionOutput) dimensionOutput.textContent = `${this.formatNumber(options.dimensionPercent, 0)} %`;
+
+      try {
+        const simulation = LiveSimulationEngine.create(this.state.project, activeSystem.id, options);
+        this.liveSimulationResult = simulation;
+        if (resultsRoot) resultsRoot.innerHTML = this.renderLiveSimulationResults(simulation);
+        if (applyButton) applyButton.disabled = !simulation.affectedCount || (options.airflowPercent === 100 && options.dimensionPercent === 100);
+        bindResultLinks();
+      } catch (error) {
+        if (resultsRoot) resultsRoot.innerHTML = `<div class="dp-quality-empty"><strong>Simulation nicht möglich</strong><p>${this.escapeHtml(error.message)}</p></div>`;
+        if (applyButton) applyButton.disabled = true;
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (scheduled) cancelAnimationFrame(scheduled);
+      scheduled = requestAnimationFrame(update);
+    };
+
+    [scopeField, sectionField].forEach(field => field?.addEventListener('change', scheduleUpdate));
+    [airflowField, dimensionField].forEach(field => field?.addEventListener('input', scheduleUpdate));
+
+    this.root.querySelector('[data-simulation-action="reset"]')?.addEventListener('click', () => {
+      scopeField.value = 'all';
+      if (sectionField && activeSystem.sections?.[0]) sectionField.value = activeSystem.sections[0].id;
+      airflowField.value = '100';
+      dimensionField.value = '100';
+      update();
+    });
+
+    applyButton?.addEventListener('click', async () => {
+      const options = readOptions();
+      const simulation = LiveSimulationEngine.create(this.state.project, activeSystem.id, options);
+      const confirmed = await UiDialogService.confirm({
+        title: 'Simulationswerte übernehmen',
+        message: `${simulation.affectedCount} Teilstrecke${simulation.affectedCount === 1 ? '' : 'n'} werden mit den eingestellten Luftmengen und Abmessungen aktualisiert.`,
+        details: [
+          `Luftmenge: ${this.formatNumber(options.airflowPercent, 0)} %`,
+          `Abmessungen: ${this.formatNumber(options.dimensionPercent, 0)} %`,
+          'Die Änderung kann anschliessend durch erneutes Öffnen der gespeicherten Projektdatei rückgängig gemacht werden.',
+        ],
+        confirmLabel: 'Werte übernehmen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+
+      LiveSimulationEngine.applyToProject(this.state.project, activeSystem.id, options);
+      this.autoCalculateProject({ notify: false });
+      this.state.isProjectDirty = true;
+      this.liveSimulationOptions = { scope: 'all', sectionId: activeSystem.sections?.[0]?.id || '', airflowPercent: 100, dimensionPercent: 100 };
+      UiDialogService.alert({ title: 'Variante übernommen', message: 'Luftmengen und Abmessungen wurden aktualisiert und die Anlage wurde neu berechnet.', tone: 'success' });
+      this.state.selectSystem(activeSystem);
+    });
+
+    bindResultLinks();
+  }
 
   renderEngineeringQuality(system = null) {
     const project = this.state.project || {};

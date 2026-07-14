@@ -55,9 +55,20 @@
 - Phase 21.10: Strukturiertes Beta-Feedback und lokalen Export ergänzt
 - Phase 21.11: Beta-Rückmeldungen importiert, priorisiert und als lokale Fehlerliste verwaltbar gemacht
 - Phase 21.12: Gesamtprojekt bereinigt, Altlasten entfernt und aktive Struktur konsolidiert
+- Phase 22.00–22.04: Designsystem, Ribbon, Sidebar, Arbeitsbereich, Bibliotheken, Dialoge und Responsive Design
+- Phase 23–24: Herstellerneutrale Engineering-QS und interaktives Anlagenschema
+- Phase 24.10: Anlagenzeichnung Pro mit SVG-Kanalzügen, Bauteilsymbolen, Zoom und Pan
+- Phase 26–28: Professional Report und nicht-destruktive Live-Simulation
+
+## Bewusst ausgeschlossen
+
+- Phase 25 Ventilatorauslegung: keine Ventilator-, Motorleistungs-, SFP-, Energie- oder Betriebskostenberechnung.
+- Phase 27 Bauteildatenbank: keine Hersteller-, Produkt- oder Artikelnummerndatenbank.
+- Alle Analysen, Symbole, Berichte und Empfehlungen bleiben herstellerneutral.
 
 ## Nächste sinnvolle Schritte
 
 - Reale Beta-Rückmeldungen sammeln, in der Feedback-Auswertung priorisieren und gezielte Korrekturen umsetzen.
+- Professional Report und Live-Simulation mit eigenen Praxisprojekten fachlich gegenprüfen.
 - Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe final prüfen und vervollständigen.
-- Danach: nächste Fachmodule starten oder gezielte Korrekturen aus realen Fachtests umsetzen.
+- Danach nur Erweiterungen umsetzen, die Berechnung, Nachweis oder Bedienung herstellerneutral verbessern.

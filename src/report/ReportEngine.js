@@ -1,5 +1,7 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=21.12';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=26.28';
 import LicenseGate from '../licensing/LicenseGate.js';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=26.28';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=26.28';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -72,6 +74,10 @@ const QUALITY_ROWS_PER_PAGE = 16;
 
 const DEFAULT_REPORT_OPTIONS = Object.freeze({
   includeToc: true,
+  includeExecutiveSummary: true,
+  includeNetworkSchematic: true,
+  includeLossAnalysis: true,
+  includeEngineeringQuality: true,
   includeMainNetwork: true,
   includeAssignedFormParts: true,
   includeSpecialComponents: true,
@@ -471,6 +477,8 @@ export class ReportEngine {
     const specialResults = calculation?.specialComponentResults || [];
     const meta = getProjectMeta(project);
     const reportOptions = normalizeReportOptions(project?.reportOptions || project?.report?.options || {});
+    const engineeringQuality = EngineeringQualityEngine.analyze(project, system, calculation);
+    const networkSchematic = NetworkSchematicEngine.create(system || {}, calculation);
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -550,6 +558,12 @@ export class ReportEngine {
     }));
 
     const formPartCatalog = this.createFormPartCatalogRows(formPartsBySection);
+    const lossAnalytics = this.createLossAnalytics(sectionRows, {
+      friction: toNumber(totals.friction),
+      formParts: toNumber(totals.formParts, toNumber(totals.zetaLoss) + toNumber(totals.directFormPartLoss)),
+      special: toNumber(totals.special),
+      total: toNumber(totals.totalRounded ?? totals.total),
+    });
 
     return {
       title: 'Druckverlustbericht',
@@ -618,6 +632,9 @@ export class ReportEngine {
       formPartsBySection,
       formPartCatalog,
       specialComponents: specialRows,
+      engineeringQuality,
+      networkSchematic,
+      lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
       assets: {
@@ -664,6 +681,43 @@ export class ReportEngine {
         sections: [...item.sections],
       }))
       .sort((a, b) => String(a.category).localeCompare(String(b.category), 'de') || String(a.name).localeCompare(String(b.name), 'de'));
+  }
+
+  static createLossAnalytics(sections = [], totals = {}) {
+    const components = [
+      { key: 'friction', label: 'Kanal / Rohr', value: toNumber(totals.friction) },
+      { key: 'formParts', label: 'Formteile', value: toNumber(totals.formParts) },
+      { key: 'special', label: 'Sonderbauteile', value: toNumber(totals.special) },
+    ];
+    const componentSum = components.reduce((sum, item) => sum + item.value, 0);
+    const denominator = componentSum > 0 ? componentSum : Math.max(0, toNumber(totals.total));
+    const breakdown = components.map(item => ({
+      ...item,
+      percent: denominator > 0 ? item.value / denominator * 100 : 0,
+    }));
+    const dominant = [...breakdown].sort((a, b) => b.value - a.value)[0] || null;
+    const rankedSections = [...(sections || [])]
+      .map(section => ({
+        id: section.id,
+        position: section.position,
+        name: section.name || section.description || '-',
+        frictionLoss: toNumber(section.frictionLoss),
+        formPartLoss: toNumber(section.zetaLoss) + toNumber(section.directLoss),
+        totalLoss: toNumber(section.totalLoss),
+        velocity: toNumber(section.velocity),
+        airflow: toNumber(section.airflow),
+      }))
+      .sort((a, b) => b.totalLoss - a.totalLoss);
+    const maximumSectionLoss = Math.max(0, ...rankedSections.map(item => item.totalLoss));
+
+    return {
+      breakdown,
+      dominant,
+      rankedSections,
+      maximumSectionLoss,
+      total: toNumber(totals.total),
+      topSection: rankedSections[0] || null,
+    };
   }
 
   static createFormPartRow(formPart = {}, sectionResult = null, registry = null) {
@@ -756,6 +810,10 @@ export class ReportEngine {
     const project = model.project || {};
     const reportOptions = normalizeReportOptions(model.reportOptions || {});
     const contentOptions = [
+      reportOptions.includeExecutiveSummary,
+      reportOptions.includeNetworkSchematic,
+      reportOptions.includeLossAnalysis,
+      reportOptions.includeEngineeringQuality,
       reportOptions.includeMainNetwork,
       reportOptions.includeAssignedFormParts,
       reportOptions.includeSpecialComponents,
@@ -820,6 +878,13 @@ export class ReportEngine {
         status: approvalFields.some(value => String(value ?? '').trim() && String(value ?? '').trim() !== '-') ? 'ok' : 'warning',
         message: 'Prüf-/Freigabeangaben sind teilweise oder vollständig gepflegt.',
         warning: 'Geprüft von, freigegeben von oder Freigabedatum sind noch leer.',
+      },
+      {
+        id: 'engineering-quality',
+        label: 'Engineering-QS',
+        status: model.engineeringQuality?.status === 'critical' ? 'warning' : 'ok',
+        message: `Engineering-Score ${Math.round(toNumber(model.engineeringQuality?.score, 100))}/100 · ${model.engineeringQuality?.findings?.length || 0} Feststellung(en).`,
+        warning: 'Engineering-QS enthält kritische Feststellungen. Vor Abgabe fachlich prüfen.',
       },
       {
         id: 'quality-status',
@@ -1078,6 +1143,10 @@ export class ReportEngine {
     const qualityPageCount = reportOptions.includeQualityProtocol
       ? chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length
       : 0;
+    const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
+    const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / 8)) : 0;
+    const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
+    const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
 
     const entries = [
       {
@@ -1107,6 +1176,13 @@ export class ReportEngine {
       return entry;
     };
 
+    if (reportOptions.includeExecutiveSummary) {
+      addEntry('executiveSummary', 'Management-Zusammenfassung', 'Kennwerte, Schwerpunkte und Engineering-Status', 1);
+    }
+    addEntry('networkSchematic', 'Anlagenschema', `${schematicNodeCount} Teilstrecken als Funktionsschema`, schematicPageCount);
+    if (reportOptions.includeLossAnalysis) {
+      addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
+    }
     addEntry('mainNetwork', 'Hauptberechnung – Luftnetz', `${model.counts.sections} berechnungsrelevante Teilstrecken`, mainPageCount);
     addEntry('assignedFormParts', 'Zugeordnete Formteile', `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`, formPartPageCount);
     addEntry('specialComponents', 'Sonderbauteile', `${model.counts.specialComponents} Komponenten`, specialPageCount);
@@ -1115,6 +1191,7 @@ export class ReportEngine {
       addEntry('summary', 'Gesamtzusammenfassung', 'Summen, Berechnungsgrundlagen und QS-Status', 1);
     }
 
+    addEntry('engineeringQuality', 'Engineering-QS', `${engineeringFindingCount} priorisierte Feststellungen`, engineeringPageCount);
     addEntry('qualityProtocol', 'QS-Prüfprotokoll', `${qualityIssues.length} Hinweise / Fehler`, qualityPageCount);
     addEntry('formPartCatalog', 'Anhang – Formteilübersicht', `${model.formPartCatalog?.length || 0} verwendete Formteiltypen`, catalogPageCount);
 
@@ -1191,10 +1268,14 @@ export class ReportEngine {
 
     pages.push(this.renderCoverPage(model, generatedLabel, nextPage(), totalPlaceholder));
     if (reportOptions.includeToc) pages.push(this.renderTocPage(model, nextPage(), totalPlaceholder, pagePlan));
+    if (reportOptions.includeExecutiveSummary) pages.push(this.renderExecutiveSummaryPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
+    if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeMainNetwork) pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeAssignedFormParts) pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeSpecialComponents) pages.push(...this.renderSpecialComponentsPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeSummary) pages.push(this.renderSummaryPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeEngineeringQuality) pages.push(...this.renderEngineeringQualityPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeQualityProtocol) pages.push(...this.renderQualityProtocolPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeFormPartCatalog) pages.push(...this.renderFormPartCatalogPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeApproval) pages.push(this.renderApprovalPage(model, nextPage(), totalPlaceholder, generatedLabel));
@@ -1298,6 +1379,163 @@ export class ReportEngine {
         ${this.renderFooter(model, page, totalPages)}
       </section>
     `;
+  }
+
+  static renderExecutiveSummaryPage(model, page, totalPages = 6) {
+    const engineering = model.engineeringQuality || {};
+    const analytics = model.lossAnalytics || {};
+    const dominant = analytics.dominant || {};
+    const topSections = (analytics.rankedSections || []).slice(0, 5);
+    const statusLabel = engineering.status === 'critical' ? 'Kritisch' : engineering.status === 'warning' ? 'Prüfen' : engineering.status === 'info' ? 'Hinweise' : 'Plausibel';
+    const statusClass = engineering.status === 'critical' ? 'error' : engineering.status === 'warning' ? 'warn' : 'ok';
+    const maxVelocity = Math.max(0, ...(model.sections || []).map(section => toNumber(section.velocity)));
+
+    const content = `
+      <div class="report-executive-kpis">
+        <div class="report-executive-score ${statusClass}"><span>Engineering-Score</span><strong>${Math.round(toNumber(engineering.score, 100))}</strong><small>${escapeHtml(statusLabel)} · ${engineering.counts?.critical || 0} kritisch · ${engineering.counts?.warning || 0} prüfen</small></div>
+        <div><span>Gesamtdruckverlust</span><strong>${formatNumber(model.totals.total, 1)} Pa</strong><small>${model.counts.sections} Teilstrecken</small></div>
+        <div><span>Max. Geschwindigkeit</span><strong>${formatNumber(maxVelocity, 2)} m/s</strong><small>höchster berechneter Wert</small></div>
+        <div><span>Dominanter Verlust</span><strong>${escapeHtml(dominant.label || '-')}</strong><small>${formatNumber(dominant.percent || 0, 1)} % der Einzelwertsumme</small></div>
+      </div>
+
+      <div class="report-executive-grid">
+        <section class="report-info-box report-executive-priority">
+          <h3>Planerische Schwerpunkte</h3>
+          ${engineering.findings?.length ? `<ol>${engineering.findings.slice(0, 5).map(finding => `<li><strong>${escapeHtml(finding.title)}</strong><span>${escapeHtml(finding.recommendation || finding.message)}</span></li>`).join('')}</ol>` : '<p>Die herstellerneutrale Engineering-Prüfung enthält keine priorisierten Feststellungen.</p>'}
+        </section>
+
+        <section class="report-info-box">
+          <h3>Verluststärkste Teilstrecken</h3>
+          ${topSections.length ? `<table class="report-table small report-top-loss-table"><thead><tr><th>Pos.</th><th>Teilstrecke</th><th>v</th><th>Δp</th></tr></thead><tbody>${topSections.map(row => `<tr><td>${escapeHtml(row.position)}</td><td class="left">${escapeHtml(row.name)}</td><td>${formatNumber(row.velocity, 2)} m/s</td><td><strong>${formatNumber(row.totalLoss, 1)} Pa</strong></td></tr>`).join('')}</tbody></table>` : '<p>Keine berechnungsrelevanten Teilstrecken vorhanden.</p>'}
+        </section>
+      </div>
+
+      <div class="report-info-box muted report-executive-note">
+        <h3>Einordnung</h3>
+        <p>Diese Seite fasst die aktuelle Druckverlustberechnung zusammen. Die Engineering-QS arbeitet mit neutralen Projekt-Prüfwerten und ersetzt keine objektspezifische Norm-, Akustik- oder Fachplanung.</p>
+      </div>
+    `;
+
+    return this.renderPage(model, page, 'Management-Zusammenfassung', 'Kennwerte, Schwerpunkte und Engineering-Status', content, totalPages);
+  }
+
+  static renderNetworkSchematicPages(model, nextPage, totalPages) {
+    const nodes = model.networkSchematic?.nodes || [];
+    const chunks = nodes.length ? chunkArray(nodes, 8) : [[]];
+
+    return chunks.map((chunk, chunkIndex) => {
+      const content = `
+        ${this.renderReportSchematicSvg(model, chunk, chunkIndex, chunks.length)}
+        <div class="report-schematic-summary">
+          <div><span>Gesamtdruckverlust</span><strong>${formatNumber(model.totals.total, 1)} Pa</strong></div>
+          <div><span>Teilstrecken</span><strong>${model.counts.sections}</strong></div>
+          <div><span>Formteile</span><strong>${model.counts.formParts}</strong></div>
+          <div><span>Sonderbauteile</span><strong>${model.counts.specialComponents}</strong></div>
+        </div>
+        <p class="report-schematic-disclaimer">Automatisch erzeugtes Funktionsschema auf Basis der Teilstreckenreihenfolge. Keine massstäbliche CAD- oder Montagezeichnung.</p>
+      `;
+      const title = chunkIndex ? 'Anlagenschema Fortsetzung' : 'Anlagenschema';
+      const subtitle = chunks.length > 1 ? `Teilstrecken ${chunkIndex * 8 + 1}–${chunkIndex * 8 + chunk.length} von ${nodes.length}` : 'Herstellerneutrale Funktionsdarstellung der Anlage';
+      return this.renderPage(model, nextPage(), title, subtitle, content, totalPages);
+    });
+  }
+
+  static renderReportSchematicSvg(model, nodes = [], chunkIndex = 0, chunkCount = 1) {
+    if (!nodes.length) return '<div class="report-empty report-schematic-empty">Keine Teilstrecken für das Anlagenschema vorhanden.</div>';
+    const width = 720;
+    const height = 350;
+    const left = 48;
+    const right = 672;
+    const baseline = 172;
+    const step = nodes.length > 1 ? (right - left) / (nodes.length - 1) : 0;
+    const allAttachments = model.networkSchematic?.attachments || [];
+    const positions = nodes.map((node, index) => ({ node, x: nodes.length === 1 ? width / 2 : left + index * step }));
+    const duct = positions.map(({ node, x }) => `${formatNumber(x, 1)},${formatNumber(baseline - Math.max(20, Math.min(45, toNumber(node.ductHeight) * .32)), 1)} ${formatNumber(x, 1)},${formatNumber(baseline + Math.max(20, Math.min(45, toNumber(node.ductHeight) * .32)), 1)}`).join(' ');
+
+    return `
+      <div class="report-schematic-wrap">
+        <svg viewBox="0 0 ${width} ${height}" class="report-schematic-svg" role="img" aria-label="Anlagenschema Seite ${chunkIndex + 1} von ${chunkCount}">
+          <defs>
+            <linearGradient id="report-duct-${chunkIndex}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8fbff"/><stop offset=".5" stop-color="#dfeaf4"/><stop offset="1" stop-color="#f8fbff"/></linearGradient>
+            <marker id="report-arrow-${chunkIndex}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#315b7d"/></marker>
+          </defs>
+          <rect x="18" y="18" width="684" height="300" rx="14" class="report-schematic-grid"/>
+          <path d="M30 ${baseline} H690" class="report-schematic-flowline" marker-end="url(#report-arrow-${chunkIndex})"/>
+          <text x="32" y="${baseline - 64}" class="report-schematic-terminal">LUFTSTROM</text>
+          <text x="32" y="${baseline - 46}" class="report-schematic-terminal-value">${formatAirflow(nodes[0]?.airflow || 0)} m³/h</text>
+          ${positions.map(({ node, x }, index) => {
+            const nodeAttachments = allAttachments.filter(item => item.sectionId === node.id);
+            const formPartCount = nodeAttachments.filter(item => item.kind === 'formPart').length;
+            const specialCount = nodeAttachments.filter(item => item.kind === 'special').length;
+            const cardX = x - 38;
+            return `<g class="report-schematic-node">
+              <rect x="${formatNumber(cardX, 1)}" y="${baseline - 52}" width="76" height="104" rx="9"/>
+              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline - 31}" class="report-schematic-node-title">${escapeHtml(node.label)}</text>
+              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline - 13}" class="report-schematic-node-line">${escapeHtml(node.dimension)}</text>
+              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 5}" class="report-schematic-node-line">${formatAirflow(node.airflow)} m³/h</text>
+              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 23}" class="report-schematic-node-line">${formatNumber(node.velocity, 2)} m/s</text>
+              <text x="${formatNumber(cardX + 8, 1)}" y="${baseline + 41}" class="report-schematic-node-line strong">${formatNumber(node.pressureLoss, 1)} Pa</text>
+              ${formPartCount ? `<line x1="${x}" y1="${baseline - 52}" x2="${x}" y2="${baseline - 78}" class="report-schematic-attachment-line"/><circle cx="${x}" cy="${baseline - 88}" r="9" class="report-schematic-formpart"/><text x="${x}" y="${baseline - 84}" text-anchor="middle" class="report-schematic-count">${formPartCount}</text>` : ''}
+              ${specialCount ? `<line x1="${x}" y1="${baseline + 52}" x2="${x}" y2="${baseline + 78}" class="report-schematic-attachment-line"/><circle cx="${x}" cy="${baseline + 88}" r="9" class="report-schematic-special"/><text x="${x}" y="${baseline + 92}" text-anchor="middle" class="report-schematic-count">${specialCount}</text>` : ''}
+              ${index < positions.length - 1 ? `<path d="M${x + 41} ${baseline} H${positions[index + 1].x - 43}" class="report-schematic-arrow" marker-end="url(#report-arrow-${chunkIndex})"/>` : ''}
+            </g>`;
+          }).join('')}
+          <g class="report-schematic-legend"><circle cx="480" cy="302" r="6" class="report-schematic-formpart"/><text x="492" y="306">Formteile</text><circle cx="568" cy="302" r="6" class="report-schematic-special"/><text x="580" y="306">Sonderbauteile</text></g>
+        </svg>
+      </div>
+    `;
+  }
+
+  static renderLossAnalysisPage(model, page, totalPages = 6) {
+    const analytics = model.lossAnalytics || {};
+    const breakdown = analytics.breakdown || [];
+    const topSections = (analytics.rankedSections || []).slice(0, 10);
+    const maxComponent = Math.max(.001, ...breakdown.map(item => toNumber(item.value)));
+    const maxSection = Math.max(.001, ...topSections.map(item => toNumber(item.totalLoss)));
+
+    const content = `
+      <div class="report-loss-analysis-grid">
+        <section class="report-info-box report-loss-chart">
+          <h3>Verlustanteile</h3>
+          ${breakdown.map(item => `<div class="report-chart-row"><div><strong>${escapeHtml(item.label)}</strong><span>${formatNumber(item.value, 1)} Pa · ${formatNumber(item.percent, 1)} %</span></div><i><b style="width:${Math.max(1, item.value / maxComponent * 100)}%"></b></i></div>`).join('')}
+        </section>
+        <section class="report-info-box report-loss-facts">
+          <h3>Kernaussagen</h3>
+          ${this.renderDefinitionList([
+            ['Dominanter Verlust', analytics.dominant?.label || '-'],
+            ['Anteil', `${formatNumber(analytics.dominant?.percent || 0, 1)} %`],
+            ['Kritische Teilstrecke', analytics.topSection?.name || '-'],
+            ['Druckverlust kritische TS', `${formatNumber(analytics.topSection?.totalLoss || 0, 1)} Pa`],
+            ['Gesamtdruckverlust', `${formatNumber(model.totals.total, 1)} Pa`],
+          ])}
+        </section>
+      </div>
+
+      <section class="report-info-box report-section-ranking">
+        <h3>Rangfolge der Teilstrecken</h3>
+        ${topSections.length ? topSections.map((item, index) => `<div class="report-ranking-row"><span>${index + 1}</span><strong>${escapeHtml(item.name)}</strong><i><b style="width:${Math.max(1, item.totalLoss / maxSection * 100)}%"></b></i><em>${formatNumber(item.totalLoss, 1)} Pa</em></div>`).join('') : '<p>Keine berechnungsrelevanten Teilstrecken vorhanden.</p>'}
+      </section>
+
+      <div class="report-info-box muted"><h3>Bewertungshinweis</h3><p>Die Rangfolge dient der gezielten Kontrolle. Ein hoher Einzelverlust kann projektspezifisch erforderlich sein und ist nicht automatisch ein Planungsfehler.</p></div>
+    `;
+
+    return this.renderPage(model, page, 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', content, totalPages);
+  }
+
+  static renderEngineeringQualityPages(model, nextPage, totalPages) {
+    const engineering = model.engineeringQuality || {};
+    const findings = engineering.findings || [];
+    const chunks = findings.length ? chunkArray(findings, 12) : [[]];
+    const statusLabel = engineering.status === 'critical' ? 'Kritisch' : engineering.status === 'warning' ? 'Prüfen' : engineering.status === 'info' ? 'Hinweise' : 'Plausibel';
+
+    return chunks.map((chunk, chunkIndex) => {
+      const content = `
+        ${chunkIndex === 0 ? `<div class="report-engineering-overview"><div class="report-engineering-score"><span>Engineering-Score</span><strong>${Math.round(toNumber(engineering.score, 100))}</strong><small>${escapeHtml(statusLabel)}</small></div><div>${this.renderDefinitionList([['Kritisch', engineering.counts?.critical || 0], ['Prüfen', engineering.counts?.warning || 0], ['Hinweise', engineering.counts?.info || 0], ['Analysierte Teilstrecken', engineering.analyzedSectionCount || 0]])}</div></div>` : ''}
+        ${chunk.length ? `<table class="report-table report-engineering-table"><thead><tr><th>Stufe</th><th>Code</th><th>Feststellung</th><th>Empfehlung</th></tr></thead><tbody>${chunk.map(finding => `<tr class="engineering-${escapeHtml(finding.severity)}"><td>${escapeHtml(finding.severity === 'critical' ? 'Kritisch' : finding.severity === 'warning' ? 'Prüfen' : 'Hinweis')}</td><td>${escapeHtml(finding.code)}</td><td class="left"><strong>${escapeHtml(finding.title)}</strong><br><span>${escapeHtml(finding.message)}</span></td><td class="left">${escapeHtml(finding.recommendation || '-')}</td></tr>`).join('')}</tbody></table>` : '<div class="report-info-box ok"><h3>Prüfergebnis</h3><p>Keine priorisierten Engineering-Feststellungen vorhanden.</p></div>'}
+        ${chunkIndex === chunks.length - 1 ? `<p class="report-engineering-disclaimer">${escapeHtml(engineering.disclaimer || '')}</p>` : '<p class="report-continuation-note">Fortsetzung der Engineering-QS auf der nächsten Seite.</p>'}
+      `;
+      return this.renderPage(model, nextPage(), chunkIndex ? 'Engineering-QS Fortsetzung' : 'Engineering-QS', `Priorisierte herstellerneutrale Plausibilitätsprüfung${findings.length ? ` · ${findings.length} Feststellungen` : ''}`, content, totalPages);
+    });
   }
 
   static renderMainNetworkPages(model, nextPage, totalPages) {
@@ -2122,7 +2360,15 @@ export class ReportEngine {
       .report-footer span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145mm}
       .report-print-helper{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:210mm;margin:0 auto 12px;padding:10px 14px;border:1px solid #cfdbea;border-radius:10px;background:#ffffff;box-shadow:0 8px 28px rgba(20,45,75,.12);font-family:Segoe UI,Arial,sans-serif;color:#06172b}
       .report-print-helper strong{display:block;color:#073f7a;font-size:13px}.report-print-helper span{display:block;color:#5c6f87;font-size:10px;margin-top:2px}.report-print-helper-actions{display:flex;gap:8px}.report-print-helper button{border:1px solid #0b559c;background:#073f7a;color:white;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}.report-print-helper button:last-child{background:white;color:#073f7a}
-      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
+      .report-executive-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+      .report-executive-kpis>div{border:1px solid var(--report-line);border-radius:8px;background:#fbfdff;padding:10px;min-height:27mm;display:flex;flex-direction:column;justify-content:space-between}
+      .report-executive-kpis span{font-size:8px;color:var(--report-muted);font-weight:900;text-transform:uppercase}.report-executive-kpis strong{font-size:17px;color:var(--report-blue);line-height:1.08}.report-executive-kpis small{font-size:8px;color:#536a83;line-height:1.25}
+      .report-executive-score.ok{background:#f2fbf5;border-color:#bde5ce}.report-executive-score.warn{background:#fff8ed;border-color:#f2c282}.report-executive-score.error{background:#fff4f4;border-color:#efb7b7}
+      .report-executive-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.report-executive-grid .report-info-box{margin-top:0;min-height:82mm}.report-executive-priority ol{margin:0;padding-left:18px}.report-executive-priority li{margin:0 0 9px}.report-executive-priority li strong,.report-executive-priority li span{display:block}.report-executive-priority li strong{color:#123b64;font-size:9.2px}.report-executive-priority li span{color:#52677e;font-size:8.4px;line-height:1.35;margin-top:2px}.report-top-loss-table td{font-size:8px}.report-executive-note{margin-top:10px;padding:9px 12px}
+      .report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-flowline{stroke:#7d96ad;stroke-width:18;fill:none;opacity:.2}.report-schematic-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-node rect{fill:#fff;stroke:#0b6cae;stroke-width:1.8}.report-schematic-node-title{font-size:10px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:7.6px;fill:#425b74}.report-schematic-node-line.strong{font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:9px;font-weight:900;fill:#425b74}.report-schematic-terminal-value{font-size:8px;font-weight:800;fill:#073f7a}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2}.report-schematic-formpart{fill:#e28a0c}.report-schematic-special{fill:#6e55ad}.report-schematic-count{font-size:7px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:7px;fill:#536a83}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:7px 9px}.report-schematic-summary span{display:block;font-size:7.5px;color:var(--report-muted);text-transform:uppercase;font-weight:900}.report-schematic-summary strong{display:block;font-size:12px;color:var(--report-blue);margin-top:3px}.report-schematic-disclaimer{font-size:8px;color:#5c6f87;margin:8px 0 0}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
+      .report-loss-analysis-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.report-loss-analysis-grid .report-info-box{margin-top:0;min-height:56mm}.report-chart-row{margin:0 0 10px}.report-chart-row>div{display:flex;justify-content:space-between;gap:10px;font-size:8.5px}.report-chart-row>div span{color:#536a83}.report-chart-row i{display:block;height:8px;background:#e8eff7;border-radius:999px;overflow:hidden;margin-top:4px}.report-chart-row i b{display:block;height:100%;background:linear-gradient(90deg,#0b559c,#45a2d8);border-radius:999px}.report-section-ranking{margin-top:12px}.report-ranking-row{display:grid;grid-template-columns:18px 38mm 1fr 20mm;align-items:center;gap:7px;margin:7px 0;font-size:8.6px}.report-ranking-row>span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf2fb;color:#073f7a;font-weight:900}.report-ranking-row>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-ranking-row i{height:7px;background:#e8eff7;border-radius:999px;overflow:hidden}.report-ranking-row i b{display:block;height:100%;background:#0b6cae;border-radius:999px}.report-ranking-row em{font-style:normal;text-align:right;font-weight:900;color:#073f7a}
+      .report-engineering-overview{display:grid;grid-template-columns:38mm 1fr;gap:14px;margin-bottom:12px}.report-engineering-score{border:1px solid #b9d8ee;border-radius:9px;background:linear-gradient(135deg,#edf7ff,#f8fbff);padding:10px;display:flex;flex-direction:column;justify-content:center}.report-engineering-score span{font-size:7.8px;text-transform:uppercase;color:#536a83;font-weight:900}.report-engineering-score strong{font-size:34px;line-height:1;color:#073f7a}.report-engineering-score small{font-size:8px;color:#536a83;margin-top:3px}.report-engineering-overview>div:last-child{border:1px solid var(--report-line);border-radius:9px;padding:10px;background:#fbfdff}.report-engineering-table th:nth-child(1){width:18mm}.report-engineering-table th:nth-child(2){width:25mm}.report-engineering-table th:nth-child(3){width:66mm}.report-engineering-table td{font-size:7.6px;line-height:1.25}.report-engineering-table td span{color:#536a83}.report-engineering-table .engineering-critical td:first-child{color:#a52828;font-weight:900}.report-engineering-table .engineering-warning td:first-child{color:#9a5a00;font-weight:900}.report-engineering-disclaimer{font-size:8px;color:#5c6f87;margin:10px 0 0;font-style:italic}
+      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
       @media print{
         html,body,.report-print-body{background:white!important;margin:0!important;padding:0!important}
         .dp-professional-report{display:block;padding:0;background:white;gap:0}
@@ -2165,6 +2411,9 @@ export class ReportEngine {
     rows.push(this.csvRow(['Geprueft von', model.project.checkedBy]));
     rows.push(this.csvRow(['Freigegeben von', model.project.approvedBy]));
     rows.push(this.csvRow(['Gesamtdruckverlust Pa', formatNumber(model.totals.total, 2)]));
+    rows.push(this.csvRow(['Engineering Score', Math.round(toNumber(model.engineeringQuality?.score, 100))]));
+    rows.push(this.csvRow(['Engineering Status', model.engineeringQuality?.status || 'ok']));
+    rows.push(this.csvRow(['Engineering Feststellungen', model.engineeringQuality?.findings?.length || 0]));
 
     addSection('Teilstrecken');
     rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Flaeche m2', 'v m/s', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
@@ -2202,6 +2451,18 @@ export class ReportEngine {
           formatNumber(part.pressureLoss, 3),
         ]));
       });
+    });
+
+    addSection('Engineering-QS');
+    rows.push(this.csvRow(['Stufe', 'Code', 'Teilstrecke', 'Feststellung', 'Empfehlung']));
+    (model.engineeringQuality?.findings || []).forEach(finding => {
+      rows.push(this.csvRow([
+        finding.severity,
+        finding.code,
+        finding.sectionId || '-',
+        finding.title || finding.message || '-',
+        finding.recommendation || '-',
+      ]));
     });
 
     addSection('Sonderbauteile');

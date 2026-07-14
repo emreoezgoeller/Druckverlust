@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=22.03';
+import RibbonActions from '../core/RibbonActions.js?v=26.28';
 
 const RIBBON_GROUPS = [
   {
@@ -32,6 +32,7 @@ const RIBBON_GROUPS = [
       { action: 'calculationCheck', label: 'Rechen-QS', icon: 'shieldCheck', title: 'Berechnung fachlich kontrollieren' },
       { action: 'showEngineeringQuality', label: 'Engineering-QS', icon: 'pulse', title: 'Priorisierte, herstellerneutrale Engineering-Prüfung öffnen' },
       { action: 'showNetworkSchematic', label: 'Anlagenschema', icon: 'network', title: 'Schematische Anlagenansicht öffnen' },
+      { action: 'showLiveSimulation', label: 'Simulation', icon: 'sliders', title: 'Live-Variantenvergleich für Luftmenge und Dimension öffnen' },
     ],
   },
   {
@@ -187,6 +188,7 @@ export default class RibbonComponent {
     const reportButton = this.root.querySelector('[data-action="showReport"]');
     const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
+    const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -209,6 +211,9 @@ export default class RibbonComponent {
     } else if (selectionType === 'networkSchematic') {
       schematicButton?.classList.add('is-current');
       schematicButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'liveSimulation') {
+      simulationButton?.classList.add('is-current');
+      simulationButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'report') {
       reportButton?.classList.add('is-current');
       reportButton?.setAttribute('aria-current', 'page');
@@ -267,6 +272,7 @@ export default class RibbonComponent {
       info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v7M12 7h.01"/>',
       pulse: '<path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="10"/>',
       network: '<rect x="2" y="8" width="6" height="8" rx="1"/><rect x="16" y="3" width="6" height="8" rx="1"/><rect x="16" y="13" width="6" height="8" rx="1"/><path d="M8 12h4c2 0 2-5 4-5M12 12c2 0 2 5 4 5"/>',
+      sliders: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     };
 

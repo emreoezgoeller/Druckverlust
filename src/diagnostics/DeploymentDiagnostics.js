@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=22.03';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=26.28';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -96,6 +96,10 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Start', label: 'Hauptmodul', path: `src/main.js?v=${version}` },
     { area: 'Layout', label: 'Shell-CSS', path: `src/ui/ApplicationShell.css?v=${version}` },
     { area: 'Layout', label: 'Bibliotheks-/Dialog-CSS', path: `src/ui/phase22_03.css?v=${version}` },
+    { area: 'Layout', label: 'Simulation-/Bericht-CSS', path: `src/ui/phase26_28.css?v=${version}` },
+    { area: 'Engineering', label: 'Engineering-QS', path: `src/quality/EngineeringQualityEngine.js?v=${version}` },
+    { area: 'Engineering', label: 'Anlagenschema', path: `src/schematic/NetworkSchematicEngine.js?v=${version}` },
+    { area: 'Simulation', label: 'Live-Simulation', path: `src/simulation/LiveSimulationEngine.js?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },

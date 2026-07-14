@@ -7,13 +7,13 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=22.03';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=26.28';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=22.03';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=26.28';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=22.03';
+import UiDialogService from './UiDialogService.js?v=26.28';
 
 export default class RibbonActions {
   constructor(state) {
@@ -572,6 +572,18 @@ export default class RibbonActions {
     }
     this.calculate({ silent: true, keepDirty: true });
     this.state.setSelection?.('engineeringQuality', this.getActiveSystem());
+    this.state.notify?.();
+  }
+
+
+  showLiveSimulation() {
+    const system = this.getActiveSystem();
+    if (!system) {
+      UiDialogService.alert('Keine Anlage vorhanden.');
+      return;
+    }
+    this.calculate({ silent: true, keepDirty: true });
+    this.state.setSelection?.('liveSimulation', system);
     this.state.notify?.();
   }
 

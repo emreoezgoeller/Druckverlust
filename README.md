@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.4.1 · Phase 24.10 · Anlagenzeichnung Pro.
+**Aktueller Stand:** Version 1.5.0 · kombinierte Phase 26–28 · Professional Report und Live-Simulation.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung, `.dvp`-Projektdateien, Autosicherung sowie mehrseitige Berichte und PDF-Ausgabe.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung, eine nicht-destruktive Live-Simulation, `.dvp`-Projektdateien, Autosicherung sowie ein professioneller mehrseitiger Bericht mit Management-Zusammenfassung, Verlustanalyse und QS-Nachweis.
 
 ## Start
 
@@ -48,6 +48,7 @@ Druckverlust/
 │   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── report/                aktive Bericht- und PDF-Engine
 │   ├── schematic/             SVG-Modell der Anlagenzeichnung
+│   ├── simulation/            neutraler Live-Variantenvergleich
 │   ├── storage/               Speichern, Öffnen und Autosicherung
 │   ├── testing/               aktive Referenz- und Freigabetests
 │   ├── ui/                    Oberfläche und Komponenten
@@ -74,10 +75,23 @@ Die Gesamtsuite prüft unter anderem:
 - Handrechnungen und Summenbildung,
 - ein Grossprojekt mit 48 Teilstrecken,
 - Anlagenzeichnung mit Kanal-/Rohrwechseln, Bauteilsymbolen und UI-Ausgabe,
+- Live-Simulation für Luftmengen- und Dimensionsvarianten inklusive UI-Ausgabe,
+- Professional Report mit Management-Zusammenfassung, Anlagenschema, Verlustanalyse und Engineering-QS,
 - Speichern/Öffnen und Berichtserstellung,
 - Fachtest-, Freigabe- und Beta-Workflows.
 
 Einzelne Testgruppen können über die in `package.json` definierten `npm run test:*`-Befehle gestartet werden.
+
+
+## Bewusste Produktgrenzen
+
+Druckverlust Pro bleibt fachlich und visuell herstellerneutral. Nicht Bestandteil sind:
+
+- Ventilatorauslegung, Motorleistung, SFP oder Energiekosten,
+- Hersteller-, Produkt- oder Artikelnummerndatenbanken,
+- automatische Marken- oder Produktempfehlungen.
+
+Die Live-Simulation vergleicht ausschliesslich Luftmengen, Kanalabmessungen und die daraus neu berechneten Druckverluste.
 
 ## Daten und Datenschutz
 

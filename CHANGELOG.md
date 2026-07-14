@@ -1,5 +1,20 @@
 # Änderungsverlauf
 
+## Phase 26–28 – Professional Report und Live-Simulation
+
+- Professional Report um eine Management-Zusammenfassung mit zentralen Projekt-, Anlagen- und QS-Kennwerten erweitert.
+- Interaktive Anlagenzeichnung als eigener Berichtsteil mit automatischem Seitenumbruch für lange Anlagen integriert.
+- Druckverlustanalyse mit Verlustanteilen, kritischer Teilstrecke und neutraler Ergebnisbewertung ergänzt.
+- Engineering-QS samt Score, Status, priorisierten Feststellungen und Empfehlungen in Bericht und CSV-Ausgabe aufgenommen.
+- Berichtsumfang und drei Berichtsvorlagen um die neuen Kapitel erweitert; Seitennummerierung und Seitenplan bleiben automatisch konsistent.
+- Nicht-destruktive Live-Simulation für Luftmengen von 50 bis 150 Prozent und Abmessungen von 75 bis 160 Prozent ergänzt.
+- Varianten können für die gesamte Anlage oder eine einzelne Teilstrecke berechnet werden, ohne das Projekt zunächst zu verändern.
+- Bestand und Variante werden live über Kennzahlen, Vergleichsbalken und eine nach Druckverluständerung sortierte Teilstreckentabelle gegenübergestellt.
+- Explizite Übernahmefunktion mit Sicherheitsabfrage ergänzt; erst danach werden Projektwerte geändert und vollständig neu berechnet.
+- Simulationslogik, Oberfläche und Professional Report durch neue automatisierte Engine-, UI- und Berichtstests abgesichert.
+- App-Version auf 1.5.0 und Cachekennung auf 26.28 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen; alle Funktionen bleiben herstellerneutral.
+
 ## Phase 24.10 – Anlagenzeichnung Pro
 
 - Bisherige lineare Punkt-/Kartenansicht durch einen neuen SVG-Zeichenkern ersetzt.

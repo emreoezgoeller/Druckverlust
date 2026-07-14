@@ -4,11 +4,11 @@
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
 import ProjectDiagnostics from './ProjectDiagnostics.js';
 import CalculationDiagnostics from './CalculationDiagnostics.js';
-import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=22.03';
+import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=26.28';
 import ProjectFileDiagnostics from './ProjectFileDiagnostics.js';
-import ReportEngine from '../report/ReportEngine.js';
+import ReportEngine from '../report/ReportEngine.js?v=26.28';
 import createDemoProject from '../project/demoProject.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_BUILD_LABEL } from '../core/appVersion.js?v=22.03';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_BUILD_LABEL } from '../core/appVersion.js?v=26.28';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };
