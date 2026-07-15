@@ -256,3 +256,34 @@ Geprüft werden:
 - öffentliches Browser-Testformular
 
 Sollstatus: 18/18 Einzelprüfungen bestanden.
+
+## Phase 29.00 – Anlagenanalyse und PDF-Schema
+
+```bash
+npm run test:phase29
+```
+
+Geprüft werden Analysemodi, SVG-Ausgabe, mehrseitiges PDF-Anlagenschema, maximal fünf Teilstrecken je Schemaseite, Fortsetzungsangaben, Einlass/Auslass, Formteil-/Sonderbauteilzuordnung und lange Anlagen.
+
+Das Praxisprojekt umfasst im aktuellen Professional Report 33 geplante und gerenderte Seiten.
+
+## Phase 30.00 – Projektabschluss, Varianten und Revisionen
+
+```bash
+npm run test:phase30
+```
+
+Die drei Testgruppen prüfen insgesamt 57 Einzelpunkte:
+
+- Speichern, Sortieren, Laden, Auswählen und Löschen von Simulationsvarianten,
+- maximal zwölf Varianten und getrennte Berechnungsfingerprints,
+- Erkennung veralteter Varianten,
+- Revisionsvorschläge und automatische Revisionssnapshots,
+- Revisionshistorie und Abschluss-Score,
+- persistente `.dvp`-Roundtrips für Varianten, Auswahl und Snapshots,
+- Ribbon- und Workspace-Integration,
+- Berichtoption und Variantenvergleich,
+- HTML- und CSV-Ausgabe,
+- optionale Behandlung von Projekten ohne gespeicherte Varianten.
+
+Die Phase-30-Prüfung ergänzt die vollständige Suite; sie ersetzt keine der bestehenden Rechen-, Formteil-, Praxis- oder Berichtstests.

@@ -1,72 +1,65 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 1.3.12 · Phase 21.12
+Stand: Version 1.7.0 · Phase 30.00
 
 ## 1. Ausführung
 
-Druckverlust Pro ist eine statische Webanwendung ohne Build-Schritt und ohne Server-Backend. HTML, CSS, JavaScript-Module und Medien werden direkt über einen Webserver oder GitHub Pages ausgeliefert. Projekt- und Prüfdaten bleiben lokal im Browser oder werden als Dateien exportiert.
+Druckverlust Pro ist eine statische Webanwendung ohne Build-Schritt und ohne Backend. HTML, CSS, JavaScript-Module und Medien werden über einen lokalen Webserver oder GitHub Pages ausgeliefert. Projektdaten bleiben lokal im Browser oder werden als `.dvp`, HTML, CSV beziehungsweise über den Browserdruck als PDF exportiert.
 
 ## 2. Einstiegspunkte
 
-- `index.html` – öffentliche Produktseite
-- `produkt.html` – kompatibler Alias der Produktseite
+- `index.html` – Produkt- und Startseite
 - `app.html` – Berechnungsanwendung
-- `beta.html` – Hinweise zum Beta-/Teststand
-- `feedback.html` – lokales Feedbackformular
-- `lizenz.html` – Lizenz- und Produktübersicht
-- `impressum.html`, `datenschutz.html`, `404.html` – Begleitseiten
+- `produkt.html` – kompatibler Weiterleitungs-Alias
+- `beta.html`, `feedback.html` – Test- und Feedbackseiten
+- `lizenz.html`, `impressum.html`, `datenschutz.html`, `404.html` – Begleitseiten
 
-Das Tool startet über `src/main.js`.
+Der Anwendungseinstieg ist `src/main.js`.
 
-## 3. Aktive Module
+## 3. Fachmodule
 
-### Anwendung und Zustand
+### Zustand und Projekte
 
 - `src/app/ApplicationState.js` – zentraler Projekt- und UI-Zustand
-- `src/app/ProjectCommands.js` – Erstellen und Ändern von Projektelementen
-- `src/main.js` – Start, URL-Modi, Komponenten und Autosicherung
+- `src/app/ProjectCommands.js` – Änderungen an Projektobjekten
+- `src/project/ProjectCalculationService.js` – Gesamtberechnung einer Anlage
+- `src/project/defaultProject.js` – Standardprojekt
 
 ### Rechenkern
 
-- `src/core/CalculationEngine.js` – Kanal-/Rohrberechnung, Summen und Rundung
-- `src/project/ProjectCalculationService.js` – Validierung und Projektberechnung
-- `src/validation/ValidationEngine.js` – Eingabe- und Projektprüfung
-- `src/core/LookupEngine.js`, `InterpolationEngine.js` – Tabellenwerte und Interpolation
+- `src/core/CalculationEngine.js` – Kanal-/Rohrberechnung, Verluste und Rundung
+- `src/core/LookupEngine.js`, `InterpolationEngine.js` – Tabellenwerte
+- `src/validation/ValidationEngine.js` – Eingabe- und Projektvalidierung
+- `src/formteile/FormPartRegistry.js` und `src/formteile/calculators/` – 14 Formteiltypen
 
-### Formteile
+### Analyse, Simulation und Abschluss
 
-- `src/formteile/FormPartRegistry.js` – zentrale Definition aller 14 Formteiltypen
-- `src/formteile/calculators/` – fachliche Einzelrechner
-- `src/formteile/formteile.manifest.json` – geprüfte Bild- und Excel-Referenzen
-- `assets/formteile/` – flache, kanonische Ablage der aktiven PNG- und XLSX-Dateien
+- `src/quality/EngineeringQualityEngine.js` – neutrale Plausibilitätsprüfung
+- `src/schematic/NetworkSchematicEngine.js` – SVG-Anlagenzeichnung und Analysemodi
+- `src/simulation/LiveSimulationEngine.js` – nicht-destruktive Luftmengen-/Dimensionssimulation
+- `src/closing/ProjectCompletionEngine.js` – Variantenarchiv, Fingerprints, Revisionssnapshots und Abschlussstatus
 
 ### Oberfläche
 
 - `src/ui/ApplicationShell.js` – Grundlayout
-- `src/ui/components/RibbonComponent.js` – Hauptaktionen
+- `src/ui/components/RibbonComponent.js` – Hauptnavigation
 - `src/ui/components/SidebarComponent.js` – Projektbaum
-- `src/ui/components/WorkspaceComponent.js` – Editoren, Dashboard, Hilfe und QS
-- `src/ui/components/StatusBarComponent.js` – Status und Versionsanzeige
-- `src/ui/core/RibbonActions.js` – Speichern, Öffnen, Berechnen und Export
-- `src/ui/core/KeyboardShortcuts.js` – Tastaturbefehle
+- `src/ui/components/WorkspaceComponent.js` – Editoren, Bibliotheken, Analyse, Simulation und Abschluss
+- `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
+- `src/ui/core/RibbonActions.js` – zentrale Aktionen
+- `src/ui/phase22_00.css` bis `src/ui/phase30_00.css` – additive, releasebezogene UI-Schichten
 
-Die CSS-Dateien `phase21_00.css` bis `phase21_11.css` sind weiterhin aktiv. Sie bilden den über mehrere Funktionsstufen aufgebauten aktuellen Oberflächenstand und werden erst in der nächsten Designkonsolidierung zusammengeführt.
+### Speicherung und Bericht
 
-### Speicherung
-
-- `src/storage/StorageEngine.js` – `.dvp`-Dateien und Migration
+- `src/storage/StorageEngine.js` – `.dvp`-Serialisierung, Normalisierung und Migration
 - `src/storage/AutoSaveEngine.js` – lokale Autosicherung
-
-### Bericht
-
-- `src/report/ReportEngine.js` – einzige aktive Bericht- und PDF-Engine
-- `assets/report/duct-network-hero.png` – Berichtgrafik
+- `src/report/ReportEngine.js` – einzig aktive HTML-/CSV-/PDF-Berichtengine
 
 ### Diagnose und Tests
 
-- `src/diagnostics/` – Projekt-, Berechnungs-, Datei-, Deployment- und Freigabeprüfungen
-- `src/testing/` – aktive Referenz-, Praxis-, Fachtest- und Beta-Module
-- `tests/` – aktuelle Browser- und Node-Testeinstiege
+- `src/diagnostics/` – Projekt-, Berechnungs-, Datei- und Deployment-Prüfungen
+- `src/testing/` – Referenz-, Praxis-, Fachtest- und Beta-Module
+- `tests/` – ausführbare Node- und Browserprüfungen
 
 ## 4. Datenfluss
 
@@ -81,33 +74,56 @@ ProjectCalculationService
    ↓
 CalculationEngine + FormPartRegistry
    ↓
-calculationResult im Projekt
-   ↓
-Workspace / Status / ReportEngine / StorageEngine
+calculationResult (flüchtig, wird nicht in .dvp gespeichert)
+   ├── EngineeringQualityEngine
+   ├── NetworkSchematicEngine
+   ├── LiveSimulationEngine
+   ├── ProjectCompletionEngine
+   └── ReportEngine
 ```
 
-## 5. Projektdateien
-
-Das interne Projektmodell enthält Projektangaben, Anlagen, Teilstrecken, Formteile, Sonderbauteile, Einstellungen und Berechnungsergebnisse. `StorageEngine` serialisiert die fachlich relevanten Daten in eine `.dvp`-Datei und stellt sie beim Öffnen wieder her.
-
-## 6. Pfadkonzept
-
-Alle aktiven Laufzeitpfade sind relativ zum Projektstamm. Formteilbilder und Excel-Referenzen liegen ausschliesslich in der flachen Struktur:
+Varianten und Revisionen:
 
 ```text
-assets/formteile/<formteil-id>.png
-assets/formteile/<formteil-id>.xlsx
+Live-Simulation
+   ↓ ausdrückliches Speichern
+project.simulationVariants
+   ↓ Auswahl
+project.reportVariantId
+   ↓
+ReportEngine → Variantenvergleich
+
+Aktueller Projektstand
+   ↓ Revisionssnapshot
+project.revisionSnapshots + report.revisionHistory
+   ↓
+Projektabschluss / Professional Report
 ```
 
-Damit existiert pro aktivem Medium nur eine kanonische Datei. Veraltete Unterordner- und Kompatibilitätspfade wurden in Phase 21.12 entfernt.
+## 5. Persistenz
 
-## 7. Bereinigungsgrundsätze
+`StorageEngine` speichert alle fachlich relevanten Projektdaten, einschliesslich:
 
-Im bereinigten Projekt verbleiben nur:
+- Projektangaben und Einstellungen,
+- Anlagen, Teilstrecken, Formteile und Sonderbauteile,
+- Berichtsoptionen und Revisionshistorie,
+- gespeicherte Simulationsvarianten,
+- ausgewählte Berichtsvariante,
+- Revisionssnapshots.
 
-- aktive Laufzeitdateien,
-- aktuelle Tests und Referenzen,
-- öffentliche Seiten und Deployment-Dateien,
-- notwendige Entwicklungs- und Projektdokumentation.
+Flüchtige Berechnungsergebnisse, Validierungsobjekte und Importinformationen werden vor dem Speichern entfernt und nach dem Öffnen neu erzeugt.
 
-Git-Verlaufsdaten, alte Phasenlisten, historische Sprint-Einzeldokumente, doppelte Medien, nicht importierte Komponenten und frühere Bericht-/Rechen-Kompatibilitätsmodule sind nicht Bestandteil der Projekt-ZIP.
+## 6. Fingerprints
+
+`ProjectCompletionEngine` verwendet zwei getrennte Fingerprints:
+
+- **Berechnungsfingerprint:** Einstellungen und Anlagengeometrie; prüft die Aktualität einer Variante.
+- **Projektfingerprint:** zusätzlich Bericht-/Freigabedaten; prüft die Aktualität eines Revisionssnapshots.
+
+Damit macht eine reine Revisionsänderung eine fachlich unveränderte Simulationsvariante nicht fälschlich veraltet.
+
+## 7. Pfade und Produktgrenzen
+
+Alle Laufzeitpfade sind relativ zum Projektstamm. Aktive Formteilmedien liegen kanonisch unter `assets/formteile/`.
+
+Bewusst nicht vorhanden sind Ventilatorauslegung, SFP/Energieauswertung sowie Hersteller-, Produkt- oder Artikelnummerndatenbanken. Analyse, Simulation, Abschluss und Bericht bleiben herstellerneutral.

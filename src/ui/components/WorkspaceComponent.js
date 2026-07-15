@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=29.00';
+import ReportEngine from '../../report/ReportEngine.js?v=30.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=29.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=30.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,13 +89,14 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=29.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=30.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=29.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=29.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=29.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=30.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=30.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=30.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=30.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -123,6 +124,7 @@ export default class WorkspaceComponent {
     this.networkSchematicZoom = 1;
     this.liveSimulationOptions = { scope: 'all', sectionId: '', airflowPercent: 100, dimensionPercent: 100 };
     this.liveSimulationResult = null;
+    this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -142,6 +144,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'engineeringQuality') return this.renderEngineeringQuality(selection.data);
     if (selection.type === 'networkSchematic') return this.renderNetworkSchematic(selection.data);
     if (selection.type === 'liveSimulation') return this.renderLiveSimulation(selection.data);
+    if (selection.type === 'projectCompletion') return this.renderProjectCompletion(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
@@ -4831,6 +4834,7 @@ export default class WorkspaceComponent {
       { id: 'includeExecutiveSummary', label: 'Management-Zusammenfassung', default: true },
       { id: 'includeNetworkSchematic', label: 'Anlagenschema', default: true },
       { id: 'includeLossAnalysis', label: 'Druckverlustanalyse', default: true },
+      { id: 'includeVariantComparison', label: 'Variantenvergleich', default: true },
       { id: 'includeEngineeringQuality', label: 'Engineering-QS', default: true },
       { id: 'includeMainNetwork', label: 'Hauptberechnung – Luftnetz', default: true },
       { id: 'includeAssignedFormParts', label: 'Zugeordnete Formteile', default: true },
@@ -4855,6 +4859,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: true,
           includeLossAnalysis: true,
+          includeVariantComparison: true,
           includeEngineeringQuality: true,
           includeMainNetwork: true,
           includeAssignedFormParts: true,
@@ -4875,6 +4880,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: true,
           includeLossAnalysis: true,
+          includeVariantComparison: true,
           includeEngineeringQuality: true,
           includeMainNetwork: true,
           includeAssignedFormParts: true,
@@ -4895,6 +4901,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: false,
           includeLossAnalysis: true,
+          includeVariantComparison: true,
           includeEngineeringQuality: false,
           includeMainNetwork: false,
           includeAssignedFormParts: false,
@@ -9373,6 +9380,9 @@ formatNumber(value, digits = 2) {
 
   renderLiveSimulation(system = null) {
     const project = this.state.project || {};
+    if (!this.liveSimulationVariantDraft || typeof this.liveSimulationVariantDraft !== 'object') {
+      this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
+    }
     const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
 
     if (!activeSystem) {
@@ -9457,13 +9467,36 @@ formatNumber(value, digits = 2) {
             <p>Formteile werden in der Kopie neu berechnet. Sonderbauteile bleiben als feste Druckverlustwerte unverändert.</p>
           </div>
 
+          <div class="dp-simulation-variant-save">
+            <div>
+              <strong>Variante dokumentieren</strong>
+              <small>Die aktuelle Vorschau bleibt im Projekt gespeichert und kann im Bericht verglichen werden.</small>
+            </div>
+            <label>
+              <span>Variantenname</span>
+              <input data-simulation-variant-field="name" value="${this.escapeAttribute(this.liveSimulationVariantDraft.name || '')}" placeholder="z. B. Variante grössere Kanäle">
+            </label>
+            <label>
+              <span>Bemerkung</span>
+              <textarea data-simulation-variant-field="note" rows="2" placeholder="Ziel oder Annahme der Variante">${this.escapeHtml(this.liveSimulationVariantDraft.note || '')}</textarea>
+            </label>
+            <label class="dp-simulation-report-choice">
+              <input data-simulation-variant-field="includeInReport" type="checkbox" ${this.liveSimulationVariantDraft.includeInReport !== false ? 'checked' : ''}>
+              <span>Direkt für den Bericht auswählen</span>
+            </label>
+            <button type="button" data-simulation-action="save-variant" ${simulation.affectedCount && (simulation.options.airflowPercent !== 100 || simulation.options.dimensionPercent !== 100) ? '' : 'disabled'}>Variante speichern</button>
+          </div>
+
           <button type="button" class="is-primary dp-simulation-apply" data-simulation-action="apply" ${simulation.affectedCount && (simulation.options.airflowPercent !== 100 || simulation.options.dimensionPercent !== 100) ? '' : 'disabled'}>
             Werte in Projekt übernehmen
           </button>
         </aside>
 
-        <div class="dp-simulation-results" data-simulation-results>
-          ${this.renderLiveSimulationResults(simulation)}
+        <div class="dp-simulation-main">
+          <div class="dp-simulation-results" data-simulation-results>
+            ${this.renderLiveSimulationResults(simulation)}
+          </div>
+          ${this.renderSimulationVariantArchive(activeSystem)}
         </div>
       </section>
     `;
@@ -9559,6 +9592,51 @@ formatNumber(value, digits = 2) {
     `;
   }
 
+  renderSimulationVariantArchive(activeSystem) {
+    const project = this.state.project || {};
+    const variants = ProjectCompletionEngine.getVariants(project, activeSystem?.id);
+    const reportVariantId = project.reportVariantId || '';
+
+    return `
+      <section class="dp-variant-archive" data-variant-archive>
+        <div class="dp-simulation-section-head">
+          <div><span>Variantenarchiv</span><h2>Gespeicherte Vergleiche</h2></div>
+          <button type="button" data-simulation-action="completion">Projektabschluss</button>
+        </div>
+        ${variants.length ? `
+          <div class="dp-variant-grid">
+            ${variants.map(variant => {
+              const createdAt = new Date(variant.createdAt || '');
+              const createdLabel = Number.isNaN(createdAt.getTime()) ? '-' : createdAt.toLocaleString('de-CH');
+              const isReport = variant.id === reportVariantId;
+              const delta = Number(variant.delta?.totalLoss || 0);
+              const deltaSign = delta > 0 ? '+' : '';
+              return `<article class="dp-variant-card ${isReport ? 'is-report-variant' : ''}">
+                <div class="dp-variant-card-head">
+                  <div><span>${isReport ? 'Im Bericht' : 'Gespeichert'}</span><h3>${this.escapeHtml(variant.name || 'Variante')}</h3></div>
+                  <strong>${this.formatNumber(variant.scenario?.totalLoss, 1)} Pa</strong>
+                </div>
+                <p>${this.escapeHtml(variant.note || 'Keine Bemerkung hinterlegt.')}</p>
+                <div class="dp-variant-metrics">
+                  <span>Luftmenge <strong>${this.formatNumber(variant.options?.airflowPercent, 0)} %</strong></span>
+                  <span>Abmessung <strong>${this.formatNumber(variant.options?.dimensionPercent, 0)} %</strong></span>
+                  <span>Δp <strong>${deltaSign}${this.formatNumber(delta, 1)} Pa</strong></span>
+                  <span>v max. <strong>${this.formatNumber(variant.scenario?.maxVelocity, 2)} m/s</strong></span>
+                </div>
+                <small>${this.escapeHtml(createdLabel)} · ${variant.affectedCount || 0} Teilstrecken</small>
+                <div class="dp-variant-actions">
+                  <button type="button" data-variant-action="load" data-variant-id="${this.escapeAttribute(variant.id)}">Parameter laden</button>
+                  <button type="button" data-variant-action="report" data-variant-id="${this.escapeAttribute(variant.id)}" ${isReport ? 'disabled' : ''}>Für Bericht</button>
+                  <button type="button" class="is-danger" data-variant-action="delete" data-variant-id="${this.escapeAttribute(variant.id)}">Löschen</button>
+                </div>
+              </article>`;
+            }).join('')}
+          </div>
+        ` : `<div class="dp-quality-empty"><strong>Noch keine Variante gespeichert</strong><p>Parameter verändern und die aktuelle Vorschau mit einem Namen dokumentieren.</p></div>`}
+      </section>
+    `;
+  }
+
   bindLiveSimulation(activeSystem) {
     const resultsRoot = this.root.querySelector('[data-simulation-results]');
     const scopeField = this.root.querySelector('[data-simulation-field="scope"]');
@@ -9568,6 +9646,10 @@ formatNumber(value, digits = 2) {
     const airflowOutput = this.root.querySelector('[data-simulation-output="airflow"]');
     const dimensionOutput = this.root.querySelector('[data-simulation-output="dimension"]');
     const applyButton = this.root.querySelector('[data-simulation-action="apply"]');
+    const saveVariantButton = this.root.querySelector('[data-simulation-action="save-variant"]');
+    const variantNameField = this.root.querySelector('[data-simulation-variant-field="name"]');
+    const variantNoteField = this.root.querySelector('[data-simulation-variant-field="note"]');
+    const variantReportField = this.root.querySelector('[data-simulation-variant-field="includeInReport"]');
     let scheduled = 0;
 
     const bindResultLinks = () => {
@@ -9598,11 +9680,14 @@ formatNumber(value, digits = 2) {
         const simulation = LiveSimulationEngine.create(this.state.project, activeSystem.id, options);
         this.liveSimulationResult = simulation;
         if (resultsRoot) resultsRoot.innerHTML = this.renderLiveSimulationResults(simulation);
-        if (applyButton) applyButton.disabled = !simulation.affectedCount || (options.airflowPercent === 100 && options.dimensionPercent === 100);
+        const isBaseline = options.airflowPercent === 100 && options.dimensionPercent === 100;
+        if (applyButton) applyButton.disabled = !simulation.affectedCount || isBaseline;
+        if (saveVariantButton) saveVariantButton.disabled = !simulation.affectedCount || isBaseline;
         bindResultLinks();
       } catch (error) {
         if (resultsRoot) resultsRoot.innerHTML = `<div class="dp-quality-empty"><strong>Simulation nicht möglich</strong><p>${this.escapeHtml(error.message)}</p></div>`;
         if (applyButton) applyButton.disabled = true;
+        if (saveVariantButton) saveVariantButton.disabled = true;
       }
     };
 
@@ -9620,6 +9705,77 @@ formatNumber(value, digits = 2) {
       airflowField.value = '100';
       dimensionField.value = '100';
       update();
+    });
+
+    [variantNameField, variantNoteField].forEach(field => field?.addEventListener('input', () => {
+      this.liveSimulationVariantDraft = {
+        ...this.liveSimulationVariantDraft,
+        name: variantNameField?.value || '',
+        note: variantNoteField?.value || '',
+        includeInReport: variantReportField?.checked !== false,
+      };
+    }));
+    variantReportField?.addEventListener('change', () => {
+      this.liveSimulationVariantDraft.includeInReport = variantReportField.checked;
+    });
+
+    saveVariantButton?.addEventListener('click', () => {
+      try {
+        const options = readOptions();
+        const simulation = LiveSimulationEngine.create(this.state.project, activeSystem.id, options);
+        const variant = ProjectCompletionEngine.saveVariant(this.state.project, activeSystem.id, simulation, {
+          name: variantNameField?.value,
+          note: variantNoteField?.value,
+          includeInReport: variantReportField?.checked !== false,
+        });
+        this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
+        this.state.markProjectDirty();
+        UiDialogService.alert({ title: 'Variante gespeichert', message: `„${variant.name}“ wurde im Projekt dokumentiert.`, tone: 'success' });
+        this.renderLiveSimulation(activeSystem);
+      } catch (error) {
+        UiDialogService.alert({ title: 'Variante konnte nicht gespeichert werden', message: error.message, tone: 'error' });
+      }
+    });
+
+    this.root.querySelector('[data-simulation-action="completion"]')?.addEventListener('click', () => {
+      this.state.setSelection?.('projectCompletion', activeSystem);
+      this.state.notify?.();
+    });
+
+    this.root.querySelectorAll('[data-variant-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const action = button.dataset.variantAction;
+        const variantId = button.dataset.variantId;
+        const variant = ProjectCompletionEngine.getVariants(this.state.project, activeSystem.id).find(item => item.id === variantId);
+        if (!variant) return;
+
+        if (action === 'load') {
+          this.liveSimulationOptions = LiveSimulationEngine.normalizeOptions(variant.options || {});
+          this.liveSimulationVariantDraft = { name: `${variant.name} – Kopie`, note: variant.note || '', includeInReport: false };
+          this.renderLiveSimulation(activeSystem);
+          return;
+        }
+
+        if (action === 'report') {
+          ProjectCompletionEngine.setReportVariant(this.state.project, variantId);
+          this.state.markProjectDirty();
+          this.renderLiveSimulation(activeSystem);
+          return;
+        }
+
+        if (action === 'delete') {
+          const confirmed = await UiDialogService.confirm({
+            title: 'Variante löschen',
+            message: `Soll „${variant.name}“ aus dem Variantenarchiv entfernt werden?`,
+            confirmLabel: 'Variante löschen',
+            tone: 'danger',
+          });
+          if (!confirmed) return;
+          ProjectCompletionEngine.removeVariant(this.state.project, variantId);
+          this.state.markProjectDirty();
+          this.renderLiveSimulation(activeSystem);
+        }
+      });
     });
 
     applyButton?.addEventListener('click', async () => {
@@ -9647,6 +9803,141 @@ formatNumber(value, digits = 2) {
     });
 
     bindResultLinks();
+  }
+
+  renderProjectCompletion(system = null) {
+    const project = this.state.project || {};
+    const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
+    if (!activeSystem) {
+      this.root.innerHTML = '<h1>Projektabschluss</h1><p>Keine Anlage vorhanden.</p>';
+      return;
+    }
+
+    if (!project.calculationResult || this.state.isCalculationDirty) this.autoCalculateProject({ notify: false });
+    const completion = ProjectCompletionEngine.analyze(project, activeSystem.id, { isProjectDirty: this.state.isProjectDirty });
+    const report = project.report || {};
+    const statusLabel = completion.status === 'ready' ? 'Abgabebereit' : completion.status === 'blocked' ? 'Blockiert' : 'Prüfung offen';
+    const nextRevision = report.revision || project.revision || '0';
+    const today = new Date().toLocaleDateString('de-CH');
+    const reportVariantId = project.reportVariantId || '';
+
+    this.root.innerHTML = `
+      <section class="dp-phase-hero is-completion">
+        <div>
+          <span class="dp-phase-kicker">PHASE 30 · PROJEKTABSCHLUSS</span>
+          <h1>Varianten, Revision und Freigabestand</h1>
+          <p>Berechnungsstand dokumentieren, Varianten für den Bericht auswählen und offene Abschlussarbeiten zentral prüfen.</p>
+        </div>
+        <div class="dp-completion-score is-${this.escapeAttribute(completion.status)}">
+          <span>${this.escapeHtml(statusLabel)}</span>
+          <strong>${Math.round(completion.score)}/100</strong>
+          <small>${this.escapeHtml(activeSystem.name || 'Anlage')}</small>
+        </div>
+      </section>
+
+      <div class="dp-completion-actions">
+        <button type="button" data-completion-action="quality">Engineering-QS</button>
+        <button type="button" data-completion-action="simulation">Simulation</button>
+        <button type="button" data-completion-action="report">Bericht öffnen</button>
+      </div>
+
+      <section class="dp-completion-checks">
+        ${completion.items.map(item => `<article class="is-${this.escapeAttribute(item.status)}">
+          <span class="dp-completion-check-icon" aria-hidden="true">${item.status === 'ok' ? '✓' : item.status === 'error' ? '!' : '•'}</span>
+          <div><strong>${this.escapeHtml(item.label)}</strong><p>${this.escapeHtml(item.message)}</p></div>
+        </article>`).join('')}
+      </section>
+
+      <section class="dp-completion-grid">
+        <article class="dp-completion-panel">
+          <div class="dp-panel-header">
+            <div><span class="dp-overline">Revisionssnapshot</span><h2>Aktuellen Stand festhalten</h2><p>Speichert Kennwerte, Engineering-Score und Projektfingerabdruck zur Revision.</p></div>
+          </div>
+          <div class="dp-completion-form">
+            <label><span>Revision</span><input data-completion-field="revision" value="${this.escapeAttribute(nextRevision)}"></label>
+            <label><span>Datum</span><input data-completion-field="date" value="${this.escapeAttribute(today)}"></label>
+            <label><span>Bearbeiter</span><input data-completion-field="author" value="${this.escapeAttribute(report.bearbeiter || project.author || '')}"></label>
+            <label class="is-wide"><span>Änderung / Bemerkung</span><textarea data-completion-field="change" rows="3" placeholder="Was wurde in diesem Stand geändert?"></textarea></label>
+          </div>
+          <div class="dp-completion-form-actions">
+            <button type="button" data-completion-action="next-revision">Nächste Revision vorschlagen</button>
+            <button type="button" class="is-primary" data-completion-action="capture-revision">Revisionsstand festhalten</button>
+          </div>
+        </article>
+
+        <article class="dp-completion-panel">
+          <div class="dp-panel-header">
+            <div><span class="dp-overline">Dokumentierte Stände</span><h2>Revisionshistorie</h2><p>Automatisch erfasste Berechnungsstände dieser Anlage.</p></div>
+          </div>
+          ${completion.revisions.length ? `<div class="dp-revision-snapshot-list">
+            ${completion.revisions.map((revision, index) => `<div class="dp-revision-snapshot ${index === 0 && completion.revisionCurrent ? 'is-current' : ''}">
+              <div><span>Revision ${this.escapeHtml(revision.revision || '-')}</span><strong>${this.formatNumber(revision.totals?.totalLoss, 1)} Pa</strong></div>
+              <p>${this.escapeHtml(revision.change || 'Berechnungsstand dokumentiert')}</p>
+              <small>${this.escapeHtml(revision.date || '-')} · ${this.escapeHtml(revision.author || '-')} · QS ${Math.round(Number(revision.engineeringScore || 0))}/100</small>
+            </div>`).join('')}
+          </div>` : `<div class="dp-quality-empty"><strong>Noch kein Revisionssnapshot</strong><p>Den aktuellen Stand links mit Revision und Bemerkung dokumentieren.</p></div>`}
+        </article>
+      </section>
+
+      <section class="dp-completion-panel dp-completion-variants">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Variantenvergleich</span><h2>Variante für Bericht auswählen</h2><p>Gespeicherte Simulationen bleiben neutral und werden nicht automatisch in die Berechnung übernommen.</p></div>
+        </div>
+        ${completion.variants.length ? `<div class="dp-completion-variant-grid">
+          ${completion.variants.map(variant => `<label class="dp-completion-variant ${variant.id === reportVariantId ? 'is-selected' : ''}">
+            <input type="radio" name="report-variant" data-completion-report-variant value="${this.escapeAttribute(variant.id)}" ${variant.id === reportVariantId ? 'checked' : ''}>
+            <div><span>${variant.id === reportVariantId ? 'Für Bericht gewählt' : 'Gespeicherte Variante'}</span><strong>${this.escapeHtml(variant.name || 'Variante')}</strong><p>${this.escapeHtml(variant.note || 'Keine Bemerkung')}</p></div>
+            <dl><div><dt>Δp Variante</dt><dd>${this.formatNumber(variant.scenario?.totalLoss, 1)} Pa</dd></div><div><dt>v max.</dt><dd>${this.formatNumber(variant.scenario?.maxVelocity, 2)} m/s</dd></div></dl>
+          </label>`).join('')}
+        </div>` : `<div class="dp-quality-empty"><strong>Keine Variante gespeichert</strong><p>In der Live-Simulation kann ein Vergleich mit Namen und Bemerkung gespeichert werden.</p><button type="button" data-completion-action="simulation">Simulation öffnen</button></div>`}
+      </section>
+
+      <p class="dp-completion-disclaimer">${this.escapeHtml(completion.disclaimer)}</p>
+    `;
+
+    this.bindProjectCompletion(activeSystem);
+  }
+
+  bindProjectCompletion(activeSystem) {
+    const project = this.state.project;
+    if (!project || !activeSystem) return;
+
+    const open = type => {
+      this.state.setSelection?.(type, activeSystem);
+      this.state.notify?.();
+    };
+    this.root.querySelectorAll('[data-completion-action="quality"]').forEach(button => button.addEventListener('click', () => open('engineeringQuality')));
+    this.root.querySelectorAll('[data-completion-action="simulation"]').forEach(button => button.addEventListener('click', () => open('liveSimulation')));
+    this.root.querySelectorAll('[data-completion-action="report"]').forEach(button => button.addEventListener('click', () => open('report')));
+
+    const revisionField = this.root.querySelector('[data-completion-field="revision"]');
+    this.root.querySelector('[data-completion-action="next-revision"]')?.addEventListener('click', () => {
+      if (revisionField) revisionField.value = ProjectCompletionEngine.suggestNextRevision(revisionField.value || project.report?.revision || project.revision || '0');
+    });
+
+    this.root.querySelector('[data-completion-action="capture-revision"]')?.addEventListener('click', () => {
+      try {
+        const snapshot = ProjectCompletionEngine.captureRevision(project, activeSystem.id, {
+          revision: revisionField?.value,
+          date: this.root.querySelector('[data-completion-field="date"]')?.value,
+          author: this.root.querySelector('[data-completion-field="author"]')?.value,
+          change: this.root.querySelector('[data-completion-field="change"]')?.value,
+        });
+        this.state.markProjectDirty();
+        UiDialogService.alert({ title: 'Revisionsstand dokumentiert', message: `Revision ${snapshot.revision} wurde mit ${this.formatNumber(snapshot.totals?.totalLoss, 1)} Pa festgehalten.`, tone: 'success' });
+        this.renderProjectCompletion(activeSystem);
+      } catch (error) {
+        UiDialogService.alert({ title: 'Revision konnte nicht gespeichert werden', message: error.message, tone: 'error' });
+      }
+    });
+
+    this.root.querySelectorAll('[data-completion-report-variant]').forEach(input => {
+      input.addEventListener('change', () => {
+        ProjectCompletionEngine.setReportVariant(project, input.value);
+        this.state.markProjectDirty();
+        this.renderProjectCompletion(activeSystem);
+      });
+    });
   }
 
   renderEngineeringQuality(system = null) {

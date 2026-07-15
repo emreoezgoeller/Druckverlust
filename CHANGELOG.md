@@ -1,5 +1,22 @@
 # Änderungsverlauf
 
+## Phase 30.00 – Projektabschluss, Variantenarchiv und Revisionsstand
+
+- Neuen Arbeitsbereich **Abschluss** mit neutralem Projektstatus, Score und sieben Bereitschaftsprüfungen ergänzt.
+- Live-Simulation um ein lokales Variantenarchiv mit Name, Bemerkung, Bearbeiter und maximal zwölf gespeicherten Varianten erweitert.
+- Varianten können wieder in die Simulation geladen, für den Bericht ausgewählt oder entfernt werden.
+- Berechnungs-Fingerprints erkennen, ob eine Berichtsvariante noch zum aktuellen Teilstreckenstand passt.
+- Automatische Revisionssnapshots mit Gesamtdruckverlust, Verlustanteilen, kritischer Teilstrecke, Engineering-Score und Objektanzahlen ergänzt.
+- Revisionshistorie wird im Projekt gespeichert und in den Professional Report übernommen.
+- Professional Report um eine optionale Seite **Variantenvergleich** mit Bestand, Szenario, Differenzen, Parametern und den zehn grössten Teilstreckenänderungen erweitert.
+- CSV-Export um Revisionsverlauf und Variantenvergleich ergänzt.
+- Export-Checkliste warnt nur bei tatsächlich vorhandenen, aber nicht ausgewählten oder veralteten Varianten; Projekte ohne Varianten bleiben ohne unnötige Warnung.
+- `.dvp`-Roundtrip für Varianten, ausgewählte Berichtsvariante und Revisionssnapshots abgesichert.
+- Ribbon-Aktion **Ausgabe → Abschluss**, responsive Abschlusskarten und Archivdarstellung ergänzt.
+- Neue automatisierte Testgruppen für Abschluss-Engine, UI und Bericht mit insgesamt 57 Einzelprüfungen ergänzt.
+- App-Version auf 1.7.0 und Cachekennung auf 30.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 29.00 – Anlagenanalyse und PDF-Schema Pro
 
 - Technische Anlagenansicht um drei neutrale Darstellungsmodi erweitert: Standard, Geschwindigkeit und Druckverlust.

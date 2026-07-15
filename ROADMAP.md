@@ -60,6 +60,7 @@
 - Phase 24.10: Anlagenzeichnung Pro mit SVG-Kanalzügen, Bauteilsymbolen, Zoom und Pan
 - Phase 26–28: Professional Report und nicht-destruktive Live-Simulation
 - Phase 29.00: Anlagenanalyse mit Standard-/Geschwindigkeits-/Druckverlustmodus und neuem mehrseitigem PDF-Anlagenschema
+- Phase 30.00: Variantenarchiv, Revisionssnapshots, Abschluss-Score und dokumentierter Variantenvergleich im Professional Report
 
 ## Bewusst ausgeschlossen
 
@@ -69,7 +70,8 @@
 
 ## Nächste sinnvolle Schritte
 
-- Reale Beta-Rückmeldungen sammeln, in der Feedback-Auswertung priorisieren und gezielte Korrekturen umsetzen.
-- Anlagenanalyse, Professional Report und Live-Simulation mit eigenen Praxisprojekten fachlich gegenprüfen.
-- Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe final prüfen und vervollständigen.
+- Phase 30.00 mit realen Projekten prüfen und Revisionsabläufe im Büroalltag testen.
+- Report-Vorlagen und Abschlusskriterien anhand konkreter Abgabeunterlagen feinjustieren.
+- Reale Beta-Rückmeldungen sammeln, priorisieren und nur gezielte Korrekturen umsetzen.
+- Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe abschliessend prüfen.
 - Danach nur Erweiterungen umsetzen, die Berechnung, Nachweis oder Bedienung herstellerneutral verbessern.

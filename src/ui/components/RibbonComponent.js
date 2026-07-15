@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=29.00';
+import RibbonActions from '../core/RibbonActions.js?v=30.00';
 
 const RIBBON_GROUPS = [
   {
@@ -40,6 +40,7 @@ const RIBBON_GROUPS = [
     label: 'Ausgabe',
     actions: [
       { action: 'showReport', label: 'Bericht', icon: 'report', title: 'Bericht und Druckansicht öffnen (Strg+B)', emphasis: 'report' },
+      { action: 'showProjectCompletion', label: 'Abschluss', icon: 'clipboardCheck', title: 'Varianten, Revision und Projektabschluss prüfen' },
     ],
   },
   {
@@ -189,6 +190,7 @@ export default class RibbonComponent {
     const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
+    const completionButton = this.root.querySelector('[data-action="showProjectCompletion"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -214,6 +216,9 @@ export default class RibbonComponent {
     } else if (selectionType === 'liveSimulation') {
       simulationButton?.classList.add('is-current');
       simulationButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectCompletion') {
+      completionButton?.classList.add('is-current');
+      completionButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'report') {
       reportButton?.classList.add('is-current');
       reportButton?.setAttribute('aria-current', 'page');

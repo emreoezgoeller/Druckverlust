@@ -1,12 +1,18 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.6.0 · Phase 29.00 · Anlagenanalyse und PDF-Schema Pro.
+**Aktueller Stand:** Version 1.7.0 · Phase 30.00 · Projektabschluss, Variantenarchiv und Revisionsstand.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, eine interaktive technische Anlagenzeichnung mit neutralen Analysemodi, eine nicht-destruktive Live-Simulation, `.dvp`-Projektdateien, Autosicherung sowie ein professioneller mehrseitiger Bericht mit Management-Zusammenfassung, Verlustanalyse, überarbeitetem PDF-Anlagenschema und QS-Nachweis.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, Autosicherung und ein mehrseitiger Professional Report.
 
-## Start
+## Lokal starten
 
-Die Anwendung verwendet JavaScript-Module und muss über einen lokalen Webserver oder GitHub Pages gestartet werden. Unter Windows kann dazu ohne Installation direkt die mitgelieferte Datei `Druckverlust_starten.bat` doppelt angeklickt werden. Sie startet einen kleinen lokalen Webserver und öffnet das Tool automatisch im Browser.
+Die Anwendung verwendet JavaScript-Module und muss über einen Webserver geöffnet werden. Unter Windows genügt ein Doppelklick auf:
+
+```text
+Druckverlust_starten.bat
+```
+
+Der Starter öffnet zuerst die Produktseite `index.html`. Von dort wird das Berechnungstool über **Tool starten** geöffnet.
 
 Alternativ:
 
@@ -14,13 +20,13 @@ Alternativ:
 python -m http.server 8000
 ```
 
-Danach im Browser öffnen:
+Danach im Browser:
 
 - Produktseite: `http://localhost:8000/`
 - Berechnungstool: `http://localhost:8000/app.html`
 - Demo-Projekt: `http://localhost:8000/app.html?demo=1`
 
-Ein direktes Öffnen von `app.html` über `file://` wird nicht empfohlen, weil Browser lokale Modul- und Dateizugriffe einschränken.
+`app.html` nicht direkt über `file://` öffnen, weil Browser lokale Modul- und Manifestzugriffe blockieren können.
 
 ## Projektstruktur
 
@@ -28,36 +34,41 @@ Ein direktes Öffnen von `app.html` über `file://` wird nicht empfohlen, weil B
 Druckverlust/
 ├── index.html                 Produkt- und Startseite
 ├── app.html                   Berechnungstool
-├── beta.html                  Beta- und Testhinweise
-├── feedback.html              lokales Feedbackformular
-├── impressum.html             vorbereitete Rechtseite
-├── datenschutz.html           vorbereitete Datenschutzseite
-├── lizenz.html                Lizenz-/Produktübersicht
-├── assets/
-│   ├── formteile/             kanonische Bilder und Excel-Referenzen
-│   ├── logo/                  EO-Logo
-│   └── report/                Berichtgrafik
+├── assets/                    Logo, Berichtgrafik und Formteilreferenzen
 ├── src/
 │   ├── app/                   Anwendungszustand und Projektbefehle
+│   ├── closing/               Variantenarchiv, Revisionen und Projektabschluss
 │   ├── core/                  Rechenkern, Lookup und Version
 │   ├── diagnostics/           Projekt-, Rechen- und Deployment-QS
-│   ├── formteile/             Registry und Formteilrechner
-│   ├── landing/               Gestaltung und Logik der öffentlichen Seiten
+│   ├── formteile/             Registry und 14 Formteilrechner
+│   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
 │   ├── project/               Standard-, Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
-│   ├── report/                aktive Bericht- und PDF-Engine
-│   ├── schematic/             SVG-Modell der Anlagenzeichnung
-│   ├── simulation/            neutraler Live-Variantenvergleich
-│   ├── storage/               Speichern, Öffnen und Autosicherung
-│   ├── testing/               aktive Referenz- und Freigabetests
+│   ├── report/                Bericht-, CSV- und PDF-Engine
+│   ├── schematic/             SVG-Anlagenzeichnung und Analysemodi
+│   ├── simulation/            nicht-destruktive Live-Simulation
+│   ├── storage/               `.dvp`, Autosicherung und Migration
+│   ├── testing/               Referenz- und Freigabemodule
 │   ├── ui/                    Oberfläche und Komponenten
 │   └── validation/            Eingabe- und Projektvalidierung
-├── tests/                     aktive Browser- und Konsolentests
-└── docs/                      aktuelle technische Dokumentation
+├── tests/                     Node- und Browserprüfungen
+└── docs/                      technische Dokumentation
 ```
 
-`produkt.html` bleibt als kleiner Weiterleitungs-Alias erhalten, damit bereits verwendete Links weiterhin funktionieren, ohne eine zweite Kopie der Produktseite pflegen zu müssen.
+## Phase 30.00
+
+Der neue Bereich **Ausgabe → Abschluss** bündelt den dokumentierten Projektstand:
+
+- neutraler Abschluss-Score und klare Bereitschaftsprüfungen,
+- automatische Revisionssnapshots mit Berechnungskennwerten,
+- Revisionshistorie für den Bericht,
+- gespeicherte Simulationsvarianten mit Name und Bemerkung,
+- Auswahl einer Variante für den Professional Report,
+- Erkennung veralteter Varianten oder Revisionsstände,
+- Variantenvergleich im Bericht und CSV-Export.
+
+Simulationsvarianten bleiben zunächst getrennt vom Projekt. Erst eine ausdrückliche Übernahme verändert die Teilstrecken.
 
 ## Tests
 
@@ -67,21 +78,25 @@ Voraussetzung ist eine aktuelle Node.js-Version.
 npm test
 ```
 
+Gezielte Prüfung der neuen Phase:
+
+```bash
+npm run test:phase30
+```
+
 Die Gesamtsuite prüft unter anderem:
 
 - feste Rechenreferenzen und Rundung,
 - alle 14 Formteiltypen und Excel-Referenzpunkte,
 - Grössen- und Anschluss-Synchronisation,
 - Handrechnungen und Summenbildung,
-- ein Grossprojekt mit 48 Teilstrecken,
-- Anlagenzeichnung mit Kanal-/Rohrwechseln, Bauteilsymbolen, Analysemodi und UI-Ausgabe,
-- Live-Simulation für Luftmengen- und Dimensionsvarianten inklusive UI-Ausgabe,
-- Professional Report mit Management-Zusammenfassung, mehrseitigem PDF-Anlagenschema, Verlustanalyse und Engineering-QS,
-- Speichern/Öffnen und Berichtserstellung,
+- ein Praxisprojekt mit 48 Teilstrecken,
+- Anlagenzeichnung, Analysemodi und PDF-Anlagenschema,
+- Live-Simulation und gespeicherte Varianten,
+- Projektabschluss und Revisionssnapshots,
+- Variantenvergleich im HTML-Bericht und CSV-Export,
+- `.dvp`-Speichern/Öffnen inklusive Phase-30-Daten,
 - Fachtest-, Freigabe- und Beta-Workflows.
-
-Einzelne Testgruppen können über die in `package.json` definierten `npm run test:*`-Befehle gestartet werden. Die neue Anlagenanalyse und das PDF-Schema lassen sich gezielt mit `npm run test:phase29` prüfen.
-
 
 ## Bewusste Produktgrenzen
 
@@ -91,27 +106,18 @@ Druckverlust Pro bleibt fachlich und visuell herstellerneutral. Nicht Bestandtei
 - Hersteller-, Produkt- oder Artikelnummerndatenbanken,
 - automatische Marken- oder Produktempfehlungen.
 
-Die Live-Simulation vergleicht ausschliesslich Luftmengen, Kanalabmessungen und die daraus neu berechneten Druckverluste.
+Der Abschluss-Score und die Engineering-QS sind Plausibilitäts- und Dokumentationshilfen. Sie ersetzen keine objektspezifische fachliche Prüfung oder Freigabe.
 
 ## Daten und Datenschutz
 
-Projekt-, Autosicherungs-, Fachtest- und Feedbackdaten werden lokal im Browser verarbeitet. Eine automatische Serverübermittlung ist im aktuellen Stand nicht eingebaut.
-
-## Veröffentlichung
-
-Das Projekt ist für relative Pfade und den Einsatz unter GitHub Pages vorbereitet. Vor der öffentlichen produktiven Nutzung müssen die Angaben in Impressum, Datenschutz und Lizenz abschliessend rechtlich geprüft und vervollständigt werden.
+Projekt-, Varianten-, Revisions-, Autosicherungs-, Fachtest- und Feedbackdaten werden lokal im Browser oder in exportierten Dateien verarbeitet. Eine automatische Serverübermittlung ist nicht eingebaut.
 
 ## Dokumentation
 
-- `docs/ARCHITEKTUR.md` – aktuelle technische Struktur
+- `docs/ARCHITEKTUR.md` – technische Struktur und Datenfluss
 - `docs/CALCULATION_ENGINE.md` – Rechenkern
-- `docs/DATENMODELL.md` – Projekt- und Anlagendaten
+- `docs/DATENMODELL.md` – Projekt-, Varianten- und Revisionsdaten
 - `docs/FORMTEILE.md` – Formteilbibliothek
 - `docs/TESTPLAN.md` – aktive Qualitätssicherung
 - `CHANGELOG.md` – Entwicklungshistorie
-- `ROADMAP.md` – weitere Planung
-
-
-## Lokal starten
-
-Unter Windows `Druckverlust_starten.bat` doppelklicken. Der lokale Webserver öffnet zuerst `index.html`; von dort startet `app.html` über die Schaltfläche „Tool starten“. Weitere Hinweise stehen in `LOKAL_STARTEN.txt`.
+- `ROADMAP.md` – abgeschlossene und weitere Schritte

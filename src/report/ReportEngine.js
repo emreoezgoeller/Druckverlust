@@ -1,8 +1,9 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=29.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=30.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=29.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=29.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=29.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=30.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=30.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=30.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=30.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -78,6 +79,7 @@ const DEFAULT_REPORT_OPTIONS = Object.freeze({
   includeExecutiveSummary: true,
   includeNetworkSchematic: true,
   includeLossAnalysis: true,
+  includeVariantComparison: true,
   includeEngineeringQuality: true,
   includeMainNetwork: true,
   includeAssignedFormParts: true,
@@ -403,6 +405,33 @@ function normalizeRevisionHistory(project = {}, meta = {}) {
   }];
 }
 
+function normalizeVariantComparison(project = {}, systemId = null) {
+  const variant = ProjectCompletionEngine.getReportVariant(project, systemId);
+  if (!variant) return null;
+
+  const rows = [...(variant.rows || [])]
+    .sort((a, b) => Math.abs(toNumber(b?.delta?.pressureLoss)) - Math.abs(toNumber(a?.delta?.pressureLoss)))
+    .slice(0, 10);
+
+  const currentFingerprint = ProjectCompletionEngine.createCalculationFingerprint(project, systemId);
+  const sourceFingerprint = variant.calculationFingerprint || variant.projectFingerprint || '';
+
+  return {
+    id: variant.id || '',
+    name: variant.name || 'Variante',
+    note: variant.note || '',
+    author: variant.author || '',
+    createdAt: variant.createdAt || '',
+    options: variant.options || {},
+    affectedCount: toNumber(variant.affectedCount),
+    baseline: variant.baseline || {},
+    scenario: variant.scenario || {},
+    delta: variant.delta || {},
+    rows,
+    isCurrentBase: !sourceFingerprint || sourceFingerprint === currentFingerprint,
+  };
+}
+
 function makeDuctIllustration() {
   return `
     <svg viewBox="0 0 760 420" role="img" aria-label="Technische Lüftungskanal-Grafik" class="report-duct-illustration">
@@ -480,6 +509,9 @@ export class ReportEngine {
     const reportOptions = normalizeReportOptions(project?.reportOptions || project?.report?.options || {});
     const engineeringQuality = EngineeringQualityEngine.analyze(project, system, calculation);
     const networkSchematic = NetworkSchematicEngine.create(system || {}, calculation);
+    const variantComparison = normalizeVariantComparison(project, system?.id);
+    const variantArchiveCount = ProjectCompletionEngine.getVariants(project, system?.id).length;
+    const revisionSnapshots = ProjectCompletionEngine.getRevisionSnapshots(project, system?.id);
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -635,6 +667,9 @@ export class ReportEngine {
       specialComponents: specialRows,
       engineeringQuality,
       networkSchematic,
+      variantComparison,
+      variantArchiveCount,
+      revisionSnapshots,
       lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
@@ -909,6 +944,23 @@ export class ReportEngine {
         warning: `Aufteilung prüfen. Summe Einzelwerte weicht um ${formatNumber(totalDifference, 2)} Pa vom Gesamtdruckverlust ab.`,
       },
       {
+        id: 'variant-comparison',
+        label: 'Variantenvergleich',
+        status: !model.reportOptions?.includeVariantComparison
+          || !model.variantArchiveCount
+          || (model.variantComparison && model.variantComparison.isCurrentBase)
+          ? 'ok'
+          : 'warning',
+        message: model.variantComparison
+          ? `Variante „${model.variantComparison.name}“ wird im Bericht dokumentiert.`
+          : model.variantArchiveCount
+            ? 'Gespeicherte Varianten sind vorhanden; der Variantenvergleich ist für diesen Bericht nicht ausgewählt.'
+            : 'Keine gespeicherte Variante vorhanden; der Variantenvergleich ist optional.',
+        warning: model.variantComparison
+          ? 'Die ausgewählte Berichtsvariante basiert auf einem älteren Berechnungsstand.'
+          : 'Variantenvergleich ist aktiviert und Varianten sind vorhanden, aber es wurde keine Variante für den Bericht ausgewählt.',
+      },
+      {
         id: 'license-export-status',
         label: 'Lizenz-/Exportstatus',
         status: exportNotice.restricted ? 'warning' : 'ok',
@@ -1147,6 +1199,7 @@ export class ReportEngine {
     const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
     const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / ReportSchematicRenderer.nodesPerPage)) : 0;
     const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
+    const variantPageCount = reportOptions.includeVariantComparison && model.variantComparison ? 1 : 0;
     const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
 
     const entries = [
@@ -1184,6 +1237,7 @@ export class ReportEngine {
     if (reportOptions.includeLossAnalysis) {
       addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
     }
+    addEntry('variantComparison', 'Variantenvergleich', model.variantComparison ? `Bestand und ${model.variantComparison.name}` : 'Gespeicherte Simulation', variantPageCount);
     addEntry('mainNetwork', 'Hauptberechnung – Luftnetz', `${model.counts.sections} berechnungsrelevante Teilstrecken`, mainPageCount);
     addEntry('assignedFormParts', 'Zugeordnete Formteile', `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`, formPartPageCount);
     addEntry('specialComponents', 'Sonderbauteile', `${model.counts.specialComponents} Komponenten`, specialPageCount);
@@ -1272,6 +1326,7 @@ export class ReportEngine {
     if (reportOptions.includeExecutiveSummary) pages.push(this.renderExecutiveSummaryPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeVariantComparison && model.variantComparison) pages.push(this.renderVariantComparisonPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeMainNetwork) pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeAssignedFormParts) pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeSpecialComponents) pages.push(...this.renderSpecialComponentsPages(model, nextPage, totalPlaceholder));
@@ -1494,6 +1549,77 @@ export class ReportEngine {
     `;
 
     return this.renderPage(model, page, 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', content, totalPages);
+  }
+
+  static renderVariantComparisonPage(model, page, totalPages = 6) {
+    const variant = model.variantComparison;
+    if (!variant) return '';
+
+    const before = variant.baseline || {};
+    const after = variant.scenario || {};
+    const delta = variant.delta || {};
+    const deltaText = (value, unit = '', digits = 1) => {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return '-';
+      return `${numeric > 0 ? '+' : ''}${formatNumber(numeric, digits)} ${unit}`.trim();
+    };
+    const createdAt = new Date(variant.createdAt || '');
+    const createdLabel = Number.isNaN(createdAt.getTime()) ? '-' : createdAt.toLocaleString('de-CH');
+
+    const content = `
+      <div class="report-variant-intro">
+        <div>
+          <span class="report-chip ${variant.isCurrentBase ? '' : 'warn'}">${variant.isCurrentBase ? 'Nicht-destruktive Simulation' : 'Älterer Berechnungsstand'}</span>
+          <h3>${escapeHtml(variant.name)}</h3>
+          <p>${escapeHtml(variant.note || 'Keine zusätzliche Bemerkung hinterlegt.')}</p>
+        </div>
+        <dl>
+          <div><dt>Erstellt</dt><dd>${escapeHtml(createdLabel)}</dd></div>
+          <div><dt>Bearbeiter</dt><dd>${escapeHtml(variant.author || model.project.author || '-')}</dd></div>
+          <div><dt>Umfang</dt><dd>${variant.affectedCount || 0} Teilstrecken</dd></div>
+        </dl>
+      </div>
+
+      <div class="report-variant-kpis">
+        ${[
+          ['Gesamtdruckverlust', before.totalLoss, after.totalLoss, delta.totalLoss, 'Pa', 1],
+          ['Max. Geschwindigkeit', before.maxVelocity, after.maxVelocity, delta.maxVelocity, 'm/s', 2],
+          ['Reibungsverlust', before.frictionLoss, after.frictionLoss, delta.frictionLoss, 'Pa', 1],
+          ['Formteilverluste', before.formPartLoss, after.formPartLoss, delta.formPartLoss, 'Pa', 1],
+        ].map(([label, base, scenario, difference, unit, digits]) => `<article>
+          <span>${escapeHtml(label)}</span>
+          <strong>${formatNumber(scenario, digits)} ${unit}</strong>
+          <small>Bestand ${formatNumber(base, digits)} ${unit} · ${deltaText(difference, unit, digits)}</small>
+        </article>`).join('')}
+      </div>
+
+      <div class="report-info-box compact">
+        <h3>Simulationsparameter</h3>
+        <div class="report-variant-parameters">
+          <span>Geltungsbereich <strong>${variant.options?.scope === 'selected' ? 'Eine Teilstrecke' : 'Gesamte Anlage'}</strong></span>
+          <span>Luftmenge <strong>${formatNumber(variant.options?.airflowPercent, 0)} %</strong></span>
+          <span>Abmessungen <strong>${formatNumber(variant.options?.dimensionPercent, 0)} %</strong></span>
+        </div>
+      </div>
+
+      <h3 class="report-section-title">Grösste Änderungen nach Teilstrecke</h3>
+      <table class="report-table report-variant-table">
+        <thead><tr><th>TS</th><th>v Bestand</th><th>v Variante</th><th>Δp Bestand</th><th>Δp Variante</th><th>Änderung</th></tr></thead>
+        <tbody>
+          ${(variant.rows || []).map(row => `<tr>
+            <td class="left"><strong>${escapeHtml(row.name || '-')}</strong></td>
+            <td>${formatNumber(row.baseline?.velocity, 2)} m/s</td>
+            <td>${formatNumber(row.scenario?.velocity, 2)} m/s</td>
+            <td>${formatNumber(row.baseline?.pressureLoss, 1)} Pa</td>
+            <td>${formatNumber(row.scenario?.pressureLoss, 1)} Pa</td>
+            <td>${deltaText(row.delta?.pressureLoss, 'Pa', 1)}</td>
+          </tr>`).join('') || '<tr><td colspan="6">Keine Teilstreckenänderungen vorhanden.</td></tr>'}
+        </tbody>
+      </table>
+      <p class="report-continuation-note">${variant.isCurrentBase ? 'Die Variante dient dem neutralen Vergleich. Werte werden nur nach ausdrücklicher Übernahme Bestandteil der Projektberechnung.' : 'Achtung: Diese Variante wurde auf Basis eines älteren Berechnungsstands gespeichert. Vor einer Abgabe sollte der Vergleich mit dem aktuellen Projektstand neu erzeugt werden.'}</p>
+    `;
+
+    return this.renderPage(model, page, 'Variantenvergleich', `Bestand gegenüber ${variant.name}`, content, totalPages);
   }
 
   static renderEngineeringQualityPages(model, nextPage, totalPages) {
@@ -2244,6 +2370,12 @@ export class ReportEngine {
       .report-approval-table{margin-top:10px}
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
+      .report-variant-intro{display:grid;grid-template-columns:1.4fr .8fr;gap:8mm;padding:6mm;border:1px solid #c9d8e8;border-radius:4mm;background:#f7faff;margin-bottom:6mm}
+      .report-chip.warn{background:#fff0c8;color:#7a5200;border-color:#e1bf6b}
+      .report-variant-intro h3{font-size:18px;margin:2mm 0}.report-variant-intro p{margin:0;color:var(--report-muted);line-height:1.5}
+      .report-variant-intro dl{margin:0;display:grid;gap:2mm}.report-variant-intro dl div{display:flex;justify-content:space-between;gap:4mm;border-bottom:1px solid #dce6f0;padding-bottom:1.5mm}.report-variant-intro dt{color:var(--report-muted)}.report-variant-intro dd{margin:0;font-weight:700;text-align:right}
+      .report-variant-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;margin-bottom:5mm}.report-variant-kpis article{border:1px solid #c9d8e8;border-radius:3mm;padding:4mm;background:#fff}.report-variant-kpis span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:var(--report-muted)}.report-variant-kpis strong{display:block;font-size:15px;color:var(--report-blue);margin:1.5mm 0}.report-variant-kpis small{font-size:8px;color:var(--report-muted)}
+      .report-variant-parameters{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}.report-variant-parameters span{display:flex;justify-content:space-between;gap:3mm}.report-variant-table th,.report-variant-table td{font-size:8px}
       .report-revision-history{margin:8mm 0 6mm}
       .report-revision-table th,.report-revision-table td{font-size:8px}
       .report-revision-table td.left{font-size:8.5px}
@@ -2438,6 +2570,26 @@ export class ReportEngine {
         finding.recommendation || '-',
       ]));
     });
+
+    if (model.variantComparison) {
+      addSection('Variantenvergleich');
+      rows.push(this.csvRow(['Variante', model.variantComparison.name]));
+      rows.push(this.csvRow(['Bemerkung', model.variantComparison.note || '']));
+      rows.push(this.csvRow(['Luftmenge %', formatNumber(model.variantComparison.options?.airflowPercent, 0)]));
+      rows.push(this.csvRow(['Abmessungen %', formatNumber(model.variantComparison.options?.dimensionPercent, 0)]));
+      rows.push(this.csvRow(['Kennwert', 'Bestand', 'Variante', 'Differenz']));
+      rows.push(this.csvRow(['Gesamtdruckverlust Pa', formatNumber(model.variantComparison.baseline?.totalLoss, 2), formatNumber(model.variantComparison.scenario?.totalLoss, 2), formatNumber(model.variantComparison.delta?.totalLoss, 2)]));
+      rows.push(this.csvRow(['Max. Geschwindigkeit m/s', formatNumber(model.variantComparison.baseline?.maxVelocity, 2), formatNumber(model.variantComparison.scenario?.maxVelocity, 2), formatNumber(model.variantComparison.delta?.maxVelocity, 2)]));
+      rows.push(this.csvRow(['Teilstrecke', 'v Bestand', 'v Variante', 'Delta p Bestand', 'Delta p Variante', 'Aenderung Pa']));
+      (model.variantComparison.rows || []).forEach(row => rows.push(this.csvRow([
+        row.name,
+        formatNumber(row.baseline?.velocity, 2),
+        formatNumber(row.scenario?.velocity, 2),
+        formatNumber(row.baseline?.pressureLoss, 2),
+        formatNumber(row.scenario?.pressureLoss, 2),
+        formatNumber(row.delta?.pressureLoss, 2),
+      ])));
+    }
 
     addSection('Sonderbauteile');
     rows.push(this.csvRow(['Pos.', 'Bezeichnung', 'Typ / Beschreibung', 'Hersteller', 'Luftmenge m3/h', 'Druckverlust Pa']));
