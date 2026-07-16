@@ -61,6 +61,7 @@
 - Phase 26–28: Professional Report und nicht-destruktive Live-Simulation
 - Phase 29.00: Anlagenanalyse mit Standard-/Geschwindigkeits-/Druckverlustmodus und neuem mehrseitigem PDF-Anlagenschema
 - Phase 30.00: Variantenarchiv, Revisionssnapshots, Abschluss-Score und dokumentierter Variantenvergleich im Professional Report
+- Phase 31.00: Technischer Revisionsvergleich, auswählbare Vergleichsbasis, Änderungs-CSV und internes manuelles Prüfprotokoll
 
 ## Bewusst ausgeschlossen
 
@@ -70,8 +71,9 @@
 
 ## Nächste sinnvolle Schritte
 
-- Phase 30.00 mit realen Projekten prüfen und Revisionsabläufe im Büroalltag testen.
-- Report-Vorlagen und Abschlusskriterien anhand konkreter Abgabeunterlagen feinjustieren.
+- Phase 31.00 mit realen Projektänderungen testen und die Änderungsdarstellung fachlich gegenprüfen.
+- Prüfprotokoll und Freigabeablauf anhand konkreter Büro- und Abgabeprozesse feinjustieren.
+- Report-Vorlagen und Abschlusskriterien anhand realer Abgabeunterlagen prüfen.
 - Reale Beta-Rückmeldungen sammeln, priorisieren und nur gezielte Korrekturen umsetzen.
 - Rechtliche Platzhalter vor einer breiteren öffentlichen Freigabe abschliessend prüfen.
 - Danach nur Erweiterungen umsetzen, die Berechnung, Nachweis oder Bedienung herstellerneutral verbessern.

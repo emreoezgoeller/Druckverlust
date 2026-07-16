@@ -287,3 +287,24 @@ Die drei Testgruppen prüfen insgesamt 57 Einzelpunkte:
 - optionale Behandlung von Projekten ohne gespeicherte Varianten.
 
 Die Phase-30-Prüfung ergänzt die vollständige Suite; sie ersetzt keine der bestehenden Rechen-, Formteil-, Praxis- oder Berichtstests.
+
+
+## Phase 31.00 – Revisionsvergleich und Prüfprotokoll
+
+```bash
+npm run test:phase31
+```
+
+Die beiden Testgruppen prüfen insgesamt 48 Einzelpunkte:
+
+- technische Detail-Snapshots für Teilstrecken, Formteile und Sonderbauteile,
+- identische, hinzugefügte, entfernte und geänderte Elemente,
+- Vorher-/Nachher-Werte und Druckverlustdifferenzen,
+- auswählbare und persistente Vergleichsbasis,
+- Revisionsvergleich-CSV, Filter und Workspace-Integration,
+- manuelles Prüfprotokoll mit sechs Prüfpunkten,
+- Einbindung in Abschluss-Score, Professional Report und Gesamt-CSV,
+- `.dvp`-Roundtrip für Detail-Snapshots und Prüfprotokoll,
+- Rückwärtskompatibilität zu älteren Snapshots ohne technische Detaildaten.
+
+Die Phase-31-Prüfung ergänzt die vollständige Suite; sie ersetzt keine bestehenden Rechen-, Formteil-, Praxis-, Schema- oder Berichtstests.

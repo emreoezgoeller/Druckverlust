@@ -1,9 +1,9 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=30.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=31.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=30.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=30.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=30.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=30.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=31.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=31.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=31.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=31.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -79,6 +79,7 @@ const DEFAULT_REPORT_OPTIONS = Object.freeze({
   includeExecutiveSummary: true,
   includeNetworkSchematic: true,
   includeLossAnalysis: true,
+  includeRevisionComparison: true,
   includeVariantComparison: true,
   includeEngineeringQuality: true,
   includeMainNetwork: true,
@@ -509,6 +510,8 @@ export class ReportEngine {
     const reportOptions = normalizeReportOptions(project?.reportOptions || project?.report?.options || {});
     const engineeringQuality = EngineeringQualityEngine.analyze(project, system, calculation);
     const networkSchematic = NetworkSchematicEngine.create(system || {}, calculation);
+    const revisionComparison = ProjectCompletionEngine.getRevisionComparison(project, system?.id);
+    const reviewProtocol = ProjectCompletionEngine.getReviewProtocol(project, system?.id);
     const variantComparison = normalizeVariantComparison(project, system?.id);
     const variantArchiveCount = ProjectCompletionEngine.getVariants(project, system?.id).length;
     const revisionSnapshots = ProjectCompletionEngine.getRevisionSnapshots(project, system?.id);
@@ -667,6 +670,8 @@ export class ReportEngine {
       specialComponents: specialRows,
       engineeringQuality,
       networkSchematic,
+      revisionComparison,
+      reviewProtocol,
       variantComparison,
       variantArchiveCount,
       revisionSnapshots,
@@ -1199,6 +1204,7 @@ export class ReportEngine {
     const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
     const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / ReportSchematicRenderer.nodesPerPage)) : 0;
     const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
+    const revisionPageCount = reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy ? 1 : 0;
     const variantPageCount = reportOptions.includeVariantComparison && model.variantComparison ? 1 : 0;
     const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
 
@@ -1237,6 +1243,7 @@ export class ReportEngine {
     if (reportOptions.includeLossAnalysis) {
       addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
     }
+    addEntry('revisionComparison', 'Revisionsvergleich', model.revisionComparison?.base?.label ? `${model.revisionComparison.base.label} gegenüber aktuellem Stand` : 'Technische Änderungen', revisionPageCount);
     addEntry('variantComparison', 'Variantenvergleich', model.variantComparison ? `Bestand und ${model.variantComparison.name}` : 'Gespeicherte Simulation', variantPageCount);
     addEntry('mainNetwork', 'Hauptberechnung – Luftnetz', `${model.counts.sections} berechnungsrelevante Teilstrecken`, mainPageCount);
     addEntry('assignedFormParts', 'Zugeordnete Formteile', `${model.counts.formParts} Formteile nach Teilstrecke gruppiert`, formPartPageCount);
@@ -1326,6 +1333,7 @@ export class ReportEngine {
     if (reportOptions.includeExecutiveSummary) pages.push(this.renderExecutiveSummaryPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy) pages.push(this.renderRevisionComparisonPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeVariantComparison && model.variantComparison) pages.push(this.renderVariantComparisonPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeMainNetwork) pages.push(...this.renderMainNetworkPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeAssignedFormParts) pages.push(...this.renderAssignedFormPartsPages(model, nextPage, totalPlaceholder));
@@ -1549,6 +1557,60 @@ export class ReportEngine {
     `;
 
     return this.renderPage(model, page, 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', content, totalPages);
+  }
+
+  static renderRevisionComparisonPage(model, page, totalPages = 6) {
+    const comparison = model.revisionComparison || {};
+    const changes = (comparison.changes || []).slice(0, 18);
+    const categoryLabels = { sections: 'Teilstrecken', formParts: 'Formteile', specialComponents: 'Sonderbauteile' };
+    const typeLabels = { added: 'Neu', removed: 'Entfernt', modified: 'Geändert' };
+    const totalDelta = toNumber(comparison.totals?.delta?.totalLoss);
+    const deltaText = `${totalDelta > 0 ? '+' : ''}${formatNumber(totalDelta, 1)} Pa`;
+    const content = `
+      <div class="report-revision-compare-head">
+        <div class="report-revision-compare-card">
+          <span>Basisstand</span>
+          <strong>${escapeHtml(comparison.base?.label || '-')}</strong>
+          <small>${formatNumber(comparison.totals?.before?.totalLoss, 1)} Pa Gesamtdruckverlust</small>
+        </div>
+        <div class="report-revision-compare-arrow">→</div>
+        <div class="report-revision-compare-card">
+          <span>Zielstand</span>
+          <strong>${escapeHtml(comparison.target?.label || 'Aktueller Projektstand')}</strong>
+          <small>${formatNumber(comparison.totals?.after?.totalLoss, 1)} Pa Gesamtdruckverlust</small>
+        </div>
+        <div class="report-revision-compare-card accent">
+          <span>Differenz</span>
+          <strong>${escapeHtml(deltaText)}</strong>
+          <small>${comparison.summary?.total || 0} technische Änderung(en)</small>
+        </div>
+      </div>
+
+      <div class="report-revision-summary-grid">
+        <div><span>Neu</span><strong>${comparison.summary?.added || 0}</strong></div>
+        <div><span>Entfernt</span><strong>${comparison.summary?.removed || 0}</strong></div>
+        <div><span>Feldänderungen</span><strong>${comparison.summary?.modified || 0}</strong></div>
+        <div><span>Wesentliche Änderungen</span><strong>${comparison.summary?.important || 0}</strong></div>
+        <div><span>Δ v max.</span><strong>${formatNumber(comparison.totals?.delta?.maxVelocity, 2)} m/s</strong></div>
+      </div>
+
+      ${changes.length ? `<table class="report-table report-revision-comparison-table">
+        <thead><tr><th>Bereich</th><th>Element</th><th>Änderung</th><th>Feld</th><th>Vorher</th><th>Nachher</th><th>Δ</th></tr></thead>
+        <tbody>${changes.map(change => `<tr>
+          <td>${escapeHtml(categoryLabels[change.category] || change.category)}</td>
+          <td class="left"><strong>${escapeHtml(change.elementName || '-')}</strong></td>
+          <td>${escapeHtml(typeLabels[change.changeType] || change.changeType)}</td>
+          <td class="left">${escapeHtml(change.fieldLabel || '-')}</td>
+          <td>${escapeHtml(change.beforeLabel || '-')}</td>
+          <td>${escapeHtml(change.afterLabel || '-')}</td>
+          <td>${escapeHtml(change.deltaLabel || '-')}</td>
+        </tr>`).join('')}</tbody>
+      </table>` : '<div class="report-info-box ok"><h3>Keine technischen Änderungen</h3><p>Der aktuelle Projektstand entspricht der gewählten Basisrevision.</p></div>'}
+      ${(comparison.changes || []).length > changes.length ? `<p class="report-continuation-note">Im Bericht werden die ersten ${changes.length} von ${comparison.changes.length} Änderungen dargestellt. Der CSV-Datenexport enthält den vollständigen Vergleich.</p>` : ''}
+      <p class="report-engineering-disclaimer">Der Revisionsvergleich basiert auf gespeicherten technischen Detaildaten und dient der nachvollziehbaren Projektkontrolle. Er ersetzt keine objektspezifische fachliche Freigabe.</p>
+    `;
+
+    return this.renderPage(model, page, 'Revisionsvergleich', `${comparison.base?.label || 'Basis'} gegenüber aktuellem Projektstand`, content, totalPages);
   }
 
   static renderVariantComparisonPage(model, page, totalPages = 6) {
@@ -2145,6 +2207,13 @@ export class ReportEngine {
 
       ${this.renderRevisionHistoryTable(model)}
 
+      ${model.reviewProtocol ? `<div class="report-info-box report-manual-review">
+        <h3>Manuelles Prüfprotokoll</h3>
+        <div class="report-review-summary"><strong>${model.reviewProtocol.completed || 0}/${model.reviewProtocol.total || 0}</strong><span>Prüfpunkte bestätigt</span><small>${escapeHtml(model.reviewProtocol.reviewer || 'Prüfperson nicht eingetragen')} · ${escapeHtml(model.reviewProtocol.date || 'Datum offen')}</small></div>
+        <div class="report-review-checks">${(model.reviewProtocol.checks || []).map(item => `<span class="${item.checked ? 'is-checked' : 'is-open'}">${item.checked ? '✓' : '○'} ${escapeHtml(item.label)}</span>`).join('')}</div>
+        ${model.reviewProtocol.note ? `<p><strong>Prüfvermerk:</strong> ${escapeHtml(model.reviewProtocol.note)}</p>` : ''}
+      </div>` : ''}
+
       <table class="report-table report-approval-table">
         <thead><tr><th>Schritt</th><th>Name</th><th>Datum</th><th>Unterschrift</th></tr></thead>
         <tbody>
@@ -2370,6 +2439,12 @@ export class ReportEngine {
       .report-approval-table{margin-top:10px}
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
+      .report-revision-compare-head{display:grid;grid-template-columns:1fr 10mm 1fr 1fr;gap:3mm;align-items:stretch;margin-bottom:5mm}
+      .report-revision-compare-card{display:flex;flex-direction:column;justify-content:center;border:1px solid #c9d8e8;border-radius:3mm;background:#f8fbff;padding:4mm}.report-revision-compare-card.accent{border-color:#83b7da;background:#edf7ff}.report-revision-compare-card span{font-size:7px;text-transform:uppercase;font-weight:900;color:var(--report-muted)}.report-revision-compare-card strong{font-size:13px;color:var(--report-blue);margin:1.5mm 0}.report-revision-compare-card small{font-size:7.5px;color:var(--report-muted)}
+      .report-revision-compare-arrow{display:grid;place-items:center;font-size:18px;color:#4d7597;font-weight:900}
+      .report-revision-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2.5mm;margin-bottom:5mm}.report-revision-summary-grid div{border:1px solid #d3dfeb;border-radius:2.5mm;background:#fff;padding:3mm}.report-revision-summary-grid span{display:block;font-size:6.8px;text-transform:uppercase;font-weight:900;color:var(--report-muted)}.report-revision-summary-grid strong{display:block;font-size:12px;color:var(--report-blue);margin-top:1mm}
+      .report-revision-comparison-table th,.report-revision-comparison-table td{font-size:7px}.report-revision-comparison-table th:nth-child(1){width:20mm}.report-revision-comparison-table th:nth-child(2){width:25mm}.report-revision-comparison-table th:nth-child(3){width:15mm}.report-revision-comparison-table th:nth-child(4){width:24mm}
+      .report-manual-review{margin:5mm 0}.report-review-summary{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:3mm;margin-bottom:3mm}.report-review-summary strong{font-size:20px;color:var(--report-blue)}.report-review-summary span{font-weight:800}.report-review-summary small{color:var(--report-muted)}.report-review-checks{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5mm 4mm}.report-review-checks span{font-size:8px;padding:1.5mm 2mm;border-radius:2mm;background:#f5f8fb}.report-review-checks span.is-checked{color:#176c46;background:#eefaf3}.report-review-checks span.is-open{color:#8a5a0a;background:#fff8e9}.report-manual-review p{font-size:8px;margin:3mm 0 0}
       .report-variant-intro{display:grid;grid-template-columns:1.4fr .8fr;gap:8mm;padding:6mm;border:1px solid #c9d8e8;border-radius:4mm;background:#f7faff;margin-bottom:6mm}
       .report-chip.warn{background:#fff0c8;color:#7a5200;border-color:#e1bf6b}
       .report-variant-intro h3{font-size:18px;margin:2mm 0}.report-variant-intro p{margin:0;color:var(--report-muted);line-height:1.5}
@@ -2474,7 +2549,7 @@ export class ReportEngine {
       .report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node rect{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-title{font-size:8.6px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.7px;fill:#425b74}.report-schematic-node-line.strong{font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2}.report-schematic-formpart{fill:#e28a0c}.report-schematic-special{fill:#6e55ad}.report-schematic-count{font-size:6.3px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6.2px;fill:#536a83}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:7px 9px}.report-schematic-summary span{display:block;font-size:7px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:11px;color:var(--report-blue);margin-top:3px;white-space:nowrap}.report-schematic-disclaimer{font-size:7.7px;color:#5c6f87;margin:8px 0 0;line-height:1.35}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
       .report-loss-analysis-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.report-loss-analysis-grid .report-info-box{margin-top:0;min-height:56mm}.report-chart-row{margin:0 0 10px}.report-chart-row>div{display:flex;justify-content:space-between;gap:10px;font-size:8.5px}.report-chart-row>div span{color:#536a83}.report-chart-row i{display:block;height:8px;background:#e8eff7;border-radius:999px;overflow:hidden;margin-top:4px}.report-chart-row i b{display:block;height:100%;background:linear-gradient(90deg,#0b559c,#45a2d8);border-radius:999px}.report-section-ranking{margin-top:12px}.report-ranking-row{display:grid;grid-template-columns:18px 38mm 1fr 20mm;align-items:center;gap:7px;margin:7px 0;font-size:8.6px}.report-ranking-row>span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf2fb;color:#073f7a;font-weight:900}.report-ranking-row>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-ranking-row i{height:7px;background:#e8eff7;border-radius:999px;overflow:hidden}.report-ranking-row i b{display:block;height:100%;background:#0b6cae;border-radius:999px}.report-ranking-row em{font-style:normal;text-align:right;font-weight:900;color:#073f7a}
       .report-engineering-overview{display:grid;grid-template-columns:38mm 1fr;gap:14px;margin-bottom:12px}.report-engineering-score{border:1px solid #b9d8ee;border-radius:9px;background:linear-gradient(135deg,#edf7ff,#f8fbff);padding:10px;display:flex;flex-direction:column;justify-content:center}.report-engineering-score span{font-size:7.8px;text-transform:uppercase;color:#536a83;font-weight:900}.report-engineering-score strong{font-size:34px;line-height:1;color:#073f7a}.report-engineering-score small{font-size:8px;color:#536a83;margin-top:3px}.report-engineering-overview>div:last-child{border:1px solid var(--report-line);border-radius:9px;padding:10px;background:#fbfdff}.report-engineering-table th:nth-child(1){width:18mm}.report-engineering-table th:nth-child(2){width:25mm}.report-engineering-table th:nth-child(3){width:66mm}.report-engineering-table td{font-size:7.6px;line-height:1.25}.report-engineering-table td span{color:#536a83}.report-engineering-table .engineering-critical td:first-child{color:#a52828;font-weight:900}.report-engineering-table .engineering-warning td:first-child{color:#9a5a00;font-weight:900}.report-engineering-disclaimer{font-size:8px;color:#5c6f87;margin:10px 0 0;font-style:italic}
-      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
+      @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary,.report-revision-compare-head,.report-revision-summary-grid,.report-review-checks{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
       @media print{
         html,body,.report-print-body{background:white!important;margin:0!important;padding:0!important}
         .dp-professional-report{display:block;padding:0;background:white;gap:0}
@@ -2571,6 +2646,25 @@ export class ReportEngine {
       ]));
     });
 
+    if (model.revisionComparison && !model.revisionComparison.legacy) {
+      addSection('Revisionsvergleich');
+      rows.push(this.csvRow(['Basis', model.revisionComparison.base?.label || '-']));
+      rows.push(this.csvRow(['Ziel', model.revisionComparison.target?.label || 'Aktueller Projektstand']));
+      rows.push(this.csvRow(['Gesamtdruckverlust vorher Pa', formatNumber(model.revisionComparison.totals?.before?.totalLoss, 2)]));
+      rows.push(this.csvRow(['Gesamtdruckverlust nachher Pa', formatNumber(model.revisionComparison.totals?.after?.totalLoss, 2)]));
+      rows.push(this.csvRow(['Differenz Pa', formatNumber(model.revisionComparison.totals?.delta?.totalLoss, 2)]));
+      rows.push(this.csvRow(['Kategorie', 'Element', 'Aenderungsart', 'Feld', 'Vorher', 'Nachher', 'Differenz']));
+      (model.revisionComparison.changes || []).forEach(change => rows.push(this.csvRow([
+        change.category,
+        change.elementName,
+        change.changeType,
+        change.fieldLabel,
+        change.beforeLabel,
+        change.afterLabel,
+        change.deltaLabel,
+      ])));
+    }
+
     if (model.variantComparison) {
       addSection('Variantenvergleich');
       rows.push(this.csvRow(['Variante', model.variantComparison.name]));
@@ -2624,6 +2718,15 @@ export class ReportEngine {
     (model.project.revisionHistory || []).forEach(row => {
       rows.push(this.csvRow([row.revision, row.date, row.author, row.change]));
     });
+
+    if (model.reviewProtocol) {
+      addSection('Manuelles Pruefprotokoll');
+      rows.push(this.csvRow(['Geprueft von', model.reviewProtocol.reviewer || '']));
+      rows.push(this.csvRow(['Pruefdatum', model.reviewProtocol.date || '']));
+      rows.push(this.csvRow(['Pruefvermerk', model.reviewProtocol.note || '']));
+      rows.push(this.csvRow(['Pruefpunkt', 'Status']));
+      (model.reviewProtocol.checks || []).forEach(item => rows.push(this.csvRow([item.label, item.checked ? 'bestaetigt' : 'offen'])));
+    }
 
     addSection('Pruefung / Freigabe');
     rows.push(this.csvRow(['Erstellt', model.project.author, model.project.date]));

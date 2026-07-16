@@ -1,5 +1,22 @@
 # Änderungsverlauf
 
+## Phase 31.00 – Technischer Revisionsvergleich und internes Prüfprotokoll
+
+- Revisionssnapshots um technische Detaildaten für Teilstrecken, Formteile und Sonderbauteile erweitert.
+- Frei wählbare Basisrevision je Anlage für den Vergleich mit dem aktuellen Projektstand ergänzt.
+- Hinzugefügte, entfernte und geänderte Elemente werden einzeln erkannt und nach Kategorie dokumentiert.
+- Änderungen an Luftmenge, Dimension, Länge, Geschwindigkeit, Reibung und Druckverlust werden mit Vorher-/Nachher-Wert und Differenz ausgewiesen.
+- Revisionsvergleich im Abschlussbereich um Zusammenfassung, Filter, direkte Elementnavigation und eigenen CSV-Export ergänzt.
+- Professional Report um eine optionale, automatisch eingeplante Seite **Revisionsvergleich** erweitert.
+- Gesamt-CSV um technische Revisionsänderungen ergänzt.
+- Internes Prüfprotokoll mit sechs manuellen Fachkontrollen, Prüfperson, Datum und Vermerk umgesetzt.
+- Manuelles Prüfprotokoll in Abschluss-Score, Freigabeseite des Berichts und Gesamt-CSV integriert.
+- `.dvp`-Roundtrip für technische Snapshots, Vergleichsbasis und Prüfprotokoll abgesichert.
+- Ältere Phase-30-Snapshots bleiben kompatibel und werden transparent als Detaildaten nicht verfügbar gekennzeichnet.
+- Zwei neue Testgruppen mit insgesamt 48 Einzelprüfungen ergänzt.
+- App-Version auf 1.8.0 und Cachekennung auf 31.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 30.00 – Projektabschluss, Variantenarchiv und Revisionsstand
 
 - Neuen Arbeitsbereich **Abschluss** mit neutralem Projektstatus, Score und sieben Bereitschaftsprüfungen ergänzt.

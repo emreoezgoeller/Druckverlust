@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.7.0 · Phase 30.00 · Projektabschluss, Variantenarchiv und Revisionsstand.
+**Aktueller Stand:** Version 1.8.0 · Phase 31.00 · technischer Revisionsvergleich und internes Prüfprotokoll.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, Autosicherung und ein mehrseitiger Professional Report.
 
@@ -45,6 +45,7 @@ Druckverlust/
 │   ├── licensing/             vorbereitete Lizenzlogik
 │   ├── project/               Standard-, Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
+│   ├── revision/              technische Snapshots und Revisionsvergleich
 │   ├── report/                Bericht-, CSV- und PDF-Engine
 │   ├── schematic/             SVG-Anlagenzeichnung und Analysemodi
 │   ├── simulation/            nicht-destruktive Live-Simulation
@@ -56,19 +57,20 @@ Druckverlust/
 └── docs/                      technische Dokumentation
 ```
 
-## Phase 30.00
+## Phase 31.00
 
-Der neue Bereich **Ausgabe → Abschluss** bündelt den dokumentierten Projektstand:
+Der Bereich **Ausgabe → Abschluss** dokumentiert jetzt nicht nur den aktuellen Projektstand, sondern auch die fachlichen Änderungen gegenüber einem gewählten Revisionssnapshot:
 
-- neutraler Abschluss-Score und klare Bereitschaftsprüfungen,
-- automatische Revisionssnapshots mit Berechnungskennwerten,
-- Revisionshistorie für den Bericht,
-- gespeicherte Simulationsvarianten mit Name und Bemerkung,
-- Auswahl einer Variante für den Professional Report,
-- Erkennung veralteter Varianten oder Revisionsstände,
-- Variantenvergleich im Bericht und CSV-Export.
+- technische Detail-Snapshots für Teilstrecken, Formteile und Sonderbauteile,
+- frei wählbare Basisrevision je Anlage,
+- Erkennung hinzugefügter, entfernter und geänderter Elemente,
+- Vergleich von Luftmenge, Dimension, Länge, Geschwindigkeit und Druckverlust,
+- Filter und eigener CSV-Export für den Revisionsvergleich,
+- Revisionsvergleich als optionale Seite im Professional Report,
+- internes Prüfprotokoll mit sechs manuellen Kontrollpunkten, Prüfperson, Datum und Vermerk,
+- persistente Speicherung in der `.dvp`-Projektdatei.
 
-Simulationsvarianten bleiben zunächst getrennt vom Projekt. Erst eine ausdrückliche Übernahme verändert die Teilstrecken.
+Ältere Revisionssnapshots aus Phase 30 bleiben lesbar. Für einen detaillierten Vergleich muss einmal ein neuer technischer Snapshot erstellt werden. Simulationsvarianten bleiben weiterhin nicht-destruktiv, bis ihre Werte ausdrücklich übernommen werden.
 
 ## Tests
 
@@ -81,7 +83,7 @@ npm test
 Gezielte Prüfung der neuen Phase:
 
 ```bash
-npm run test:phase30
+npm run test:phase31
 ```
 
 Die Gesamtsuite prüft unter anderem:
@@ -93,9 +95,10 @@ Die Gesamtsuite prüft unter anderem:
 - ein Praxisprojekt mit 48 Teilstrecken,
 - Anlagenzeichnung, Analysemodi und PDF-Anlagenschema,
 - Live-Simulation und gespeicherte Varianten,
-- Projektabschluss und Revisionssnapshots,
-- Variantenvergleich im HTML-Bericht und CSV-Export,
-- `.dvp`-Speichern/Öffnen inklusive Phase-30-Daten,
+- Projektabschluss, technische Revisionssnapshots und frei wählbare Vergleichsbasis,
+- detaillierter Revisionsvergleich im HTML-/PDF-Bericht und CSV-Export,
+- internes manuelles Prüfprotokoll,
+- `.dvp`-Speichern/Öffnen inklusive Phase-31-Daten,
 - Fachtest-, Freigabe- und Beta-Workflows.
 
 ## Bewusste Produktgrenzen

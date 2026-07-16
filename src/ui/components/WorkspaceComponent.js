@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=30.00';
+import ReportEngine from '../../report/ReportEngine.js?v=31.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=30.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=31.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,14 +89,15 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=30.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=31.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=30.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=30.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=30.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=30.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=31.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=31.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=31.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=31.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=31.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -4834,6 +4835,7 @@ export default class WorkspaceComponent {
       { id: 'includeExecutiveSummary', label: 'Management-Zusammenfassung', default: true },
       { id: 'includeNetworkSchematic', label: 'Anlagenschema', default: true },
       { id: 'includeLossAnalysis', label: 'Druckverlustanalyse', default: true },
+      { id: 'includeRevisionComparison', label: 'Revisionsvergleich', default: true },
       { id: 'includeVariantComparison', label: 'Variantenvergleich', default: true },
       { id: 'includeEngineeringQuality', label: 'Engineering-QS', default: true },
       { id: 'includeMainNetwork', label: 'Hauptberechnung – Luftnetz', default: true },
@@ -4859,6 +4861,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: true,
           includeLossAnalysis: true,
+          includeRevisionComparison: true,
           includeVariantComparison: true,
           includeEngineeringQuality: true,
           includeMainNetwork: true,
@@ -4880,6 +4883,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: true,
           includeLossAnalysis: true,
+          includeRevisionComparison: true,
           includeVariantComparison: true,
           includeEngineeringQuality: true,
           includeMainNetwork: true,
@@ -4901,6 +4905,7 @@ export default class WorkspaceComponent {
           includeExecutiveSummary: true,
           includeNetworkSchematic: false,
           includeLossAnalysis: true,
+          includeRevisionComparison: true,
           includeVariantComparison: true,
           includeEngineeringQuality: false,
           includeMainNetwork: false,
@@ -4919,6 +4924,8 @@ export default class WorkspaceComponent {
         description: 'Für interne Kontrolle mit Prüfprotokoll und Anhang.',
         options: {
           includeToc: true,
+          includeRevisionComparison: true,
+          includeVariantComparison: true,
           includeMainNetwork: true,
           includeAssignedFormParts: true,
           includeSpecialComponents: true,
@@ -9805,6 +9812,104 @@ formatNumber(value, digits = 2) {
     bindResultLinks();
   }
 
+  renderRevisionComparisonPanel(completion = {}, activeSystem = null) {
+    const comparison = completion.revisionComparison || {};
+    const snapshots = completion.revisions || [];
+    const selectedId = this.state.project?.reportRevisionBaseId || snapshots[0]?.id || '';
+    const categoryLabels = {
+      sections: 'Teilstrecken',
+      formParts: 'Formteile',
+      specialComponents: 'Sonderbauteile',
+    };
+    const typeLabels = { added: 'Neu', removed: 'Entfernt', modified: 'Geändert' };
+    const visibleChanges = (comparison.changes || []).slice(0, 80);
+    const totalDelta = Number(comparison.totals?.delta?.totalLoss || 0);
+    const deltaClass = totalDelta > 0 ? 'is-negative' : totalDelta < 0 ? 'is-positive' : 'is-neutral';
+    const deltaText = `${totalDelta > 0 ? '+' : ''}${this.formatNumber(totalDelta, 1)} Pa`;
+
+    return `
+      <section class="dp-completion-panel dp-revision-comparison" data-revision-comparison>
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Phase 31 · Revisionsvergleich</span>
+            <h2>Dokumentierten Stand mit aktuellem Projekt vergleichen</h2>
+            <p>Änderungen an Teilstrecken, Formteilen, Sonderbauteilen und Berechnungskennwerten werden automatisch gegenübergestellt.</p>
+          </div>
+          <div class="dp-revision-compare-actions">
+            <label><span>Basisrevision</span>
+              <select data-revision-base ${snapshots.length ? '' : 'disabled'}>
+                ${snapshots.map(item => `<option value="${this.escapeAttribute(item.id)}" ${item.id === selectedId ? 'selected' : ''}>Revision ${this.escapeHtml(item.revision || '-')} · ${this.escapeHtml(item.date || '-')}</option>`).join('')}
+              </select>
+            </label>
+            <button type="button" data-revision-action="csv" ${comparison.legacy ? 'disabled' : ''}>CSV exportieren</button>
+          </div>
+        </div>
+
+        ${!snapshots.length ? `<div class="dp-quality-empty"><strong>Noch kein Revisionsstand vorhanden</strong><p>Erstelle zuerst einen Revisionssnapshot. Danach kann der aktuelle Projektstand automatisch verglichen werden.</p></div>` : comparison.legacy ? `
+          <div class="dp-quality-empty is-warning"><strong>Detailvergleich für diesen Altstand nicht verfügbar</strong><p>Der gewählte Revisionssnapshot stammt aus einer älteren Projektversion. Erstelle einen neuen Snapshot, um technische Einzeländerungen vergleichen zu können.</p></div>
+        ` : `
+          <div class="dp-revision-compare-summary">
+            <article><span>Basis</span><strong>${this.escapeHtml(comparison.base?.label || '-')}</strong><small>${this.formatNumber(comparison.totals?.before?.totalLoss, 1)} Pa</small></article>
+            <article><span>Aktueller Stand</span><strong>${this.escapeHtml(comparison.target?.label || 'Aktueller Projektstand')}</strong><small>${this.formatNumber(comparison.totals?.after?.totalLoss, 1)} Pa</small></article>
+            <article class="${deltaClass}"><span>Δ Gesamtdruckverlust</span><strong>${deltaText}</strong><small>${comparison.status === 'identical' ? 'Technisch identisch' : `${comparison.summary?.total || 0} Änderung(en)`}</small></article>
+            <article><span>Elementänderungen</span><strong>${(comparison.summary?.added || 0) + (comparison.summary?.removed || 0)}</strong><small>${comparison.summary?.added || 0} neu · ${comparison.summary?.removed || 0} entfernt</small></article>
+            <article><span>Feldänderungen</span><strong>${comparison.summary?.modified || 0}</strong><small>${comparison.summary?.important || 0} wesentlich</small></article>
+          </div>
+
+          <div class="dp-revision-filterbar" role="group" aria-label="Revisionsänderungen filtern">
+            <button type="button" class="is-active" data-revision-filter="all">Alle <span>${comparison.summary?.total || 0}</span></button>
+            <button type="button" data-revision-filter="sections">Teilstrecken <span>${comparison.summary?.categories?.sections?.total || 0}</span></button>
+            <button type="button" data-revision-filter="formParts">Formteile <span>${comparison.summary?.categories?.formParts?.total || 0}</span></button>
+            <button type="button" data-revision-filter="specialComponents">Sonderbauteile <span>${comparison.summary?.categories?.specialComponents?.total || 0}</span></button>
+          </div>
+
+          ${visibleChanges.length ? `<div class="dp-table-wrap dp-revision-table-wrap">
+            <table class="dp-table dp-revision-comparison-table">
+              <thead><tr><th>Bereich</th><th>Element</th><th>Änderung</th><th>Feld</th><th>Vorher</th><th>Nachher</th><th>Differenz</th></tr></thead>
+              <tbody>
+                ${visibleChanges.map(change => `<tr data-revision-row="${this.escapeAttribute(change.category)}" class="is-${this.escapeAttribute(change.changeType)}">
+                  <td><span class="dp-revision-category">${this.escapeHtml(categoryLabels[change.category] || change.category)}</span></td>
+                  <td>${change.category === 'sections' && change.changeType !== 'removed' ? `<button type="button" data-revision-open-section="${this.escapeAttribute(change.elementId)}">${this.escapeHtml(change.elementName)}</button>` : this.escapeHtml(change.elementName)}</td>
+                  <td><span class="dp-revision-change-type is-${this.escapeAttribute(change.changeType)}">${this.escapeHtml(typeLabels[change.changeType] || change.changeType)}</span></td>
+                  <td>${this.escapeHtml(change.fieldLabel || '-')}</td>
+                  <td>${this.escapeHtml(change.beforeLabel || '-')}</td>
+                  <td><strong>${this.escapeHtml(change.afterLabel || '-')}</strong></td>
+                  <td class="${Number(change.delta || 0) > 0 ? 'is-increase' : Number(change.delta || 0) < 0 ? 'is-decrease' : ''}">${this.escapeHtml(change.deltaLabel || '-')}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>` : `<div class="dp-quality-empty is-success"><strong>Keine technischen Änderungen</strong><p>Der aktuelle Projektstand entspricht der gewählten Revision.</p></div>`}
+          ${(comparison.changes || []).length > visibleChanges.length ? `<p class="dp-completion-disclaimer">Es werden die ersten ${visibleChanges.length} von ${comparison.changes.length} Änderungen angezeigt. Der CSV-Export enthält alle Änderungen.</p>` : ''}
+        `}
+      </section>
+    `;
+  }
+
+  renderManualReviewPanel(protocol = {}) {
+    return `
+      <section class="dp-completion-panel dp-manual-review" data-manual-review>
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Internes Prüfprotokoll</span><h2>Manuelle Fachkontrolle dokumentieren</h2><p>Die automatische QS wird durch eine nachvollziehbare manuelle Kontrolle ergänzt.</p></div>
+          <span class="dp-review-progress ${protocol.isComplete ? 'is-complete' : ''}">${protocol.completed || 0}/${protocol.total || 0}</span>
+        </div>
+        <div class="dp-review-layout">
+          <div class="dp-review-checklist">
+            ${(protocol.checks || []).map(item => `<label><input type="checkbox" data-review-check="${this.escapeAttribute(item.id)}" ${item.checked ? 'checked' : ''}><span>${this.escapeHtml(item.label)}</span></label>`).join('')}
+          </div>
+          <div class="dp-completion-form dp-review-fields">
+            <label><span>Geprüft von</span><input data-review-field="reviewer" value="${this.escapeAttribute(protocol.reviewer || '')}" placeholder="Name der prüfenden Person"></label>
+            <label><span>Prüfdatum</span><input data-review-field="date" value="${this.escapeAttribute(protocol.date || '')}" placeholder="TT.MM.JJJJ"></label>
+            <label class="is-wide"><span>Prüfvermerk</span><textarea data-review-field="note" rows="4" placeholder="Feststellungen, Einschränkungen oder offene Punkte">${this.escapeHtml(protocol.note || '')}</textarea></label>
+          </div>
+        </div>
+        <div class="dp-completion-form-actions">
+          <span>${protocol.isComplete ? 'Alle manuellen Prüfpunkte sind bestätigt.' : 'Offene Prüfpunkte bleiben im Projektabschluss sichtbar.'}</span>
+          <button type="button" class="is-primary" data-review-action="save">Prüfprotokoll speichern</button>
+        </div>
+      </section>
+    `;
+  }
+
   renderProjectCompletion(system = null) {
     const project = this.state.project || {};
     const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
@@ -9824,9 +9929,9 @@ formatNumber(value, digits = 2) {
     this.root.innerHTML = `
       <section class="dp-phase-hero is-completion">
         <div>
-          <span class="dp-phase-kicker">PHASE 30 · PROJEKTABSCHLUSS</span>
-          <h1>Varianten, Revision und Freigabestand</h1>
-          <p>Berechnungsstand dokumentieren, Varianten für den Bericht auswählen und offene Abschlussarbeiten zentral prüfen.</p>
+          <span class="dp-phase-kicker">PHASE 31 · PROJEKTABSCHLUSS</span>
+          <h1>Revisionen vergleichen und Prüfstand dokumentieren</h1>
+          <p>Berechnungsstände festhalten, technische Änderungen nachvollziehen, Varianten auswählen und die manuelle Fachkontrolle dokumentieren.</p>
         </div>
         <div class="dp-completion-score is-${this.escapeAttribute(completion.status)}">
           <span>${this.escapeHtml(statusLabel)}</span>
@@ -9851,7 +9956,7 @@ formatNumber(value, digits = 2) {
       <section class="dp-completion-grid">
         <article class="dp-completion-panel">
           <div class="dp-panel-header">
-            <div><span class="dp-overline">Revisionssnapshot</span><h2>Aktuellen Stand festhalten</h2><p>Speichert Kennwerte, Engineering-Score und Projektfingerabdruck zur Revision.</p></div>
+            <div><span class="dp-overline">Revisionssnapshot</span><h2>Aktuellen Stand festhalten</h2><p>Speichert Kennwerte, Engineering-Score, Projektfingerabdruck und technische Detaildaten.</p></div>
           </div>
           <div class="dp-completion-form">
             <label><span>Revision</span><input data-completion-field="revision" value="${this.escapeAttribute(nextRevision)}"></label>
@@ -9870,14 +9975,18 @@ formatNumber(value, digits = 2) {
             <div><span class="dp-overline">Dokumentierte Stände</span><h2>Revisionshistorie</h2><p>Automatisch erfasste Berechnungsstände dieser Anlage.</p></div>
           </div>
           ${completion.revisions.length ? `<div class="dp-revision-snapshot-list">
-            ${completion.revisions.map((revision, index) => `<div class="dp-revision-snapshot ${index === 0 && completion.revisionCurrent ? 'is-current' : ''}">
+            ${completion.revisions.map((revision, index) => `<div class="dp-revision-snapshot ${index === 0 && completion.revisionCurrent ? 'is-current' : ''} ${revision.id === project.reportRevisionBaseId ? 'is-comparison-base' : ''}">
               <div><span>Revision ${this.escapeHtml(revision.revision || '-')}</span><strong>${this.formatNumber(revision.totals?.totalLoss, 1)} Pa</strong></div>
               <p>${this.escapeHtml(revision.change || 'Berechnungsstand dokumentiert')}</p>
               <small>${this.escapeHtml(revision.date || '-')} · ${this.escapeHtml(revision.author || '-')} · QS ${Math.round(Number(revision.engineeringScore || 0))}/100</small>
+              <button type="button" data-revision-select="${this.escapeAttribute(revision.id)}">Als Vergleichsbasis</button>
             </div>`).join('')}
           </div>` : `<div class="dp-quality-empty"><strong>Noch kein Revisionssnapshot</strong><p>Den aktuellen Stand links mit Revision und Bemerkung dokumentieren.</p></div>`}
         </article>
       </section>
+
+      ${this.renderRevisionComparisonPanel(completion, activeSystem)}
+      ${this.renderManualReviewPanel(completion.reviewProtocol)}
 
       <section class="dp-completion-panel dp-completion-variants">
         <div class="dp-panel-header">
@@ -9895,10 +10004,10 @@ formatNumber(value, digits = 2) {
       <p class="dp-completion-disclaimer">${this.escapeHtml(completion.disclaimer)}</p>
     `;
 
-    this.bindProjectCompletion(activeSystem);
+    this.bindProjectCompletion(activeSystem, completion);
   }
 
-  bindProjectCompletion(activeSystem) {
+  bindProjectCompletion(activeSystem, completion = null) {
     const project = this.state.project;
     if (!project || !activeSystem) return;
 
@@ -9923,11 +10032,66 @@ formatNumber(value, digits = 2) {
           author: this.root.querySelector('[data-completion-field="author"]')?.value,
           change: this.root.querySelector('[data-completion-field="change"]')?.value,
         });
+        ProjectCompletionEngine.setReportRevisionBase(project, snapshot.id);
         this.state.markProjectDirty();
-        UiDialogService.alert({ title: 'Revisionsstand dokumentiert', message: `Revision ${snapshot.revision} wurde mit ${this.formatNumber(snapshot.totals?.totalLoss, 1)} Pa festgehalten.`, tone: 'success' });
+        UiDialogService.alert({ title: 'Revisionsstand dokumentiert', message: `Revision ${snapshot.revision} wurde mit ${this.formatNumber(snapshot.totals?.totalLoss, 1)} Pa und technischen Detaildaten festgehalten.`, tone: 'success' });
         this.renderProjectCompletion(activeSystem);
       } catch (error) {
         UiDialogService.alert({ title: 'Revision konnte nicht gespeichert werden', message: error.message, tone: 'error' });
+      }
+    });
+
+    const selectRevisionBase = id => {
+      ProjectCompletionEngine.setReportRevisionBase(project, id);
+      this.state.markProjectDirty();
+      this.renderProjectCompletion(activeSystem);
+    };
+    this.root.querySelector('[data-revision-base]')?.addEventListener('change', event => selectRevisionBase(event.target.value));
+    this.root.querySelectorAll('[data-revision-select]').forEach(button => button.addEventListener('click', () => selectRevisionBase(button.dataset.revisionSelect)));
+
+    this.root.querySelectorAll('[data-revision-filter]').forEach(button => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.revisionFilter || 'all';
+        this.root.querySelectorAll('[data-revision-filter]').forEach(item => item.classList.toggle('is-active', item === button));
+        this.root.querySelectorAll('[data-revision-row]').forEach(row => {
+          row.hidden = filter !== 'all' && row.dataset.revisionRow !== filter;
+        });
+      });
+    });
+
+    this.root.querySelectorAll('[data-revision-open-section]').forEach(button => {
+      button.addEventListener('click', () => {
+        const section = activeSystem.sections?.find(item => item.id === button.dataset.revisionOpenSection);
+        if (section) this.state.selectSection(section);
+      });
+    });
+
+    this.root.querySelector('[data-revision-action="csv"]')?.addEventListener('click', () => {
+      const comparison = ProjectCompletionEngine.getRevisionComparison(project, activeSystem.id);
+      const content = `\ufeff${RevisionComparisonEngine.toCsv(comparison)}`;
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `Revisionsvergleich_${String(comparison.base?.revision || 'Basis').replace(/[^a-z0-9_-]+/gi, '_')}_aktuell.csv`;
+      anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+    });
+
+    this.root.querySelector('[data-review-action="save"]')?.addEventListener('click', () => {
+      try {
+        const checks = [...this.root.querySelectorAll('[data-review-check]')].map(input => ({ id: input.dataset.reviewCheck, checked: input.checked }));
+        const protocol = ProjectCompletionEngine.saveReviewProtocol(project, activeSystem.id, {
+          reviewer: this.root.querySelector('[data-review-field="reviewer"]')?.value,
+          date: this.root.querySelector('[data-review-field="date"]')?.value,
+          note: this.root.querySelector('[data-review-field="note"]')?.value,
+          checks,
+        });
+        this.state.markProjectDirty();
+        UiDialogService.alert({ title: 'Prüfprotokoll gespeichert', message: `${protocol.completed}/${protocol.total} Prüfpunkte wurden dokumentiert.`, tone: protocol.isComplete ? 'success' : 'info' });
+        this.renderProjectCompletion(activeSystem);
+      } catch (error) {
+        UiDialogService.alert({ title: 'Prüfprotokoll konnte nicht gespeichert werden', message: error.message, tone: 'error' });
       }
     });
 

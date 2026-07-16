@@ -53,8 +53,8 @@ match(html, /data-simulation-action="completion"/, 'Simulation verlinkt zum Proj
 
 workspace.autoCalculateProject = () => project.calculationResult;
 workspace.renderProjectCompletion(system);
-match(html, /PHASE 30 · PROJEKTABSCHLUSS/, 'Projektabschluss besitzt den Phase-30-Kopf.');
-match(html, /Varianten, Revision und Freigabestand/, 'Projektabschluss erklärt den Arbeitsbereich.');
+match(html, /PHASE 31 · PROJEKTABSCHLUSS/, 'Projektabschluss besitzt den aktuellen Projektabschluss-Kopf.');
+match(html, /Revisionen vergleichen und Prüfstand dokumentieren/, 'Projektabschluss erklärt den erweiterten Arbeitsbereich.');
 match(html, /Revisionssnapshot/, 'Revisionssnapshot wird angeboten.');
 match(html, /data-completion-action="capture-revision"/, 'Revisionsstand kann festgehalten werden.');
 match(html, /Variante für Bericht auswählen/, 'Berichtsvariante ist im Abschluss sichtbar.');
@@ -67,7 +67,7 @@ const css = readFileSync(new URL('../src/ui/phase30_00.css', import.meta.url), '
 match(ribbonSource, /action: 'showProjectCompletion'/, 'Ribbon enthält Projektabschluss.');
 match(ribbonSource, /selectionType === 'projectCompletion'/, 'Aktiver Projektabschluss wird markiert.');
 match(actionSource, /showProjectCompletion\(\)/, 'Ribbon-Aktion öffnet den Projektabschluss.');
-match(appHtml, /phase30_00\.css\?v=30\.00/, 'Phase-30-CSS wird mit aktueller Cache-Version geladen.');
+match(appHtml, /phase30_00\.css\?v=31\.00/, 'Phase-30-CSS wird mit aktueller Cache-Version geladen.');
 match(css, /dp-completion-checks/, 'Abschluss-CSS enthält die Prüfkarte.');
 match(css, /dp-variant-archive/, 'Abschluss-CSS enthält das Variantenarchiv.');
 ok(html.length > 1000, 'Projektabschluss erzeugt eine vollständige Oberfläche.');

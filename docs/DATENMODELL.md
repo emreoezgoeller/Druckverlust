@@ -1,6 +1,6 @@
 # Datenmodell – Druckverlust Pro
 
-Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.7.0 · Phase 30.00
+Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.8.0 · Phase 31.00
 
 ## 1. Dateihülle
 
@@ -8,8 +8,8 @@ Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.7.0 · Phase 30.00
 {
   "fileType": "DruckverlustPro",
   "schemaVersion": "1.1.0",
-  "appVersion": "1.7.0",
-  "appRelease": "30.00",
+  "appVersion": "1.8.0",
+  "appRelease": "31.00",
   "exportedAt": "2026-07-15T08:00:00.000Z",
   "summary": {},
   "project": {}
@@ -41,7 +41,9 @@ Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.7.0 · Phase 30.00
   "systems": [],
   "simulationVariants": [],
   "reportVariantId": "",
-  "revisionSnapshots": []
+  "revisionSnapshots": [],
+  "reportRevisionBaseId": "",
+  "reviewProtocol": { "systems": {} }
 }
 ```
 
@@ -167,13 +169,45 @@ Sonderbauteile bleiben freie, herstellerneutrale Druckverlustansätze.
   "engineeringScore": 92,
   "engineeringStatus": "warning",
   "findingCount": 2,
-  "reportVariantId": "variant-1"
+  "reportVariantId": "variant-1",
+  "technicalSnapshot": {
+    "systemId": "system-1",
+    "settings": {},
+    "totals": {},
+    "sections": [],
+    "formParts": [],
+    "specialComponents": []
+  }
 }
 ```
 
-Maximal zwanzig Snapshots werden gehalten. Zusätzlich führt `report.revisionHistory` die kompakte Revisionsliste für den Bericht.
+Maximal zwanzig Snapshots werden gehalten. Zusätzlich führt `report.revisionHistory` die kompakte Revisionsliste für den Bericht. `technicalSnapshot` ist ab Phase 31 die Detailbasis für den Vergleich; ältere Snapshots ohne dieses Feld bleiben lesbar, liefern aber keinen Einzelvergleich.
 
-## 9. Nicht persistierte Felder
+## 9. Vergleichsbasis und manuelles Prüfprotokoll
+
+```json
+{
+  "reportRevisionBaseId": "revision-1",
+  "reviewProtocol": {
+    "systems": {
+      "system-1": {
+        "reviewer": "Prüfperson",
+        "date": "16.07.2026",
+        "note": "Fachkontrolle durchgeführt",
+        "checks": [
+          { "id": "inputs", "checked": true },
+          { "id": "formparts", "checked": true }
+        ],
+        "updatedAt": "2026-07-16T08:00:00.000Z"
+      }
+    }
+  }
+}
+```
+
+`reportRevisionBaseId` bestimmt die für Abschluss und Bericht verwendete Basisrevision. Das Prüfprotokoll wird je Anlage gespeichert; seine Prüfpunkte werden beim Lesen gegen die aktuelle Standardliste normalisiert.
+
+## 10. Nicht persistierte Felder
 
 Folgende Felder werden bewusst nicht in `.dvp` geschrieben:
 

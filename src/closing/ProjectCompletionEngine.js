@@ -1,8 +1,9 @@
 // Druckverlust Pro – ProjectCompletionEngine
-// Phase 30.00: Variantenarchiv, Revisionssnapshot und neutraler Projektabschluss.
+// Phase 31.00: Variantenarchiv, detaillierte Revisionen und neutraler Projektabschluss.
 
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=30.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=31.00';
+import RevisionComparisonEngine from '../revision/RevisionComparisonEngine.js?v=31.00';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));
@@ -106,6 +107,7 @@ function getReportData(project = {}) {
 function ensureCollections(project = {}) {
   if (!Array.isArray(project.simulationVariants)) project.simulationVariants = [];
   if (!Array.isArray(project.revisionSnapshots)) project.revisionSnapshots = [];
+  if (!project.reviewProtocol || typeof project.reviewProtocol !== 'object') project.reviewProtocol = {};
   return project;
 }
 
@@ -266,6 +268,7 @@ export default class ProjectCompletionEngine {
       engineeringStatus: quality?.status || 'ok',
       findingCount: Array.isArray(quality?.findings) ? quality.findings.length : 0,
       reportVariantId: project.reportVariantId || '',
+      technicalSnapshot: RevisionComparisonEngine.createTechnicalSnapshot(project, system.id, calculation),
     };
 
     project.revisionSnapshots = [
@@ -288,6 +291,80 @@ export default class ProjectCompletionEngine {
     return project.revisionSnapshots
       .filter(item => !systemId || item.systemId === systemId)
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  }
+
+  static getRevisionComparison(project = {}, systemId = null, revisionId = null) {
+    ensureCollections(project);
+    const snapshots = this.getRevisionSnapshots(project, systemId);
+    const selectedId = revisionId || project.reportRevisionBaseId || snapshots[0]?.id || '';
+    const revision = snapshots.find(item => item.id === selectedId) || snapshots[0] || null;
+    if (!revision) return RevisionComparisonEngine.compareSnapshots(null, null);
+    return RevisionComparisonEngine.compareRevisionToCurrent(project, systemId, revision);
+  }
+
+  static setReportRevisionBase(project = {}, revisionId = '') {
+    ensureCollections(project);
+    const revision = project.revisionSnapshots.find(item => item.id === revisionId) || null;
+    project.reportRevisionBaseId = revision?.id || '';
+    return revision;
+  }
+
+  static getReviewProtocol(project = {}, systemId = null) {
+    ensureCollections(project);
+    const system = getSystem(project, systemId);
+    const defaults = [
+      { id: 'inputs', label: 'Eingabedaten und Abmessungen geprüft' },
+      { id: 'formparts', label: 'Formteile und Zuordnungen geprüft' },
+      { id: 'specials', label: 'Sonderbauteile und Druckverluste geprüft' },
+      { id: 'calculation', label: 'Berechnung und Summen geprüft' },
+      { id: 'schematic', label: 'Anlagenschema geprüft' },
+      { id: 'report', label: 'Bericht und Revisionsstand geprüft' },
+    ];
+    const stored = project.reviewProtocol?.systems?.[system?.id] || {};
+    const storedChecks = Array.isArray(stored.checks) ? stored.checks : [];
+    const checks = defaults.map(item => ({
+      ...item,
+      checked: Boolean(storedChecks.find(row => row.id === item.id)?.checked),
+    }));
+    return {
+      systemId: system?.id || '',
+      reviewer: text(stored.reviewer, project.report?.checkedBy || project.checkedBy || ''),
+      date: text(stored.date),
+      note: text(stored.note),
+      checks,
+      completed: checks.filter(item => item.checked).length,
+      total: checks.length,
+      isComplete: checks.length > 0 && checks.every(item => item.checked),
+      updatedAt: stored.updatedAt || '',
+    };
+  }
+
+  static saveReviewProtocol(project = {}, systemId = null, data = {}) {
+    ensureCollections(project);
+    const system = getSystem(project, systemId);
+    if (!system) throw new Error('Keine Anlage für das Prüfprotokoll vorhanden.');
+    const current = this.getReviewProtocol(project, system.id);
+    const checks = current.checks.map(item => ({
+      id: item.id,
+      label: item.label,
+      checked: Boolean((data.checks || []).find(row => row.id === item.id)?.checked),
+    }));
+    if (!project.reviewProtocol.systems || typeof project.reviewProtocol.systems !== 'object') project.reviewProtocol.systems = {};
+    const protocol = {
+      systemId: system.id,
+      reviewer: text(data.reviewer),
+      date: text(data.date),
+      note: text(data.note),
+      checks,
+      updatedAt: new Date().toISOString(),
+    };
+    project.reviewProtocol.systems[system.id] = protocol;
+    if (protocol.reviewer) {
+      project.checkedBy = protocol.reviewer;
+      if (!project.report || typeof project.report !== 'object') project.report = {};
+      project.report.checkedBy = protocol.reviewer;
+    }
+    return this.getReviewProtocol(project, system.id);
   }
 
   static analyze(project = {}, systemId = null, context = {}) {
@@ -313,6 +390,8 @@ export default class ProjectCompletionEngine {
     const currentFingerprint = this.createProjectFingerprint(project, system.id);
     const currentCalculationFingerprint = this.createCalculationFingerprint(project, system.id);
     const latestRevision = revisions[0] || null;
+    const revisionComparison = this.getRevisionComparison(project, system.id);
+    const reviewProtocol = this.getReviewProtocol(project, system.id);
     const revisionCurrent = Boolean(latestRevision && latestRevision.fingerprint === currentFingerprint);
     const variantCurrent = !reportVariant || (reportVariant.calculationFingerprint || reportVariant.projectFingerprint) === currentCalculationFingerprint;
 
@@ -365,6 +444,14 @@ export default class ProjectCompletionEngine {
           : variants.length ? `${variants.length} Variante(n) gespeichert, aber keine für den Bericht ausgewählt.` : 'Kein Variantenvergleich gespeichert – optional.',
       },
       {
+        id: 'review-protocol',
+        status: reviewProtocol.isComplete ? 'ok' : 'warning',
+        label: 'Manuelles Prüfprotokoll',
+        message: reviewProtocol.isComplete
+          ? `Alle ${reviewProtocol.total} Prüfpunkte wurden durch ${reviewProtocol.reviewer || 'die prüfende Stelle'} bestätigt.`
+          : `${reviewProtocol.completed}/${reviewProtocol.total} manuelle Prüfpunkte sind bestätigt.`,
+      },
+      {
         id: 'save-state',
         status: context.isProjectDirty ? 'warning' : 'ok',
         label: 'Projektdatei',
@@ -391,6 +478,8 @@ export default class ProjectCompletionEngine {
       currentCalculationFingerprint,
       revisionCurrent,
       variantCurrent,
+      revisionComparison,
+      reviewProtocol,
       generatedAt: new Date().toISOString(),
       disclaimer: 'Der Projektabschluss ist eine herstellerneutrale Plausibilitäts- und Dokumentationshilfe. Er ersetzt keine objektspezifische fachliche Prüfung oder Freigabe.',
     };
