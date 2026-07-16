@@ -39,7 +39,8 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/simulation/LiveSimulationEngine.js` – nicht-destruktive Luftmengen-/Dimensionssimulation
 - `src/closing/ProjectCompletionEngine.js` – Variantenarchiv, Fingerprints, Revisionssnapshots, Prüfprotokoll und Abschlussstatus
 - `src/revision/RevisionComparisonEngine.js` – technische Snapshots sowie Detailvergleich von Teilstrecken und Bauteilen
-- `src/safety/ProjectSafetyEngine.js` – gemeinsame Diagnose, lokale Sicherungshistorie, Prüfsumme und `.dvpa`-Projektpakete
+- `src/safety/ProjectSafetyEngine.js` – gemeinsame Diagnose, lokale Sicherungshistorie, Prüfsumme und `.dvpa`-Projektarchive
+- `src/handover/ProjectHandoverEngine.js` – Importvorschau, Übergabestatus, `.dvph`-Freigabepaket und Übergabeprotokoll
 
 ### Oberfläche
 
@@ -49,7 +50,7 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/ui/components/WorkspaceComponent.js` – Editoren, Bibliotheken, Analyse, Simulation und Abschluss
 - `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
 - `src/ui/core/RibbonActions.js` – zentrale Aktionen
-- `src/ui/phase22_00.css` bis `src/ui/phase32_00.css` – additive, releasebezogene UI-Schichten
+- `src/ui/phase22_00.css` bis `src/ui/phase33_00.css` – additive, releasebezogene UI-Schichten
 
 ### Speicherung und Bericht
 
@@ -84,6 +85,7 @@ calculationResult (flüchtig, wird nicht in .dvp gespeichert)
    ├── ProjectCompletionEngine
    ├── RevisionComparisonEngine
    ├── ProjectSafetyEngine
+   ├── ProjectHandoverEngine
    └── ReportEngine
 ```
 
@@ -128,6 +130,25 @@ Wiederherstellung
 Prüfsumme und Schema validieren
    ↓
 Projekt normalisieren, neu berechnen und als ungespeichert markieren
+```
+
+
+Projektübergabe:
+
+```text
+Eingehende .dvp / .dvpa / .dvph
+   ↓ nicht-destruktive Importvorschau
+Schema, Version, Prüfsumme, Berechnung und Objektanzahlen prüfen
+   ↓ ausdrückliche Bestätigung
+Notfallsicherung des aktuellen Projekts
+   ↓
+Geprüftes Projekt als ungespeicherten Arbeitsstand öffnen
+
+Aktueller Projektstand
+   ↓ Vorbereitung / Prüfung / Freigabe
+project.handover.systems[systemId]
+   ↓
+ProjectHandoverEngine → .dvph-Freigabepaket + Übergabeprotokoll.csv
 ```
 
 ## 5. Persistenz

@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.9.0 · Phase 32.00 · Projektsicherheit, lokales Sicherungsarchiv und geprüftes Übergabepaket.
+**Aktueller Stand:** Version 1.12.0 · Phase 35.00 · Projektcockpit, projektweite QS-Matrix und Dokumentationsstatus.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Anlagenverwaltung, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektpakete, Autosicherung und ein mehrseitiger Professional Report.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
 ## Lokal starten
 
@@ -41,9 +41,10 @@ Druckverlust/
 │   ├── core/                  Rechenkern, Lookup und Version
 │   ├── diagnostics/           Projekt-, Rechen- und Deployment-QS
 │   ├── formteile/             Registry und 14 Formteilrechner
+│   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
-│   ├── project/               Standard-, Demo- und Praxisprojekte
+│   ├── project/               Projekte, Anlagenmanager, Standard-, Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── revision/              technische Snapshots und Revisionsvergleich
 │   ├── report/                Bericht-, CSV- und PDF-Engine
@@ -57,6 +58,56 @@ Druckverlust/
 ├── tests/                     Node- und Browserprüfungen
 └── docs/                      technische Dokumentation
 ```
+
+## Phase 35.00
+
+Unter **Projekt → Cockpit** steht jetzt eine projektweite Qualitäts- und Risikomatrix zur Verfügung:
+
+- Projekt-Score aus Engineering-QS und Dokumentationsvollständigkeit,
+- priorisierte Feststellungen über alle Anlagen, Teilstrecken und Projektangaben,
+- technische Anlagenmatrix mit Luftart, Luftmenge, Geschwindigkeit, Druckverlust und Engineering-Score,
+- Prüfung auf doppelte Anlagenbezeichnungen und BKP-Nummern,
+- Hinweise zu leeren Anlagen, fehlenden BKP-Angaben und nicht klassifizierten Luftarten,
+- Dokumentationsstatus für Projektnummer, Projektname, Objekt, Bearbeiter, Firma, Berichtnummer und Revision,
+- neutrale Luftartenübersicht ohne automatische Luftbilanz oder Addition zu einer gemeinsamen Druckverlustkette,
+- Filter für kritische Punkte, Warnungen und Hinweise sowie direkte Navigation zur betroffenen Anlage oder Teilstrecke,
+- projektweiter Cockpit-CSV-Export,
+- zusätzliche Seite **Projektweite QS-Matrix** im Professional Report bei Mehranlagen-Projekten.
+
+Die Auswertung bleibt vollständig herstellerneutral. Sie ist eine Plausibilitäts- und Dokumentationshilfe und ersetzt keine objektspezifische Norm-, Akustik- oder Fachplanung.
+
+## Phase 34.00
+
+Unter **Projekt → Anlagen** steht jetzt ein zentraler Anlagenmanager für Mehranlagen-Projekte zur Verfügung:
+
+- neue Anlagen anlegen und bestehende Anlagen vollständig duplizieren,
+- Anlagen in der Projektfolge verschieben oder – ausser der letzten verbleibenden Anlage – löschen,
+- Anlagenname, BKP-Nummer, Luftart und Beschreibung zentral bearbeiten,
+- Druckverlust, Einlassluftmenge, maximale Geschwindigkeit, Engineering-Score und Objektanzahlen aller Anlagen vergleichen,
+- nach Reihenfolge, Name, Druckverlust, Geschwindigkeit oder Qualität sortieren,
+- projektweiten Anlagenvergleich als CSV exportieren,
+- alle Anlagen direkt aus der Sidebar öffnen,
+- die aktive Anlage bei Wechsel und Bearbeitung zuverlässig neu berechnen,
+- bei mehreren Anlagen automatisch eine projektweite Übersicht in den Professional Report aufnehmen.
+
+Beim Duplizieren werden interne IDs und alle Zuordnungen zu Teilstrecken neu aufgebaut. Damit bleiben Formteile und Sonderbauteile vollständig innerhalb der kopierten Anlage und kollidieren nicht mit dem Ausgangssystem. Einanlagen-Projekte bleiben vollständig kompatibel und erhalten keine zusätzliche leere Berichtsseite.
+
+## Phase 33.00
+
+Unter **Ausgabe → Übergabe** steht jetzt ein kontrollierter Übergabe- und Importbereich zur Verfügung:
+
+- `.dvp`-, `.dvpa`- und `.dvph`-Dateien werden zuerst als Vorschau gelesen, berechnet und diagnostiziert, ohne das aktuelle Projekt zu verändern,
+- Projektname, Anlage, Revision, Objektanzahlen, Dateiversion, Schema, Prüfsumme und Normalisierungshinweise werden vor der Übernahme angezeigt,
+- eingehende Dateien werden mit dem aktuell geöffneten Projekt verglichen,
+- der aktuelle Stand wird vor einer bestätigten Übernahme lokal notgesichert,
+- Verantwortlichkeiten für Vorbereitung, Prüfung und Freigabe werden je Anlage dokumentiert,
+- die formelle Freigabe setzt einen aktuellen Revisionsstand und ein vollständig bestätigtes Prüfprotokoll voraus,
+- das neue `.dvph`-Freigabepaket enthält die bearbeitbare Projektdatei, Diagnose, Revisionen, Varianten, Freigabeangaben und Integritätsprüfsummen,
+- beschädigte oder nachträglich veränderte Übergabepakete werden abgewiesen,
+- ein separates Übergabeprotokoll kann als CSV exportiert werden,
+- Freigabestatus und Verantwortlichkeiten erscheinen auf der Freigabeseite des Professional Reports und im Gesamt-CSV.
+
+Das `.dvp`-Format bleibt das tägliche Bearbeitungsformat. `.dvpa` bleibt das Sicherheits- und Wiederherstellungsarchiv. `.dvph` ist der dokumentierte Übergabestand.
 
 ## Phase 32.00
 
@@ -85,7 +136,12 @@ npm test
 Gezielte Prüfung der neuen Phase:
 
 ```bash
-npm run test:phase32
+npm run test:phase35
+```
+
+
+```bash
+npm run test:phase34
 ```
 
 Die Gesamtsuite prüft unter anderem:
@@ -95,11 +151,15 @@ Die Gesamtsuite prüft unter anderem:
 - Grössen- und Anschluss-Synchronisation,
 - Handrechnungen und Summenbildung,
 - ein Praxisprojekt mit 48 Teilstrecken,
+- Mehranlagen-Verwaltung, ID-Remapping und aktive Anlagenberechnung,
+- projektweiter Anlagenvergleich in Oberfläche, CSV und Professional Report,
 - Anlagenzeichnung, Analysemodi und PDF-Anlagenschema,
 - Live-Simulation und gespeicherte Varianten,
 - Projektabschluss, technische Revisionssnapshots und frei wählbare Vergleichsbasis,
 - Projektsicherheit, lokale Sicherungshistorie und Wiederherstellung,
 - `.dvpa`-Archiv-Roundtrip, stabile Prüfsumme und Manipulationserkennung,
+- Importvorschau und Vergleich für `.dvp`, `.dvpa` und `.dvph`,
+- `.dvph`-Freigabepaket, Übergabeprotokoll und Manipulationserkennung,
 - detaillierter Revisionsvergleich im HTML-/PDF-Bericht und CSV-Export,
 - internes manuelles Prüfprotokoll,
 - `.dvp`-Speichern/Öffnen inklusive Phase-31-Daten,

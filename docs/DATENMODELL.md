@@ -1,6 +1,6 @@
 # Datenmodell – Druckverlust Pro
 
-Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · Anwendung 1.9.0 · Phase 32.00
+Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · Anwendung 1.10.0 · Phase 33.00
 
 ## 1. Dateihülle
 
@@ -8,8 +8,8 @@ Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · Anwendung 1.9.0 · Phase 3
 {
   "fileType": "DruckverlustPro",
   "schemaVersion": "1.1.0",
-  "appVersion": "1.9.0",
-  "appRelease": "32.00",
+  "appVersion": "1.10.0",
+  "appRelease": "33.00",
   "exportedAt": "2026-07-15T08:00:00.000Z",
   "summary": {},
   "project": {}
@@ -43,7 +43,8 @@ Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · Anwendung 1.9.0 · Phase 3
   "reportVariantId": "",
   "revisionSnapshots": [],
   "reportRevisionBaseId": "",
-  "reviewProtocol": { "systems": {} }
+  "reviewProtocol": { "systems": {} },
+  "handover": { "systems": {} }
 }
 ```
 
@@ -224,8 +225,8 @@ Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erz
 {
   "fileType": "DruckverlustProArchive",
   "schemaVersion": "1.0.0",
-  "appVersion": "1.9.0",
-  "appRelease": "32.00",
+  "appVersion": "1.10.0",
+  "appRelease": "33.00",
   "createdAt": "2026-07-16T10:30:00.000Z",
   "label": "Projektpaket für Übergabe",
   "note": "Optionaler Hinweis",
@@ -280,3 +281,52 @@ Die Sicherungshistorie wird unter dem Browser-Schlüssel `druckverlust-pro.backu
 - Die Historie gehört nur zum aktuellen Browserprofil und kann durch das Löschen von Browserdaten verloren gehen.
 - Für Übergabe, Langzeitablage oder Gerätewechsel ist eine exportierte `.dvp`- oder `.dvpa`-Datei erforderlich.
 
+
+
+## Projektübergabe je Anlage
+
+```json
+{
+  "handover": {
+    "systems": {
+      "system-1": {
+        "systemId": "system-1",
+        "status": "released",
+        "preparedBy": "Bearbeiter",
+        "preparedAt": "2026-07-16T08:00:00.000Z",
+        "checkedBy": "Prüfperson",
+        "checkedAt": "2026-07-16T09:00:00.000Z",
+        "releasedBy": "Projektleitung",
+        "releasedAt": "2026-07-16T10:00:00.000Z",
+        "note": "Zur Übergabe freigegeben.",
+        "packageId": "release-...",
+        "updatedAt": "2026-07-16T10:00:00.000Z"
+      }
+    }
+  }
+}
+```
+
+Zulässige Statuswerte sind `draft`, `prepared`, `checked` und `released`. Die formelle Freigabe setzt einen aktuellen Revisionssnapshot und ein vollständig bestätigtes Prüfprotokoll voraus.
+
+## `.dvph`-Freigabepaket
+
+```json
+{
+  "fileType": "DruckverlustProHandover",
+  "schemaVersion": "1.0.0",
+  "appVersion": "1.10.0",
+  "appRelease": "33.00",
+  "status": "released",
+  "projectName": "2026-001",
+  "systemId": "system-1",
+  "revision": "R1",
+  "approval": {},
+  "manifest": {},
+  "diagnostics": {},
+  "projectArchive": {},
+  "checksum": "..."
+}
+```
+
+`projectArchive` ist ein vollständiges `.dvpa`-Archiv mit normaler `.dvp`-Nutzdatei. Die äussere Prüfsumme schützt Manifest, Freigabestatus und eingebettetes Projektarchiv gemeinsam.

@@ -1,9 +1,12 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=32.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=35.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=32.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=32.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=32.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=32.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=35.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=35.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=35.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=35.00';
+import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=35.00';
+import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=35.00';
+import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=35.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -77,6 +80,7 @@ const QUALITY_ROWS_PER_PAGE = 16;
 const DEFAULT_REPORT_OPTIONS = Object.freeze({
   includeToc: true,
   includeExecutiveSummary: true,
+  includeSystemsOverview: true,
   includeNetworkSchematic: true,
   includeLossAnalysis: true,
   includeRevisionComparison: true,
@@ -515,6 +519,9 @@ export class ReportEngine {
     const variantComparison = normalizeVariantComparison(project, system?.id);
     const variantArchiveCount = ProjectCompletionEngine.getVariants(project, system?.id).length;
     const revisionSnapshots = ProjectCompletionEngine.getRevisionSnapshots(project, system?.id);
+    const handoverApproval = ProjectHandoverEngine.getApproval(project, system?.id);
+    const systemsOverview = SystemPortfolioEngine.analyze(project, { selectedSystemId: system?.id });
+    const projectCockpit = ProjectPortfolioQualityEngine.analyze(project, { selectedSystemId: system?.id });
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -675,6 +682,9 @@ export class ReportEngine {
       variantComparison,
       variantArchiveCount,
       revisionSnapshots,
+      handoverApproval,
+      systemsOverview,
+      projectCockpit,
       lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
@@ -1207,6 +1217,8 @@ export class ReportEngine {
     const revisionPageCount = reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy ? 1 : 0;
     const variantPageCount = reportOptions.includeVariantComparison && model.variantComparison ? 1 : 0;
     const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
+    const systemsOverviewPageCount = reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1 ? 1 : 0;
+    const projectCockpitPageCount = reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1 ? 1 : 0;
 
     const entries = [
       {
@@ -1239,6 +1251,8 @@ export class ReportEngine {
     if (reportOptions.includeExecutiveSummary) {
       addEntry('executiveSummary', 'Management-Zusammenfassung', 'Kennwerte, Schwerpunkte und Engineering-Status', 1);
     }
+    addEntry('systemsOverview', 'Projektweite Anlagenübersicht', `${model.systemsOverview?.rows?.length || 0} Anlagen im Vergleich`, systemsOverviewPageCount);
+    addEntry('projectCockpit', 'Projektweite QS-Matrix', `${model.projectCockpit?.findings?.length || 0} Feststellungen und Dokumentationsstatus`, projectCockpitPageCount);
     addEntry('networkSchematic', 'Anlagenschema', `${schematicNodeCount} Teilstrecken als Funktionsschema`, schematicPageCount);
     if (reportOptions.includeLossAnalysis) {
       addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
@@ -1331,6 +1345,8 @@ export class ReportEngine {
     pages.push(this.renderCoverPage(model, generatedLabel, nextPage(), totalPlaceholder));
     if (reportOptions.includeToc) pages.push(this.renderTocPage(model, nextPage(), totalPlaceholder, pagePlan));
     if (reportOptions.includeExecutiveSummary) pages.push(this.renderExecutiveSummaryPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1) pages.push(this.renderSystemsOverviewPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1) pages.push(this.renderProjectCockpitPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy) pages.push(this.renderRevisionComparisonPage(model, nextPage(), totalPlaceholder));
@@ -1481,6 +1497,91 @@ export class ReportEngine {
     `;
 
     return this.renderPage(model, page, 'Management-Zusammenfassung', 'Kennwerte, Schwerpunkte und Engineering-Status', content, totalPages);
+  }
+
+
+  static renderProjectCockpitPage(model, page, totalPages = 6) {
+    const cockpit = model.projectCockpit || { rows: [], findings: [], counts: {}, summary: {}, metadata: {} };
+    const findings = (cockpit.findings || []).slice(0, 8);
+    const metadata = cockpit.metadata || {};
+    const content = `
+      <div class="report-project-cockpit-kpis">
+        ${this.renderSummaryCard('Projekt-Score', cockpit.label || 'Status', cockpit.score || 0, '')}
+        ${this.renderSummaryCard('Engineering-Mittelwert', 'über alle Anlagen', cockpit.engineeringAverage || 0, '')}
+        ${this.renderSummaryCard('Dokumentation', 'Projekt- und Berichtangaben', cockpit.documentationScore || 0, '')}
+        ${this.renderSummaryCard('Offene Prüfpunkte', `${cockpit.counts?.critical || 0} kritisch · ${cockpit.counts?.warning || 0} prüfen`, (cockpit.findings || []).length, '')}
+      </div>
+      <div class="report-project-cockpit-grid">
+        <section class="report-info-box compact">
+          <h3>Dokumentationsstatus</h3>
+          <table class="report-table small report-project-meta-table"><tbody>
+            ${[
+              ['Projektnummer', metadata.projectNumber],
+              ['Projektname', metadata.projectName],
+              ['Objekt', metadata.object],
+              ['Bearbeiter', metadata.author],
+              ['Firma', metadata.company],
+              ['Berichtnummer', metadata.reportNumber],
+              ['Revision', metadata.revision],
+            ].map(([label, value]) => `<tr><td class="left">${escapeHtml(label)}</td><td><span class="report-status-pill ${value ? 'ok' : 'warn'}">${value ? escapeHtml(value) : 'Fehlt'}</span></td></tr>`).join('')}
+          </tbody></table>
+        </section>
+        <section class="report-info-box compact">
+          <h3>Projektstruktur</h3>
+          <table class="report-table small"><thead><tr><th>Luftart</th><th>Anlagen</th><th>Teilstrecken</th><th>Luftmenge</th></tr></thead><tbody>
+            ${(cockpit.typeSummary || []).map(row => `<tr><td class="left">${escapeHtml(row.type)}</td><td>${row.systems}</td><td>${row.sections}</td><td>${formatAirflow(row.airflow)} m³/h</td></tr>`).join('') || '<tr><td colspan="4">Keine Anlagen vorhanden.</td></tr>'}
+          </tbody></table>
+          <p class="report-small-note">Luftmengen werden informativ je Luftart summiert. Es wird keine automatische Luftbilanz oder gemeinsame Druckverlustkette abgeleitet.</p>
+        </section>
+      </div>
+      <section class="report-info-box compact report-project-cockpit-findings">
+        <h3>Priorisierte projektweite Feststellungen</h3>
+        ${findings.length ? `<table class="report-table small"><thead><tr><th>Priorität</th><th>Anlage / Bereich</th><th>Feststellung</th><th>Empfehlung</th></tr></thead><tbody>${findings.map(item => `<tr><td><span class="report-status-pill ${qualityStatusClass(item.severity === 'critical' ? 'error' : item.severity === 'warning' ? 'warning' : 'ok')}">${escapeHtml(item.severity)}</span></td><td class="left">${escapeHtml(item.systemName || 'Projekt')}</td><td class="left">${escapeHtml(item.title)}</td><td class="left">${escapeHtml(item.recommendation || item.message || '')}</td></tr>`).join('')}</tbody></table>` : '<p>Keine projektweiten Feststellungen vorhanden.</p>'}
+      </section>
+      <div class="report-info-box compact muted"><h3>Einordnung</h3><p>${escapeHtml(cockpit.disclaimer || '')}</p></div>
+    `;
+    return this.renderPage(model, page, 'Projektweite QS-Matrix', 'Projektcockpit, Dokumentation und priorisierte Prüfpunkte', content, totalPages);
+  }
+
+
+  static renderSystemsOverviewPage(model, page, totalPages = 6) {
+    const overview = model.systemsOverview || { rows: [], summary: {} };
+    const rows = overview.rows || [];
+    const summary = overview.summary || {};
+    const content = `
+      <div class="report-system-overview-kpis">
+        ${this.renderSummaryCard('Anlagen', `${summary.totalSections || 0} Teilstrecken`, summary.systems || rows.length, '')}
+        ${this.renderSummaryCard('Ø Engineering-Score', 'projektweiter Mittelwert', summary.averageQualityScore || 0, '')}
+        ${this.renderSummaryCard('Höchster Druckverlust', summary.highestLoss?.name || 'Keine Berechnung', summary.highestLoss?.totalPressureLoss || 0, 'Pa')}
+        ${this.renderSummaryCard('Höchste Geschwindigkeit', summary.highestVelocity?.name || 'Keine Berechnung', summary.highestVelocity?.maxVelocity || 0, 'm/s')}
+      </div>
+      <table class="report-table report-system-overview-table">
+        <thead>
+          <tr>
+            <th>Nr.</th><th>BKP / Anlage</th><th>Typ</th><th>TS</th><th>Luftmenge</th><th>v max.</th><th>Δp gesamt</th><th>QS</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(row => `
+            <tr class="${row.id === model.system?.id ? 'is-current-system' : ''}">
+              <td>${row.position}</td>
+              <td><strong>${escapeHtml(row.bkp || '-')}</strong><span>${escapeHtml(row.name)}</span></td>
+              <td>${escapeHtml(row.type)}</td>
+              <td>${row.sections}</td>
+              <td>${formatAirflow(row.airflow)} m³/h</td>
+              <td>${formatNumber(row.maxVelocity, 2)} m/s</td>
+              <td><strong>${formatNumber(row.totalPressureLoss, 1)} Pa</strong></td>
+              <td><span class="report-status-pill ${qualityStatusClass(row.qualityStatus === 'critical' ? 'error' : row.qualityStatus === 'warning' ? 'warning' : 'ok')}">${formatNumber(row.qualityScore, 0)}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div class="report-info-box compact muted report-system-overview-note">
+        <h3>Auswertungsgrenze</h3>
+        <p>${escapeHtml(overview.disclaimer || '')}</p>
+      </div>
+    `;
+    return this.renderPage(model, page, 'Projektweite Anlagenübersicht', 'Kennwerte und Engineering-Status aller Anlagen', content, totalPages);
   }
 
   static renderNetworkSchematicPages(model, nextPage, totalPages) {
@@ -1974,6 +2075,7 @@ export class ReportEngine {
 
   static renderQualityOverview(model) {
     const statusClass = qualityStatusClass(model.quality.status);
+    const handover = model.handoverApproval || {};
     const statusLabel = qualityStatusLabel(model.quality.status);
 
     return `
@@ -2183,6 +2285,7 @@ export class ReportEngine {
   static renderApprovalPage(model, page, totalPages = 6, generatedLabel = '') {
     const statusLabel = qualityStatusLabel(model.quality.status);
     const statusClass = qualityStatusClass(model.quality.status);
+    const handover = model.handoverApproval || {};
     const revisionRows = [
       ['Bericht-Nr.', model.project.reportNumber],
       ['Revision', model.project.revision],
@@ -2214,25 +2317,31 @@ export class ReportEngine {
         ${model.reviewProtocol.note ? `<p><strong>Prüfvermerk:</strong> ${escapeHtml(model.reviewProtocol.note)}</p>` : ''}
       </div>` : ''}
 
+      ${handover && (handover.preparedBy || handover.checkedBy || handover.releasedBy) ? `<div class="report-info-box report-handover-approval">
+        <h3>Dokumentierte Projektübergabe</h3>
+        <div class="report-review-summary"><strong>${escapeHtml(({ draft: 'Entwurf', prepared: 'Vorbereitet', checked: 'Geprüft', released: 'Freigegeben' })[handover.status] || 'Entwurf')}</strong><span>Übergabestatus</span><small>${escapeHtml(handover.packageId || 'Noch kein Freigabepaket erzeugt')}</small></div>
+        ${handover.note ? `<p><strong>Übergabevermerk:</strong> ${escapeHtml(handover.note)}</p>` : ''}
+      </div>` : ''}
+
       <table class="report-table report-approval-table">
         <thead><tr><th>Schritt</th><th>Name</th><th>Datum</th><th>Unterschrift</th></tr></thead>
         <tbody>
           <tr>
             <td class="left"><strong>Erstellt</strong></td>
-            <td class="left">${escapeHtml(model.project.author || '-')}</td>
-            <td>${escapeHtml(model.project.date || '-')}</td>
+            <td class="left">${escapeHtml(handover.preparedBy || model.project.author || '-')}</td>
+            <td>${escapeHtml((handover.preparedAt || model.project.date || '-').slice ? (handover.preparedAt || model.project.date || '-').slice(0,10) : (handover.preparedAt || model.project.date || '-'))}</td>
             <td class="signature-cell"></td>
           </tr>
           <tr>
             <td class="left"><strong>Geprüft</strong></td>
-            <td class="left">${escapeHtml(model.project.checkedBy || '-')}</td>
-            <td></td>
+            <td class="left">${escapeHtml(handover.checkedBy || model.project.checkedBy || '-')}</td>
+            <td>${escapeHtml(handover.checkedAt ? handover.checkedAt.slice(0,10) : '')}</td>
             <td class="signature-cell"></td>
           </tr>
           <tr>
             <td class="left"><strong>Freigegeben</strong></td>
-            <td class="left">${escapeHtml(model.project.approvedBy || '-')}</td>
-            <td>${escapeHtml(model.project.approvalDate || '')}</td>
+            <td class="left">${escapeHtml(handover.releasedBy || model.project.approvedBy || '-')}</td>
+            <td>${escapeHtml(handover.releasedAt ? handover.releasedAt.slice(0,10) : (model.project.approvalDate || ''))}</td>
             <td class="signature-cell"></td>
           </tr>
         </tbody>
@@ -2437,6 +2546,21 @@ export class ReportEngine {
       .report-approval-card.status.ok{border-color:#bde5ce;background:#f2fbf5}.report-approval-card.status.warn{border-color:#f2c282;background:#fff8ed}.report-approval-card.status.error{border-color:#efb7b7;background:#fff4f4}
       .report-approval-card.status p{margin:0;color:#223950;font-size:10px}.report-approval-card.status small{margin-top:8px;color:#536a83;font-size:8.8px}
       .report-approval-table{margin-top:10px}
+      .report-system-overview-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+      .report-system-overview-table th:nth-child(1){width:8mm}.report-system-overview-table th:nth-child(2){width:39mm}.report-system-overview-table th:nth-child(3){width:19mm}.report-system-overview-table th:nth-child(4){width:9mm}.report-system-overview-table th:nth-child(5){width:22mm}.report-system-overview-table th:nth-child(6){width:18mm}.report-system-overview-table th:nth-child(7){width:22mm}.report-system-overview-table th:nth-child(8){width:13mm}
+      .report-system-overview-table td{font-size:8.1px}.report-system-overview-table td:nth-child(2) strong,.report-system-overview-table td:nth-child(2) span{display:block}.report-system-overview-table td:nth-child(2) span{margin-top:2px;color:var(--report-muted)}
+      .report-system-overview-table tr.is-current-system td{background:#eef6ff}.report-system-overview-note{margin-top:12px}
+      .report-project-cockpit-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+      .report-project-cockpit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+      .report-project-meta-table td:first-child{width:42%}
+      .report-project-cockpit-findings .report-table{font-size:7.4px}
+      .report-project-cockpit-findings .report-table th:nth-child(1){width:16mm}
+      .report-project-cockpit-findings .report-table th:nth-child(2){width:30mm}
+      .report-project-cockpit-findings .report-table th:nth-child(3){width:50mm}
+      .report-project-cockpit-findings .report-table th:nth-child(4){width:auto}
+      .report-small-note{margin:5px 0 0;color:var(--report-muted);font-size:7.6px;line-height:1.35}
+      .report-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:12mm;padding:1mm 2mm;border-radius:99px;font-size:7px;font-weight:900;text-transform:uppercase}.report-status-pill.ok{color:#176c46;background:#eaf8f0}.report-status-pill.warn{color:#8a5a0a;background:#fff1d4}.report-status-pill.error{color:#a52828;background:#ffe6e6}
+
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
       .report-revision-compare-head{display:grid;grid-template-columns:1fr 10mm 1fr 1fr;gap:3mm;align-items:stretch;margin-bottom:5mm}
@@ -2685,6 +2809,40 @@ export class ReportEngine {
       ])));
     }
 
+    if ((model.projectCockpit?.rows || []).length > 1) {
+      addSection('Projektweite QS-Matrix');
+      rows.push(this.csvRow(['Projekt-Score', formatNumber(model.projectCockpit.score, 0)]));
+      rows.push(this.csvRow(['Status', model.projectCockpit.label || '']));
+      rows.push(this.csvRow(['Engineering-Mittelwert', formatNumber(model.projectCockpit.engineeringAverage, 0)]));
+      rows.push(this.csvRow(['Dokumentations-Score', formatNumber(model.projectCockpit.documentationScore, 0)]));
+      rows.push(this.csvRow(['Prioritaet', 'Anlage / Bereich', 'Code', 'Feststellung', 'Empfehlung']));
+      (model.projectCockpit.findings || []).forEach(item => rows.push(this.csvRow([
+        item.severity,
+        item.systemName || 'Projekt',
+        item.code,
+        item.title,
+        item.recommendation || item.message || '',
+      ])));
+    }
+
+    if ((model.systemsOverview?.rows || []).length > 1) {
+      addSection('Projektweite Anlagenuebersicht');
+      rows.push(this.csvRow(['Nr.', 'BKP', 'Anlage', 'Typ', 'Teilstrecken', 'Formteile', 'Sonderbauteile', 'Luftmenge m3/h', 'Max. Geschwindigkeit m/s', 'Gesamtdruckverlust Pa', 'Engineering-Score']));
+      model.systemsOverview.rows.forEach(row => rows.push(this.csvRow([
+        row.position,
+        row.bkp,
+        row.name,
+        row.type,
+        row.sections,
+        row.formParts,
+        row.specialComponents,
+        formatAirflow(row.airflow),
+        formatNumber(row.maxVelocity, 2),
+        formatNumber(row.totalPressureLoss, 2),
+        formatNumber(row.qualityScore, 0),
+      ])));
+    }
+
     addSection('Sonderbauteile');
     rows.push(this.csvRow(['Pos.', 'Bezeichnung', 'Typ / Beschreibung', 'Hersteller', 'Luftmenge m3/h', 'Druckverlust Pa']));
     (model.specialComponents || []).forEach(component => {
@@ -2729,9 +2887,11 @@ export class ReportEngine {
     }
 
     addSection('Pruefung / Freigabe');
-    rows.push(this.csvRow(['Erstellt', model.project.author, model.project.date]));
-    rows.push(this.csvRow(['Geprueft', model.project.checkedBy, '']));
-    rows.push(this.csvRow(['Freigegeben', model.project.approvedBy, model.project.approvalDate || '']));
+    rows.push(this.csvRow(['Erstellt', model.handoverApproval?.preparedBy || model.project.author, model.handoverApproval?.preparedAt || model.project.date]));
+    rows.push(this.csvRow(['Geprueft', model.handoverApproval?.checkedBy || model.project.checkedBy, model.handoverApproval?.checkedAt || '']));
+    rows.push(this.csvRow(['Freigegeben', model.handoverApproval?.releasedBy || model.project.approvedBy, model.handoverApproval?.releasedAt || model.project.approvalDate || '']));
+    rows.push(this.csvRow(['Uebergabestatus', model.handoverApproval?.status || 'draft', model.handoverApproval?.packageId || '']));
+    rows.push(this.csvRow(['Uebergabevermerk', model.handoverApproval?.note || '', '']));
 
     addSection('Berichtsabschluss');
     this.createReportCompletionRows(model).forEach(row => rows.push(this.csvRow(row)));

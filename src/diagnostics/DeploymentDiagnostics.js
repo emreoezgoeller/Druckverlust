@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=32.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=35.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -104,6 +104,12 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Abschluss', label: 'Projektabschluss', path: `src/closing/ProjectCompletionEngine.js?v=${version}` },
     { area: 'Sicherung', label: 'Projektarchiv und Wiederherstellung', path: `src/safety/ProjectSafetyEngine.js?v=${version}` },
     { area: 'Layout', label: 'Projektsicherheits-CSS', path: `src/ui/phase32_00.css?v=${version}` },
+    { area: 'Übergabe', label: 'Projektübergabe und Importkontrolle', path: `src/handover/ProjectHandoverEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Projektübergabe-CSS', path: `src/ui/phase33_00.css?v=${version}` },
+    { area: 'Anlagen', label: 'Anlagenmanager und Projektvergleich', path: `src/project/SystemPortfolioEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Anlagenmanager-CSS', path: `src/ui/phase34_00.css?v=${version}` },
+    { area: 'Projektcockpit', label: 'Projektweite QS-Matrix', path: `src/project/ProjectPortfolioQualityEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Projektcockpit-CSS', path: `src/ui/phase35_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
@@ -290,6 +296,7 @@ function checkUiShell() {
     'showReport',
     'showProjectCompletion',
     'showProjectSafety',
+    'showProjectHandover',
     'showShortcutHelp',
     'showAppInfo',
   ];

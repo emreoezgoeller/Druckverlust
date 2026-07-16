@@ -333,3 +333,25 @@ Die beiden Testgruppen prüfen insgesamt 46 Einzelpunkte:
 
 Die Phase-32-Prüfung ergänzt die vollständige Suite. Die lokale Historie wird mit einem isolierten Speichertest geprüft; reale Browserprofile oder bestehende Benutzerdaten werden dabei nicht verändert.
 
+
+## Phase 33.00 – Projektübergabe und Importkontrolle
+
+```bash
+npm run test:phase33
+```
+
+Geprüft werden:
+
+- Übergabebereitschaft aus Berechnung, Projektsicherheit, Revision und Prüfprotokoll,
+- Statusfolge Entwurf, vorbereitet, geprüft und freigegeben,
+- Pflichtangaben für Vorbereitung, Prüfung und Freigabe,
+- `.dvph`-Erzeugung, Serialisierung und Lese-Roundtrip,
+- doppelte Integritätsprüfung von Übergabepaket und eingebettetem `.dvpa`-Archiv,
+- Ablehnung nachträglich manipulierter Pakete,
+- nicht-destruktive Importvorschau für `.dvp`, `.dvpa` und `.dvph`,
+- Vergleich mit dem aktuell geöffneten Projekt,
+- Übergabeprotokoll als CSV,
+- Ribbon-, Workspace-, Responsive- und Deployment-Einbindung,
+- Integration der Freigabedaten in Professional Report und Gesamt-CSV.
+
+Sollstatus: 51/51 neue Einzelprüfungen bestanden.

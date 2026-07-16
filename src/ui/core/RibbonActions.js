@@ -7,14 +7,14 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=32.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=35.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=32.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=35.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=32.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=32.00';
+import UiDialogService from './UiDialogService.js?v=35.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=35.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -196,7 +196,7 @@ export default class RibbonActions {
     }
 
     try {
-      const result = ProjectCalculationService.calculate(project);
+      const result = ProjectCalculationService.calculate(project, this.getActiveSystem()?.id || null);
       project.calculationResult = result;
 
       const timestamp = result.timestamp || new Date().toISOString();
@@ -512,6 +512,9 @@ export default class RibbonActions {
       'Ctrl + Enter: Neu berechnen',
       'Alt + Home: zurück zur Startübersicht',
       'Ctrl + B oder Ctrl + P: Bericht öffnen',
+      'Ctrl + Shift + U: Projektübergabe öffnen',
+      'Ctrl + Shift + A: Anlagenmanager öffnen',
+      'Ctrl + Shift + Q: Projektcockpit öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',
       'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',
@@ -562,6 +565,30 @@ export default class RibbonActions {
   }
 
 
+
+  showProjectCockpit() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('projectCockpit', project);
+    this.state.notify?.();
+  }
+
+
+  showSystemManager() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('systemManager', project);
+    this.state.notify?.();
+  }
+
   showProjectSafety() {
     const project = this.state.project;
     if (!project) {
@@ -570,6 +597,19 @@ export default class RibbonActions {
     }
     this.calculate({ silent: true, keepDirty: true });
     this.state.setSelection?.('projectSafety', this.getActiveSystem());
+    this.state.notify?.();
+  }
+
+
+  showProjectHandover() {
+    const project = this.state.project;
+    const system = this.getActiveSystem();
+    if (!project || !system) {
+      UiDialogService.alert('Kein Projekt oder keine Anlage vorhanden.');
+      return;
+    }
+    this.calculate({ silent: true, keepDirty: true });
+    this.state.setSelection?.('projectHandover', system);
     this.state.notify?.();
   }
 

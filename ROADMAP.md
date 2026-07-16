@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 35.00 – abgeschlossen
+
+- zentrales Projektcockpit für Mehranlagen-Projekte,
+- projektweite Engineering- und Dokumentationsmatrix,
+- priorisierte Risiken mit direkter Elementnavigation,
+- Cockpit-CSV und eigene QS-Seite im Professional Report.
+
+## Phase 34.00 – abgeschlossen
+
+- zentraler Anlagenmanager für Mehranlagen-Projekte,
+- Anlagen anlegen, vollständig duplizieren, sortieren und geschützt löschen,
+- projektweite Kennwert- und Engineering-QS-Übersicht,
+- Anlagenvergleich als CSV,
+- Anlagenliste in der Sidebar und sichere Berechnung der aktiven Anlage,
+- projektweite Anlagenübersicht im Professional Report.
+
+## Phase 33.00 – abgeschlossen
+
+- kontrollierte Importvorschau für `.dvp`, `.dvpa` und `.dvph`,
+- Dateiversions-, Schema-, Prüfsummen- und Objektvergleich vor Projektübernahme,
+- lokale Notfallsicherung vor geprüftem Import,
+- dokumentierter Übergabestatus mit Vier-Augen-Prinzip,
+- integritätsgeschütztes `.dvph`-Freigabepaket,
+- Übergabeprotokoll als CSV,
+- Integration der Übergabefreigabe in Bericht und Datenexport.
+
 ## Erledigt
 
 - Phase 16: Formteilbibliothek 2.0
@@ -63,6 +89,9 @@
 - Phase 30.00: Variantenarchiv, Revisionssnapshots, Abschluss-Score und dokumentierter Variantenvergleich im Professional Report
 - Phase 31.00: Technischer Revisionsvergleich, auswählbare Vergleichsbasis, Änderungs-CSV und internes manuelles Prüfprotokoll
 - Phase 32.00: Projektsicherheit mit lokaler Sicherungshistorie, Wiederherstellung, Prüfsumme, Diagnose-CSV und portablem `.dvpa`-Übergabepaket
+- Phase 33.00: kontrollierte Importvorschau, Vier-Augen-Freigabe, Übergabeprotokoll und integritätsgeschütztes `.dvph`-Freigabepaket
+- Phase 34.00: Mehranlagen-Verwaltung, projektweiter Anlagenvergleich und Anlagenübersicht im Professional Report
+- Phase 35.00: Projektcockpit, projektweite QS-Matrix und Dokumentationsstatus
 
 ## Bewusst ausgeschlossen
 
@@ -72,7 +101,9 @@
 
 ## Nächste sinnvolle Schritte
 
-- Phase 32.00 mit realen Projekten, mehreren Browser-Sitzungen und bewusst unterbrochenen Arbeitsabläufen prüfen.
+- Phase 34.00 mit realen Projekten prüfen, die mehrere Zu-, Ab-, Aussen- und Fortluftanlagen enthalten.
+- Anlagen-Duplikate, Sortierung und projektweiten Bericht im Büroablauf gegenprüfen.
+- Projektsicherheit mit mehreren Browser-Sitzungen und bewusst unterbrochenen Arbeitsabläufen prüfen.
 - Wiederherstellung aus lokalen Sicherungen und exportierten `.dvpa`-Paketen im Büroablauf gegenprüfen.
 - Revisionsvergleich, Prüfprotokoll und Freigabeablauf anhand konkreter Abgabeprozesse feinjustieren.
 - Report-Vorlagen und Abschlusskriterien anhand realer Abgabeunterlagen prüfen.

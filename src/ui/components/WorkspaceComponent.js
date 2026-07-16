@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=32.00';
+import ReportEngine from '../../report/ReportEngine.js?v=35.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=32.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=35.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,16 +89,19 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=32.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=35.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=32.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=32.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=32.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=32.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=32.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=32.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=35.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=35.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=35.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=35.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=35.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=35.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=35.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=35.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=35.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {
@@ -128,6 +131,9 @@ export default class WorkspaceComponent {
     this.liveSimulationOptions = { scope: 'all', sectionId: '', airflowPercent: 100, dimensionPercent: 100 };
     this.liveSimulationResult = null;
     this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
+    this.handoverImportPreview = null;
+    this.systemManagerSort = 'order';
+    this.projectCockpitFilter = 'all';
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -149,6 +155,9 @@ export default class WorkspaceComponent {
     if (selection.type === 'liveSimulation') return this.renderLiveSimulation(selection.data);
     if (selection.type === 'projectCompletion') return this.renderProjectCompletion(selection.data);
     if (selection.type === 'projectSafety') return this.renderProjectSafety(selection.data);
+    if (selection.type === 'systemManager') return this.renderSystemManager(selection.data);
+    if (selection.type === 'projectCockpit') return this.renderProjectCockpit(selection.data);
+    if (selection.type === 'projectHandover') return this.renderProjectHandover(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
@@ -326,6 +335,7 @@ export default class WorkspaceComponent {
             <li><strong>Ctrl + N</strong> neues Projekt</li>
             <li><strong>Ctrl + Enter</strong> neu berechnen</li>
             <li><strong>Ctrl + B / Ctrl + P</strong> Bericht öffnen</li>
+            <li><strong>Ctrl + Shift + U</strong> Projektübergabe öffnen</li>
             <li><strong>Alt + Home</strong> Startübersicht</li>
           </ul>
           <button type="button" data-help-action="copy-shortcuts">Kurzbefehle kopieren</button>
@@ -541,6 +551,7 @@ export default class WorkspaceComponent {
             'Ctrl + N: Neues Projekt',
             'Ctrl + Enter: Neu berechnen',
             'Ctrl + B oder Ctrl + P: Bericht öffnen',
+            'Ctrl + Shift + U: Projektübergabe öffnen',
             'Ctrl + D: ausgewähltes Element duplizieren',
             'Entf: ausgewähltes Element löschen',
             'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',
@@ -3468,7 +3479,8 @@ export default class WorkspaceComponent {
     if (!project) return null;
 
     try {
-      const result = ProjectCalculationService.calculate(project);
+      const activeSystem = this.state.selectedSystem || project.systems?.[0] || null;
+      const result = ProjectCalculationService.calculate(project, activeSystem?.id || null);
       project.calculationResult = result;
 
       if (options.notify === false) {
@@ -9392,6 +9404,7 @@ formatNumber(value, digits = 2) {
     const project = this.state.project || {};
     if (!this.liveSimulationVariantDraft || typeof this.liveSimulationVariantDraft !== 'object') {
       this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
+    this.handoverImportPreview = null;
     }
     const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
 
@@ -9739,6 +9752,7 @@ formatNumber(value, digits = 2) {
           includeInReport: variantReportField?.checked !== false,
         });
         this.liveSimulationVariantDraft = { name: '', note: '', includeInReport: true };
+    this.handoverImportPreview = null;
         this.state.markProjectDirty();
         UiDialogService.alert({ title: 'Variante gespeichert', message: `„${variant.name}“ wurde im Projekt dokumentiert.`, tone: 'success' });
         this.renderLiveSimulation(activeSystem);
@@ -10268,7 +10282,7 @@ formatNumber(value, digits = 2) {
 
     const applyRestoredProject = result => {
       this.state.setProject(result.project);
-      const calculation = ProjectCalculationService.calculate(this.state.project);
+      const calculation = ProjectCalculationService.calculate(this.state.project, this.state.selectedSystem?.id || this.state.project?.systems?.[0]?.id || null);
       this.state.project.calculationResult = calculation;
       this.state.lastCalculationAt = calculation.timestamp || new Date().toISOString();
       this.state.isCalculationDirty = false;
@@ -10358,6 +10372,631 @@ formatNumber(value, digits = 2) {
     }));
   }
 
+
+
+  renderProjectCockpit() {
+    const project = this.state.project;
+    if (!project) return this.renderEmpty();
+
+    const activeSystem = this.state.selectedSystem || project.systems?.[0] || null;
+    const analysis = ProjectPortfolioQualityEngine.analyze(project, { selectedSystemId: activeSystem?.id });
+    const filter = this.projectCockpitFilter || 'all';
+    const visibleFindings = filter === 'all'
+      ? analysis.findings
+      : analysis.findings.filter(item => item.severity === filter);
+    const statusClass = analysis.readiness === 'blocked' ? 'critical' : analysis.readiness === 'review' ? 'warning' : 'ok';
+    const statusText = analysis.readiness === 'blocked' ? 'Blockiert' : analysis.readiness === 'review' ? 'Prüfung erforderlich' : 'Bereit';
+    const metadataRows = [
+      ['Projektnummer', analysis.metadata.projectNumber],
+      ['Projektname', analysis.metadata.projectName],
+      ['Objekt', analysis.metadata.object],
+      ['Bearbeiter', analysis.metadata.author],
+      ['Firma', analysis.metadata.company],
+      ['Berichtnummer', analysis.metadata.reportNumber],
+      ['Revision', analysis.metadata.revision],
+    ];
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-project-cockpit-header">
+        <div>
+          <span class="dp-overline">Phase 35.00 · Projektcockpit</span>
+          <h1>Projektweite QS und Risikomatrix</h1>
+          <p>Alle Anlagen, Engineering-Hinweise und Dokumentationslücken in einer neutralen Projektübersicht zusammenführen.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" class="is-primary" data-project-cockpit-action="export">Cockpit CSV</button>
+          <button type="button" data-project-cockpit-action="manager">Anlagenmanager</button>
+          <button type="button" data-project-cockpit-action="refresh">Neu prüfen</button>
+        </div>
+      </div>
+
+      <section class="dp-project-cockpit-hero is-${this.escapeAttribute(statusClass)}">
+        <div class="dp-project-cockpit-score">
+          <span>Projekt-Score</span>
+          <strong>${this.formatNumber(analysis.score, 0)}</strong>
+          <small>${this.escapeHtml(statusText)}</small>
+        </div>
+        <div class="dp-project-cockpit-progress" aria-label="Projekt-Score ${this.formatNumber(analysis.score, 0)} von 100">
+          <span style="width:${Math.max(0, Math.min(100, analysis.score))}%"></span>
+        </div>
+        <div class="dp-project-cockpit-status-copy">
+          <strong>${this.escapeHtml(analysis.label)}</strong>
+          <p>${analysis.counts.critical} kritisch · ${analysis.counts.warning} prüfen · ${analysis.counts.info} Hinweise</p>
+        </div>
+      </section>
+
+      <section class="dp-project-cockpit-kpis" aria-label="Projektkennwerte">
+        <article><span>Anlagen</span><strong>${analysis.summary.systems}</strong><small>${analysis.summary.sections} Teilstrecken · ${analysis.summary.elements} Elemente</small></article>
+        <article><span>Ø Engineering-Score</span><strong>${this.formatNumber(analysis.engineeringAverage, 0)}</strong><small>über alle Anlagen</small></article>
+        <article><span>Dokumentation</span><strong>${this.formatNumber(analysis.documentationScore, 0)}</strong><small>Projekt- und Berichtangaben</small></article>
+        <article class="is-critical"><span>Kritische Anlagen</span><strong>${analysis.summary.criticalSystems}</strong><small>${analysis.summary.warningSystems} weitere Anlagen prüfen</small></article>
+        <article><span>Leere Anlagen</span><strong>${analysis.summary.emptySystems}</strong><small>ohne Teilstrecken</small></article>
+      </section>
+
+      <div class="dp-project-cockpit-grid">
+        <section class="dp-project-cockpit-panel">
+          <header><div><span class="dp-overline">Dokumentation</span><h2>Projektangaben</h2></div><strong>${this.formatNumber(analysis.documentationScore, 0)}/100</strong></header>
+          <div class="dp-project-cockpit-meta">
+            ${metadataRows.map(([label, value]) => `<div class="${value ? 'is-complete' : 'is-missing'}"><span>${this.escapeHtml(label)}</span><strong>${value ? this.escapeHtml(value) : 'Fehlt'}</strong></div>`).join('')}
+          </div>
+        </section>
+
+        <section class="dp-project-cockpit-panel">
+          <header><div><span class="dp-overline">Luftarten</span><h2>Projektstruktur</h2></div><strong>${analysis.typeSummary.length}</strong></header>
+          <div class="dp-project-cockpit-types">
+            ${analysis.typeSummary.length ? analysis.typeSummary.map(row => `<div><span>${this.escapeHtml(row.type)}</span><strong>${row.systems} Anlage${row.systems === 1 ? '' : 'n'}</strong><small>${this.formatNumber(row.airflow, 0)} m³/h · ${row.sections} Teilstrecken</small></div>`).join('') : '<p>Noch keine Anlagen vorhanden.</p>'}
+          </div>
+          <p class="dp-project-cockpit-note">Luftmengen werden je Luftart informativ summiert. Daraus wird keine automatische Luftbilanz oder gemeinsame Druckverlustkette abgeleitet.</p>
+        </section>
+      </div>
+
+      <section class="dp-project-cockpit-panel dp-project-cockpit-matrix">
+        <header>
+          <div><span class="dp-overline">Anlagenmatrix</span><h2>Technische Projektübersicht</h2></div>
+          <span>${analysis.rows.length} Anlagen</span>
+        </header>
+        <div class="dp-table-scroll">
+          <table>
+            <thead><tr><th>Anlage</th><th>Luftart</th><th>TS</th><th>Luftmenge</th><th>v max.</th><th>Δp gesamt</th><th>Engineering</th><th>Feststellungen</th><th></th></tr></thead>
+            <tbody>
+              ${analysis.rows.length ? analysis.rows.map(row => `
+                <tr class="${row.active ? 'is-active' : ''}${row.calculationStatus === 'error' ? ' has-error' : ''}">
+                  <td><strong>${this.escapeHtml(row.bkp || '–')}</strong><span>${this.escapeHtml(row.name)}</span></td>
+                  <td>${this.escapeHtml(row.type)}</td>
+                  <td>${row.sections}</td>
+                  <td>${this.formatNumber(row.airflow, 0)} m³/h</td>
+                  <td>${this.formatNumber(row.maxVelocity, 2)} m/s</td>
+                  <td><strong>${this.formatNumber(row.totalPressureLoss, 1)} Pa</strong></td>
+                  <td><span class="dp-project-cockpit-score-pill is-${this.escapeAttribute(row.qualityStatus)}">${this.formatNumber(row.qualityScore, 0)}</span></td>
+                  <td><span class="dp-project-cockpit-counts"><em>${row.criticalCount}</em><b>${row.warningCount}</b><i>${row.infoCount}</i></span></td>
+                  <td><button type="button" data-project-cockpit-system="${this.escapeAttribute(row.id)}">Öffnen</button></td>
+                </tr>
+              `).join('') : '<tr><td colspan="9">Noch keine Anlagen vorhanden.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dp-project-cockpit-panel dp-project-cockpit-findings">
+        <header>
+          <div><span class="dp-overline">Projektweite Feststellungen</span><h2>Priorisierte Prüfpunkte</h2></div>
+          <div class="dp-project-cockpit-filters" role="group" aria-label="Feststellungen filtern">
+            ${[
+              ['all', 'Alle', analysis.findings.length],
+              ['critical', 'Kritisch', analysis.counts.critical],
+              ['warning', 'Prüfen', analysis.counts.warning],
+              ['info', 'Hinweise', analysis.counts.info],
+            ].map(([value, label, count]) => `<button type="button" class="${filter === value ? 'is-active' : ''}" data-project-cockpit-filter="${value}">${label} <span>${count}</span></button>`).join('')}
+          </div>
+        </header>
+        <div class="dp-project-cockpit-findings-list">
+          ${visibleFindings.length ? visibleFindings.slice(0, 80).map(item => `
+            <article class="is-${this.escapeAttribute(item.severity)}">
+              <div class="dp-project-cockpit-finding-mark" aria-hidden="true"></div>
+              <div>
+                <span>${this.escapeHtml(item.systemName || 'Projekt')} · ${this.escapeHtml(item.code)}</span>
+                <h3>${this.escapeHtml(item.title)}</h3>
+                <p>${this.escapeHtml(item.message)}</p>
+                ${item.recommendation ? `<small>${this.escapeHtml(item.recommendation)}</small>` : ''}
+              </div>
+              ${item.systemId ? `<button type="button" data-project-cockpit-finding-system="${this.escapeAttribute(item.systemId)}" data-project-cockpit-finding-section="${this.escapeAttribute(item.sectionId || '')}">Öffnen</button>` : ''}
+            </article>
+          `).join('') : '<div class="dp-quality-empty"><strong>Keine Feststellungen in diesem Filter</strong><p>Der aktuelle Projektstand enthält hier keine offenen Prüfpunkte.</p></div>'}
+        </div>
+      </section>
+
+      <p class="dp-project-cockpit-disclaimer">${this.escapeHtml(analysis.disclaimer)}</p>
+    `;
+
+    const openSystem = (systemId, sectionId = '') => {
+      const system = project.systems?.find(item => item.id === systemId);
+      if (!system) return;
+      try {
+        const result = ProjectCalculationService.calculate(project, system.id);
+        project.calculationResult = result;
+        this.state.lastCalculationAt = result.timestamp;
+        this.state.isCalculationDirty = false;
+        this.state.lastAutoCalculationError = null;
+      } catch (error) {
+        this.state.lastAutoCalculationError = error?.message || String(error);
+      }
+      this.state.selectSystem(system);
+      if (sectionId) {
+        const section = system.sections?.find(item => item.id === sectionId);
+        if (section) this.state.selectSection(section);
+      }
+    };
+
+    this.root.querySelector('[data-project-cockpit-action="export"]')?.addEventListener('click', () => {
+      ProjectPortfolioQualityEngine.downloadCsv(project, analysis);
+    });
+    this.root.querySelector('[data-project-cockpit-action="manager"]')?.addEventListener('click', () => {
+      this.state.setSelection('systemManager', project);
+      this.state.notify();
+    });
+    this.root.querySelector('[data-project-cockpit-action="refresh"]')?.addEventListener('click', () => {
+      this.renderProjectCockpit();
+    });
+    this.root.querySelectorAll('[data-project-cockpit-filter]').forEach(button => button.addEventListener('click', () => {
+      this.projectCockpitFilter = button.dataset.projectCockpitFilter || 'all';
+      this.renderProjectCockpit();
+    }));
+    this.root.querySelectorAll('[data-project-cockpit-system]').forEach(button => button.addEventListener('click', () => {
+      openSystem(button.dataset.projectCockpitSystem || '');
+    }));
+    this.root.querySelectorAll('[data-project-cockpit-finding-system]').forEach(button => button.addEventListener('click', () => {
+      openSystem(button.dataset.projectCockpitFindingSystem || '', button.dataset.projectCockpitFindingSection || '');
+    }));
+  }
+
+
+
+  renderSystemManager() {
+    const project = this.state.project;
+    if (!project) return this.renderEmpty();
+
+    const activeSystem = this.state.selectedSystem || project.systems?.[0] || null;
+    const analysis = SystemPortfolioEngine.analyze(project, { selectedSystemId: activeSystem?.id });
+    const sortMode = this.systemManagerSort || 'order';
+    const rows = [...analysis.rows];
+
+    if (sortMode === 'pressure') rows.sort((a, b) => b.totalPressureLoss - a.totalPressureLoss);
+    if (sortMode === 'velocity') rows.sort((a, b) => b.maxVelocity - a.maxVelocity);
+    if (sortMode === 'quality') rows.sort((a, b) => a.qualityScore - b.qualityScore);
+    if (sortMode === 'name') rows.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+
+    const statusLabel = analysis.status === 'critical'
+      ? 'Kritisch'
+      : analysis.status === 'warning'
+        ? 'Prüfen'
+        : analysis.status === 'empty'
+          ? 'Keine Anlagen'
+          : 'Bereit';
+    const highestLoss = analysis.summary.highestLoss;
+    const highestVelocity = analysis.summary.highestVelocity;
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-system-manager-header">
+        <div>
+          <span class="dp-overline">Phase 34.00 · Projektweite Organisation</span>
+          <h1>Anlagenmanager</h1>
+          <p>Mehrere Anlagen anlegen, duplizieren, ordnen und mit einheitlichen Kennwerten vergleichen.</p>
+        </div>
+        <div class="workspace-actions">
+          <button type="button" class="is-primary" data-system-manager-action="add">Neue Anlage</button>
+          <button type="button" data-system-manager-action="export">Vergleich CSV</button>
+          <button type="button" data-system-manager-action="refresh">Alle neu prüfen</button>
+        </div>
+      </div>
+
+      <section class="dp-system-manager-summary" aria-label="Projektweite Anlagenkennwerte">
+        <article class="is-${this.escapeAttribute(analysis.status)}">
+          <span>Projektstatus</span>
+          <strong>${this.escapeHtml(statusLabel)}</strong>
+          <small>${analysis.summary.criticalSystems} kritisch · ${analysis.summary.warningSystems} prüfen</small>
+        </article>
+        <article>
+          <span>Anlagen</span>
+          <strong>${analysis.summary.systems}</strong>
+          <small>${analysis.summary.totalSections} Teilstrecken · ${analysis.summary.totalElements} Elemente</small>
+        </article>
+        <article>
+          <span>Ø Engineering-Score</span>
+          <strong>${this.formatNumber(analysis.summary.averageQualityScore, 0)}</strong>
+          <small>projektweiter Mittelwert</small>
+        </article>
+        <article>
+          <span>Höchster Druckverlust</span>
+          <strong>${highestLoss ? `${this.formatNumber(highestLoss.totalPressureLoss, 1)} Pa` : '–'}</strong>
+          <small>${this.escapeHtml(highestLoss?.name || 'Keine Berechnung')}</small>
+        </article>
+        <article>
+          <span>Höchste Geschwindigkeit</span>
+          <strong>${highestVelocity ? `${this.formatNumber(highestVelocity.maxVelocity, 2)} m/s` : '–'}</strong>
+          <small>${this.escapeHtml(highestVelocity?.name || 'Keine Berechnung')}</small>
+        </article>
+      </section>
+
+      ${analysis.duplicateNames.length ? `
+        <div class="dp-system-manager-notice is-warning">
+          <strong>Doppelte Anlagenbezeichnungen gefunden</strong>
+          <span>Für Bericht, Dateinamen und Übergabe sollten alle Anlagen eindeutig bezeichnet werden.</span>
+        </div>
+      ` : ''}
+
+      <section class="dp-system-manager-toolbar">
+        <div>
+          <strong>${analysis.rows.length} Anlagen im Projekt</strong>
+          <span>${this.escapeHtml(analysis.disclaimer)}</span>
+        </div>
+        <label>
+          <span>Sortierung</span>
+          <select data-system-manager-sort>
+            <option value="order" ${sortMode === 'order' ? 'selected' : ''}>Projekt-Reihenfolge</option>
+            <option value="name" ${sortMode === 'name' ? 'selected' : ''}>Bezeichnung</option>
+            <option value="pressure" ${sortMode === 'pressure' ? 'selected' : ''}>Druckverlust absteigend</option>
+            <option value="velocity" ${sortMode === 'velocity' ? 'selected' : ''}>Geschwindigkeit absteigend</option>
+            <option value="quality" ${sortMode === 'quality' ? 'selected' : ''}>Engineering-Score aufsteigend</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="dp-system-manager-list" aria-label="Anlagenliste">
+        ${rows.length ? rows.map(row => {
+          const source = project.systems.find(item => item.id === row.id) || {};
+          const duplicated = analysis.duplicateNames.includes(row.id);
+          const qualityLabel = row.calculationStatus === 'error'
+            ? 'Berechnungsfehler'
+            : row.qualityStatus === 'critical'
+              ? 'Kritisch'
+              : row.qualityStatus === 'warning'
+                ? 'Prüfen'
+                : row.qualityStatus === 'info'
+                  ? 'Hinweise'
+                  : 'OK';
+          return `
+            <article class="dp-system-manager-card${row.active ? ' is-active' : ''}${duplicated ? ' has-warning' : ''}" data-system-card="${this.escapeAttribute(row.id)}">
+              <div class="dp-system-manager-card-head">
+                <div class="dp-system-manager-order"><span>${row.position}</span></div>
+                <div class="dp-system-manager-title">
+                  <span>${row.active ? 'Aktive Anlage' : `Anlage ${row.position}`}</span>
+                  <h2>${this.escapeHtml(row.name)}</h2>
+                  <p>${this.escapeHtml(row.type)}${row.bkp ? ` · BKP ${this.escapeHtml(row.bkp)}` : ''}</p>
+                </div>
+                <span class="dp-system-manager-quality is-${this.escapeAttribute(row.qualityStatus)}">${this.escapeHtml(qualityLabel)} · ${this.formatNumber(row.qualityScore, 0)}</span>
+              </div>
+
+              <div class="dp-system-manager-fields">
+                <label><span>Anlagenname</span><input data-system-field="name" data-system-id="${this.escapeAttribute(row.id)}" value="${this.escapeAttribute(source.name || row.name)}"></label>
+                <label><span>BKP-Nummer</span><input data-system-field="bkpNumber" data-system-id="${this.escapeAttribute(row.id)}" value="${this.escapeAttribute(source.bkpNumber ?? source.anlageNumber ?? '')}" placeholder="z. B. 244.1"></label>
+                <label><span>Luftart / Typ</span>
+                  <select data-system-field="type" data-system-id="${this.escapeAttribute(row.id)}">
+                    ${['Zuluft', 'Abluft', 'Aussenluft', 'Fortluft', 'Umluft', 'Lüftungsanlage'].map(type => `<option value="${type}" ${String(source.type || row.type) === type ? 'selected' : ''}>${type}</option>`).join('')}
+                  </select>
+                </label>
+                <label class="is-wide"><span>Beschreibung</span><input data-system-field="description" data-system-id="${this.escapeAttribute(row.id)}" value="${this.escapeAttribute(source.description || '')}" placeholder="Optionaler Anlagenhinweis"></label>
+              </div>
+
+              <div class="dp-system-manager-metrics">
+                <div><span>Gesamtdruckverlust</span><strong>${this.formatNumber(row.totalPressureLoss, 1)} Pa</strong></div>
+                <div><span>Luftmenge Einlass</span><strong>${this.formatNumber(row.airflow, 0)} m³/h</strong></div>
+                <div><span>Max. Geschwindigkeit</span><strong>${this.formatNumber(row.maxVelocity, 2)} m/s</strong></div>
+                <div><span>Teilstrecken</span><strong>${row.sections}</strong></div>
+                <div><span>Formteile</span><strong>${row.formParts}</strong></div>
+                <div><span>Sonderbauteile</span><strong>${row.specialComponents}</strong></div>
+              </div>
+
+              ${row.calculationError ? `<div class="dp-system-manager-error">${this.escapeHtml(row.calculationError)}</div>` : ''}
+
+              <div class="dp-system-manager-actions">
+                <button type="button" class="is-primary" data-system-action="open" data-system-id="${this.escapeAttribute(row.id)}">Anlage öffnen</button>
+                <button type="button" data-system-action="duplicate" data-system-id="${this.escapeAttribute(row.id)}">Duplizieren</button>
+                <button type="button" data-system-action="up" data-system-id="${this.escapeAttribute(row.id)}" ${row.position <= 1 ? 'disabled' : ''} aria-label="Anlage nach oben verschieben">↑</button>
+                <button type="button" data-system-action="down" data-system-id="${this.escapeAttribute(row.id)}" ${row.position >= analysis.rows.length ? 'disabled' : ''} aria-label="Anlage nach unten verschieben">↓</button>
+                <button type="button" class="is-danger" data-system-action="delete" data-system-id="${this.escapeAttribute(row.id)}" ${analysis.rows.length <= 1 ? 'disabled' : ''}>Löschen</button>
+              </div>
+            </article>
+          `;
+        }).join('') : `
+          <div class="dp-system-manager-empty">
+            <strong>Noch keine Anlage vorhanden</strong>
+            <span>Lege die erste Anlage an, um mit der Druckverlustberechnung zu beginnen.</span>
+            <button type="button" class="is-primary" data-system-manager-action="add">Erste Anlage erstellen</button>
+          </div>
+        `}
+      </section>
+    `;
+
+    const rerender = () => this.renderSystemManager();
+
+    this.root.querySelectorAll('[data-system-manager-action="add"]').forEach(button => button.addEventListener('click', () => {
+      this.commands.addSystem();
+      this.state.setSelection('systemManager', project);
+      this.state.notify();
+    }));
+
+    this.root.querySelector('[data-system-manager-action="export"]')?.addEventListener('click', () => {
+      SystemPortfolioEngine.downloadCsv(project, analysis);
+    });
+
+    this.root.querySelector('[data-system-manager-action="refresh"]')?.addEventListener('click', rerender);
+    this.root.querySelector('[data-system-manager-sort]')?.addEventListener('change', event => {
+      this.systemManagerSort = event.target.value || 'order';
+      rerender();
+    });
+
+    this.root.querySelectorAll('[data-system-field]').forEach(field => field.addEventListener('change', () => {
+      const system = project.systems?.find(item => item.id === field.dataset.systemId);
+      if (!system) return;
+      const key = field.dataset.systemField;
+      system[key] = String(field.value || '').trim();
+      if (key === 'bkpNumber') system.anlageNumber = system.bkpNumber;
+      this.state.markProjectDirty();
+      this.state.setSelection('systemManager', project);
+      this.state.notify();
+    }));
+
+    this.root.querySelectorAll('[data-system-action]').forEach(button => button.addEventListener('click', async () => {
+      const systemId = button.dataset.systemId;
+      const action = button.dataset.systemAction;
+      const system = project.systems?.find(item => item.id === systemId);
+      if (!system) return;
+
+      if (action === 'open') {
+        this.state.selectSystem(system);
+        try {
+          project.calculationResult = ProjectCalculationService.calculate(project, system.id);
+          this.state.lastCalculationAt = project.calculationResult.timestamp;
+          this.state.isCalculationDirty = false;
+        } catch (error) {
+          this.state.markAutoCalculationFailed?.(error);
+        }
+        this.state.notify();
+        return;
+      }
+
+      if (action === 'duplicate') {
+        this.commands.duplicateSystem(systemId);
+        this.state.setSelection('systemManager', project);
+        this.state.notify();
+        return;
+      }
+
+      if (action === 'up' || action === 'down') {
+        this.commands.moveSystem(systemId, action === 'up' ? -1 : 1);
+        this.state.setSelection('systemManager', project);
+        this.state.notify();
+        return;
+      }
+
+      if (action === 'delete') {
+        const confirmed = await UiDialogService.confirm({
+          title: 'Anlage löschen',
+          message: `Soll die Anlage „${system.name || 'Anlage'}“ inklusive aller Teilstrecken, Formteile und Sonderbauteile gelöscht werden?`,
+          details: ['Dieser Schritt kann nur über eine zuvor gespeicherte Projektdatei oder Sicherung rückgängig gemacht werden.'],
+          confirmLabel: 'Anlage löschen',
+          tone: 'danger',
+        });
+        if (!confirmed) return;
+        this.commands.deleteSystem(systemId);
+        this.state.setSelection('systemManager', project);
+        this.state.notify();
+      }
+    }));
+  }
+
+  renderProjectHandover(system = null) {
+    const project = this.state.project || null;
+    const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+    if (!project || !activeSystem) {
+      this.root.innerHTML = '<h1>Projektübergabe</h1><p>Kein Projekt oder keine Anlage vorhanden.</p>';
+      return;
+    }
+
+    if (!project.calculationResult || this.state.isCalculationDirty) this.autoCalculateProject({ notify: false });
+    const analysis = ProjectHandoverEngine.analyze(project, activeSystem.id, {
+      isProjectDirty: this.state.isProjectDirty,
+    });
+    const approval = analysis.approval || {};
+    const preview = this.handoverImportPreview;
+    const statusClass = ['released', 'ready', 'review', 'blocked'].includes(analysis.status) ? analysis.status : 'review';
+    const formatTimestamp = value => {
+      const date = value ? new Date(value) : null;
+      return date && !Number.isNaN(date.getTime()) ? date.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+    };
+    const delta = value => {
+      const numberValue = Number(value || 0);
+      return `${numberValue > 0 ? '+' : ''}${numberValue}`;
+    };
+    const checklistHtml = (analysis.items || []).map(item => `
+      <article class="dp-handover-check is-${this.escapeAttribute(item.status)}">
+        <span aria-hidden="true">${item.status === 'ok' ? '✓' : item.status === 'error' ? '!' : '•'}</span>
+        <div><small>${item.required ? 'Pflichtprüfung' : 'Dokumentation'}</small><strong>${this.escapeHtml(item.label)}</strong><p>${this.escapeHtml(item.message)}</p></div>
+      </article>
+    `).join('');
+
+    const previewHtml = preview ? `
+      <section class="dp-handover-panel dp-handover-import-preview">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Importvorschau</span><h2>${this.escapeHtml(preview.fileName || preview.sourceLabel)}</h2><p>Die Datei wurde nur geprüft. Das aktuell geöffnete Projekt ist noch unverändert.</p></div>
+          <span class="dp-handover-filetype">${this.escapeHtml(preview.sourceLabel)}</span>
+        </div>
+        <div class="dp-handover-preview-grid">
+          <article><span>Projekt</span><strong>${this.escapeHtml(preview.projectName)}</strong><small>${this.escapeHtml(preview.objectName || 'Projektname nicht eingetragen')}</small></article>
+          <article><span>Anlage / Revision</span><strong>${this.escapeHtml(preview.systemName)}</strong><small>Revision ${this.escapeHtml(preview.revision)}</small></article>
+          <article><span>Dateistand</span><strong>Phase ${this.escapeHtml(preview.sourceAppRelease || '-')}</strong><small>Schema ${this.escapeHtml(preview.sourceSchemaVersion || '-')}</small></article>
+          <article><span>Importprüfung</span><strong>${Math.round(Number(preview.analysis?.score || 0))}/100</strong><small>${this.escapeHtml(preview.analysis?.label || '-')}</small></article>
+        </div>
+        ${preview.sourceNewer ? '<div class="dp-handover-warning"><strong>Neuere Dateiversion erkannt</strong><p>Die Datei stammt aus einer neueren Druckverlust-Pro-Phase. Vor dem Speichern Inhalt und Bericht besonders sorgfältig prüfen.</p></div>' : ''}
+        ${preview.comparison ? `<div class="dp-handover-comparison">
+          <div><span>Aktuelles Projekt</span><strong>${this.escapeHtml(preview.comparison.currentProjectName)}</strong><small>Rev. ${this.escapeHtml(preview.comparison.currentRevision)}</small></div>
+          <div><span>Identischer Datenstand</span><strong>${preview.comparison.sameChecksum ? 'Ja' : 'Nein'}</strong><small>${preview.comparison.sameProjectId || preview.comparison.sameProjectName ? 'Projektbezug erkannt' : 'Anderes Projekt'}</small></div>
+          <div><span>Teilstrecken</span><strong>${preview.counts.sections}</strong><small>${delta(preview.comparison.countDelta.sections)} gegenüber aktuell</small></div>
+          <div><span>Formteile / Bauteile</span><strong>${preview.counts.formParts} / ${preview.counts.specialComponents}</strong><small>${delta(preview.comparison.countDelta.formParts)} / ${delta(preview.comparison.countDelta.specialComponents)}</small></div>
+        </div>` : ''}
+        ${preview.warnings?.length ? `<div class="dp-handover-warning"><strong>${preview.warnings.length} Normalisierungshinweis${preview.warnings.length === 1 ? '' : 'e'}</strong><ul>${preview.warnings.slice(0, 6).map(item => `<li>${this.escapeHtml(item)}</li>`).join('')}</ul></div>` : ''}
+        <div class="dp-handover-preview-actions">
+          <button type="button" class="is-primary" data-handover-action="apply-import" ${preview.canImport ? '' : 'disabled'}>Geprüfte Datei übernehmen</button>
+          <button type="button" data-handover-action="discard-import">Vorschau verwerfen</button>
+        </div>
+      </section>
+    ` : `
+      <section class="dp-handover-panel dp-handover-empty-import">
+        <div><span class="dp-overline">Kontrollierter Import</span><h2>Datei zuerst prüfen, dann übernehmen</h2><p>.dvp-, .dvpa- und .dvph-Dateien werden in einer Vorschau berechnet, diagnostiziert und mit dem aktuellen Projekt verglichen.</p></div>
+        <button type="button" data-handover-action="inspect-import">Projektdatei prüfen</button>
+      </section>
+    `;
+
+    this.root.innerHTML = `
+      <section class="dp-phase-hero is-handover">
+        <div>
+          <span class="dp-phase-kicker">PHASE 33 · PROJEKTÜBERGABE</span>
+          <h1>Importkontrolle und Freigabepaket</h1>
+          <p>Projektdateien vor dem Öffnen prüfen, Verantwortlichkeiten dokumentieren und einen nachvollziehbaren, integritätsgeschützten Übergabestand erzeugen.</p>
+        </div>
+        <div class="dp-handover-score is-${this.escapeAttribute(statusClass)}">
+          <span>${this.escapeHtml(analysis.label)}</span>
+          <strong>${Math.round(Number(analysis.score || 0))}/100</strong>
+          <small>${this.escapeHtml(activeSystem.name || 'Anlage')} · Rev. ${this.escapeHtml(project.report?.revision || project.revision || '0')}</small>
+        </div>
+      </section>
+
+      <div class="dp-handover-actions">
+        <button type="button" class="is-primary" data-handover-action="inspect-import">Import prüfen</button>
+        <button type="button" data-handover-action="export-package" ${analysis.canExport ? '' : 'disabled'}>Freigabepaket exportieren</button>
+        <button type="button" data-handover-action="protocol-csv">Übergabeprotokoll CSV</button>
+        <button type="button" data-handover-action="refresh">Neu prüfen</button>
+      </div>
+
+      <section class="dp-handover-kpis">
+        <article><span>Freigabestatus</span><strong>${this.escapeHtml(({ draft: 'Entwurf', prepared: 'Vorbereitet', checked: 'Geprüft', released: 'Freigegeben' })[approval.status] || 'Entwurf')}</strong><small>Letzte Änderung: ${this.escapeHtml(formatTimestamp(approval.updatedAt))}</small></article>
+        <article><span>Projekt-Prüfsumme</span><strong><code>${this.escapeHtml(analysis.checksum || '-')}</code></strong><small>Ändert sich bei fachlichen Projektänderungen</small></article>
+        <article><span>Projektsicherheit</span><strong>${Math.round(Number(analysis.health?.score || 0))}/100</strong><small>${this.escapeHtml(analysis.health?.label || '-')}</small></article>
+        <article><span>Projektabschluss</span><strong>${Math.round(Number(analysis.completion?.score || 0))}/100</strong><small>${analysis.coreReady ? 'Technischer Stand bereit' : 'Offene Pflichtprüfungen vorhanden'}</small></article>
+      </section>
+
+      <section class="dp-handover-grid">
+        <article class="dp-handover-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Übergabe-Checkliste</span><h2>Technischer Übergabestatus</h2><p>Pflichtprüfungen müssen vor der formellen Freigabe abgeschlossen sein.</p></div><button type="button" data-handover-action="open-completion">Abschluss öffnen</button></div>
+          <div class="dp-handover-checklist">${checklistHtml}</div>
+        </article>
+
+        <article class="dp-handover-panel">
+          <div class="dp-panel-header"><div><span class="dp-overline">Vier-Augen-Prinzip</span><h2>Verantwortlichkeiten dokumentieren</h2><p>Die Freigabe ist eine interne Dokumentation und ersetzt keine objektspezifische fachliche Verantwortung.</p></div></div>
+          <div class="dp-handover-form">
+            <label><span>Vorbereitet von</span><input data-handover-field="preparedBy" value="${this.escapeAttribute(approval.preparedBy || project.author || '')}" placeholder="Name"></label>
+            <label><span>Geprüft von</span><input data-handover-field="checkedBy" value="${this.escapeAttribute(approval.checkedBy || project.checkedBy || '')}" placeholder="Name"></label>
+            <label><span>Freigegeben von</span><input data-handover-field="releasedBy" value="${this.escapeAttribute(approval.releasedBy || project.approvedBy || '')}" placeholder="Name"></label>
+            <label class="is-wide"><span>Übergabevermerk</span><textarea data-handover-field="note" rows="3" placeholder="Optionaler Hinweis für die Übergabe">${this.escapeHtml(approval.note || '')}</textarea></label>
+          </div>
+          <div class="dp-handover-approval-steps">
+            <button type="button" data-handover-status="prepared">Als vorbereitet speichern</button>
+            <button type="button" data-handover-status="checked">Als geprüft speichern</button>
+            <button type="button" class="is-primary" data-handover-status="released" ${analysis.coreReady ? '' : 'disabled'}>Projekt freigeben</button>
+            <button type="button" data-handover-status="draft">Auf Entwurf setzen</button>
+          </div>
+          <div class="dp-handover-timeline">
+            <span class="${approval.preparedAt ? 'is-done' : ''}"><strong>Vorbereitet</strong><small>${this.escapeHtml(formatTimestamp(approval.preparedAt))}</small></span>
+            <span class="${approval.checkedAt ? 'is-done' : ''}"><strong>Geprüft</strong><small>${this.escapeHtml(formatTimestamp(approval.checkedAt))}</small></span>
+            <span class="${approval.releasedAt ? 'is-done' : ''}"><strong>Freigegeben</strong><small>${this.escapeHtml(formatTimestamp(approval.releasedAt))}</small></span>
+          </div>
+        </article>
+      </section>
+
+      ${previewHtml}
+
+      <section class="dp-handover-panel dp-handover-package-info">
+        <div class="dp-panel-header"><div><span class="dp-overline">Freigabepaket .dvph</span><h2>Inhalt des Übergabestands</h2><p>Das Paket bleibt herstellerneutral und enthält keine Ventilator- oder Produktdatenbank.</p></div><button type="button" data-handover-action="open-safety">Sicherung öffnen</button></div>
+        <div class="dp-handover-manifest">
+          <span>Bearbeitbare .dvp-Projektdatei</span><span>Projektarchiv mit Prüfsumme</span><span>Berechnungs- und Sicherheitsdiagnose</span><span>Revisionen und Varianten</span><span>Prüf- und Freigabeangaben</span><span>Übergabeprotokoll als CSV</span>
+        </div>
+      </section>
+    `;
+
+    const readApprovalForm = status => ({
+      status,
+      preparedBy: this.root.querySelector('[data-handover-field="preparedBy"]')?.value || '',
+      checkedBy: this.root.querySelector('[data-handover-field="checkedBy"]')?.value || '',
+      releasedBy: this.root.querySelector('[data-handover-field="releasedBy"]')?.value || '',
+      note: this.root.querySelector('[data-handover-field="note"]')?.value || '',
+    });
+    const rerender = () => this.renderProjectHandover(activeSystem);
+
+    this.root.querySelectorAll('[data-handover-action="inspect-import"]').forEach(button => button.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.dvp,.dvpa,.dvph,.json,application/json';
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+          this.handoverImportPreview = await ProjectHandoverEngine.readImportFile(file, { currentProject: project });
+          rerender();
+        } catch (error) {
+          this.handoverImportPreview = null;
+          UiDialogService.alert({ title: 'Importprüfung fehlgeschlagen', message: error.message, tone: 'error' });
+        }
+      });
+      input.click();
+    }));
+
+    this.root.querySelector('[data-handover-action="discard-import"]')?.addEventListener('click', () => {
+      this.handoverImportPreview = null;
+      rerender();
+    });
+
+    this.root.querySelector('[data-handover-action="apply-import"]')?.addEventListener('click', async () => {
+      const currentPreview = this.handoverImportPreview;
+      if (!currentPreview?.project) return;
+      const confirmed = await UiDialogService.confirm({
+        title: 'Geprüfte Projektdatei übernehmen',
+        message: `„${currentPreview.projectName}“ als neues Arbeitsprojekt öffnen?`,
+        details: [`Dateityp: ${currentPreview.sourceLabel}`, `Revision: ${currentPreview.revision}`, 'Der aktuelle Projektstand wird vorher lokal notgesichert.'],
+        confirmLabel: 'Projekt übernehmen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+      try {
+        ProjectSafetyEngine.saveLocalBackup(project, { system: activeSystem, label: 'Notfallsicherung vor geprüftem Import', reason: 'before-checked-import', allowDuplicate: true });
+        this.state.setProject(currentPreview.project);
+        const calculation = ProjectCalculationService.calculate(this.state.project, this.state.selectedSystem?.id || this.state.project?.systems?.[0]?.id || null);
+        this.state.project.calculationResult = calculation;
+        this.state.lastCalculationAt = calculation.timestamp || new Date().toISOString();
+        this.state.isCalculationDirty = false;
+        this.state.isProjectDirty = true;
+        this.handoverImportPreview = null;
+        this.state.setSelection('projectHandover', this.state.selectedSystem || this.state.project.systems?.[0] || null);
+        this.state.notify();
+        UiDialogService.alert({ title: 'Projektdatei übernommen', message: 'Die geprüfte Datei ist geöffnet und als ungespeicherte Änderung markiert.', tone: 'success' });
+      } catch (error) {
+        UiDialogService.alert({ title: 'Projekt konnte nicht übernommen werden', message: error.message, tone: 'error' });
+      }
+    });
+
+    this.root.querySelectorAll('[data-handover-status]').forEach(button => button.addEventListener('click', () => {
+      try {
+        const saved = ProjectHandoverEngine.saveApproval(project, activeSystem.id, readApprovalForm(button.dataset.handoverStatus), { isProjectDirty: this.state.isProjectDirty });
+        this.state.markProjectDirty();
+        UiDialogService.alert({ title: 'Übergabestatus gespeichert', message: `Der Status wurde auf „${({ draft: 'Entwurf', prepared: 'Vorbereitet', checked: 'Geprüft', released: 'Freigegeben' })[saved.status]}“ gesetzt.`, tone: saved.status === 'released' ? 'success' : 'info' });
+      } catch (error) {
+        UiDialogService.alert({ title: 'Status konnte nicht gespeichert werden', message: error.message, tone: 'error' });
+      }
+    }));
+
+    this.root.querySelector('[data-handover-action="export-package"]')?.addEventListener('click', () => {
+      try {
+        const result = ProjectHandoverEngine.downloadPackage(project, { system: activeSystem, analysis, isProjectDirty: this.state.isProjectDirty });
+        UiDialogService.alert({ title: 'Freigabepaket erstellt', message: `${result.fileName} wurde mit Projektdatei, Diagnose und Freigabestand erzeugt.`, tone: 'success' });
+      } catch (error) {
+        UiDialogService.alert({ title: 'Freigabepaket konnte nicht erstellt werden', message: error.message, tone: 'error' });
+      }
+    });
+    this.root.querySelector('[data-handover-action="protocol-csv"]')?.addEventListener('click', () => ProjectHandoverEngine.downloadProtocol(project, activeSystem.id, { isProjectDirty: this.state.isProjectDirty }));
+    this.root.querySelector('[data-handover-action="refresh"]')?.addEventListener('click', rerender);
+    this.root.querySelector('[data-handover-action="open-completion"]')?.addEventListener('click', () => { this.state.setSelection('projectCompletion', activeSystem); this.state.notify(); });
+    this.root.querySelector('[data-handover-action="open-safety"]')?.addEventListener('click', () => { this.state.setSelection('projectSafety', activeSystem); this.state.notify(); });
+  }
+
   renderEngineeringQuality(system = null) {
     const project = this.state.project || {};
     const activeSystem = system || this.state.selectedSystem || project.systems?.[0] || null;
@@ -10426,7 +11065,7 @@ formatNumber(value, digits = 2) {
     });
     this.root.querySelector('[data-quality-action="refresh"]')?.addEventListener('click', () => {
       try {
-        project.calculationResult = ProjectCalculationService.calculate(project);
+        project.calculationResult = ProjectCalculationService.calculate(project, activeSystem?.id || null);
         this.state.lastCalculationAt = project.calculationResult.timestamp;
         this.state.isCalculationDirty = false;
         this.state.notify();

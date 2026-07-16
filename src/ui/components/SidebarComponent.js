@@ -1,6 +1,8 @@
 // Druckverlust Pro – SidebarComponent
 // Phase 22.01: durchsuchbare, einklappbare und klar gegliederte Projektstruktur.
 
+import ProjectCalculationService from '../../project/ProjectCalculationService.js';
+
 const STORAGE_KEY_GROUPS = 'druckverlust-pro.sidebar.groups';
 
 export default class SidebarComponent {
@@ -88,14 +90,38 @@ export default class SidebarComponent {
             })}
 
             ${this.renderRootItem({
-              type: 'system',
-              id: system.id,
-              label: system.name || 'Anlage',
-              meta: `${system.type || 'Lüftungsanlage'} · ${totalElements} Elemente`,
-              icon: 'system',
-              active: this.state.isSelected('system', system.id),
+              type: 'projectCockpit',
+              id: 'project-cockpit',
+              label: 'Projektcockpit',
+              meta: 'Projektweite QS · Risiken · Dokumentation',
+              icon: 'report',
+              active: this.state.getSelectionType() === 'projectCockpit',
+            })}
+
+            ${this.renderRootItem({
+              type: 'systemManager',
+              id: 'system-manager',
+              label: 'Anlagenmanager',
+              meta: `${project.systems?.length || 0} Anlagen · projektweiter Vergleich`,
+              icon: 'systems',
+              active: this.state.getSelectionType() === 'systemManager',
             })}
           </div>
+
+          ${this.renderGroup({
+            id: 'systems',
+            label: 'Anlagen',
+            count: project.systems?.length || 0,
+            icon: 'systems',
+            content: (project.systems || []).map((item, index) => this.renderTreeItem({
+              type: 'system',
+              id: item.id,
+              label: item.name || `Anlage ${index + 1}`,
+              meta: `${item.type || 'Lüftungsanlage'} · ${(item.sections?.length || 0) + (item.formParts?.length || 0) + (item.specialComponents?.length || 0)} Elemente`,
+              icon: 'system',
+              active: this.state.isSelected('system', item.id),
+            })).join('') || this.renderEmpty('Noch keine Anlage vorhanden.'),
+          })}
 
           ${this.renderGroup({
             id: 'sections',
@@ -341,8 +367,38 @@ export default class SidebarComponent {
           return;
         }
 
+        if (type === 'projectCockpit') {
+          this.state.setSelection('projectCockpit', project);
+          this.state.notify();
+          return;
+        }
+
+        if (type === 'systemManager') {
+          this.state.setSelection('systemManager', project);
+          this.state.notify();
+          return;
+        }
+
         if (type === 'system') {
-          this.state.selectSystem(system);
+          const selectedSystem = project?.systems?.find(item => item.id === id) || system;
+          this.state.selectSystem(selectedSystem);
+
+          try {
+            const result = ProjectCalculationService.calculate(project, selectedSystem?.id || null);
+            project.calculationResult = result;
+            this.state.lastCalculationAt = result.timestamp;
+            this.state.isCalculationDirty = false;
+            this.state.lastAutoCalculationError = null;
+            this.state.notify();
+          } catch (error) {
+            if (typeof this.state.markAutoCalculationFailed === 'function') {
+              this.state.markAutoCalculationFailed(error);
+            } else {
+              this.state.isCalculationDirty = true;
+              this.state.lastAutoCalculationError = error?.message || String(error || 'Berechnung fehlgeschlagen.');
+              this.state.notify();
+            }
+          }
           return;
         }
 
@@ -582,6 +638,7 @@ export default class SidebarComponent {
     const icons = {
       search: '<circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/>',
       project: '<path d="M4 5h6l2 2h8v12H4z"/><path d="M4 10h16"/>',
+      systems: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
       system: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5M8 17h8"/>',
       section: '<circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/>',
       formPart: '<path d="M4 5h7v4a4 4 0 0 0 4 4h5v6h-5A10 10 0 0 1 5 9V5z"/>',

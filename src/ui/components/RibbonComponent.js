@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=32.00';
+import RibbonActions from '../core/RibbonActions.js?v=35.00';
 
 const RIBBON_GROUPS = [
   {
@@ -9,6 +9,8 @@ const RIBBON_GROUPS = [
     label: 'Projekt',
     actions: [
       { action: 'showDashboard', label: 'Start', icon: 'home', title: 'Zur Projekt- und Anlagenübersicht (Alt+Home)' },
+      { action: 'showSystemManager', label: 'Anlagen', icon: 'layers', title: 'Anlagen anlegen, duplizieren, ordnen und vergleichen (Strg+Umschalt+A)' },
+      { action: 'showProjectCockpit', label: 'Cockpit', icon: 'pulse', title: 'Projektweite QS, Risikomatrix und Dokumentationsstatus öffnen (Strg+Umschalt+Q)' },
       { action: 'newProject', label: 'Neu', icon: 'filePlus', title: 'Neues Projekt erstellen (Strg+N)' },
       { action: 'openProject', label: 'Öffnen', icon: 'folder', title: 'Projektdatei öffnen (Strg+O)' },
       { action: 'saveProject', label: 'Speichern', icon: 'save', title: 'Projekt speichern (Strg+S)', emphasis: 'primary' },
@@ -42,6 +44,7 @@ const RIBBON_GROUPS = [
     actions: [
       { action: 'showReport', label: 'Bericht', icon: 'report', title: 'Bericht und Druckansicht öffnen (Strg+B)', emphasis: 'report' },
       { action: 'showProjectCompletion', label: 'Abschluss', icon: 'clipboardCheck', title: 'Varianten, Revision und Projektabschluss prüfen' },
+      { action: 'showProjectHandover', label: 'Übergabe', icon: 'package', title: 'Importkontrolle, Freigabestatus und Übergabepaket öffnen' },
     ],
   },
   {
@@ -188,11 +191,14 @@ export default class RibbonComponent {
     const calculateButton = this.root.querySelector('[data-action="calculate"]');
     const dashboardButton = this.root.querySelector('.dp-ribbon-groups [data-action="showDashboard"]');
     const reportButton = this.root.querySelector('[data-action="showReport"]');
+    const systemManagerButton = this.root.querySelector('[data-action="showSystemManager"]');
+    const projectCockpitButton = this.root.querySelector('[data-action="showProjectCockpit"]');
     const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
     const completionButton = this.root.querySelector('[data-action="showProjectCompletion"]');
     const safetyButton = this.root.querySelector('[data-action="showProjectSafety"]');
+    const handoverButton = this.root.querySelector('[data-action="showProjectHandover"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -209,7 +215,16 @@ export default class RibbonComponent {
       button.removeAttribute('aria-current');
     });
 
-    if (selectionType === 'projectSafety') {
+    if (selectionType === 'projectCockpit') {
+      projectCockpitButton?.classList.add('is-current');
+      projectCockpitButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'systemManager') {
+      systemManagerButton?.classList.add('is-current');
+      systemManagerButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectHandover') {
+      handoverButton?.classList.add('is-current');
+      handoverButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectSafety') {
       safetyButton?.classList.add('is-current');
       safetyButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'engineeringQuality') {
@@ -277,12 +292,14 @@ export default class RibbonComponent {
       clipboardCheck: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8.5 13l2.2 2.2 4.8-5"/>',
       shieldCheck: '<path d="M12 2 20 5v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="m8.5 12 2.2 2.2 4.8-5"/>',
       report: '<path d="M6 2h9l4 4v16H6z"/><path d="M15 2v5h5M9 11h6M9 15h6M9 19h4"/>',
+      package: '<path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5z"/><path d="M4 7.5 12 12l8-4.5M12 12v9M8 5.2l8 4.5"/>',
       sparkles: '<path d="m12 3 1.1 3.1L16 7.2l-2.9 1.1L12 11.5l-1.1-3.2L8 7.2l2.9-1.1zM6 13l.8 2.2L9 16l-2.2.8L6 19l-.8-2.2L3 16l2.2-.8zM18 13l.8 2.2L21 16l-2.2.8L18 19l-.8-2.2L15 16l2.2-.8z"/>',
       help: '<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.5 2.1c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
       info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v7M12 7h.01"/>',
       pulse: '<path d="M3 12h4l2-6 4 12 2-6h6"/><circle cx="12" cy="12" r="10"/>',
       network: '<rect x="2" y="8" width="6" height="8" rx="1"/><rect x="16" y="3" width="6" height="8" rx="1"/><rect x="16" y="13" width="6" height="8" rx="1"/><path d="M8 12h4c2 0 2-5 4-5M12 12c2 0 2 5 4 5"/>',
       sliders: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>',
+      layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     };
 

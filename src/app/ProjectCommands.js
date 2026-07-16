@@ -644,4 +644,122 @@ export default class ProjectCommands {
     return system.specialComponents || [];
   }
 
+
+  addSystem(template = null) {
+    const project = this.state.project;
+
+    if (!project) {
+      throw new Error('Es ist kein Projekt vorhanden.');
+    }
+
+    project.systems = Array.isArray(project.systems) ? project.systems : [];
+    const source = template && typeof template === 'object' ? template : null;
+    const system = source
+      ? this.cloneSystemForProject(source, project.systems)
+      : {
+          id: createUniqueRuntimeId('system', project.systems),
+          name: `Anlage ${project.systems.length + 1}`,
+          type: 'Zuluft',
+          bkpNumber: '',
+          description: '',
+          sections: [],
+          formParts: [],
+          specialComponents: [],
+        };
+
+    if (source) {
+      system.name = `${source.name || 'Anlage'} Kopie`;
+      system.createdFrom = source.id || null;
+    }
+
+    project.systems.push(system);
+    this.state.selectSystem(system);
+    this.state.markCalculationDirty();
+    return system;
+  }
+
+  duplicateSystem(systemId = null) {
+    const project = this.state.project;
+    const systems = project?.systems || [];
+    const source = systems.find(system => system.id === systemId)
+      || this.state.selectedSystem
+      || systems[0]
+      || null;
+
+    if (!source) {
+      throw new Error('Es ist keine Anlage zum Duplizieren vorhanden.');
+    }
+
+    return this.addSystem(source);
+  }
+
+  cloneSystemForProject(source = {}, existingSystems = []) {
+    const clone = JSON.parse(JSON.stringify(source || {}));
+    const systemId = createUniqueRuntimeId('system', existingSystems);
+    const sectionIdMap = new Map();
+
+    clone.id = systemId;
+    clone.sections = (clone.sections || []).map((section, index) => {
+      const oldId = section.id;
+      const next = { ...section, id: `${systemId}-ts${index + 1}` };
+      if (oldId) sectionIdMap.set(oldId, next.id);
+      return next;
+    });
+
+    clone.formParts = (clone.formParts || []).map((part, index) => ({
+      ...part,
+      id: `${systemId}-formpart-${index + 1}`,
+      sectionId: part.sectionId ? sectionIdMap.get(part.sectionId) || null : null,
+      createdFrom: part.id || null,
+    }));
+
+    clone.specialComponents = (clone.specialComponents || []).map((component, index) => ({
+      ...component,
+      id: `${systemId}-special-${index + 1}`,
+      sectionId: component.sectionId ? sectionIdMap.get(component.sectionId) || '' : '',
+      createdFrom: component.id || null,
+    }));
+
+    delete clone.calculationResult;
+    delete clone.validation;
+    return clone;
+  }
+
+  deleteSystem(systemId = null) {
+    const project = this.state.project;
+    const systems = project?.systems || [];
+
+    if (systems.length <= 1) {
+      throw new Error('Die letzte Anlage kann nicht gelöscht werden.');
+    }
+
+    const index = systems.findIndex(system => system.id === systemId);
+    if (index < 0) {
+      throw new Error('Anlage nicht gefunden.');
+    }
+
+    const [removed] = systems.splice(index, 1);
+    const next = systems[index] || systems[index - 1] || systems[0] || null;
+    if (next) this.state.selectSystem(next);
+    this.state.markCalculationDirty();
+    return removed;
+  }
+
+  moveSystem(systemId, direction = 0) {
+    const project = this.state.project;
+    const systems = project?.systems || [];
+    const index = systems.findIndex(system => system.id === systemId);
+    const targetIndex = index + Number(direction);
+
+    if (index < 0 || targetIndex < 0 || targetIndex >= systems.length) {
+      return null;
+    }
+
+    const [system] = systems.splice(index, 1);
+    systems.splice(targetIndex, 0, system);
+    this.state.selectSystem(system);
+    this.state.markProjectDirty();
+    return system;
+  }
+
 }

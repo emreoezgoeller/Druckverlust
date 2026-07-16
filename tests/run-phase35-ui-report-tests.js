@@ -1,0 +1,80 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import ApplicationState from '../src/app/ApplicationState.js';
+import ProjectCommands from '../src/app/ProjectCommands.js';
+import createDemoProject from '../src/project/demoProject.js';
+import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
+import ReportEngine from '../src/report/ReportEngine.js?v=35.00';
+
+const root = new URL('..', import.meta.url);
+const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
+let checks = 0;
+
+const appHtml = read('app.html');
+const ribbon = read('src/ui/components/RibbonComponent.js');
+const sidebar = read('src/ui/components/SidebarComponent.js');
+const workspace = read('src/ui/components/WorkspaceComponent.js');
+const statusbar = read('src/ui/components/StatusBarComponent.js');
+const css = read('src/ui/phase35_00.css');
+const version = read('src/core/appVersion.js');
+const report = read('src/report/ReportEngine.js');
+const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
+
+assert.match(appHtml, /phase35_00\.css\?v=35\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=35\.00/); checks += 1;
+assert.match(ribbon, /showProjectCockpit/); checks += 1;
+assert.match(ribbon, /label: 'Cockpit'/); checks += 1;
+assert.match(sidebar, /type: 'projectCockpit'/); checks += 1;
+assert.match(workspace, /renderProjectCockpit/); checks += 1;
+assert.match(workspace, /Cockpit CSV/); checks += 1;
+assert.match(workspace, /Projektweite QS und Risikomatrix/); checks += 1;
+assert.match(statusbar, /Projektcockpit/); checks += 1;
+assert.match(css, /dp-project-cockpit-hero/); checks += 1;
+assert.match(css, /dp-project-cockpit-matrix/); checks += 1;
+assert.match(report, /renderProjectCockpitPage/); checks += 1;
+assert.match(report, /Projektweite QS-Matrix/); checks += 1;
+assert.match(deployment, /ProjectPortfolioQualityEngine/); checks += 1;
+assert.match(deployment, /phase35_00\.css/); checks += 1;
+assert.match(version, /APP_RELEASE = '35\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '1\.12\.0'/); checks += 1;
+
+const project = createDemoProject();
+project.projectNumber = 'P-35';
+project.name = 'Bericht Projektcockpit';
+project.object = 'Mehranlagenobjekt';
+project.author = 'Planer';
+project.company = 'Engineering AG';
+project.report = { ...(project.report || {}), number: 'DP-35', revision: 'B' };
+const state = new ApplicationState();
+state.setProject(project);
+const commands = new ProjectCommands(state);
+const second = commands.duplicateSystem(project.systems[0].id);
+second.name = 'Abluft Vergleich';
+second.type = 'Abluft';
+second.bkpNumber = '244.2';
+project.systems[0].name = 'Zuluft Vergleich';
+project.systems[0].type = 'Zuluft';
+project.systems[0].bkpNumber = '244.1';
+project.calculationResult = ProjectCalculationService.calculate(project, project.systems[0].id);
+project.reportOptions = { ...(project.reportOptions || {}), includeSystemsOverview: true };
+
+const model = ReportEngine.createReportModel(project, { system: project.systems[0] });
+assert.equal(model.projectCockpit.rows.length, 2); checks += 1;
+assert.equal(model.projectCockpit.metadata.projectNumber, 'P-35'); checks += 1;
+const plan = ReportEngine.createPagePlan(model);
+assert.ok(plan.entries.some(entry => entry.key === 'projectCockpit')); checks += 1;
+const body = ReportEngine.renderReportBody(model);
+assert.match(body, /Projektweite QS-Matrix/); checks += 1;
+assert.match(body, /Dokumentationsstatus/); checks += 1;
+assert.match(body, /Zuluft Vergleich/); checks += 1;
+const csv = ReportEngine.createCsv(model);
+assert.match(csv, /Projektweite QS-Matrix/); checks += 1;
+assert.match(csv, /Projekt-Score/); checks += 1;
+
+const single = createDemoProject();
+single.calculationResult = ProjectCalculationService.calculate(single, single.systems[0].id);
+const singleModel = ReportEngine.createReportModel(single, { system: single.systems[0] });
+const singlePlan = ReportEngine.createPagePlan(singleModel);
+assert.ok(!singlePlan.entries.some(entry => entry.key === 'projectCockpit')); checks += 1;
+
+console.log(`Phase 35.00 UI/Report: ${checks} Prüfungen bestanden.`);

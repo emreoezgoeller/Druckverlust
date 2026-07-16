@@ -1,5 +1,59 @@
 # Änderungsverlauf
 
+## Phase 35.00 – Projektcockpit und projektweite QS-Matrix
+
+- Neuen Bereich **Projekt → Cockpit** für eine zentrale Projekt-, Risiko- und Dokumentationsübersicht ergänzt.
+- Projekt-Score aus Engineering-Mittelwert, Dokumentationsvollständigkeit und priorisierten Feststellungen eingeführt.
+- Projektweite Anlagenmatrix mit BKP, Luftart, Teilstrecken, Luftmenge, maximaler Geschwindigkeit, Gesamtdruckverlust und Engineering-Score umgesetzt.
+- Engineering-Feststellungen aller Anlagen mit Anlagen- und Teilstreckenbezug zusammengeführt und nach Kritisch, Prüfen und Hinweis filterbar gemacht.
+- Direkte Navigation aus der Risikomatrix zur betroffenen Anlage beziehungsweise Teilstrecke ergänzt.
+- Prüfung auf doppelte Anlagenbezeichnungen, doppelte BKP-Nummern, leere Anlagen, fehlende BKP-Angaben und nicht klassifizierte Luftarten umgesetzt.
+- Dokumentationsprüfung für Projektnummer, Projektname, Objekt, Bearbeiter, Firma, Berichtnummer und Revision ergänzt.
+- Herstellerneutrale Luftartenübersicht mit informativen Summen ergänzt; keine automatische Luftbilanz und keine gemeinsame Druckverlustaddition.
+- Projektcockpit als CSV-Export ergänzt.
+- Professional Report bei Mehranlagen-Projekten um eine eigene Seite **Projektweite QS-Matrix** erweitert.
+- Gesamt-CSV um Projekt-Score und projektweite Feststellungen erweitert.
+- Zwei neue Testgruppen für Cockpit-Engine, UI, Bericht und CSV ergänzt.
+- App-Version auf 1.12.0 und Cachekennung auf 35.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
+## Phase 34.00 – Anlagenmanager und projektweiter Anlagenvergleich
+
+- Neuen Bereich **Projekt → Anlagen** für echte Mehranlagen-Projekte ergänzt.
+- Anlagen können angelegt, vollständig dupliziert, geöffnet, umsortiert und – mit Schutz der letzten Anlage – gelöscht werden.
+- Beim Duplizieren werden Teilstrecken-IDs neu erzeugt und alle Formteil- sowie Sonderbauteilzuordnungen sicher auf die neue Anlage umgebogen.
+- Anlagenname, BKP-Nummer, Luftart und Beschreibung können zentral im Anlagenmanager gepflegt werden.
+- Projektweite Kennwertübersicht mit Gesamtdruckverlust, Einlassluftmenge, maximaler Geschwindigkeit, Engineering-Score und Elementanzahlen je Anlage umgesetzt.
+- Neutrale Sortierung nach Projektfolge, Bezeichnung, Druckverlust, Geschwindigkeit oder Engineering-Score ergänzt.
+- Projektweiten Anlagenvergleich als CSV-Export ergänzt.
+- Sidebar um eine eigene Anlagenliste erweitert; der Wechsel auf eine Anlage berechnet und zeigt jetzt zuverlässig genau den gewählten Anlagenstand.
+- Automatische Neuberechnung im Arbeitsbereich auf die aktive Anlage umgestellt, damit Bearbeitungen in Mehranlagen-Projekten nicht versehentlich die erste Anlage berechnen.
+- Professional Report um eine projektweite Anlagenübersicht ergänzt; bei Einanlagen-Projekten bleibt der bisherige Berichtsumfang unverändert.
+- Deployment-Diagnose um Anlagenmanager-Engine und Phase-34-Stylesheet erweitert.
+- Zwei neue Testgruppen mit 61 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.11.0 und Cachekennung auf 34.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
+## Phase 33.00 – Projektübergabe, Importkontrolle und Freigabepaket
+
+- Neuen Bereich **Ausgabe → Übergabe** für kontrollierte Projektübernahme und dokumentierte Freigabe ergänzt.
+- Nicht-destruktive Importvorschau für `.dvp`, `.dvpa`, `.dvph` und kompatible JSON-Dateien umgesetzt.
+- Eingehende Dateien werden vor der Übernahme neu berechnet, diagnostiziert und mit Projektname, Revision, Schema, Version, Prüfsumme und Objektanzahlen dargestellt.
+- Vergleich zum aktuell geöffneten Projekt mit Identitätsprüfung und Differenzen bei Teilstrecken, Formteilen und Sonderbauteilen ergänzt.
+- Neuere Dateistände und automatische Normalisierungshinweise werden vor der Übernahme sichtbar ausgewiesen.
+- Vor einer bestätigten Projektübernahme wird automatisch eine lokale Notfallsicherung des aktuellen Stands erstellt.
+- Anlagenbezogenen Übergabestatus mit **Entwurf**, **Vorbereitet**, **Geprüft** und **Freigegeben** eingeführt.
+- Vier-Augen-Dokumentation für vorbereitende, prüfende und freigebende Person sowie Übergabevermerk ergänzt.
+- Freigabe an aktuellen Revisionsstand und vollständiges manuelles Prüfprotokoll gekoppelt.
+- Neues integritätsgeschütztes `.dvph`-Freigabepaket mit eingebettetem `.dvpa`-Archiv, Projektdatei, Diagnose, Revisionen, Varianten und Freigabedaten eingeführt.
+- Manipulierte oder beschädigte Übergabepakete werden über eine Paketprüfsumme abgewiesen.
+- Separaten CSV-Export **Übergabeprotokoll** ergänzt.
+- Übergabestatus und Freigabepersonen in Professional Report und Gesamt-CSV integriert.
+- Deployment-QS um Übergabeengine und Phase-33-Stylesheet erweitert.
+- Zwei neue Testgruppen mit 51 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.10.0 und Cachekennung auf 33.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 32.00 – Projektsicherheit, Archiv und Wiederherstellung
 
 - Neuen Bereich **Projekt → Sicherung** für lokale Sicherungsstände, Wiederherstellung und gemeinsame Diagnose ergänzt.
