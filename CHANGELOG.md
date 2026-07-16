@@ -1,5 +1,21 @@
 # Änderungsverlauf
 
+## Phase 32.00 – Projektsicherheit, Archiv und Wiederherstellung
+
+- Neuen Bereich **Projekt → Sicherung** für lokale Sicherungsstände, Wiederherstellung und gemeinsame Diagnose ergänzt.
+- Datei-, Projekt- und Berechnungsdiagnose in einem neutralen Sicherheits-Score mit filterbaren Prüfpunkten zusammengeführt.
+- Lokale Sicherungshistorie mit maximal acht vollständigen Projektständen und automatischer Vermeidung identischer Duplikate umgesetzt.
+- Automatische Sicherheitssicherungen vor neuem Projekt, Demo-Projekt, Öffnen einer Datei und manuellem Projektdatei-Export ergänzt.
+- Wiederherstellung lokaler Stände mit vorgeschalteter Notfallsicherung und anschliessender Kennzeichnung als ungespeicherter Projektstand umgesetzt.
+- Portables `.dvpa`-Projektpaket mit eingebetteter `.dvp`-Nutzdatei, Diagnose, Abschlussdaten und stabiler Prüfsumme eingeführt.
+- Manipulierte oder beschädigte Projektpakete werden vor der Wiederherstellung abgewiesen.
+- Einzelne Sicherungsstände können wiederhergestellt, exportiert oder gelöscht werden; die gesamte Browserhistorie kann bewusst geleert werden.
+- Vollständigen Diagnoseexport als CSV ergänzt.
+- Deployment-QS um Sicherheitsengine, Stylesheet und Ribbon-Aktion erweitert.
+- Zwei neue Testgruppen mit insgesamt 46 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.9.0 und Cachekennung auf 32.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 31.00 – Technischer Revisionsvergleich und internes Prüfprotokoll
 
 - Revisionssnapshots um technische Detaildaten für Teilstrecken, Formteile und Sonderbauteile erweitert.

@@ -7,13 +7,14 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=31.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=32.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=31.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=32.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=31.00';
+import UiDialogService from './UiDialogService.js?v=32.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=32.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -23,6 +24,21 @@ export default class RibbonActions {
 
     this.state = state;
     this.commands = new ProjectCommands(state);
+  }
+
+  createSafetyBackup(label, reason = 'automatic') {
+    if (!this.state.project) return null;
+    try {
+      return ProjectSafetyEngine.saveLocalBackup(this.state.project, {
+        system: this.getActiveSystem(),
+        label,
+        reason,
+        isProjectDirty: this.state.isProjectDirty,
+      });
+    } catch (error) {
+      console.warn('Lokale Sicherheitssicherung konnte nicht erstellt werden:', error);
+      return null;
+    }
   }
 
   async confirmDiscardChanges(actionLabel = 'fortfahren') {
@@ -55,6 +71,7 @@ export default class RibbonActions {
   async newProject() {
     if (!await this.confirmDiscardChanges('ein neues Projekt erstellen')) return;
 
+    this.createSafetyBackup('Vor neuem Projekt', 'before-new-project');
     this.commands.createProject({ projectNumber: 'Unbenannte Projektnummer' });
     this.calculate({ silent: true, keepDirty: false });
     this.state.markProjectClean();
@@ -66,6 +83,7 @@ export default class RibbonActions {
   async loadDemoProject() {
     if (!await this.confirmDiscardChanges('das Demo-Projekt laden')) return;
 
+    this.createSafetyBackup('Vor Demo-Projekt', 'before-demo-project');
     const project = createDemoProject();
     this.state.setProject(project);
     this.state.setSelection('project', project);
@@ -93,6 +111,7 @@ export default class RibbonActions {
         const project = await StorageEngine.openFile(file);
         const importWarnings = project?._importInfo?.normalizedWarnings || project?._importInfo?.warnings || [];
 
+        this.createSafetyBackup('Vor Öffnen einer Projektdatei', 'before-open-project');
         this.state.setProject(project);
         this.state.setSelection('project', project);
         this.calculate({ silent: true, keepDirty: false });
@@ -129,6 +148,7 @@ export default class RibbonActions {
 
     try {
       this.calculate({ silent: true, keepDirty: true });
+      this.createSafetyBackup('Stand vor Dateiexport', 'manual-save');
       StorageEngine.download(project);
       this.state.markProjectClean();
       AutoSaveEngine.clear();
@@ -539,6 +559,18 @@ export default class RibbonActions {
       '',
       'Hinweis: Nach dem Hochladen auf GitHub Pages bitte Ctrl+F5 drücken, damit die neue Cache-Version geladen wird.',
     ].join('\n'));
+  }
+
+
+  showProjectSafety() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+    this.calculate({ silent: true, keepDirty: true });
+    this.state.setSelection?.('projectSafety', this.getActiveSystem());
+    this.state.notify?.();
   }
 
   showReport() {

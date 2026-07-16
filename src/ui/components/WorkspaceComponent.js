@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=31.00';
+import ReportEngine from '../../report/ReportEngine.js?v=32.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=31.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=32.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,15 +89,17 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=31.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=32.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=31.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=31.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=31.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=31.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=31.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=32.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=32.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=32.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=32.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=32.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=32.00';
+import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -146,6 +148,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'networkSchematic') return this.renderNetworkSchematic(selection.data);
     if (selection.type === 'liveSimulation') return this.renderLiveSimulation(selection.data);
     if (selection.type === 'projectCompletion') return this.renderProjectCompletion(selection.data);
+    if (selection.type === 'projectSafety') return this.renderProjectSafety(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
     if (selection.type === 'referenceTests') return this.renderReferenceTests(selection.data || this.state.referenceTests);
@@ -10102,6 +10105,257 @@ formatNumber(value, digits = 2) {
         this.renderProjectCompletion(activeSystem);
       });
     });
+  }
+
+  renderProjectSafety(system = null) {
+    const project = this.state.project || null;
+    const activeSystem = system || this.state.selectedSystem || project?.systems?.[0] || null;
+    if (!project) {
+      this.root.innerHTML = '<h1>Projektsicherheit</h1><p>Kein Projekt vorhanden.</p>';
+      return;
+    }
+
+    if (!project.calculationResult || this.state.isCalculationDirty) this.autoCalculateProject({ notify: false });
+    const autosave = AutoSaveEngine.load();
+    const health = ProjectSafetyEngine.createHealth(project, {
+      system: activeSystem,
+      isProjectDirty: this.state.isProjectDirty,
+      autosave,
+      autosaveDescription: autosave ? AutoSaveEngine.describe(autosave) : '',
+    });
+    const statusLabel = health.status === 'ok' ? 'Gesichert' : health.status === 'error' ? 'Fehler' : 'Prüfen';
+    const checkedAt = new Date(health.checkedAt);
+    const checkedLabel = Number.isNaN(checkedAt.getTime()) ? '-' : checkedAt.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+    const sizeKb = Math.max(1, Math.round(Number(health.jsonSizeBytes || 0) / 1024));
+    const diagnostics = (health.items || []).slice(0, 40);
+
+    this.root.innerHTML = `
+      <section class="dp-phase-hero is-safety">
+        <div>
+          <span class="dp-phase-kicker">PHASE 32 · PROJEKTSICHERHEIT</span>
+          <h1>Projektarchiv und Wiederherstellung</h1>
+          <p>Lokale Sicherungsstände verwalten, ein vollständiges Projektpaket exportieren und Datei, Berechnung sowie Projektstruktur gemeinsam prüfen.</p>
+        </div>
+        <div class="dp-safety-score is-${this.escapeAttribute(health.status)}">
+          <span>${this.escapeHtml(statusLabel)}</span>
+          <strong>${Math.round(Number(health.score || 0))}/100</strong>
+          <small>${this.escapeHtml(health.projectLabel)} · Rev. ${this.escapeHtml(health.revision)}</small>
+        </div>
+      </section>
+
+      <div class="dp-safety-actions">
+        <button type="button" class="is-primary" data-safety-action="backup">Lokale Sicherung erstellen</button>
+        <button type="button" data-safety-action="export-archive">Projektpaket exportieren</button>
+        <button type="button" data-safety-action="import-archive">Projektpaket öffnen</button>
+        <button type="button" data-safety-action="diagnostics-csv">Diagnose als CSV</button>
+        <button type="button" data-safety-action="refresh">Neu prüfen</button>
+      </div>
+
+      <section class="dp-safety-kpis">
+        <article><span>Projektdatei</span><strong>${this.escapeHtml(health.fileName || '-')}</strong><small>Schema ${this.escapeHtml(health.schemaVersion || '-')} · ca. ${sizeKb} kB</small></article>
+        <article><span>Prüfsumme</span><strong><code>${this.escapeHtml(health.checksum || '-')}</code></strong><small>Änderungen erzeugen eine neue Prüfsumme</small></article>
+        <article><span>Lokale Sicherungen</span><strong>${health.backups?.length || 0} / 8</strong><small>${health.storageAvailable ? 'Nur in diesem Browser gespeichert' : 'Lokaler Speicher nicht verfügbar'}</small></article>
+        <article><span>Abschlussstand</span><strong>${health.completion ? Math.round(Number(health.completion.score || 0)) + '/100' : '-'}</strong><small>${health.completion?.revisionCurrent ? 'Revision entspricht aktuellem Projekt' : 'Aktuellen Revisionsstand prüfen'}</small></article>
+      </section>
+
+      <section class="dp-safety-grid">
+        <article class="dp-safety-panel">
+          <div class="dp-panel-header">
+            <div><span class="dp-overline">Manuelle Sicherung</span><h2>Aktuellen Stand lokal festhalten</h2><p>Bis zu acht Projektstände werden im Browser gespeichert. Identische Stände werden nicht doppelt angelegt.</p></div>
+          </div>
+          <div class="dp-safety-form">
+            <label><span>Bezeichnung</span><input data-safety-field="label" value="Manuelle Sicherung" placeholder="z. B. Stand vor Variantenänderung"></label>
+            <label><span>Bemerkung</span><textarea data-safety-field="note" rows="3" placeholder="Optionaler Hinweis zum Sicherungsstand"></textarea></label>
+          </div>
+          <div class="dp-safety-info">
+            <strong>Autosicherung</strong>
+            <p>${this.escapeHtml(autosave ? AutoSaveEngine.describe(autosave) : (this.state.isProjectDirty ? 'Ungespeicherte Änderungen werden automatisch lokal gesichert.' : 'Aktuell liegt kein ungesicherter Projektstand vor.'))}</p>
+          </div>
+        </article>
+
+        <article class="dp-safety-panel">
+          <div class="dp-panel-header">
+            <div><span class="dp-overline">Übergabeformat</span><h2>Vollständiges Projektpaket .dvpa</h2><p>Enthält die normale .dvp-Projektdatei, Prüfsumme, Diagnose, Revisions- und Abschlussinformationen.</p></div>
+          </div>
+          <div class="dp-safety-package">
+            <div><span>Format</span><strong>Druckverlust-Projektarchiv</strong><small>Wiederherstellbar in Phase 32 und neuer</small></div>
+            <div><span>Diagnose</span><strong>${health.counts?.error || 0} Fehler · ${health.counts?.warning || 0} Hinweise</strong><small>Letzte Prüfung ${this.escapeHtml(checkedLabel)}</small></div>
+            <div><span>Dokumentation</span><strong>${health.completion?.revisionCount || 0} Revisionen · ${health.completion?.variantCount || 0} Varianten</strong><small>Prüfprotokoll ${health.completion?.reviewComplete ? 'vollständig' : 'offen'}</small></div>
+          </div>
+          <p class="dp-safety-disclaimer">Das .dvpa-Paket ist eine zusätzliche Übergabe- und Wiederherstellungsdatei. Die normale .dvp-Datei bleibt das Standardformat für die tägliche Projektbearbeitung.</p>
+        </article>
+      </section>
+
+      <section class="dp-safety-panel dp-safety-history">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Lokale Historie</span><h2>Gesicherte Projektstände</h2><p>Wiederherstellen legt vorher automatisch eine Notfallsicherung des aktuellen Projekts an.</p></div>
+          ${health.backups?.length ? '<button type="button" data-safety-action="clear-backups">Historie leeren</button>' : ''}
+        </div>
+        ${health.backups?.length ? `<div class="dp-safety-backup-list">
+          ${health.backups.map((backup, index) => {
+            const date = new Date(backup.createdAt || '');
+            const dateLabel = Number.isNaN(date.getTime()) ? '-' : date.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+            const backupKb = Math.max(1, Math.round(Number(backup.sizeBytes || 0) / 1024));
+            return `<article class="dp-safety-backup ${index === 0 ? 'is-newest' : ''}">
+              <div class="dp-safety-backup-state is-${this.escapeAttribute(backup.status || 'unknown')}">${Math.round(Number(backup.score || 0))}</div>
+              <div class="dp-safety-backup-main"><span>${index === 0 ? 'Neueste Sicherung' : 'Lokale Sicherung'}</span><strong>${this.escapeHtml(backup.label || 'Sicherung')}</strong><p>${this.escapeHtml(backup.note || `${backup.projectName || 'Projekt'} · ${backup.systemName || 'Anlage'}`)}</p><small>${this.escapeHtml(dateLabel)} · Rev. ${this.escapeHtml(backup.revision || '0')} · ${backupKb} kB · <code>${this.escapeHtml(backup.checksum || '-')}</code></small></div>
+              <div class="dp-safety-backup-actions">
+                <button type="button" data-safety-backup-action="restore" data-safety-backup-id="${this.escapeAttribute(backup.id)}">Wiederherstellen</button>
+                <button type="button" data-safety-backup-action="download" data-safety-backup-id="${this.escapeAttribute(backup.id)}">Exportieren</button>
+                <button type="button" class="is-danger" data-safety-backup-action="delete" data-safety-backup-id="${this.escapeAttribute(backup.id)}">Löschen</button>
+              </div>
+            </article>`;
+          }).join('')}
+        </div>` : `<div class="dp-quality-empty"><strong>Noch keine lokale Sicherung</strong><p>Erstelle vor grösseren Änderungen oder vor dem Öffnen eines anderen Projekts einen Sicherungsstand.</p><button type="button" data-safety-action="backup">Erste Sicherung erstellen</button></div>`}
+      </section>
+
+      <section class="dp-safety-panel dp-safety-diagnostics">
+        <div class="dp-panel-header">
+          <div><span class="dp-overline">Gemeinsame Diagnose</span><h2>Datei, Projekt und Berechnung</h2><p>${this.escapeHtml(health.summary)}</p></div>
+          <div class="dp-safety-filter" role="group" aria-label="Diagnose filtern"><button type="button" class="is-active" data-safety-filter="all">Alle</button><button type="button" data-safety-filter="error">Fehler</button><button type="button" data-safety-filter="warning">Hinweise</button><button type="button" data-safety-filter="ok">OK</button></div>
+        </div>
+        <div class="dp-safety-diagnostic-list">
+          ${diagnostics.map(item => `<article class="is-${this.escapeAttribute(item.status)}" data-safety-diagnostic="${this.escapeAttribute(item.status)}"><span>${item.status === 'ok' ? '✓' : item.status === 'error' ? '!' : '•'}</span><div><small>${this.escapeHtml(item.area)}</small><strong>${this.escapeHtml(item.label)}</strong><p>${this.escapeHtml(item.message)}</p>${item.details ? `<em>${this.escapeHtml(item.details)}</em>` : ''}</div></article>`).join('')}
+        </div>
+        ${(health.items || []).length > diagnostics.length ? `<p class="dp-safety-disclaimer">Es werden die ersten ${diagnostics.length} von ${health.items.length} Prüfpunkten dargestellt. Der CSV-Export enthält die vollständige Diagnose.</p>` : ''}
+      </section>
+    `;
+
+    this.bindProjectSafety(activeSystem, health);
+  }
+
+  bindProjectSafety(activeSystem, health = {}) {
+    const project = this.state.project;
+    if (!project) return;
+
+    const rerender = () => this.renderProjectSafety(this.state.selectedSystem || activeSystem);
+    const createBackup = () => {
+      try {
+        const backup = ProjectSafetyEngine.saveLocalBackup(project, {
+          system: activeSystem,
+          label: this.root.querySelector('[data-safety-field="label"]')?.value || 'Manuelle Sicherung',
+          note: this.root.querySelector('[data-safety-field="note"]')?.value || '',
+          reason: 'manual',
+          isProjectDirty: this.state.isProjectDirty,
+        });
+        if (!backup) throw new Error('Lokaler Browser-Speicher ist nicht verfügbar.');
+        UiDialogService.alert({ title: 'Sicherung erstellt', message: `Der Projektstand wurde lokal mit der Prüfsumme ${backup.checksum} gespeichert.`, tone: 'success' });
+        rerender();
+      } catch (error) {
+        UiDialogService.alert({ title: 'Sicherung fehlgeschlagen', message: error.message, tone: 'error' });
+      }
+    };
+
+    this.root.querySelectorAll('[data-safety-action="backup"]').forEach(button => button.addEventListener('click', createBackup));
+    this.root.querySelector('[data-safety-action="refresh"]')?.addEventListener('click', rerender);
+    this.root.querySelector('[data-safety-action="diagnostics-csv"]')?.addEventListener('click', () => {
+      ProjectSafetyEngine.downloadDiagnostics(project, health, { system: activeSystem });
+    });
+    this.root.querySelector('[data-safety-action="export-archive"]')?.addEventListener('click', () => {
+      try {
+        const result = ProjectSafetyEngine.downloadArchive(project, {
+          system: activeSystem,
+          health,
+          label: 'Projektpaket für Übergabe',
+          reason: 'handover',
+          isProjectDirty: this.state.isProjectDirty,
+        });
+        UiDialogService.alert({ title: 'Projektpaket erstellt', message: `${result.fileName} wurde mit Projektdatei, Prüfsumme und Diagnose erzeugt.`, tone: 'success' });
+      } catch (error) {
+        UiDialogService.alert({ title: 'Projektpaket fehlgeschlagen', message: error.message, tone: 'error' });
+      }
+    });
+
+    const applyRestoredProject = result => {
+      this.state.setProject(result.project);
+      const calculation = ProjectCalculationService.calculate(this.state.project);
+      this.state.project.calculationResult = calculation;
+      this.state.lastCalculationAt = calculation.timestamp || new Date().toISOString();
+      this.state.isCalculationDirty = false;
+      this.state.isProjectDirty = true;
+      this.state.setSelection('projectSafety', this.state.selectedSystem || this.state.project.systems?.[0] || null);
+      this.state.notify();
+    };
+
+    this.root.querySelector('[data-safety-action="import-archive"]')?.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.dvpa,.json,application/json';
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+          const result = await ProjectSafetyEngine.readArchiveFile(file);
+          const confirmed = await UiDialogService.confirm({
+            title: 'Projektpaket wiederherstellen',
+            message: `„${result.archive.projectName || 'Projekt'}“ aus dem Projektpaket öffnen?`,
+            details: [`Archiv erstellt: ${result.archive.createdAt || '-'}`, `Prüfsumme: ${result.archive.checksum || '-'}`, 'Der aktuelle Projektstand wird vorher lokal notgesichert.'],
+            confirmLabel: 'Projektpaket öffnen',
+            tone: 'warning',
+          });
+          if (!confirmed) return;
+          ProjectSafetyEngine.saveLocalBackup(project, { system: activeSystem, label: 'Notfallsicherung vor Archivimport', reason: 'before-archive-import', allowDuplicate: true });
+          applyRestoredProject(result);
+          UiDialogService.alert({ title: 'Projekt wiederhergestellt', message: 'Das Projektpaket wurde geprüft und als bearbeitbarer Projektstand geöffnet.', tone: 'success' });
+        } catch (error) {
+          UiDialogService.alert({ title: 'Projektpaket konnte nicht geöffnet werden', message: error.message, tone: 'error' });
+        }
+      });
+      input.click();
+    });
+
+    this.root.querySelectorAll('[data-safety-backup-action]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const id = button.dataset.safetyBackupId;
+        const action = button.dataset.safetyBackupAction;
+        try {
+          if (action === 'download') {
+            const backup = ProjectSafetyEngine.getLocalBackup(id);
+            const fileName = ProjectSafetyEngine.downloadStoredArchive(backup);
+            UiDialogService.alert({ title: 'Sicherung exportiert', message: fileName, tone: 'success' });
+            return;
+          }
+          if (action === 'delete') {
+            const confirmed = await UiDialogService.confirm({ title: 'Lokale Sicherung löschen', message: 'Dieser Sicherungsstand wird nur aus dem aktuellen Browser entfernt.', confirmLabel: 'Sicherung löschen', tone: 'danger' });
+            if (!confirmed) return;
+            ProjectSafetyEngine.deleteLocalBackup(id);
+            rerender();
+            return;
+          }
+          if (action === 'restore') {
+            const result = ProjectSafetyEngine.restoreLocalBackup(id);
+            const confirmed = await UiDialogService.confirm({
+              title: 'Sicherungsstand wiederherstellen',
+              message: `„${result.archive.label || result.archive.projectName || 'Sicherung'}“ öffnen?`,
+              details: [`Stand: ${result.archive.createdAt || '-'}`, `Prüfsumme: ${result.archive.checksum || '-'}`, 'Der aktuelle Stand wird vorher als Notfallsicherung gespeichert.'],
+              confirmLabel: 'Wiederherstellen',
+              tone: 'warning',
+            });
+            if (!confirmed) return;
+            ProjectSafetyEngine.saveLocalBackup(project, { system: activeSystem, label: 'Notfallsicherung vor Wiederherstellung', reason: 'before-restore', allowDuplicate: true });
+            applyRestoredProject(result);
+            UiDialogService.alert({ title: 'Sicherungsstand geöffnet', message: 'Der wiederhergestellte Projektstand ist als ungespeicherte Änderung markiert. Bitte anschliessend als .dvp-Datei speichern.', tone: 'success' });
+          }
+        } catch (error) {
+          UiDialogService.alert({ title: 'Aktion fehlgeschlagen', message: error.message, tone: 'error' });
+        }
+      });
+    });
+
+    this.root.querySelector('[data-safety-action="clear-backups"]')?.addEventListener('click', async () => {
+      const confirmed = await UiDialogService.confirm({ title: 'Sicherungshistorie leeren', message: 'Alle lokalen Sicherungen dieses Browsers werden gelöscht. Exportierte .dvpa-Dateien bleiben erhalten.', confirmLabel: 'Historie leeren', tone: 'danger' });
+      if (!confirmed) return;
+      ProjectSafetyEngine.clearLocalBackups();
+      rerender();
+    });
+
+    this.root.querySelectorAll('[data-safety-filter]').forEach(button => button.addEventListener('click', () => {
+      const filter = button.dataset.safetyFilter || 'all';
+      this.root.querySelectorAll('[data-safety-filter]').forEach(item => item.classList.toggle('is-active', item === button));
+      this.root.querySelectorAll('[data-safety-diagnostic]').forEach(item => {
+        item.hidden = filter !== 'all' && item.dataset.safetyDiagnostic !== filter;
+      });
+    }));
   }
 
   renderEngineeringQuality(system = null) {

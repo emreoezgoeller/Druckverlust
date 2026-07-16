@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=31.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=32.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -102,6 +102,8 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Engineering', label: 'Anlagenschema', path: `src/schematic/NetworkSchematicEngine.js?v=${version}` },
     { area: 'Simulation', label: 'Live-Simulation', path: `src/simulation/LiveSimulationEngine.js?v=${version}` },
     { area: 'Abschluss', label: 'Projektabschluss', path: `src/closing/ProjectCompletionEngine.js?v=${version}` },
+    { area: 'Sicherung', label: 'Projektarchiv und Wiederherstellung', path: `src/safety/ProjectSafetyEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Projektsicherheits-CSS', path: `src/ui/phase32_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
@@ -287,6 +289,7 @@ function checkUiShell() {
     'projectCheck',
     'showReport',
     'showProjectCompletion',
+    'showProjectSafety',
     'showShortcutHelp',
     'showAppInfo',
   ];

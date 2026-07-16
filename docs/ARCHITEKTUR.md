@@ -1,10 +1,10 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 1.8.0 · Phase 31.00
+Stand: Version 1.9.0 · Phase 32.00
 
 ## 1. Ausführung
 
-Druckverlust Pro ist eine statische Webanwendung ohne Build-Schritt und ohne Backend. HTML, CSS, JavaScript-Module und Medien werden über einen lokalen Webserver oder GitHub Pages ausgeliefert. Projektdaten bleiben lokal im Browser oder werden als `.dvp`, HTML, CSV beziehungsweise über den Browserdruck als PDF exportiert.
+Druckverlust Pro ist eine statische Webanwendung ohne Build-Schritt und ohne Backend. HTML, CSS, JavaScript-Module und Medien werden über einen lokalen Webserver oder GitHub Pages ausgeliefert. Projektdaten bleiben lokal im Browser oder werden als `.dvp`, geprüftes `.dvpa`-Projektpaket, HTML, CSV beziehungsweise über den Browserdruck als PDF exportiert.
 
 ## 2. Einstiegspunkte
 
@@ -39,6 +39,7 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/simulation/LiveSimulationEngine.js` – nicht-destruktive Luftmengen-/Dimensionssimulation
 - `src/closing/ProjectCompletionEngine.js` – Variantenarchiv, Fingerprints, Revisionssnapshots, Prüfprotokoll und Abschlussstatus
 - `src/revision/RevisionComparisonEngine.js` – technische Snapshots sowie Detailvergleich von Teilstrecken und Bauteilen
+- `src/safety/ProjectSafetyEngine.js` – gemeinsame Diagnose, lokale Sicherungshistorie, Prüfsumme und `.dvpa`-Projektpakete
 
 ### Oberfläche
 
@@ -48,12 +49,13 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/ui/components/WorkspaceComponent.js` – Editoren, Bibliotheken, Analyse, Simulation und Abschluss
 - `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
 - `src/ui/core/RibbonActions.js` – zentrale Aktionen
-- `src/ui/phase22_00.css` bis `src/ui/phase31_00.css` – additive, releasebezogene UI-Schichten
+- `src/ui/phase22_00.css` bis `src/ui/phase32_00.css` – additive, releasebezogene UI-Schichten
 
 ### Speicherung und Bericht
 
 - `src/storage/StorageEngine.js` – `.dvp`-Serialisierung, Normalisierung und Migration
-- `src/storage/AutoSaveEngine.js` – lokale Autosicherung
+- `src/storage/AutoSaveEngine.js` – kurzfristige lokale Autosicherung
+- `src/safety/ProjectSafetyEngine.js` – versionierte Sicherungsstände und portable Übergabepakete
 - `src/report/ReportEngine.js` – einzig aktive HTML-/CSV-/PDF-Berichtengine
 
 ### Diagnose und Tests
@@ -81,6 +83,7 @@ calculationResult (flüchtig, wird nicht in .dvp gespeichert)
    ├── LiveSimulationEngine
    ├── ProjectCompletionEngine
    ├── RevisionComparisonEngine
+   ├── ProjectSafetyEngine
    └── ReportEngine
 ```
 
@@ -105,6 +108,28 @@ project.revisionSnapshots + report.revisionHistory
 Projektabschluss / Professional Report / CSV
 ```
 
+
+Projektsicherheit:
+
+```text
+Aktueller Projektstand
+   ├── kurzfristig → AutoSaveEngine
+   ├── manuell/automatisch → localStorage-Sicherungshistorie (max. 8 Stände)
+   └── Übergabe/Langzeitablage → ProjectSafetyEngine
+                                  ↓
+                         .dvpa-Projektpaket
+                         ├── normale .dvp-Nutzdatei
+                         ├── stabile Prüfsumme
+                         ├── gemeinsame Diagnose
+                         └── Abschluss-/Revisionsmetadaten
+
+Wiederherstellung
+   ↓ Notfallsicherung des aktuellen Stands
+Prüfsumme und Schema validieren
+   ↓
+Projekt normalisieren, neu berechnen und als ungespeichert markieren
+```
+
 ## 5. Persistenz
 
 `StorageEngine` speichert alle fachlich relevanten Projektdaten, einschliesslich:
@@ -118,6 +143,8 @@ Projektabschluss / Professional Report / CSV
 - gewählte Basisrevision für den Bericht,
 - manuelle Prüfprotokolle je Anlage.
 
+Zusätzlich verwaltet `ProjectSafetyEngine` bis zu acht vollständige Sicherungsarchive im `localStorage` des aktuellen Browsers. Diese Historie ist browsergebunden und wird nicht in der `.dvp`-Datei verschachtelt. Exportierte `.dvpa`-Pakete sind portabel und enthalten eine normale `.dvp`-Dateihülle plus Diagnose- und Integritätsdaten.
+
 Flüchtige Berechnungsergebnisse, Validierungsobjekte und Importinformationen werden vor dem Speichern entfernt und nach dem Öffnen neu erzeugt.
 
 ## 6. Fingerprints
@@ -129,7 +156,11 @@ Flüchtige Berechnungsergebnisse, Validierungsobjekte und Importinformationen we
 
 Damit macht eine reine Revisionsänderung eine fachlich unveränderte Simulationsvariante nicht fälschlich veraltet. Phase 31 ergänzt den technischen Snapshot als strukturierte Vergleichsbasis; ältere Snapshots ohne Detaildaten bleiben lesbar.
 
-## 7. Pfade und Produktgrenzen
+## 7. Integrität und Wiederherstellung
+
+Die Prüfsumme des Projektpakets wird über eine kanonische `.dvp`-Dateihülle gebildet; der wechselnde Exportzeitpunkt wird dabei ausgeklammert. Beim Öffnen eines `.dvpa`-Pakets werden Dateityp, Schema, eingebettete Projektdatei und Prüfsumme geprüft. Ein verändertes oder unvollständiges Paket wird abgewiesen. Vor dem Ersetzen des aktuell geöffneten Projekts wird automatisch eine lokale Notfallsicherung erzeugt.
+
+## 8. Pfade und Produktgrenzen
 
 Alle Laufzeitpfade sind relativ zum Projektstamm. Aktive Formteilmedien liegen kanonisch unter `assets/formteile/`.
 

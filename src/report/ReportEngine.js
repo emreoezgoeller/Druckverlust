@@ -1,9 +1,9 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=31.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=32.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=31.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=31.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=31.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=31.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=32.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=32.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=32.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=32.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.

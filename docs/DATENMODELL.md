@@ -1,6 +1,6 @@
 # Datenmodell – Druckverlust Pro
 
-Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.8.0 · Phase 31.00
+Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · Anwendung 1.9.0 · Phase 32.00
 
 ## 1. Dateihülle
 
@@ -8,8 +8,8 @@ Stand: `.dvp`-Schema 1.1.0 · Anwendung 1.8.0 · Phase 31.00
 {
   "fileType": "DruckverlustPro",
   "schemaVersion": "1.1.0",
-  "appVersion": "1.8.0",
-  "appRelease": "31.00",
+  "appVersion": "1.9.0",
+  "appRelease": "32.00",
   "exportedAt": "2026-07-15T08:00:00.000Z",
   "summary": {},
   "project": {}
@@ -217,3 +217,66 @@ Folgende Felder werden bewusst nicht in `.dvp` geschrieben:
 - `_importInfo`
 
 Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erzeugt.
+
+## 11. Portables Projektpaket `.dvpa`
+
+```json
+{
+  "fileType": "DruckverlustProArchive",
+  "schemaVersion": "1.0.0",
+  "appVersion": "1.9.0",
+  "appRelease": "32.00",
+  "createdAt": "2026-07-16T10:30:00.000Z",
+  "label": "Projektpaket für Übergabe",
+  "note": "Optionaler Hinweis",
+  "reason": "handover",
+  "projectName": "2026-001",
+  "systemName": "Zuluftanlage",
+  "revision": "2",
+  "checksum": "a1b2c3d4",
+  "projectFile": {
+    "fileType": "DruckverlustPro",
+    "schemaVersion": "1.1.0",
+    "project": {}
+  },
+  "diagnostics": {
+    "status": "warning",
+    "score": 94,
+    "counts": {},
+    "items": []
+  },
+  "completion": {}
+}
+```
+
+Das Paket ersetzt die `.dvp`-Projektdatei nicht. Es umschliesst die normale, weiterhin kompatible `.dvp`-Dateihülle und ergänzt sie um Integritäts-, Diagnose- und Übergabeinformationen. Die Prüfsumme wird beim Öffnen neu berechnet; veränderte Pakete werden abgewiesen.
+
+## 12. Lokale Sicherungshistorie
+
+Die Sicherungshistorie wird unter dem Browser-Schlüssel `druckverlust-pro.backup-history.v1` gespeichert:
+
+```json
+{
+  "backups": [
+    {
+      "id": "backup-...",
+      "label": "Stand vor Projektwechsel",
+      "note": "Optionaler Hinweis",
+      "reason": "before-open-project",
+      "createdAt": "2026-07-16T10:30:00.000Z",
+      "projectName": "2026-001",
+      "systemName": "Zuluftanlage",
+      "revision": "2",
+      "checksum": "a1b2c3d4",
+      "archive": {}
+    }
+  ]
+}
+```
+
+- Es werden maximal acht Stände gehalten.
+- Identische Projektstände werden standardmässig nicht doppelt abgelegt.
+- Vor einer Wiederherstellung wird eine Notfallsicherung des aktuellen Projekts angelegt.
+- Die Historie gehört nur zum aktuellen Browserprofil und kann durch das Löschen von Browserdaten verloren gehen.
+- Für Übergabe, Langzeitablage oder Gerätewechsel ist eine exportierte `.dvp`- oder `.dvpa`-Datei erforderlich.
+

@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=31.00';
+import RibbonActions from '../core/RibbonActions.js?v=32.00';
 
 const RIBBON_GROUPS = [
   {
@@ -12,6 +12,7 @@ const RIBBON_GROUPS = [
       { action: 'newProject', label: 'Neu', icon: 'filePlus', title: 'Neues Projekt erstellen (Strg+N)' },
       { action: 'openProject', label: 'Öffnen', icon: 'folder', title: 'Projektdatei öffnen (Strg+O)' },
       { action: 'saveProject', label: 'Speichern', icon: 'save', title: 'Projekt speichern (Strg+S)', emphasis: 'primary' },
+      { action: 'showProjectSafety', label: 'Sicherung', icon: 'shieldCheck', title: 'Projektarchiv, lokale Sicherungen und Wiederherstellung öffnen' },
     ],
   },
   {
@@ -191,6 +192,7 @@ export default class RibbonComponent {
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
     const completionButton = this.root.querySelector('[data-action="showProjectCompletion"]');
+    const safetyButton = this.root.querySelector('[data-action="showProjectSafety"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -207,7 +209,10 @@ export default class RibbonComponent {
       button.removeAttribute('aria-current');
     });
 
-    if (selectionType === 'engineeringQuality') {
+    if (selectionType === 'projectSafety') {
+      safetyButton?.classList.add('is-current');
+      safetyButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'engineeringQuality') {
       qualityButton?.classList.add('is-current');
       qualityButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'networkSchematic') {

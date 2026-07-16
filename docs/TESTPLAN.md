@@ -308,3 +308,28 @@ Die beiden Testgruppen prüfen insgesamt 48 Einzelpunkte:
 - Rückwärtskompatibilität zu älteren Snapshots ohne technische Detaildaten.
 
 Die Phase-31-Prüfung ergänzt die vollständige Suite; sie ersetzt keine bestehenden Rechen-, Formteil-, Praxis-, Schema- oder Berichtstests.
+
+## Phase 32.00 – Projektsicherheit, Archiv und Wiederherstellung
+
+```bash
+npm run test:phase32
+```
+
+Die beiden Testgruppen prüfen insgesamt 46 Einzelpunkte:
+
+- gemeinsame Datei-, Projekt- und Berechnungsdiagnose,
+- Sicherheits-Score, Prüfsumme und `.dvp`-Dateiinformationen,
+- Aufbau und Roundtrip des `.dvpa`-Projektpakets,
+- Ablehnung eines nachträglich veränderten Archivs,
+- dateisystemfreundliche Archivnamen,
+- lokale Sicherungshistorie mit maximal acht Ständen,
+- Vermeidung doppelter identischer Sicherungen,
+- Wiederherstellen, Löschen und vollständiges Leeren der Historie,
+- vollständigen Diagnose-CSV-Export,
+- Ribbon-, Workspace-, CSS- und Deployment-QS-Integration,
+- automatische Sicherheitssicherung vor Projektwechsel und Dateiexport,
+- Notfallsicherung vor Wiederherstellung,
+- Versions- und Cachekennung 32.00.
+
+Die Phase-32-Prüfung ergänzt die vollständige Suite. Die lokale Historie wird mit einem isolierten Speichertest geprüft; reale Browserprofile oder bestehende Benutzerdaten werden dabei nicht verändert.
+
