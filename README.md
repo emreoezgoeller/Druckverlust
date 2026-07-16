@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.12.0 · Phase 35.00 · Projektcockpit, projektweite QS-Matrix und Dokumentationsstatus.
+**Aktueller Stand:** Version 1.15.0 · Phase 38.00 · globale Projektsuche, Projektindex, Querverweise und Sprungmarken.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
 ## Lokal starten
 
@@ -44,7 +44,7 @@ Druckverlust/
 │   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
-│   ├── project/               Projekte, Anlagenmanager, Standard-, Demo- und Praxisprojekte
+│   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, globale Suche, Projektindex, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── revision/              technische Snapshots und Revisionsvergleich
 │   ├── report/                Bericht-, CSV- und PDF-Engine
@@ -58,6 +58,59 @@ Druckverlust/
 ├── tests/                     Node- und Browserprüfungen
 └── docs/                      technische Dokumentation
 ```
+
+## Phase 38.00
+
+Unter **Projekt → Suche** steht jetzt ein globaler Projektindex für grosse Ein- und Mehranlagen-Projekte zur Verfügung:
+
+- Volltextsuche über Projektangaben, Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Varianten,
+- gewichtete Trefferreihenfolge mit Vorrang für exakte Bezeichnungen und direkte Titelübereinstimmungen,
+- Filter nach Kategorie und Anlage,
+- Querverweise von Teilstrecken zu zugeordneten Formteilen, Sonderbauteilen und Aufgaben,
+- direkter Sprung zum gefundenen Projekt-, Anlagen-, Teilstrecken- oder Bauteilelement,
+- projektbezogene Sprungmarken für häufig verwendete Suchtreffer,
+- projektbezogener Suchverlauf mit maximal acht Einträgen,
+- vollständiger Projektindex als CSV-Export,
+- Integration in Ribbon, Sidebar, Statusleiste, Aufgaben-Schnellzugriffe und Tastenkürzel `Ctrl + K`,
+- responsive Darstellung für Desktop, Tablet und kleinere Bildschirme.
+
+Die Suche arbeitet ausschliesslich mit den Daten der geöffneten Projektdatei. Es findet keine externe Übertragung oder Herstellerzuordnung statt.
+
+## Phase 37.00
+
+Unter **Projekt → Aufgaben** steht jetzt ein zentraler Projekt-Navigator für die tägliche Abarbeitung zur Verfügung:
+
+- automatische Übernahme projektweiter QS-Feststellungen als priorisierte Aufgaben,
+- manuelle Aufgaben mit Priorität, Fälligkeit, Bearbeiter sowie Anlagen- und Teilstreckenbezug,
+- Statuswechsel zwischen Offen, In Bearbeitung und Erledigt,
+- Filter nach Status, Kritikalität, Überfälligkeit und Aufgabenquelle,
+- direkte Navigation zur betroffenen Anlage oder Teilstrecke,
+- Schnellzugriffe zu den wichtigsten Projekt-, Prüf-, Simulations- und Ausgabebereichen,
+- Favoriten für häufig verwendete Ansichten, Anlagen und Teilstrecken,
+- Aufgaben- und Favoritenexport als CSV,
+- optionale Seite **Projektaufgaben** im Professional Report,
+- direkter Aufruf mit `Ctrl + Shift + T`.
+
+Automatische Aufgaben beruhen auf der herstellerneutralen Projekt- und Engineering-QS. Die Aufgabenliste unterstützt Organisation und Nachverfolgung, ersetzt aber weder eine verbindliche Terminplanung noch die fachliche Projektfreigabe.
+
+## Phase 36.00
+
+Unter **Projekt → Workflow** steht jetzt ein herstellerneutraler Bereich für standardisierte Projektabläufe zur Verfügung:
+
+- vordefinierte Prüfprofile für allgemeine Planung, Komfortbereiche und Technikbereiche,
+- frei definierbares benutzerdefiniertes Prüfprofil mit Plausibilitätsgrenzen,
+- neutrale Systemvorlagen für Zu-/Abluft, vollständige Lüftungsanlage und Umluft,
+- Vorlagen ergänzen nur fehlende Luftarten und überschreiben keine bestehenden Anlagen,
+- kontrollierte Massenbearbeitung für Luftmenge, Länge und Kanal- beziehungsweise Rohrdimension,
+- Geltungsbereiche für alle Teilstrecken, nur Rechteckkanäle, nur Rundrohre oder eine Auswahl,
+- verbindliche Vorschau mit Vorher-/Nachher-Werten vor der Übernahme,
+- Schutz vor dem Übernehmen einer veralteten Vorschau nach zwischenzeitlichen Projektänderungen,
+- automatische Sicherheitssicherung vor Vorlagen- und Massenänderungen,
+- optionales Neunummerieren und vollständige Neuberechnung nach der Übernahme,
+- projektweites Änderungsprotokoll mit Bearbeiter, Zeitstempel, Änderungstyp und technischem Detail,
+- Änderungsprotokoll als CSV sowie Prüfprofil im Professional Report und im Gesamt-CSV.
+
+Die Prüfprofile sind neutrale Projektvorgaben und keine allgemeingültigen Normgrenzen. Sie können projektspezifisch angepasst werden. Hersteller-, Produkt-, Ventilator-, Motorleistungs-, SFP- oder Energiedaten werden nicht ergänzt.
 
 ## Phase 35.00
 
@@ -134,6 +187,12 @@ npm test
 ```
 
 Gezielte Prüfung der neuen Phase:
+
+```bash
+npm run test:phase36
+```
+
+Vorherige Projektcockpit-Prüfung:
 
 ```bash
 npm run test:phase35

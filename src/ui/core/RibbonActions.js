@@ -7,14 +7,14 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=35.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=38.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=35.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=38.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=35.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=35.00';
+import UiDialogService from './UiDialogService.js?v=38.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=38.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -515,6 +515,9 @@ export default class RibbonActions {
       'Ctrl + Shift + U: Projektübergabe öffnen',
       'Ctrl + Shift + A: Anlagenmanager öffnen',
       'Ctrl + Shift + Q: Projektcockpit öffnen',
+      'Ctrl + Shift + W: Projektworkflow öffnen',
+      'Ctrl + Shift + T: Projekt-Navigator und Aufgaben öffnen',
+      'Ctrl + K: globale Projektsuche öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',
       'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',
@@ -564,6 +567,42 @@ export default class RibbonActions {
     ].join('\n'));
   }
 
+
+
+  showProjectStandardization() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('projectStandardization', project);
+    this.state.notify?.();
+  }
+
+
+  showProjectSearch() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('projectSearch', project);
+    this.state.notify?.();
+  }
+
+
+  showProjectTaskCenter() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('projectTaskCenter', project);
+    this.state.notify?.();
+  }
 
 
   showProjectCockpit() {

@@ -1,12 +1,14 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=35.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=38.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=35.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=35.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=35.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=35.00';
-import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=35.00';
-import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=35.00';
-import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=35.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=37.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=37.00';
+import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=37.00';
+import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=37.00';
+import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=37.00';
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00';
+import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -522,6 +524,11 @@ export class ReportEngine {
     const handoverApproval = ProjectHandoverEngine.getApproval(project, system?.id);
     const systemsOverview = SystemPortfolioEngine.analyze(project, { selectedSystemId: system?.id });
     const projectCockpit = ProjectPortfolioQualityEngine.analyze(project, { selectedSystemId: system?.id });
+    const projectWorkflow = {
+      profile: ProjectStandardizationEngine.resolveProfile(project),
+      changeHistory: ProjectStandardizationEngine.getHistory(project),
+    };
+    const projectTasks = ProjectTaskCenterEngine.analyze(project, { selectedSystemId: system?.id || null, cockpit: projectCockpit });
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -685,6 +692,8 @@ export class ReportEngine {
       handoverApproval,
       systemsOverview,
       projectCockpit,
+      projectWorkflow,
+      projectTasks,
       lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
@@ -936,6 +945,13 @@ export class ReportEngine {
         status: model.engineeringQuality?.status === 'critical' ? 'warning' : 'ok',
         message: `Engineering-Score ${Math.round(toNumber(model.engineeringQuality?.score, 100))}/100 · ${model.engineeringQuality?.findings?.length || 0} Feststellung(en).`,
         warning: 'Engineering-QS enthält kritische Feststellungen. Vor Abgabe fachlich prüfen.',
+      },
+      {
+        id: 'project-tasks',
+        label: 'Projektaufgaben',
+        status: (model.projectTasks?.counts?.critical || 0) > 0 || (model.projectTasks?.counts?.overdue || 0) > 0 ? 'warning' : 'ok',
+        message: `${model.projectTasks?.openTasks?.length || 0} offene Aufgabe(n), ${model.projectTasks?.counts?.done || 0} erledigt.`,
+        warning: `${model.projectTasks?.counts?.critical || 0} kritische und ${model.projectTasks?.counts?.overdue || 0} überfällige Aufgabe(n) vor Abgabe prüfen.`,
       },
       {
         id: 'quality-status',
@@ -1219,6 +1235,7 @@ export class ReportEngine {
     const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
     const systemsOverviewPageCount = reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1 ? 1 : 0;
     const projectCockpitPageCount = reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1 ? 1 : 0;
+    const projectTaskPageCount = reportOptions.includeQualityProtocol && (model.projectTasks?.openTasks?.length || 0) > 0 ? 1 : 0;
 
     const entries = [
       {
@@ -1253,6 +1270,7 @@ export class ReportEngine {
     }
     addEntry('systemsOverview', 'Projektweite Anlagenübersicht', `${model.systemsOverview?.rows?.length || 0} Anlagen im Vergleich`, systemsOverviewPageCount);
     addEntry('projectCockpit', 'Projektweite QS-Matrix', `${model.projectCockpit?.findings?.length || 0} Feststellungen und Dokumentationsstatus`, projectCockpitPageCount);
+    addEntry('projectTasks', 'Projektaufgaben', `${model.projectTasks?.openTasks?.length || 0} offene Aufgaben und Schnellzugriffe`, projectTaskPageCount);
     addEntry('networkSchematic', 'Anlagenschema', `${schematicNodeCount} Teilstrecken als Funktionsschema`, schematicPageCount);
     if (reportOptions.includeLossAnalysis) {
       addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
@@ -1347,6 +1365,7 @@ export class ReportEngine {
     if (reportOptions.includeExecutiveSummary) pages.push(this.renderExecutiveSummaryPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1) pages.push(this.renderSystemsOverviewPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1) pages.push(this.renderProjectCockpitPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeQualityProtocol && (model.projectTasks?.openTasks?.length || 0) > 0) pages.push(this.renderProjectTasksPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy) pages.push(this.renderRevisionComparisonPage(model, nextPage(), totalPlaceholder));
@@ -1541,6 +1560,29 @@ export class ReportEngine {
       <div class="report-info-box compact muted"><h3>Einordnung</h3><p>${escapeHtml(cockpit.disclaimer || '')}</p></div>
     `;
     return this.renderPage(model, page, 'Projektweite QS-Matrix', 'Projektcockpit, Dokumentation und priorisierte Prüfpunkte', content, totalPages);
+  }
+
+
+  static renderProjectTasksPage(model, page, totalPages = 6) {
+    const taskModel = model.projectTasks || { counts: {}, openTasks: [], favorites: [] };
+    const tasks = (taskModel.openTasks || []).slice(0, 12);
+    const priorityLabel = value => ({ critical: 'Kritisch', high: 'Hoch', normal: 'Normal', low: 'Niedrig' })[value] || value;
+    const statusLabel = value => ({ open: 'Offen', inProgress: 'In Bearbeitung', done: 'Erledigt' })[value] || value;
+    const content = `
+      <div class="report-project-cockpit-kpis">
+        ${this.renderSummaryCard('Aufgaben-Score', taskModel.status || 'Status', taskModel.score || 0, '')}
+        ${this.renderSummaryCard('Offen', 'noch nicht begonnen', taskModel.counts?.open || 0, '')}
+        ${this.renderSummaryCard('In Bearbeitung', 'aktuell in Arbeit', taskModel.counts?.inProgress || 0, '')}
+        ${this.renderSummaryCard('Kritisch / überfällig', `${taskModel.counts?.overdue || 0} überfällig`, taskModel.counts?.critical || 0, '')}
+      </div>
+      <section class="report-info-box compact">
+        <h3>Priorisierte offene Projektaufgaben</h3>
+        ${tasks.length ? `<table class="report-table small"><thead><tr><th>Priorität</th><th>Status</th><th>Anlage / Bezug</th><th>Aufgabe</th><th>Fälligkeit</th></tr></thead><tbody>${tasks.map(task => `<tr><td><span class="report-status-pill ${task.priority === 'critical' ? 'error' : task.priority === 'high' ? 'warn' : 'ok'}">${escapeHtml(priorityLabel(task.priority))}</span></td><td>${escapeHtml(statusLabel(task.status))}</td><td class="left">${escapeHtml([task.systemName, task.sectionName].filter(Boolean).join(' · ') || 'Projekt')}</td><td class="left"><strong>${escapeHtml(task.title)}</strong>${task.recommendation || task.description ? `<br><span>${escapeHtml(task.recommendation || task.description)}</span>` : ''}</td><td>${escapeHtml(task.dueDate || '-')}</td></tr>`).join('')}</tbody></table>` : '<p>Keine offenen Projektaufgaben vorhanden.</p>'}
+        ${(taskModel.openTasks || []).length > tasks.length ? `<p class="report-small-note">Im Bericht werden die ersten ${tasks.length} priorisierten Aufgaben gezeigt. Vollständige Liste im Projekt-Navigator oder CSV-Export.</p>` : ''}
+      </section>
+      <div class="report-info-box compact muted"><h3>Einordnung</h3><p>${escapeHtml(taskModel.disclaimer || '')}</p></div>
+    `;
+    return this.renderPage(model, page, 'Projektaufgaben', 'Automatische QS-Punkte und manuelle Aufgaben', content, totalPages);
   }
 
 
@@ -1793,7 +1835,7 @@ export class ReportEngine {
 
     return chunks.map((chunk, chunkIndex) => {
       const content = `
-        ${chunkIndex === 0 ? `<div class="report-engineering-overview"><div class="report-engineering-score"><span>Engineering-Score</span><strong>${Math.round(toNumber(engineering.score, 100))}</strong><small>${escapeHtml(statusLabel)}</small></div><div>${this.renderDefinitionList([['Kritisch', engineering.counts?.critical || 0], ['Prüfen', engineering.counts?.warning || 0], ['Hinweise', engineering.counts?.info || 0], ['Analysierte Teilstrecken', engineering.analyzedSectionCount || 0]])}</div></div>` : ''}
+        ${chunkIndex === 0 ? `<div class="report-engineering-overview"><div class="report-engineering-score"><span>Engineering-Score</span><strong>${Math.round(toNumber(engineering.score, 100))}</strong><small>${escapeHtml(statusLabel)}</small></div><div>${this.renderDefinitionList([['Prüfprofil', engineering.profile?.name || model.projectWorkflow?.profile?.name || 'Allgemeine Planung'], ['Kritisch', engineering.counts?.critical || 0], ['Prüfen', engineering.counts?.warning || 0], ['Hinweise', engineering.counts?.info || 0], ['Analysierte Teilstrecken', engineering.analyzedSectionCount || 0]])}</div></div>` : ''}
         ${chunk.length ? `<table class="report-table report-engineering-table"><thead><tr><th>Stufe</th><th>Code</th><th>Feststellung</th><th>Empfehlung</th></tr></thead><tbody>${chunk.map(finding => `<tr class="engineering-${escapeHtml(finding.severity)}"><td>${escapeHtml(finding.severity === 'critical' ? 'Kritisch' : finding.severity === 'warning' ? 'Prüfen' : 'Hinweis')}</td><td>${escapeHtml(finding.code)}</td><td class="left"><strong>${escapeHtml(finding.title)}</strong><br><span>${escapeHtml(finding.message)}</span></td><td class="left">${escapeHtml(finding.recommendation || '-')}</td></tr>`).join('')}</tbody></table>` : '<div class="report-info-box ok"><h3>Prüfergebnis</h3><p>Keine priorisierten Engineering-Feststellungen vorhanden.</p></div>'}
         ${chunkIndex === chunks.length - 1 ? `<p class="report-engineering-disclaimer">${escapeHtml(engineering.disclaimer || '')}</p>` : '<p class="report-continuation-note">Fortsetzung der Engineering-QS auf der nächsten Seite.</p>'}
       `;
@@ -2719,6 +2761,7 @@ export class ReportEngine {
     rows.push(this.csvRow(['Engineering Score', Math.round(toNumber(model.engineeringQuality?.score, 100))]));
     rows.push(this.csvRow(['Engineering Status', model.engineeringQuality?.status || 'ok']));
     rows.push(this.csvRow(['Engineering Feststellungen', model.engineeringQuality?.findings?.length || 0]));
+    rows.push(this.csvRow(['Engineering Pruefprofil', model.projectWorkflow?.profile?.name || model.engineeringQuality?.profile?.name || 'Allgemeine Planung']));
 
     addSection('Teilstrecken');
     rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Flaeche m2', 'v m/s', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
@@ -2769,6 +2812,36 @@ export class ReportEngine {
         finding.recommendation || '-',
       ]));
     });
+
+    if ((model.projectTasks?.tasks || []).length) {
+      addSection('Projektaufgaben');
+      rows.push(this.csvRow(['Quelle', 'Prioritaet', 'Status', 'Faelligkeit', 'Anlage', 'Teilstrecke', 'Aufgabe', 'Beschreibung / Empfehlung', 'Bearbeiter', 'Code']));
+      (model.projectTasks.tasks || []).forEach(task => rows.push(this.csvRow([
+        task.source === 'generated' ? 'Automatisch' : 'Manuell',
+        task.priority || '',
+        task.status || '',
+        task.dueDate || '',
+        task.systemName || '',
+        task.sectionName || '',
+        task.title || '',
+        task.recommendation || task.description || '',
+        task.actor || '',
+        task.code || '',
+      ])));
+    }
+
+    if ((model.projectWorkflow?.changeHistory || []).length) {
+      addSection('Aenderungsprotokoll');
+      rows.push(this.csvRow(['Zeitpunkt', 'Aktion', 'Titel', 'Anlage', 'Bearbeiter', 'Zusammenfassung']));
+      (model.projectWorkflow.changeHistory || []).forEach(item => rows.push(this.csvRow([
+        item.timestamp || '',
+        item.action || '',
+        item.title || '',
+        item.systemName || '',
+        item.actor || '',
+        item.summary || '',
+      ])));
+    }
 
     if (model.revisionComparison && !model.revisionComparison.legacy) {
       addSection('Revisionsvergleich');

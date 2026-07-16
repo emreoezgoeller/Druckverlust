@@ -1,0 +1,346 @@
+/* Druckverlust Pro – Phase 36.00
+   Projektvorlagen, Prüfprofile, Massenbearbeitung und Änderungsprotokoll. */
+
+.dp-standardization-header {
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.dp-standardization-summary {
+  min-width: min(360px, 100%);
+}
+
+.dp-standardization-score {
+  display: grid;
+  place-items: center;
+  min-width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #143c60, #1f74a8);
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 850;
+  box-shadow: 0 10px 24px rgba(19, 67, 104, .2);
+}
+
+.dp-standardization-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(340px, .82fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dp-standardization-card {
+  min-width: 0;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px solid var(--dp-border, #d9e2ec);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(18, 47, 78, .065);
+}
+
+.dp-standardization-card .dp-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dp-standardization-card .dp-section-heading h2 {
+  margin: 2px 0 0;
+  color: var(--dp-title, #143a5d);
+  font-size: 1.1rem;
+}
+
+.dp-profile-options,
+.dp-template-options {
+  display: grid;
+  gap: 10px;
+}
+
+.dp-profile-option {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #dfe7ef;
+  border-radius: 13px;
+  background: #fbfdff;
+  color: inherit;
+  text-align: left;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.dp-profile-option:hover,
+.dp-profile-option:focus-visible {
+  border-color: #8ab8d6;
+  box-shadow: 0 8px 20px rgba(24, 93, 143, .1);
+  transform: translateY(-1px);
+}
+
+.dp-profile-option.is-active {
+  border-color: #2e86b8;
+  background: linear-gradient(145deg, #f7fcff, #eaf5fb);
+  box-shadow: inset 4px 0 0 #2383b9;
+}
+
+.dp-profile-option strong,
+.dp-template-option strong {
+  color: #153d60;
+}
+
+.dp-profile-option span,
+.dp-profile-option small,
+.dp-template-option p,
+.dp-standardization-card .dp-muted {
+  color: var(--dp-text-muted, #66788b);
+}
+
+.dp-profile-option small {
+  font-size: .75rem;
+}
+
+.dp-custom-profile {
+  margin-top: 13px;
+  border: 1px solid #e0e8f0;
+  border-radius: 13px;
+  background: #fafcff;
+}
+
+.dp-custom-profile > summary {
+  padding: 12px 14px;
+  color: #214d71;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-custom-profile[open] > summary {
+  border-bottom: 1px solid #e3eaf1;
+}
+
+.dp-custom-profile > :not(summary) {
+  margin-right: 14px;
+  margin-left: 14px;
+}
+
+.dp-custom-profile > button {
+  margin-bottom: 14px;
+}
+
+.dp-standard-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  padding: 14px 0;
+}
+
+.dp-standard-form-grid label,
+.dp-bulk-controls label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.dp-standard-form-grid label > span,
+.dp-bulk-controls label > span {
+  color: #53677b;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .025em;
+}
+
+.dp-template-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px;
+  border: 1px solid #e0e8f0;
+  border-radius: 14px;
+  background: #fbfdff;
+}
+
+.dp-template-option p {
+  margin: 4px 0 0;
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.dp-template-option > button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.dp-template-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.dp-template-types span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eaf3f9;
+  color: #2f6387;
+  font-size: .7rem;
+  font-weight: 800;
+}
+
+.dp-bulk-controls {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #e1e9f0;
+  border-radius: 15px;
+  background: #f8fbfd;
+}
+
+.dp-bulk-note {
+  grid-column: span 2;
+}
+
+.dp-checkbox-row {
+  grid-column: span 3;
+  display: flex !important;
+  align-items: center;
+  gap: 9px !important;
+  padding-top: 6px;
+}
+
+.dp-checkbox-row input {
+  width: 18px;
+  height: 18px;
+}
+
+.dp-bulk-actions {
+  justify-content: flex-end;
+  margin: 13px 0;
+}
+
+.dp-bulk-actions .is-success {
+  border-color: #338a68;
+  background: #28795b;
+  color: #fff;
+}
+
+.dp-bulk-preview-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dp-bulk-preview-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 13px;
+  border: 1px solid #e0e8f0;
+  border-radius: 12px;
+  background: #fbfdff;
+}
+
+.dp-bulk-preview-summary span {
+  color: #6b7b8d;
+  font-size: .73rem;
+}
+
+.dp-bulk-preview-summary strong {
+  color: #173e61;
+  font-size: 1.15rem;
+}
+
+.dp-bulk-preview-table tbody tr.is-changed {
+  background: #f4fbff;
+}
+
+.dp-bulk-preview-table td small,
+.dp-change-history td small {
+  display: block;
+  margin-top: 3px;
+  color: #788798;
+  font-size: .7rem;
+}
+
+.dp-standardization-empty {
+  margin: 13px 0 0;
+  padding: 16px;
+  border: 1px dashed #cbd8e4;
+  border-radius: 13px;
+  background: #fbfdff;
+  color: #697a8c;
+  text-align: center;
+}
+
+.dp-change-history table {
+  min-width: 860px;
+}
+
+.dp-change-history td:nth-child(1) {
+  white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+  .dp-standardization-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-bulk-controls {
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+  }
+
+  .dp-bulk-note,
+  .dp-checkbox-row {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-standardization-card {
+    padding: 14px;
+    border-radius: 15px;
+  }
+
+  .dp-standardization-card .dp-section-heading,
+  .dp-template-option {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .dp-standardization-card .dp-section-heading {
+    display: grid;
+  }
+
+  .dp-template-option > button {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+  }
+
+  .dp-standard-form-grid,
+  .dp-bulk-controls,
+  .dp-bulk-preview-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-bulk-note,
+  .dp-checkbox-row {
+    grid-column: auto;
+  }
+
+  .dp-bulk-actions {
+    display: grid;
+  }
+
+  .dp-bulk-actions button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-profile-option {
+    transition: none;
+  }
+}

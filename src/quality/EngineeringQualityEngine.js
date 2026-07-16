@@ -1,6 +1,8 @@
 // Druckverlust Pro – EngineeringQualityEngine
 // Herstellerneutrale fachliche Projektprüfung und priorisierte Empfehlungen.
 
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=36.00';
+
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -25,6 +27,8 @@ export class EngineeringQualityEngine {
     const results = calc?.results || [];
     const totals = calc?.totals || {};
     const findings = [];
+    const profile = ProjectStandardizationEngine.resolveProfile(project);
+    const thresholds = profile.thresholds;
 
     if (!activeSystem) {
       findings.push(createFinding({
@@ -32,7 +36,7 @@ export class EngineeringQualityEngine {
         message: 'Das Projekt enthält keine auswertbare Anlage.',
         recommendation: 'Mindestens eine Anlage mit Teilstrecken anlegen.',
       }));
-      return this.summarize(findings, results, totals);
+      return this.summarize(findings, results, totals, profile);
     }
 
     if (!results.length) {
@@ -54,45 +58,45 @@ export class EngineeringQualityEngine {
       const share = rawTotal > 0 ? loss / rawTotal : 0;
       const length = number(input.l ?? input.length);
 
-      if (velocity > 10) {
+      if (velocity > thresholds.velocityCritical) {
         findings.push(createFinding({
           severity: 'critical', code: 'VELOCITY_CRITICAL', sectionId: item.id,
           title: `${label}: sehr hohe Geschwindigkeit`,
-          message: `${velocity.toFixed(2)} m/s überschreiten den neutralen Prüfwert von 10 m/s.`,
+          message: `${velocity.toFixed(2)} m/s überschreiten den kritischen Prüfwert von ${thresholds.velocityCritical.toFixed(1)} m/s im Profil „${profile.name}“.`,
           recommendation: 'Querschnitt vergrössern oder Luftmenge beziehungsweise Netzaufteilung fachlich prüfen.',
           metrics: { velocity },
         }));
-      } else if (velocity > 6) {
+      } else if (velocity > thresholds.velocityWarning) {
         findings.push(createFinding({
           severity: 'warning', code: 'VELOCITY_HIGH', sectionId: item.id,
           title: `${label}: Geschwindigkeit prüfen`,
-          message: `${velocity.toFixed(2)} m/s liegen über dem allgemeinen Prüfwert von 6 m/s.`,
+          message: `${velocity.toFixed(2)} m/s liegen über dem Warnwert von ${thresholds.velocityWarning.toFixed(1)} m/s im Profil „${profile.name}“.`,
           recommendation: 'Akustik, Einsatzbereich und verfügbare Dimension prüfen; bei Bedarf Querschnitt vergrössern.',
           metrics: { velocity },
         }));
       }
 
-      if (frictionRate > 3) {
+      if (frictionRate > thresholds.frictionCritical) {
         findings.push(createFinding({
           severity: 'critical', code: 'FRICTION_CRITICAL', sectionId: item.id,
           title: `${label}: sehr hoher Reibungsgradient`,
-          message: `${frictionRate.toFixed(2)} Pa/m verursachen einen hohen Streckenverlust.`,
+          message: `${frictionRate.toFixed(2)} Pa/m überschreiten den kritischen Prüfwert von ${thresholds.frictionCritical.toFixed(2)} Pa/m im Profil „${profile.name}“.`,
           recommendation: 'Dimension, Länge und Rauigkeit kontrollieren; grössere Dimension als Variante vergleichen.',
           metrics: { frictionRate },
         }));
-      } else if (frictionRate > 1.5) {
+      } else if (frictionRate > thresholds.frictionWarning) {
         findings.push(createFinding({
           severity: 'warning', code: 'FRICTION_HIGH', sectionId: item.id,
           title: `${label}: Reibungsgradient erhöht`,
-          message: `${frictionRate.toFixed(2)} Pa/m liegen oberhalb des neutralen Komfort-Prüfwerts von 1.5 Pa/m.`,
+          message: `${frictionRate.toFixed(2)} Pa/m liegen über dem Warnwert von ${thresholds.frictionWarning.toFixed(2)} Pa/m im Profil „${profile.name}“.`,
           recommendation: 'Prüfen, ob eine grössere Dimension wirtschaftlich und platzmässig sinnvoll ist.',
           metrics: { frictionRate },
         }));
       }
 
-      if (share > 0.35 && rawTotal > 20) {
+      if (share > thresholds.lossShareWarning && rawTotal > 20) {
         findings.push(createFinding({
-          severity: share > 0.55 ? 'critical' : 'warning', code: 'LOSS_CONCENTRATION', sectionId: item.id,
+          severity: share > thresholds.lossShareCritical ? 'critical' : 'warning', code: 'LOSS_CONCENTRATION', sectionId: item.id,
           title: `${label}: hoher Anteil am Gesamtdruckverlust`,
           message: `${(share * 100).toFixed(0)} % des Anlagenverlusts entstehen in dieser Teilstrecke.`,
           recommendation: 'Formteile, Länge, Dimension und Einzelverluste dieser Teilstrecke gezielt kontrollieren.',
@@ -143,19 +147,19 @@ export class EngineeringQualityEngine {
       }
     });
 
-    if (rawTotal > 1000) {
+    if (rawTotal > thresholds.totalLossWarning) {
       findings.push(createFinding({
         severity: 'warning', code: 'TOTAL_LOSS_HIGH', title: 'Gesamtdruckverlust erhöht',
-        message: `${rawTotal.toFixed(1)} Pa sind für viele Anlagen ein auffälliger Wert.`,
+        message: `${rawTotal.toFixed(1)} Pa überschreiten den Projekt-Prüfwert von ${thresholds.totalLossWarning.toFixed(0)} Pa im Profil „${profile.name}“.`,
         recommendation: 'Druckverlustkette abschnittsweise prüfen und dominante Verluste zuerst optimieren.',
         metrics: { total: rawTotal },
       }));
     }
 
-    return this.summarize(findings, results, totals);
+    return this.summarize(findings, results, totals, profile);
   }
 
-  static summarize(findings = [], results = [], totals = {}) {
+  static summarize(findings = [], results = [], totals = {}, profile = ProjectStandardizationEngine.resolveProfile({})) {
     const rank = { critical: 0, warning: 1, info: 2, ok: 3 };
     findings.sort((a, b) => (rank[a.severity] ?? 9) - (rank[b.severity] ?? 9));
     const counts = findings.reduce((acc, item) => {
@@ -170,7 +174,8 @@ export class EngineeringQualityEngine {
       analyzedSectionCount: results.length,
       totalLoss: number(totals.total),
       generatedAt: new Date().toISOString(),
-      disclaimer: 'Herstellerneutrale Plausibilitätsprüfung. Grenzwerte sind Projekt-Prüfwerte und ersetzen keine Norm-, Akustik- oder Fachplanung.',
+      profile,
+      disclaimer: `Herstellerneutrale Plausibilitätsprüfung mit dem Profil „${profile.name}“. Grenzwerte sind Projekt-Prüfwerte und ersetzen keine Norm-, Akustik- oder Fachplanung.`,
     };
   }
 }

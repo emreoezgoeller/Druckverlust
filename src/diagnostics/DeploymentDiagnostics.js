@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=35.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=38.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -110,6 +110,12 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Layout', label: 'Anlagenmanager-CSS', path: `src/ui/phase34_00.css?v=${version}` },
     { area: 'Projektcockpit', label: 'Projektweite QS-Matrix', path: `src/project/ProjectPortfolioQualityEngine.js?v=${version}` },
     { area: 'Layout', label: 'Projektcockpit-CSS', path: `src/ui/phase35_00.css?v=${version}` },
+    { area: 'Workflow', label: 'Projektstandardisierung', path: `src/project/ProjectStandardizationEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Projektworkflow-CSS', path: `src/ui/phase36_00.css?v=${version}` },
+    { area: 'Aufgaben', label: 'Projekt-Navigator und Aufgaben', path: `src/project/ProjectTaskCenterEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Aufgaben-CSS', path: `src/ui/phase37_00.css?v=${version}` },
+    { area: 'Suche', label: 'Globaler Projektindex', path: `src/project/ProjectSearchEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Projektsuche-CSS', path: `src/ui/phase38_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },

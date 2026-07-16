@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 38.00 – abgeschlossen
+
+- globale Volltextsuche über alle wesentlichen Projektobjekte,
+- Kategorie- und Anlagenfilter,
+- Querverweise zu zugeordneten Teilstrecken, Bauteilen und Aufgaben,
+- projektbezogene Sprungmarken und Suchverlauf,
+- direkter Sprung aus Treffern in den jeweiligen Editor,
+- vollständiger Projektindex als CSV.
+
+## Phase 37.00 – abgeschlossen
+
+- zentraler Projekt-Navigator mit automatischen und manuellen Aufgaben,
+- Status-, Prioritäts-, Fälligkeits- und Quellenfilter,
+- direkte Navigation zu Anlagen und Teilstrecken,
+- Favoriten für Ansichten, Anlagen und Teilstrecken,
+- Schnellzugriffe zu wichtigen Arbeitsbereichen,
+- Aufgaben-CSV und optionale Projektaufgaben-Seite im Professional Report.
+
+## Phase 36.00 – abgeschlossen
+
+- herstellerneutrale Prüfprofile und benutzerdefinierte QS-Grenzen,
+- neutrale Systemvorlagen ohne Überschreiben bestehender Anlagen,
+- kontrollierte Massenbearbeitung mit Vorschau und Fingerabdruckschutz,
+- automatische Sicherheitssicherung vor strukturellen Änderungen,
+- projektweites Änderungsprotokoll und CSV-Export,
+- Prüfprofil und Workflowdaten im Professional Report.
+
 ## Phase 35.00 – abgeschlossen
 
 - zentrales Projektcockpit für Mehranlagen-Projekte,
@@ -92,6 +119,7 @@
 - Phase 33.00: kontrollierte Importvorschau, Vier-Augen-Freigabe, Übergabeprotokoll und integritätsgeschütztes `.dvph`-Freigabepaket
 - Phase 34.00: Mehranlagen-Verwaltung, projektweiter Anlagenvergleich und Anlagenübersicht im Professional Report
 - Phase 35.00: Projektcockpit, projektweite QS-Matrix und Dokumentationsstatus
+- Phase 36.00: Projektworkflow, Prüfprofile, Systemvorlagen, kontrollierte Massenbearbeitung und Änderungsprotokoll
 
 ## Bewusst ausgeschlossen
 
@@ -101,7 +129,8 @@
 
 ## Nächste sinnvolle Schritte
 
-- Phase 34.00 mit realen Projekten prüfen, die mehrere Zu-, Ab-, Aussen- und Fortluftanlagen enthalten.
+- Phase 36.00 mit realen Mehranlagen-Projekten prüfen und projektspezifische Prüfprofile fachlich feinjustieren.
+- Systemvorlagen und Massenbearbeitung zunächst an Projektkopien beziehungsweise lokalen Sicherungen im Büroablauf gegenprüfen.
 - Anlagen-Duplikate, Sortierung und projektweiten Bericht im Büroablauf gegenprüfen.
 - Projektsicherheit mit mehreren Browser-Sitzungen und bewusst unterbrochenen Arbeitsabläufen prüfen.
 - Wiederherstellung aus lokalen Sicherungen und exportierten `.dvpa`-Paketen im Büroablauf gegenprüfen.

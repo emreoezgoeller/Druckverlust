@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=35.00';
+import RibbonActions from '../core/RibbonActions.js?v=38.00';
 
 const RIBBON_GROUPS = [
   {
@@ -9,8 +9,11 @@ const RIBBON_GROUPS = [
     label: 'Projekt',
     actions: [
       { action: 'showDashboard', label: 'Start', icon: 'home', title: 'Zur Projekt- und Anlagenübersicht (Alt+Home)' },
+      { action: 'showProjectSearch', label: 'Suche', icon: 'search', title: 'Projektweit suchen, Querverweise und Sprungmarken öffnen (Ctrl+K)' },
       { action: 'showSystemManager', label: 'Anlagen', icon: 'layers', title: 'Anlagen anlegen, duplizieren, ordnen und vergleichen (Strg+Umschalt+A)' },
       { action: 'showProjectCockpit', label: 'Cockpit', icon: 'pulse', title: 'Projektweite QS, Risikomatrix und Dokumentationsstatus öffnen (Strg+Umschalt+Q)' },
+      { action: 'showProjectStandardization', label: 'Workflow', icon: 'sliders', title: 'Projektvorlagen, Prüfprofile und Massenbearbeitung öffnen (Strg+Umschalt+W)' },
+      { action: 'showProjectTaskCenter', label: 'Aufgaben', icon: 'tasks', title: 'Projekt-Navigator, Favoriten und Aufgabenliste öffnen (Strg+Umschalt+T)' },
       { action: 'newProject', label: 'Neu', icon: 'filePlus', title: 'Neues Projekt erstellen (Strg+N)' },
       { action: 'openProject', label: 'Öffnen', icon: 'folder', title: 'Projektdatei öffnen (Strg+O)' },
       { action: 'saveProject', label: 'Speichern', icon: 'save', title: 'Projekt speichern (Strg+S)', emphasis: 'primary' },
@@ -193,6 +196,9 @@ export default class RibbonComponent {
     const reportButton = this.root.querySelector('[data-action="showReport"]');
     const systemManagerButton = this.root.querySelector('[data-action="showSystemManager"]');
     const projectCockpitButton = this.root.querySelector('[data-action="showProjectCockpit"]');
+    const projectStandardizationButton = this.root.querySelector('[data-action="showProjectStandardization"]');
+    const projectTaskCenterButton = this.root.querySelector('[data-action="showProjectTaskCenter"]');
+    const projectSearchButton = this.root.querySelector('[data-action="showProjectSearch"]');
     const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
@@ -215,7 +221,16 @@ export default class RibbonComponent {
       button.removeAttribute('aria-current');
     });
 
-    if (selectionType === 'projectCockpit') {
+    if (selectionType === 'projectSearch') {
+      projectSearchButton?.classList.add('is-current');
+      projectSearchButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectTaskCenter') {
+      projectTaskCenterButton?.classList.add('is-current');
+      projectTaskCenterButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectStandardization') {
+      projectStandardizationButton?.classList.add('is-current');
+      projectStandardizationButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectCockpit') {
       projectCockpitButton?.classList.add('is-current');
       projectCockpitButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'systemManager') {
@@ -300,6 +315,8 @@ export default class RibbonComponent {
       network: '<rect x="2" y="8" width="6" height="8" rx="1"/><rect x="16" y="3" width="6" height="8" rx="1"/><rect x="16" y="13" width="6" height="8" rx="1"/><path d="M8 12h4c2 0 2-5 4-5M12 12c2 0 2 5 4 5"/>',
       sliders: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>',
       layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
+      tasks: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/><path d="m7 8 .8.8L9.5 7"/>',
+      search: '<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     };
 

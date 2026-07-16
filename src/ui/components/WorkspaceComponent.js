@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=35.00';
+import ReportEngine from '../../report/ReportEngine.js?v=38.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=35.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=38.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,19 +89,22 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=35.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=38.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=35.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=35.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=35.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=35.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=35.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=35.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=35.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=35.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=35.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=38.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=38.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=38.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=38.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=38.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=38.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=38.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=38.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=38.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=38.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=38.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=38.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {
@@ -134,6 +137,13 @@ export default class WorkspaceComponent {
     this.handoverImportPreview = null;
     this.systemManagerSort = 'order';
     this.projectCockpitFilter = 'all';
+    this.standardizationBulkOptions = { scope: 'all', airflowPercent: 100, lengthPercent: 100, dimensionPercent: 100, airflowStep: 5, lengthStep: 0.1, dimensionStep: 0.01, renumber: false, actor: '', note: '' };
+    this.standardizationPreview = null;
+    this.projectTaskFilter = 'open';
+    this.projectTaskSource = 'all';
+    this.projectSearchQuery = '';
+    this.projectSearchCategory = 'all';
+    this.projectSearchSystemId = 'all';
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -157,6 +167,9 @@ export default class WorkspaceComponent {
     if (selection.type === 'projectSafety') return this.renderProjectSafety(selection.data);
     if (selection.type === 'systemManager') return this.renderSystemManager(selection.data);
     if (selection.type === 'projectCockpit') return this.renderProjectCockpit(selection.data);
+    if (selection.type === 'projectStandardization') return this.renderProjectStandardization(selection.data);
+    if (selection.type === 'projectTaskCenter') return this.renderProjectTaskCenter(selection.data);
+    if (selection.type === 'projectSearch') return this.renderProjectSearch(selection.data);
     if (selection.type === 'projectHandover') return this.renderProjectHandover(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
@@ -335,6 +348,7 @@ export default class WorkspaceComponent {
             <li><strong>Ctrl + N</strong> neues Projekt</li>
             <li><strong>Ctrl + Enter</strong> neu berechnen</li>
             <li><strong>Ctrl + B / Ctrl + P</strong> Bericht öffnen</li>
+            <li><strong>Ctrl + K</strong> globale Projektsuche öffnen</li>
             <li><strong>Ctrl + Shift + U</strong> Projektübergabe öffnen</li>
             <li><strong>Alt + Home</strong> Startübersicht</li>
           </ul>
@@ -11421,6 +11435,840 @@ formatNumber(value, digits = 2) {
         else centerView();
       });
     }
+  }
+
+  renderProjectStandardization() {
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0] || null;
+
+    if (!project || !system) {
+      this.renderEmpty();
+      return;
+    }
+
+    const profile = ProjectStandardizationEngine.resolveProfile(project);
+    const profiles = ProjectStandardizationEngine.getProfiles();
+    const templates = ProjectStandardizationEngine.getSystemTemplates();
+    const history = ProjectStandardizationEngine.getHistory(project);
+    const preview = this.standardizationPreview;
+    const selectedSectionId = this.state.selectedSection?.id || '';
+    const options = this.standardizationBulkOptions || {};
+    const thresholds = profile.thresholds;
+
+    const formatPercent = value => `${this.formatNumber(value, 0)} %`;
+    const historyRows = history.slice(0, 20).map(item => {
+      const timestamp = new Date(item.timestamp || 0);
+      const dateLabel = Number.isNaN(timestamp.getTime())
+        ? 'Zeitpunkt unbekannt'
+        : timestamp.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+      return `
+        <tr>
+          <td>${this.escapeHtml(dateLabel)}</td>
+          <td><strong>${this.escapeHtml(item.title || item.action)}</strong><small>${this.escapeHtml(item.action || '')}</small></td>
+          <td>${this.escapeHtml(item.systemName || 'Projektweit')}</td>
+          <td>${this.escapeHtml(item.actor || '–')}</td>
+          <td>${this.escapeHtml(item.summary || '')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const previewRows = (preview?.rows || []).slice(0, 16).map(row => {
+      const beforeDimension = row.type === 'pipe'
+        ? `Ø ${this.formatNumber(row.before.d * 1000, 0)} mm`
+        : `${this.formatNumber(row.before.b * 1000, 0)} × ${this.formatNumber(row.before.h * 1000, 0)} mm`;
+      const afterDimension = row.type === 'pipe'
+        ? `Ø ${this.formatNumber(row.after.d * 1000, 0)} mm`
+        : `${this.formatNumber(row.after.b * 1000, 0)} × ${this.formatNumber(row.after.h * 1000, 0)} mm`;
+      return `
+        <tr class="${row.changed ? 'is-changed' : ''}">
+          <td><strong>${this.escapeHtml(row.before.name)}</strong><small>${row.type === 'pipe' ? 'Rundrohr' : 'Rechteckkanal'}</small></td>
+          <td>${this.formatNumber(row.before.q, 0)} → <strong>${this.formatNumber(row.after.q, 0)}</strong> m³/h</td>
+          <td>${this.formatNumber(row.before.l, 1)} → <strong>${this.formatNumber(row.after.l, 1)}</strong> m</td>
+          <td>${this.escapeHtml(beforeDimension)} → <strong>${this.escapeHtml(afterDimension)}</strong></td>
+          <td>${row.changedFields.length ? this.escapeHtml(row.changedFields.join(', ')) : 'Unverändert'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-page-header dp-standardization-header">
+        <div class="dp-page-heading">
+          <span class="dp-overline">Phase 36.00 · Projektstandardisierung</span>
+          <h1>Vorlagen, Prüfprofile und Massenbearbeitung</h1>
+          <p>Herstellerneutrale Werkzeuge für einen einheitlichen Projektaufbau, kontrollierte Sammeländerungen und nachvollziehbare Arbeitsschritte.</p>
+        </div>
+        <div class="dp-page-summary dp-standardization-summary">
+          <div>
+            <span>Aktives Prüfprofil</span>
+            <strong>${this.escapeHtml(profile.name)}</strong>
+            <small>${history.length} protokollierte Änderung${history.length === 1 ? '' : 'en'}</small>
+          </div>
+          <span class="dp-standardization-score" aria-label="Aktive Anlage">${(system.sections || []).length}</span>
+        </div>
+      </div>
+
+      <section class="dp-standardization-grid">
+        <article class="dp-standardization-card dp-standardization-profile-card">
+          <div class="dp-section-heading">
+            <div><span class="dp-overline">Engineering-QS</span><h2>Projekt-Prüfprofil</h2></div>
+            <span class="dp-chip is-info">${this.escapeHtml(profile.name)}</span>
+          </div>
+          <p class="dp-muted">Die Werte steuern die neutrale Engineering-QS. Sie sind keine Normgrenzen und müssen projektspezifisch beurteilt werden.</p>
+          <div class="dp-profile-options">
+            ${profiles.map(item => `
+              <button type="button" class="dp-profile-option ${profile.id === item.id ? 'is-active' : ''}" data-standard-profile="${this.escapeAttribute(item.id)}">
+                <strong>${this.escapeHtml(item.name)}</strong>
+                <span>${this.escapeHtml(item.description)}</span>
+                <small>v ${this.formatNumber(item.thresholds.velocityWarning, 1)} / ${this.formatNumber(item.thresholds.velocityCritical, 1)} m/s · R ${this.formatNumber(item.thresholds.frictionWarning, 2)} / ${this.formatNumber(item.thresholds.frictionCritical, 2)} Pa/m</small>
+              </button>
+            `).join('')}
+          </div>
+          <details class="dp-custom-profile" ${profile.id === 'custom' ? 'open' : ''}>
+            <summary>Benutzerdefinierte Prüfwerte</summary>
+            <div class="dp-standard-form-grid">
+              <label><span>Profilname</span><input type="text" data-standard-custom="name" value="${this.escapeAttribute(profile.id === 'custom' ? profile.name : 'Projektbezogen')}"></label>
+              <label><span>Bearbeiter</span><input type="text" data-standard-custom="actor" value="${this.escapeAttribute(profile.updatedBy || project.author || '')}"></label>
+              <label><span>Geschwindigkeit Warnung</span><div class="dp-unit-input"><input type="number" min="0.5" step="0.1" data-standard-custom="velocityWarning" value="${thresholds.velocityWarning}"><span>m/s</span></div></label>
+              <label><span>Geschwindigkeit kritisch</span><div class="dp-unit-input"><input type="number" min="0.6" step="0.1" data-standard-custom="velocityCritical" value="${thresholds.velocityCritical}"><span>m/s</span></div></label>
+              <label><span>Reibung Warnung</span><div class="dp-unit-input"><input type="number" min="0.05" step="0.05" data-standard-custom="frictionWarning" value="${thresholds.frictionWarning}"><span>Pa/m</span></div></label>
+              <label><span>Reibung kritisch</span><div class="dp-unit-input"><input type="number" min="0.06" step="0.05" data-standard-custom="frictionCritical" value="${thresholds.frictionCritical}"><span>Pa/m</span></div></label>
+              <label><span>Verlustanteil Warnung</span><div class="dp-unit-input"><input type="number" min="5" max="95" step="1" data-standard-custom="lossShareWarning" value="${Math.round(thresholds.lossShareWarning * 100)}"><span>%</span></div></label>
+              <label><span>Verlustanteil kritisch</span><div class="dp-unit-input"><input type="number" min="6" max="100" step="1" data-standard-custom="lossShareCritical" value="${Math.round(thresholds.lossShareCritical * 100)}"><span>%</span></div></label>
+              <label><span>Gesamtdruckverlust Warnung</span><div class="dp-unit-input"><input type="number" min="10" step="10" data-standard-custom="totalLossWarning" value="${thresholds.totalLossWarning}"><span>Pa</span></div></label>
+            </div>
+            <button type="button" class="is-primary" data-standard-action="apply-custom-profile">Benutzerdefiniertes Profil übernehmen</button>
+          </details>
+        </article>
+
+        <article class="dp-standardization-card">
+          <div class="dp-section-heading">
+            <div><span class="dp-overline">Projektaufbau</span><h2>Anlagenstruktur-Vorlagen</h2></div>
+            <span class="dp-chip">${project.systems?.length || 0} Anlagen</span>
+          </div>
+          <p class="dp-muted">Vorlagen ergänzen nur fehlende Luftarten. Bestehende Anlagen und Berechnungen werden nicht überschrieben.</p>
+          <div class="dp-template-options">
+            ${templates.map(item => `
+              <article class="dp-template-option">
+                <div><strong>${this.escapeHtml(item.name)}</strong><p>${this.escapeHtml(item.description)}</p></div>
+                <div class="dp-template-types">${item.systems.map(entry => `<span>${this.escapeHtml(entry.type)}</span>`).join('')}</div>
+                <button type="button" data-standard-template="${this.escapeAttribute(item.id)}">Vorlage ergänzen</button>
+              </article>
+            `).join('')}
+          </div>
+        </article>
+      </section>
+
+      <section class="dp-standardization-card dp-bulk-editor">
+        <div class="dp-section-heading">
+          <div><span class="dp-overline">Aktive Anlage · ${this.escapeHtml(system.name || 'Anlage')}</span><h2>Kontrollierte Massenbearbeitung</h2></div>
+          <span class="dp-chip ${preview?.changedCount ? 'is-warning' : ''}">${preview ? `${preview.changedCount} Änderungen` : 'Noch keine Vorschau'}</span>
+        </div>
+        <div class="dp-bulk-controls">
+          <label><span>Bereich</span><select data-standard-bulk="scope">
+            <option value="all" ${options.scope === 'all' ? 'selected' : ''}>Alle Teilstrecken</option>
+            <option value="duct" ${options.scope === 'duct' ? 'selected' : ''}>Nur Rechteckkanäle</option>
+            <option value="pipe" ${options.scope === 'pipe' ? 'selected' : ''}>Nur Rundrohre</option>
+            ${selectedSectionId ? `<option value="selected" ${options.scope === 'selected' ? 'selected' : ''}>Aktuell ausgewählte Teilstrecke</option>` : ''}
+          </select></label>
+          <label><span>Luftmenge</span><div class="dp-unit-input"><input type="number" min="10" max="300" step="1" data-standard-bulk="airflowPercent" value="${options.airflowPercent ?? 100}"><span>%</span></div></label>
+          <label><span>Länge</span><div class="dp-unit-input"><input type="number" min="10" max="300" step="1" data-standard-bulk="lengthPercent" value="${options.lengthPercent ?? 100}"><span>%</span></div></label>
+          <label><span>Abmessungen</span><div class="dp-unit-input"><input type="number" min="25" max="300" step="1" data-standard-bulk="dimensionPercent" value="${options.dimensionPercent ?? 100}"><span>%</span></div></label>
+          <label><span>Bearbeiter</span><input type="text" data-standard-bulk="actor" value="${this.escapeAttribute(options.actor || project.author || '')}"></label>
+          <label class="dp-bulk-note"><span>Änderungsvermerk</span><input type="text" data-standard-bulk="note" value="${this.escapeAttribute(options.note || '')}" placeholder="z. B. Variante nach Koordinationssitzung"></label>
+          <label class="dp-checkbox-row"><input type="checkbox" data-standard-bulk="renumber" ${options.renumber ? 'checked' : ''}><span>Teilstrecken in aktueller Reihenfolge neu nummerieren</span></label>
+        </div>
+        <div class="workspace-actions dp-bulk-actions">
+          <button type="button" data-standard-action="reset-bulk">Zurücksetzen</button>
+          <button type="button" class="is-primary" data-standard-action="preview-bulk">Änderungen prüfen</button>
+          ${preview?.changedCount ? `<button type="button" class="is-success" data-standard-action="apply-bulk">${preview.changedCount} Änderungen übernehmen</button>` : ''}
+        </div>
+        ${preview ? `
+          <div class="dp-bulk-preview-summary">
+            <div><span>Betroffene Teilstrecken</span><strong>${preview.affectedCount}</strong></div>
+            <div><span>Tatsächliche Änderungen</span><strong>${preview.changedCount}</strong></div>
+            <div><span>Luftmenge</span><strong>${formatPercent(preview.options.airflowPercent)}</strong></div>
+            <div><span>Abmessungen</span><strong>${formatPercent(preview.options.dimensionPercent)}</strong></div>
+          </div>
+          <div class="dp-table-scroll dp-bulk-preview-table"><table><thead><tr><th>Teilstrecke</th><th>Luftmenge</th><th>Länge</th><th>Dimension</th><th>Geänderte Felder</th></tr></thead><tbody>${previewRows || '<tr><td colspan="5">Keine passenden Teilstrecken.</td></tr>'}</tbody></table></div>
+          ${(preview.rows || []).length > 16 ? `<p class="dp-muted">Vorschau zeigt die ersten 16 von ${preview.rows.length} Teilstrecken.</p>` : ''}
+        ` : '<p class="dp-standardization-empty">Erstelle zuerst eine Vorschau. Das Projekt wird bis zur ausdrücklichen Übernahme nicht verändert.</p>'}
+      </section>
+
+      <section class="dp-standardization-card dp-change-history">
+        <div class="dp-section-heading">
+          <div><span class="dp-overline">Nachvollziehbarkeit</span><h2>Änderungsprotokoll</h2></div>
+          <div class="workspace-actions"><button type="button" data-standard-action="export-history">CSV exportieren</button><button type="button" data-standard-action="clear-history" ${history.length ? '' : 'disabled'}>Protokoll leeren</button></div>
+        </div>
+        <p class="dp-muted">Dokumentiert Prüfprofilwechsel, Anlagenvorlagen und Sammeländerungen. Maximal 60 Einträge werden in der Projektdatei gespeichert.</p>
+        <div class="dp-table-scroll"><table><thead><tr><th>Zeitpunkt</th><th>Aktion</th><th>Anlage</th><th>Bearbeiter</th><th>Zusammenfassung</th></tr></thead><tbody>${historyRows || '<tr><td colspan="5">Noch keine protokollierten Änderungen.</td></tr>'}</tbody></table></div>
+      </section>
+
+      <p class="dp-quality-disclaimer">Prüfprofile und Vorlagen sind herstellerneutral. Die Grenzwerte sind bewusst projektbezogene Plausibilitätswerte und keine automatische Normfreigabe.</p>
+    `;
+
+    const readBulkOptions = () => {
+      const value = key => this.root.querySelector(`[data-standard-bulk="${key}"]`)?.value;
+      return {
+        scope: value('scope') || 'all',
+        selectedIds: selectedSectionId ? [selectedSectionId] : [],
+        airflowPercent: value('airflowPercent'),
+        lengthPercent: value('lengthPercent'),
+        dimensionPercent: value('dimensionPercent'),
+        airflowStep: 5,
+        lengthStep: 0.1,
+        dimensionStep: 0.01,
+        actor: value('actor') || '',
+        note: value('note') || '',
+        renumber: Boolean(this.root.querySelector('[data-standard-bulk="renumber"]')?.checked),
+      };
+    };
+
+    this.root.querySelectorAll('[data-standard-profile]').forEach(button => {
+      button.addEventListener('click', () => {
+        const actor = project.author || '';
+        ProjectStandardizationEngine.applyProfile(project, button.dataset.standardProfile, { actor });
+        this.standardizationPreview = null;
+        this.state.markProjectDirty();
+        this.state.setSelection('projectStandardization', project);
+        this.state.notify();
+      });
+    });
+
+    this.root.querySelector('[data-standard-action="apply-custom-profile"]')?.addEventListener('click', () => {
+      const get = key => this.root.querySelector(`[data-standard-custom="${key}"]`)?.value;
+      const result = ProjectStandardizationEngine.applyProfile(project, 'custom', {
+        name: get('name'), actor: get('actor'),
+        thresholds: {
+          velocityWarning: get('velocityWarning'), velocityCritical: get('velocityCritical'),
+          frictionWarning: get('frictionWarning'), frictionCritical: get('frictionCritical'),
+          lossShareWarning: Number(get('lossShareWarning')) / 100,
+          lossShareCritical: Number(get('lossShareCritical')) / 100,
+          totalLossWarning: get('totalLossWarning'),
+        },
+      });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectStandardization', project);
+      this.state.notify();
+      if (result.warnings.length) UiDialogService.alert({ title: 'Prüfwerte angepasst', message: result.warnings.join('\n'), tone: 'warning' });
+    });
+
+    this.root.querySelectorAll('[data-standard-template]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const template = templates.find(item => item.id === button.dataset.standardTemplate);
+        const confirmed = await UiDialogService.confirm({
+          title: 'Anlagenvorlage ergänzen',
+          message: `Die Vorlage „${template?.name || ''}“ ergänzt nur fehlende Luftarten. Bestehende Anlagen bleiben unverändert.`,
+          confirmLabel: 'Vorlage ergänzen',
+        });
+        if (!confirmed) return;
+        AutoSaveEngine.save(project, { dirty: true });
+        const result = ProjectStandardizationEngine.applySystemTemplate(project, button.dataset.standardTemplate, { actor: project.author || '' });
+        if (result.added[0]) this.state.selectSystem(result.added[0]);
+        this.state.markCalculationDirty();
+        this.state.setSelection('projectStandardization', project);
+        this.state.notify();
+        UiDialogService.alert({
+          title: 'Vorlage verarbeitet',
+          message: `${result.added.length} Anlage(n) ergänzt. ${result.skipped.length} Luftart(en) waren bereits vorhanden.`,
+          tone: result.added.length ? 'success' : 'info',
+        });
+      });
+    });
+
+    this.root.querySelector('[data-standard-action="preview-bulk"]')?.addEventListener('click', () => {
+      this.standardizationBulkOptions = ProjectStandardizationEngine.normalizeBulkOptions(readBulkOptions());
+      this.standardizationPreview = ProjectStandardizationEngine.previewBulkEdit(system, this.standardizationBulkOptions);
+      this.renderProjectStandardization(project);
+    });
+
+    this.root.querySelector('[data-standard-action="reset-bulk"]')?.addEventListener('click', () => {
+      this.standardizationBulkOptions = { scope: 'all', airflowPercent: 100, lengthPercent: 100, dimensionPercent: 100, airflowStep: 5, lengthStep: 0.1, dimensionStep: 0.01, renumber: false, actor: project.author || '', note: '' };
+      this.standardizationPreview = null;
+      this.renderProjectStandardization(project);
+    });
+
+    this.root.querySelector('[data-standard-action="apply-bulk"]')?.addEventListener('click', async () => {
+      if (!this.standardizationPreview?.changedCount) return;
+      const confirmed = await UiDialogService.confirm({
+        title: 'Massenänderung übernehmen',
+        message: `${this.standardizationPreview.changedCount} Teilstrecken werden geändert. Vorher wird eine lokale Notfallsicherung erstellt.`,
+        details: [
+          `Luftmenge: ${formatPercent(this.standardizationPreview.options.airflowPercent)}`,
+          `Länge: ${formatPercent(this.standardizationPreview.options.lengthPercent)}`,
+          `Abmessungen: ${formatPercent(this.standardizationPreview.options.dimensionPercent)}`,
+        ],
+        confirmLabel: 'Änderungen übernehmen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+      AutoSaveEngine.save(project, { dirty: true });
+      const applied = ProjectStandardizationEngine.applyBulkEdit(project, system, this.standardizationPreview.options, this.standardizationPreview.fingerprint);
+      try {
+        const result = ProjectCalculationService.calculate(project, system.id);
+        project.calculationResult = result;
+        this.state.lastCalculationAt = result.timestamp;
+        this.state.lastAutoCalculationError = null;
+        this.state.isCalculationDirty = false;
+      } catch (error) {
+        this.state.isCalculationDirty = true;
+        this.state.lastAutoCalculationError = error?.message || String(error);
+      }
+      this.state.isProjectDirty = true;
+      this.standardizationBulkOptions = applied.options;
+      this.standardizationPreview = null;
+      this.state.setSelection('projectStandardization', project);
+      this.state.notify();
+      UiDialogService.alert({ title: 'Massenänderung abgeschlossen', message: `${applied.changedCount} Teilstrecken wurden aktualisiert und neu berechnet.`, tone: 'success' });
+    });
+
+    this.root.querySelector('[data-standard-action="export-history"]')?.addEventListener('click', () => {
+      ProjectStandardizationEngine.downloadHistoryCsv(project);
+    });
+
+    this.root.querySelector('[data-standard-action="clear-history"]')?.addEventListener('click', async () => {
+      const confirmed = await UiDialogService.confirm({
+        title: 'Änderungsprotokoll leeren',
+        message: 'Alle bisherigen Protokolleinträge werden aus der Projektdatei entfernt. Die technische Berechnung bleibt unverändert.',
+        confirmLabel: 'Protokoll leeren',
+        tone: 'danger',
+      });
+      if (!confirmed) return;
+      ProjectStandardizationEngine.clearHistory(project, { actor: project.author || '', logClear: false });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectStandardization', project);
+      this.state.notify();
+    });
+  }
+
+
+  renderProjectSearch() {
+    const project = this.state.project;
+    if (!project) return this.renderEmpty();
+
+    const index = ProjectSearchEngine.buildIndex(project);
+    const search = ProjectSearchEngine.search(project, this.projectSearchQuery, {
+      index,
+      category: this.projectSearchCategory,
+      systemId: this.projectSearchSystemId,
+      limit: 160,
+    });
+    const pins = ProjectSearchEngine.getPins(project, index);
+    const recentQueries = ProjectSearchEngine.getRecentQueries(project);
+    const systems = Array.isArray(project.systems) ? project.systems : [];
+    const categoryOrder = ['all', 'project', 'system', 'section', 'formPart', 'specialComponent', 'task', 'revision', 'variant'];
+    const categoryLabels = {
+      all: 'Alle', project: 'Projekt', system: 'Anlagen', section: 'Teilstrecken', formPart: 'Formteile',
+      specialComponent: 'Sonderbauteile', task: 'Aufgaben', revision: 'Revisionen', variant: 'Varianten',
+    };
+    const categoryIcons = {
+      project: '◇', system: '▤', section: '↔', formPart: '⌁', specialComponent: '⬡', task: '✓', revision: 'R', variant: 'V',
+    };
+    const relationText = item => {
+      const relations = item.relations || {};
+      const values = [];
+      if (relations.sections) values.push(`${relations.sections} Teilstrecke${relations.sections === 1 ? '' : 'n'}`);
+      if (relations.formParts) values.push(`${relations.formParts} Formteil${relations.formParts === 1 ? '' : 'e'}`);
+      if (relations.specialComponents) values.push(`${relations.specialComponents} Sonderbauteil${relations.specialComponents === 1 ? '' : 'e'}`);
+      if (relations.tasks) values.push(`${relations.tasks} Aufgabe${relations.tasks === 1 ? '' : 'n'}`);
+      return values.join(' · ');
+    };
+    const resultCards = search.results.map(item => {
+      const isPinned = ProjectSearchEngine.isPinned(project, item.id);
+      const relations = relationText(item);
+      return `
+        <article class="dp-project-search-result is-${this.escapeAttribute(item.category)}" data-search-result-id="${this.escapeAttribute(item.id)}">
+          <div class="dp-project-search-result-icon" aria-hidden="true">${categoryIcons[item.category] || '•'}</div>
+          <div class="dp-project-search-result-body">
+            <div class="dp-project-search-result-heading">
+              <span>${this.escapeHtml(item.typeLabel)}</span>
+              <h3>${this.escapeHtml(item.title)}</h3>
+            </div>
+            ${item.subtitle ? `<p>${this.escapeHtml(item.subtitle)}</p>` : ''}
+            ${item.meta ? `<div class="dp-project-search-result-meta">${this.escapeHtml(item.meta)}</div>` : ''}
+            ${relations ? `<div class="dp-project-search-relations"><strong>Querverweise:</strong> ${this.escapeHtml(relations)}</div>` : ''}
+          </div>
+          <div class="dp-project-search-result-actions">
+            <button type="button" class="dp-button secondary" data-search-open="${this.escapeAttribute(item.id)}">Öffnen</button>
+            <button type="button" class="dp-button ghost ${isPinned ? 'is-active' : ''}" data-search-pin="${this.escapeAttribute(item.id)}" aria-pressed="${isPinned ? 'true' : 'false'}">${isPinned ? 'Sprungmarke lösen' : 'Sprungmarke'}</button>
+          </div>
+        </article>`;
+    }).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-page-header dp-project-search-header">
+        <div>
+          <span class="dp-overline">Phase 38.00 · Globaler Projektindex</span>
+          <h1>Projektsuche & Querverweise</h1>
+          <p>Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Varianten projektweit finden und direkt öffnen.</p>
+        </div>
+        <div class="dp-project-search-summary">
+          <span>Projektindex</span>
+          <strong>${search.totalIndexed}</strong>
+          <small>${search.totalMatches} aktuell sichtbar</small>
+        </div>
+      </div>
+
+      <section class="dp-project-search-command" aria-label="Globale Projektsuche">
+        <label class="dp-project-search-input-wrap">
+          <span class="dp-project-search-symbol" aria-hidden="true">⌕</span>
+          <input type="search" data-project-search-input value="${this.escapeAttribute(this.projectSearchQuery)}" placeholder="Projekt durchsuchen – z. B. TS 12, DN 400, Filter, Revision …" autocomplete="off" spellcheck="false" />
+          <kbd>Ctrl K</kbd>
+        </label>
+        <select data-project-search-system aria-label="Anlage filtern">
+          <option value="all">Alle Anlagen</option>
+          ${systems.map(system => `<option value="${this.escapeAttribute(system.id)}" ${this.projectSearchSystemId === system.id ? 'selected' : ''}>${this.escapeHtml(system.name || 'Anlage')}</option>`).join('')}
+        </select>
+        <button type="button" class="dp-button secondary" data-project-search-export>Projektindex CSV</button>
+      </section>
+
+      <nav class="dp-project-search-categories" aria-label="Suchkategorien">
+        ${categoryOrder.map(category => {
+          const count = category === 'all' ? search.totalIndexed : (search.categoryCounts[category] || 0);
+          return `<button type="button" data-project-search-category="${category}" class="${this.projectSearchCategory === category ? 'is-active' : ''}"><span>${categoryLabels[category]}</span><strong>${count}</strong></button>`;
+        }).join('')}
+      </nav>
+
+      <section class="dp-project-search-layout">
+        <aside class="dp-project-search-aside">
+          <article class="dp-project-search-panel">
+            <header><div><span class="dp-overline">Sprungmarken</span><h2>Direkt öffnen</h2></div><strong>${pins.length}/${24}</strong></header>
+            <div class="dp-project-search-pin-list">
+              ${pins.length ? pins.map(pin => `<button type="button" data-search-open="${this.escapeAttribute(pin.document.id)}"><span>${this.escapeHtml(pin.document.typeLabel)}</span><strong>${this.escapeHtml(pin.document.title)}</strong><small>${this.escapeHtml(pin.document.subtitle || '')}</small></button>`).join('') : '<p class="dp-project-search-empty">Noch keine Sprungmarke gespeichert.</p>'}
+            </div>
+          </article>
+          <article class="dp-project-search-panel">
+            <header><div><span class="dp-overline">Suchverlauf</span><h2>Zuletzt gesucht</h2></div>${recentQueries.length ? '<button type="button" class="dp-link-button" data-project-search-clear-recent>Leeren</button>' : ''}</header>
+            <div class="dp-project-search-recent-list">
+              ${recentQueries.length ? recentQueries.map(query => `<button type="button" data-project-search-recent="${this.escapeAttribute(query)}">${this.escapeHtml(query)}</button>`).join('') : '<p class="dp-project-search-empty">Der Suchverlauf ist noch leer.</p>'}
+            </div>
+          </article>
+          <article class="dp-project-search-panel dp-project-search-index-info">
+            <span class="dp-overline">Indexumfang</span>
+            <dl>
+              ${categoryOrder.slice(1).map(category => `<div><dt>${categoryLabels[category]}</dt><dd>${search.categoryCounts[category] || 0}</dd></div>`).join('')}
+            </dl>
+          </article>
+        </aside>
+
+        <main class="dp-project-search-main">
+          <header class="dp-project-search-results-header">
+            <div><span class="dp-overline">${this.projectSearchQuery ? 'Suchergebnis' : 'Projektindex'}</span><h2>${this.projectSearchQuery ? `${search.totalMatches} Treffer für „${this.escapeHtml(this.projectSearchQuery)}“` : `${search.totalMatches} Einträge`}</h2></div>
+            ${(this.projectSearchQuery || this.projectSearchCategory !== 'all' || this.projectSearchSystemId !== 'all') ? '<button type="button" class="dp-button ghost" data-project-search-reset>Filter zurücksetzen</button>' : ''}
+          </header>
+          <div class="dp-project-search-results">
+            ${resultCards || '<div class="dp-project-search-empty large"><strong>Keine passenden Einträge gefunden.</strong><span>Suchbegriff oder Filter anpassen.</span></div>'}
+          </div>
+        </main>
+      </section>
+
+      <p class="dp-project-search-disclaimer">Die Suche arbeitet ausschliesslich mit den Daten der geöffneten Projektdatei. Sprungmarken und Suchverlauf werden projektbezogen gespeichert.</p>
+    `;
+
+    const searchInput = this.root.querySelector('[data-project-search-input]');
+    let searchTimer = null;
+    searchInput?.addEventListener('input', event => {
+      const value = event.target.value;
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => {
+        this.projectSearchQuery = value;
+        this.renderProjectSearch(project);
+        const nextInput = this.root.querySelector('[data-project-search-input]');
+        nextInput?.focus();
+        nextInput?.setSelectionRange?.(value.length, value.length);
+      }, 120);
+    });
+    searchInput?.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        ProjectSearchEngine.recordQuery(project, event.currentTarget.value);
+        this.state.markProjectDirty();
+        this.projectSearchQuery = event.currentTarget.value;
+        this.renderProjectSearch(project);
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.projectSearchQuery = '';
+        this.renderProjectSearch(project);
+      }
+    });
+    this.root.querySelector('[data-project-search-system]')?.addEventListener('change', event => {
+      this.projectSearchSystemId = event.currentTarget.value || 'all';
+      this.renderProjectSearch(project);
+    });
+    this.root.querySelectorAll('[data-project-search-category]').forEach(button => button.addEventListener('click', () => {
+      this.projectSearchCategory = button.dataset.projectSearchCategory || 'all';
+      this.renderProjectSearch(project);
+    }));
+    this.root.querySelectorAll('[data-search-open]').forEach(button => button.addEventListener('click', () => {
+      const item = index.find(entry => entry.id === button.dataset.searchOpen);
+      if (item) this.openProjectSearchTarget(item);
+    }));
+    this.root.querySelectorAll('[data-search-pin]').forEach(button => button.addEventListener('click', () => {
+      const item = index.find(entry => entry.id === button.dataset.searchPin);
+      if (!item) return;
+      ProjectSearchEngine.togglePin(project, item);
+      this.state.markProjectDirty();
+      this.state.setSelection('projectSearch', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-project-search-recent]').forEach(button => button.addEventListener('click', () => {
+      this.projectSearchQuery = button.dataset.projectSearchRecent || '';
+      this.renderProjectSearch(project);
+      this.root.querySelector('[data-project-search-input]')?.focus();
+    }));
+    this.root.querySelector('[data-project-search-clear-recent]')?.addEventListener('click', () => {
+      ProjectSearchEngine.clearRecentQueries(project);
+      this.state.markProjectDirty();
+      this.state.setSelection('projectSearch', project);
+      this.state.notify();
+    });
+    this.root.querySelector('[data-project-search-reset]')?.addEventListener('click', () => {
+      this.projectSearchQuery = '';
+      this.projectSearchCategory = 'all';
+      this.projectSearchSystemId = 'all';
+      this.renderProjectSearch(project);
+    });
+    this.root.querySelector('[data-project-search-export]')?.addEventListener('click', () => ProjectSearchEngine.downloadIndexCsv(project));
+
+    window.requestAnimationFrame(() => searchInput?.focus());
+  }
+
+  openProjectSearchTarget(item = {}) {
+    const project = this.state.project;
+    const system = (project?.systems || []).find(entry => entry.id === item.systemId) || this.getActiveSystem();
+    if (item.targetType === 'project') {
+      this.state.setSelection('project', project);
+      this.state.notify();
+      return;
+    }
+    if (item.targetType === 'system' && system) return this.state.selectSystem(system);
+    if (item.targetType === 'section' && system) {
+      const section = (system.sections || []).find(entry => entry.id === item.sectionId || entry.id === item.targetId);
+      if (section) {
+        this.state.selectedSystem = system;
+        return this.state.selectSection(section);
+      }
+    }
+    if (item.targetType === 'formPart' && system) {
+      const part = (system.formParts || []).find(entry => entry.id === item.targetId);
+      if (part) {
+        this.state.selectedSystem = system;
+        return this.state.selectFormPart(part);
+      }
+    }
+    if (item.targetType === 'specialComponent' && system) {
+      const component = (system.specialComponents || []).find(entry => entry.id === item.targetId);
+      if (component) {
+        this.state.selectedSystem = system;
+        return this.state.selectSpecialComponent(component);
+      }
+    }
+    if (item.targetType === 'task') {
+      this.projectTaskFilter = 'all';
+      this.projectTaskSource = 'all';
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+      return;
+    }
+    if (item.targetType === 'revision') {
+      if (system) this.state.selectedSystem = system;
+      this.state.setSelection('projectCompletion', project);
+      this.state.notify();
+      return;
+    }
+    if (item.targetType === 'variant') {
+      if (system) this.state.selectedSystem = system;
+      this.state.setSelection('liveSimulation', system || project);
+      this.state.notify();
+    }
+  }
+
+
+  renderProjectTaskCenter() {
+    const project = this.state.project;
+    const system = this.getActiveSystem();
+    if (!project) return this.renderEmpty();
+
+    const analysis = ProjectTaskCenterEngine.analyze(project, { selectedSystemId: system?.id || null });
+    const sourceFilter = this.projectTaskSource || 'all';
+    const statusFilter = this.projectTaskFilter || 'open';
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const isOverdue = task => {
+      if (!task.dueDate || task.status === 'done') return false;
+      const due = new Date(`${task.dueDate}T00:00:00`);
+      return !Number.isNaN(due.getTime()) && due < now;
+    };
+    const visibleTasks = analysis.tasks.filter(task => {
+      if (sourceFilter !== 'all' && task.source !== sourceFilter) return false;
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'open') return task.status !== 'done';
+      if (statusFilter === 'critical') return task.priority === 'critical' && task.status !== 'done';
+      if (statusFilter === 'overdue') return isOverdue(task);
+      return task.status === statusFilter;
+    });
+
+    const statusLabel = status => ({ open: 'Offen', inProgress: 'In Bearbeitung', done: 'Erledigt' })[status] || status;
+    const priorityLabel = priority => ({ critical: 'Kritisch', high: 'Hoch', normal: 'Normal', low: 'Niedrig' })[priority] || priority;
+    const nextStatus = status => status === 'open' ? 'inProgress' : status === 'inProgress' ? 'done' : 'open';
+    const nextStatusLabel = status => status === 'open' ? 'Starten' : status === 'inProgress' ? 'Erledigen' : 'Wieder öffnen';
+    const selection = this.state.getSelection();
+    const quickViews = [
+      { type: 'projectSearch', label: 'Projektsuche', meta: 'Projektindex, Querverweise und Sprungmarken', icon: '⌕' },
+      { type: 'projectCockpit', label: 'Projektcockpit', meta: 'Projektweite QS und Dokumentation', icon: '◫' },
+      { type: 'projectStandardization', label: 'Projektworkflow', meta: 'Prüfprofile, Vorlagen und Massenbearbeitung', icon: '≡' },
+      { type: 'engineeringQuality', label: 'Engineering-QS', meta: 'Aktive Anlage fachlich prüfen', icon: '✓' },
+      { type: 'networkSchematic', label: 'Anlagenschema', meta: 'Technische Anlagenzeichnung öffnen', icon: '⌁' },
+      { type: 'liveSimulation', label: 'Simulation', meta: 'Luftmenge und Dimension vergleichen', icon: '↔' },
+      { type: 'report', label: 'Bericht', meta: 'Professional Report und PDF', icon: '▤' },
+      { type: 'projectCompletion', label: 'Abschluss', meta: 'Revisionen, Varianten und Prüfprotokoll', icon: '◇' },
+      { type: 'projectSafety', label: 'Sicherung', meta: 'Projektarchiv und Wiederherstellung', icon: '⬡' },
+    ];
+
+    const taskRows = visibleTasks.map(task => {
+      const overdue = isOverdue(task);
+      const target = [task.systemName, task.sectionName].filter(Boolean).join(' · ') || 'Projekt';
+      const details = task.recommendation || task.description || '';
+      return `
+        <article class="dp-task-card is-${this.escapeAttribute(task.priority)} is-status-${this.escapeAttribute(task.status)} ${overdue ? 'is-overdue' : ''}">
+          <header>
+            <div class="dp-task-title-wrap">
+              <div class="dp-task-badges">
+                <span class="dp-task-priority">${this.escapeHtml(priorityLabel(task.priority))}</span>
+                <span class="dp-task-source">${task.source === 'generated' ? 'Automatische QS' : 'Manuell'}</span>
+                ${overdue ? '<span class="dp-task-overdue">Überfällig</span>' : ''}
+              </div>
+              <h3>${this.escapeHtml(task.title)}</h3>
+            </div>
+            <span class="dp-task-status">${this.escapeHtml(statusLabel(task.status))}</span>
+          </header>
+          ${details ? `<p>${this.escapeHtml(details)}</p>` : ''}
+          <div class="dp-task-meta">
+            <span><strong>Bezug:</strong> ${this.escapeHtml(target)}</span>
+            ${task.dueDate ? `<span><strong>Fällig:</strong> ${this.escapeHtml(new Date(`${task.dueDate}T12:00:00`).toLocaleDateString('de-CH'))}</span>` : ''}
+            ${task.actor ? `<span><strong>Bearbeiter:</strong> ${this.escapeHtml(task.actor)}</span>` : ''}
+            ${task.code ? `<span><strong>Code:</strong> ${this.escapeHtml(task.code)}</span>` : ''}
+          </div>
+          <footer>
+            ${(task.systemId || task.sectionId) ? `<button type="button" class="dp-button secondary" data-task-open="${this.escapeAttribute(task.id)}">Öffnen</button>` : ''}
+            <button type="button" class="dp-button secondary" data-task-status="${this.escapeAttribute(task.id)}" data-next-status="${this.escapeAttribute(nextStatus(task.status))}">${this.escapeHtml(nextStatusLabel(task.status))}</button>
+            ${task.source === 'manual' ? `<button type="button" class="dp-button ghost danger" data-task-delete="${this.escapeAttribute(task.id)}">Löschen</button>` : ''}
+          </footer>
+        </article>`;
+    }).join('');
+
+    const systemOptions = (project.systems || []).map(item => `<option value="system:${this.escapeAttribute(item.id)}">Anlage · ${this.escapeHtml(item.name || 'Anlage')}</option>`).join('');
+    const sectionOptions = (project.systems || []).flatMap(item => (item.sections || []).map(section => `<option value="section:${this.escapeAttribute(item.id)}:${this.escapeAttribute(section.id)}">${this.escapeHtml(item.name || 'Anlage')} · ${this.escapeHtml(section.name || section.id || 'Teilstrecke')}</option>`)).join('');
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-page-header dp-task-center-header">
+        <div>
+          <span class="dp-overline">Phase 37.00 · Projektorganisation</span>
+          <h1>Projekt-Navigator & Aufgaben</h1>
+          <p>Automatische QS-Punkte, manuelle Aufgaben, Favoriten und Schnellzugriffe in einer zentralen Arbeitsoberfläche.</p>
+        </div>
+        <div class="dp-task-center-score is-${this.escapeAttribute(analysis.status)}">
+          <span>Aufgaben-Score</span>
+          <strong>${this.formatNumber(analysis.score, 0)}</strong>
+          <small>${analysis.counts.open + analysis.counts.inProgress} offen · ${analysis.counts.done} erledigt</small>
+        </div>
+      </div>
+
+      <section class="dp-task-kpis">
+        <article><span>Offen</span><strong>${analysis.counts.open}</strong><small>noch nicht begonnen</small></article>
+        <article><span>In Bearbeitung</span><strong>${analysis.counts.inProgress}</strong><small>aktuell in Arbeit</small></article>
+        <article class="${analysis.counts.critical ? 'is-critical' : ''}"><span>Kritisch</span><strong>${analysis.counts.critical}</strong><small>priorisiert prüfen</small></article>
+        <article class="${analysis.counts.overdue ? 'is-warning' : ''}"><span>Überfällig</span><strong>${analysis.counts.overdue}</strong><small>manuelle Termine</small></article>
+        <article><span>Favoriten</span><strong>${analysis.favorites.length}</strong><small>Schnellzugriffe</small></article>
+      </section>
+
+      <section class="dp-task-center-grid">
+        <article class="dp-task-panel dp-task-quick-panel">
+          <header class="dp-section-heading"><div><span class="dp-overline">Navigator</span><h2>Schnellzugriffe</h2></div><small>Direkt zum gewünschten Arbeitsbereich</small></header>
+          <div class="dp-task-quick-grid">
+            ${quickViews.map(view => `<div class="dp-task-quick-card"><button type="button" data-task-view="${this.escapeAttribute(view.type)}"><span>${view.icon}</span><strong>${this.escapeHtml(view.label)}</strong><small>${this.escapeHtml(view.meta)}</small></button><button type="button" class="dp-task-star" data-task-favorite-view="${this.escapeAttribute(view.type)}" data-favorite-label="${this.escapeAttribute(view.label)}" data-favorite-meta="${this.escapeAttribute(view.meta)}" title="Zu Favoriten hinzufügen" aria-label="${this.escapeAttribute(view.label)} zu Favoriten hinzufügen">☆</button></div>`).join('')}
+          </div>
+          <div class="dp-task-context-actions">
+            ${system ? `<button type="button" class="dp-button secondary" data-task-favorite-system="${this.escapeAttribute(system.id)}">Aktive Anlage merken</button>` : ''}
+            ${this.state.selectedSection ? `<button type="button" class="dp-button secondary" data-task-favorite-section="${this.escapeAttribute(this.state.selectedSection.id)}">Ausgewählte Teilstrecke merken</button>` : ''}
+          </div>
+        </article>
+
+        <article class="dp-task-panel dp-task-favorites-panel">
+          <header class="dp-section-heading"><div><span class="dp-overline">Persönliche Navigation</span><h2>Favoriten</h2></div><small>maximal 16 Einträge</small></header>
+          <div class="dp-task-favorites">
+            ${analysis.favorites.length ? analysis.favorites.map(item => `<div class="dp-task-favorite"><button type="button" data-task-open-favorite="${this.escapeAttribute(item.id)}"><span>${item.type === 'section' ? 'TS' : item.type === 'system' ? 'AN' : '↗'}</span><div><strong>${this.escapeHtml(item.label)}</strong><small>${this.escapeHtml(item.meta || 'Schnellzugriff')}</small></div></button><button type="button" data-task-remove-favorite="${this.escapeAttribute(item.id)}" title="Favorit entfernen" aria-label="Favorit entfernen">×</button></div>`).join('') : '<p class="dp-task-empty">Noch keine Favoriten gespeichert.</p>'}
+          </div>
+        </article>
+      </section>
+
+      <section class="dp-task-panel dp-task-create-panel">
+        <header class="dp-section-heading"><div><span class="dp-overline">Manuelle Planung</span><h2>Neue Aufgabe</h2></div><small>Wird in der DVP-Projektdatei gespeichert</small></header>
+        <form class="dp-task-create-form" data-task-create-form>
+          <label class="dp-task-title-field"><span>Aufgabe *</span><input name="title" type="text" maxlength="140" required placeholder="z. B. Kanalhöhe mit Architektur koordinieren"></label>
+          <label><span>Priorität</span><select name="priority"><option value="normal">Normal</option><option value="high">Hoch</option><option value="critical">Kritisch</option><option value="low">Niedrig</option></select></label>
+          <label><span>Fällig am</span><input name="dueDate" type="date"></label>
+          <label><span>Bezug</span><select name="target"><option value="project">Gesamtes Projekt</option>${systemOptions}${sectionOptions}</select></label>
+          <label><span>Bearbeiter</span><input name="actor" type="text" value="${this.escapeAttribute(project.author || '')}" placeholder="Name"></label>
+          <label class="dp-task-description-field"><span>Beschreibung</span><textarea name="description" rows="2" maxlength="500" placeholder="Optionaler Hinweis oder nächster Schritt"></textarea></label>
+          <button type="submit" class="dp-button primary">Aufgabe hinzufügen</button>
+        </form>
+      </section>
+
+      <section class="dp-task-panel dp-task-list-panel">
+        <header class="dp-task-list-header">
+          <div><span class="dp-overline">Zentrale Aufgabenliste</span><h2>Offene Punkte abarbeiten</h2><p>${visibleTasks.length} von ${analysis.tasks.length} Aufgaben sichtbar</p></div>
+          <div class="dp-task-toolbar">
+            <div class="dp-task-filter-group" role="group" aria-label="Aufgabenstatus filtern">
+              ${[['open','Offen'],['critical','Kritisch'],['overdue','Überfällig'],['inProgress','In Arbeit'],['done','Erledigt'],['all','Alle']].map(([value,label]) => `<button type="button" data-task-filter="${value}" class="${statusFilter === value ? 'is-active' : ''}">${label}</button>`).join('')}
+            </div>
+            <select data-task-source aria-label="Aufgabenquelle filtern"><option value="all" ${sourceFilter === 'all' ? 'selected' : ''}>Alle Quellen</option><option value="generated" ${sourceFilter === 'generated' ? 'selected' : ''}>Automatische QS</option><option value="manual" ${sourceFilter === 'manual' ? 'selected' : ''}>Manuell</option></select>
+            <button type="button" class="dp-button secondary" data-task-export>CSV exportieren</button>
+            <button type="button" class="dp-button ghost" data-task-clear-completed>Erledigte manuelle löschen</button>
+          </div>
+        </header>
+        <div class="dp-task-list">${taskRows || '<p class="dp-task-empty large">Für den gewählten Filter sind keine Aufgaben vorhanden.</p>'}</div>
+        <p class="dp-task-disclaimer">${this.escapeHtml(analysis.disclaimer)}</p>
+      </section>
+    `;
+
+    this.bindProjectTaskCenterEvents(project, analysis, selection);
+  }
+
+  bindProjectTaskCenterEvents(project, analysis) {
+    this.root.querySelectorAll('[data-task-filter]').forEach(button => button.addEventListener('click', () => {
+      this.projectTaskFilter = button.dataset.taskFilter || 'open';
+      this.renderProjectTaskCenter(project);
+    }));
+    this.root.querySelector('[data-task-source]')?.addEventListener('change', event => {
+      this.projectTaskSource = event.target.value || 'all';
+      this.renderProjectTaskCenter(project);
+    });
+    this.root.querySelector('[data-task-create-form]')?.addEventListener('submit', event => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const target = String(data.get('target') || 'project');
+      const parts = target.split(':');
+      const systemId = parts[0] === 'system' ? parts[1] : parts[0] === 'section' ? parts[1] : null;
+      const sectionId = parts[0] === 'section' ? parts[2] : null;
+      try {
+        ProjectTaskCenterEngine.addManualTask(project, {
+          title: data.get('title'),
+          description: data.get('description'),
+          priority: data.get('priority'),
+          dueDate: data.get('dueDate'),
+          actor: data.get('actor'),
+          systemId,
+          sectionId,
+        });
+        this.state.markProjectDirty();
+        this.state.setSelection('projectTaskCenter', project);
+        this.state.notify();
+      } catch (error) {
+        UiDialogService.alert({ title: 'Aufgabe konnte nicht erstellt werden', message: error?.message || String(error), tone: 'warning' });
+      }
+    });
+    this.root.querySelectorAll('[data-task-status]').forEach(button => button.addEventListener('click', () => {
+      ProjectTaskCenterEngine.updateTask(project, button.dataset.taskStatus, { status: button.dataset.nextStatus, actor: project.author || '' });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-task-delete]').forEach(button => button.addEventListener('click', async () => {
+      const confirmed = await UiDialogService.confirm({ title: 'Aufgabe löschen', message: 'Die manuelle Aufgabe wird dauerhaft aus der Projektdatei entfernt.', confirmLabel: 'Aufgabe löschen', tone: 'danger' });
+      if (!confirmed) return;
+      ProjectTaskCenterEngine.deleteManualTask(project, button.dataset.taskDelete);
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-task-open]').forEach(button => button.addEventListener('click', () => {
+      const task = analysis.tasks.find(item => String(item.id) === String(button.dataset.taskOpen));
+      if (task) this.openProjectTaskTarget(task);
+    }));
+    this.root.querySelectorAll('[data-task-view]').forEach(button => button.addEventListener('click', () => this.openProjectTaskTarget({ viewType: button.dataset.taskView })));
+    this.root.querySelectorAll('[data-task-favorite-view]').forEach(button => button.addEventListener('click', () => {
+      ProjectTaskCenterEngine.addFavorite(project, { type: 'view', viewType: button.dataset.taskFavoriteView, label: button.dataset.favoriteLabel, meta: button.dataset.favoriteMeta });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-task-favorite-system]').forEach(button => button.addEventListener('click', () => {
+      const system = (project.systems || []).find(item => String(item.id) === String(button.dataset.taskFavoriteSystem));
+      if (!system) return;
+      ProjectTaskCenterEngine.addFavorite(project, { type: 'system', systemId: system.id, label: system.name || 'Anlage', meta: `${system.type || 'Lüftungsanlage'} · ${system.sections?.length || 0} Teilstrecken` });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-task-favorite-section]').forEach(button => button.addEventListener('click', () => {
+      const system = this.getActiveSystem();
+      const section = system?.sections?.find(item => String(item.id) === String(button.dataset.taskFavoriteSection));
+      if (!system || !section) return;
+      ProjectTaskCenterEngine.addFavorite(project, { type: 'section', systemId: system.id, sectionId: section.id, label: section.name || 'Teilstrecke', meta: system.name || 'Anlage' });
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelectorAll('[data-task-open-favorite]').forEach(button => button.addEventListener('click', () => {
+      const favorite = analysis.favorites.find(item => String(item.id) === String(button.dataset.taskOpenFavorite));
+      if (favorite) this.openProjectTaskTarget(favorite);
+    }));
+    this.root.querySelectorAll('[data-task-remove-favorite]').forEach(button => button.addEventListener('click', () => {
+      ProjectTaskCenterEngine.removeFavorite(project, button.dataset.taskRemoveFavorite);
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    }));
+    this.root.querySelector('[data-task-export]')?.addEventListener('click', () => ProjectTaskCenterEngine.downloadCsv(project, analysis));
+    this.root.querySelector('[data-task-clear-completed]')?.addEventListener('click', async () => {
+      const count = analysis.tasks.filter(task => task.source === 'manual' && task.status === 'done').length;
+      if (!count) {
+        UiDialogService.alert({ title: 'Keine erledigten Aufgaben', message: 'Es sind keine erledigten manuellen Aufgaben vorhanden.', tone: 'info' });
+        return;
+      }
+      const confirmed = await UiDialogService.confirm({ title: 'Erledigte Aufgaben entfernen', message: `${count} erledigte manuelle Aufgabe(n) werden aus der Projektdatei gelöscht.`, confirmLabel: 'Entfernen', tone: 'warning' });
+      if (!confirmed) return;
+      ProjectTaskCenterEngine.clearCompletedManualTasks(project);
+      this.state.markProjectDirty();
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+    });
+  }
+
+  openProjectTaskTarget(target = {}) {
+    const project = this.state.project;
+    if (!project) return;
+    const system = (project.systems || []).find(item => String(item.id) === String(target.systemId)) || this.getActiveSystem() || project.systems?.[0] || null;
+    if (target.sectionId && system) {
+      const section = (system.sections || []).find(item => String(item.id) === String(target.sectionId));
+      if (section) {
+        this.state.selectedSystem = system;
+        this.state.selectSection(section);
+        return;
+      }
+    }
+    if (target.type === 'system' && system) {
+      this.state.selectSystem(system);
+      return;
+    }
+    const viewType = target.viewType || (target.source === 'generated' ? (target.sectionId ? 'section' : target.systemId ? 'system' : 'projectCockpit') : '');
+    if (viewType === 'report') return this.state.selectReport(system);
+    if (viewType === 'system' && system) return this.state.selectSystem(system);
+    if (viewType === 'section' && target.sectionId) return;
+    const projectViews = ['project', 'projectSearch', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
+    const systemViews = ['engineeringQuality', 'networkSchematic', 'liveSimulation', 'projectCompletion', 'projectSafety', 'projectHandover'];
+    if (projectViews.includes(viewType)) {
+      this.state.setSelection(viewType, project);
+      this.state.notify();
+      return;
+    }
+    if (systemViews.includes(viewType)) {
+      if (system) this.state.selectedSystem = system;
+      this.state.setSelection(viewType, system);
+      this.state.notify();
+      return;
+    }
+    if (target.systemId && system) this.state.selectSystem(system);
   }
 
 }

@@ -1,5 +1,61 @@
 # Änderungsverlauf
 
+## Phase 38.00 – Globale Projektsuche, Projektindex und Querverweise
+
+- Neuen Bereich **Projekt → Suche** für die projektweite Volltextsuche ergänzt.
+- Projektindex für Projektangaben, Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Simulationsvarianten umgesetzt.
+- Gewichtete Trefferlogik mit exakten, beginnenden und enthaltenen Suchbegriffen ergänzt.
+- Kategorie- und Anlagenfilter sowie vollständige Indexansicht ohne Suchbegriff umgesetzt.
+- Querverweise von Projekt, Anlagen und Teilstrecken zu untergeordneten Bauteilen und Aufgaben ergänzt.
+- Direkte Navigation aus Suchtreffern zu Projekt, Anlage, Teilstrecke, Formteil, Sonderbauteil, Aufgabenbereich, Revision und Simulation umgesetzt.
+- Projektbezogene Sprungmarken mit maximal 24 Einträgen ergänzt.
+- Projektbezogenen Suchverlauf mit maximal acht eindeutigen Suchbegriffen ergänzt.
+- Vollständigen Projektindex als CSV-Export ergänzt.
+- Projektsuche in Ribbon, Sidebar, Statusleiste, Aufgaben-Schnellzugriffe und Tastenkürzel `Ctrl + K` integriert.
+- Responsive Suchoberfläche mit fixierter Suchleiste, Trefferkarten und mobilem Layout ergänzt.
+- Deployment-Diagnose um Suchengine und Phase-38-Stylesheet erweitert.
+- Zwei neue Testgruppen mit 70 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.15.0 und Cachekennung auf 38.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
+## Phase 37.00 – Projekt-Navigator, Aufgabenliste, Favoriten und Schnellzugriffe
+
+- Neuen Bereich **Projekt → Aufgaben** als zentrale Arbeitsoberfläche für automatische QS-Punkte und manuelle Projektaufgaben ergänzt.
+- Projektweite Feststellungen aus dem bestehenden Cockpit automatisch in priorisierte Aufgaben überführt.
+- Aufgabenstatus **Offen**, **In Bearbeitung** und **Erledigt** mit dauerhaft gespeicherten Statusständen umgesetzt.
+- Manuelle Aufgaben mit Priorität, Fälligkeit, Bearbeiter, Anlagen- und Teilstreckenbezug ergänzt.
+- Filter für offene, kritische, überfällige, laufende, erledigte und alle Aufgaben sowie getrennte Quellenfilter ergänzt.
+- Direkte Navigation aus Aufgaben zur betroffenen Anlage oder Teilstrecke umgesetzt.
+- Schnellzugriffe zu Cockpit, Workflow, Engineering-QS, Anlagenschema, Simulation, Bericht, Abschluss und Sicherung ergänzt.
+- Projektbezogene Favoriten für Ansichten, Anlagen und Teilstrecken mit maximal 16 Einträgen umgesetzt.
+- Aufgaben- und Favoritenübersicht als CSV exportierbar gemacht.
+- Professional Report bei offenen Aufgaben optional um eine eigene Seite **Projektaufgaben** erweitert.
+- Aufgabenübersicht in Ribbon, Sidebar, Statusleiste und Tastenkürzel `Ctrl + Shift + T` integriert.
+- Responsive Oberfläche für Desktop, Tablet und kleinere Bildschirme ergänzt.
+- Deployment-Diagnose um Aufgabenengine und Phase-37-Stylesheet erweitert.
+- Zwei neue Testgruppen mit insgesamt 77 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.14.0 und Cachekennung auf 37.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
+## Phase 36.00 – Projektworkflow, Prüfprofile und kontrollierte Massenbearbeitung
+
+- Neuen Bereich **Projekt → Workflow** für Prüfprofile, Systemvorlagen, Massenbearbeitung und Änderungsprotokoll ergänzt.
+- Vier herstellerneutrale Prüfprofile umgesetzt: allgemeine Planung, Komfort, Technikbereich und benutzerdefiniert.
+- Engineering-QS auf das aktive Prüfprofil umgestellt; Geschwindigkeits-, Reibungs-, Verlustanteils- und Gesamtdruckverlustgrenzen werden projektbezogen ausgewertet.
+- Plausibilitätsprüfung für frei definierte Prüfprofile ergänzt.
+- Neutrale Systemvorlagen für Zu-/Abluft, vollständige Lüftungsanlage und Umluft ergänzt.
+- Systemvorlagen ergänzen ausschliesslich fehlende Luftarten und überschreiben keine bestehenden Anlagen.
+- Kontrollierte Massenbearbeitung für Luftmenge, Länge und Dimension mit Geltungsbereich, Rundung, optionaler Auswahl und Neunummerierung umgesetzt.
+- Verbindliche Vorher-/Nachher-Vorschau sowie Fingerabdruckschutz gegen veraltete Massenänderungen ergänzt.
+- Automatische lokale Sicherheitssicherung vor Vorlagen- und Massenänderungen integriert.
+- Projektweites Änderungsprotokoll mit maximal 60 Einträgen, Bearbeiter, Zeitstempel und technischen Details ergänzt.
+- Änderungsprotokoll als CSV exportierbar gemacht.
+- Aktives Prüfprofil und Workflowdaten in Professional Report und Gesamt-CSV integriert.
+- Ribbon, Sidebar, Tastenkürzel `Ctrl + Shift + W`, Statusleiste, Deployment-QS und responsive Oberfläche erweitert.
+- Zwei neue Testgruppen mit insgesamt 96 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.13.0 und Cachekennung auf 36.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 35.00 – Projektcockpit und projektweite QS-Matrix
 
 - Neuen Bereich **Projekt → Cockpit** für eine zentrale Projekt-, Risiko- und Dokumentationsübersicht ergänzt.

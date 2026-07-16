@@ -90,12 +90,39 @@ export default class SidebarComponent {
             })}
 
             ${this.renderRootItem({
+              type: 'projectSearch',
+              id: 'project-search',
+              label: 'Projektsuche',
+              meta: 'Projektindex · Querverweise · Sprungmarken',
+              icon: 'report',
+              active: this.state.getSelectionType() === 'projectSearch',
+            })}
+
+            ${this.renderRootItem({
               type: 'projectCockpit',
               id: 'project-cockpit',
               label: 'Projektcockpit',
               meta: 'Projektweite QS · Risiken · Dokumentation',
               icon: 'report',
               active: this.state.getSelectionType() === 'projectCockpit',
+            })}
+
+            ${this.renderRootItem({
+              type: 'projectStandardization',
+              id: 'project-standardization',
+              label: 'Projektworkflow',
+              meta: 'Vorlagen · Prüfprofile · Massenänderung',
+              icon: 'systems',
+              active: this.state.getSelectionType() === 'projectStandardization',
+            })}
+
+            ${this.renderRootItem({
+              type: 'projectTaskCenter',
+              id: 'project-task-center',
+              label: 'Aufgaben & Favoriten',
+              meta: 'Projekt-Navigator · offene Punkte · Schnellzugriffe',
+              icon: 'report',
+              active: this.state.getSelectionType() === 'projectTaskCenter',
             })}
 
             ${this.renderRootItem({
@@ -367,8 +394,26 @@ export default class SidebarComponent {
           return;
         }
 
+        if (type === 'projectSearch') {
+          this.state.setSelection('projectSearch', project);
+          this.state.notify();
+          return;
+        }
+
         if (type === 'projectCockpit') {
           this.state.setSelection('projectCockpit', project);
+          this.state.notify();
+          return;
+        }
+
+        if (type === 'projectStandardization') {
+          this.state.setSelection('projectStandardization', project);
+          this.state.notify();
+          return;
+        }
+
+        if (type === 'projectTaskCenter') {
+          this.state.setSelection('projectTaskCenter', project);
           this.state.notify();
           return;
         }

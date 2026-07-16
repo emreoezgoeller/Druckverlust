@@ -1,0 +1,50 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const root = new URL('..', import.meta.url);
+const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
+let checks = 0;
+
+const appHtml = read('app.html');
+const main = read('src/main.js');
+const version = read('src/core/appVersion.js');
+const ribbon = read('src/ui/components/RibbonComponent.js');
+const actions = read('src/ui/core/RibbonActions.js');
+const shortcuts = read('src/ui/core/KeyboardShortcuts.js');
+const sidebar = read('src/ui/components/SidebarComponent.js');
+const workspace = read('src/ui/components/WorkspaceComponent.js');
+const statusbar = read('src/ui/components/StatusBarComponent.js');
+const css = read('src/ui/phase38_00.css');
+const engine = read('src/project/ProjectSearchEngine.js');
+const packageJson = JSON.parse(read('package.json'));
+
+assert.match(appHtml, /phase38_00\.css\?v=38\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=38\.00/); checks += 1;
+assert.match(main, /Phase 38\.00/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=38\.00/); checks += 1;
+assert.match(version, /APP_RELEASE = '38\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '1\.15\.0'/); checks += 1;
+assert.match(ribbon, /showProjectSearch/); checks += 1;
+assert.match(ribbon, /label: 'Suche'/); checks += 1;
+assert.match(ribbon, /icon: 'search'/); checks += 1;
+assert.match(actions, /showProjectSearch/); checks += 1;
+assert.match(shortcuts, /key === 'k'/); checks += 1;
+assert.match(sidebar, /type: 'projectSearch'/); checks += 1;
+assert.match(sidebar, /Projektindex · Querverweise · Sprungmarken/); checks += 1;
+assert.match(workspace, /renderProjectSearch/); checks += 1;
+assert.match(workspace, /Projektsuche & Querverweise/); checks += 1;
+assert.match(workspace, /data-project-search-input/); checks += 1;
+assert.match(workspace, /data-search-pin/); checks += 1;
+assert.match(workspace, /openProjectSearchTarget/); checks += 1;
+assert.match(statusbar, /Projektsuche & Index/); checks += 1;
+assert.match(css, /dp-project-search-layout/); checks += 1;
+assert.match(css, /dp-project-search-result/); checks += 1;
+assert.match(css, /@media \(max-width: 560px\)/); checks += 1;
+assert.match(engine, /buildIndex/); checks += 1;
+assert.match(engine, /togglePin/); checks += 1;
+assert.match(engine, /createIndexCsv/); checks += 1;
+assert.equal(packageJson.version, '1.15.0'); checks += 1;
+assert.match(packageJson.scripts.test, /run-phase38-project-search-tests/); checks += 1;
+assert.match(packageJson.scripts['test:phase38'], /run-phase38-ui-tests/); checks += 1;
+
+console.log(`Phase 38.00 UI: ${checks} Prüfungen bestanden.`);
