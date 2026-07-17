@@ -1,0 +1,88 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import createDemoProject from '../src/project/demoProject.js';
+import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
+import ReportEngine from '../src/report/ReportEngine.js?v=39.00';
+import ProjectDependencyEngine from '../src/project/ProjectDependencyEngine.js?v=39.00';
+
+const root = new URL('..', import.meta.url);
+const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
+let checks = 0;
+
+const appHtml = read('app.html');
+const main = read('src/main.js');
+const version = read('src/core/appVersion.js');
+const ribbon = read('src/ui/components/RibbonComponent.js');
+const actions = read('src/ui/core/RibbonActions.js');
+const shortcuts = read('src/ui/core/KeyboardShortcuts.js');
+const sidebar = read('src/ui/components/SidebarComponent.js');
+const workspace = read('src/ui/components/WorkspaceComponent.js');
+const statusbar = read('src/ui/components/StatusBarComponent.js');
+const css = read('src/ui/phase39_00.css');
+const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
+const reportSource = read('src/report/ReportEngine.js');
+const packageJson = JSON.parse(read('package.json'));
+
+assert.match(appHtml, /phase39_00\.css\?v=39\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=39\.00/); checks += 1;
+assert.match(appHtml, /ApplicationShell\.css\?v=39\.00/); checks += 1;
+assert.match(main, /Phase 39\.00/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=39\.00/); checks += 1;
+assert.match(version, /APP_RELEASE = '39\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '1\.16\.0'/); checks += 1;
+assert.match(version, /APP_ASSET_VERSION = '39\.00'/); checks += 1;
+assert.match(ribbon, /showProjectDependencies/); checks += 1;
+assert.match(ribbon, /label: 'Struktur'/); checks += 1;
+assert.match(ribbon, /projectDependenciesButton/); checks += 1;
+assert.match(actions, /showProjectDependencies/); checks += 1;
+assert.match(actions, /dependencyTargetHint/); checks += 1;
+assert.match(shortcuts, /key === 'd'/); checks += 1;
+assert.match(shortcuts, /showProjectDependencies/); checks += 1;
+assert.match(sidebar, /type: 'projectDependencies'/); checks += 1;
+assert.match(sidebar, /Änderungsfolgen · Struktur · Konflikte/); checks += 1;
+assert.match(workspace, /ProjectDependencyEngine/); checks += 1;
+assert.match(workspace, /renderProjectDependencies/); checks += 1;
+assert.match(workspace, /Abhängigkeiten & Änderungsfolgen/); checks += 1;
+assert.match(workspace, /data-dependency-target/); checks += 1;
+assert.match(workspace, /data-dependency-open-finding/); checks += 1;
+assert.match(workspace, /openProjectDependencyOutput/); checks += 1;
+assert.match(statusbar, /Abhängigkeiten & Konflikte/); checks += 1;
+assert.match(css, /dp-dependency-layout/); checks += 1;
+assert.match(css, /dp-dependency-output-grid/); checks += 1;
+assert.match(css, /dp-dependency-finding/); checks += 1;
+assert.match(css, /@media \(max-width: 620px\)/); checks += 1;
+assert.match(deployment, /ProjectDependencyEngine\.js/); checks += 1;
+assert.match(deployment, /phase39_00\.css/); checks += 1;
+assert.match(reportSource, /renderProjectDependenciesPage/); checks += 1;
+assert.match(reportSource, /Struktur- und Abhängigkeitsprüfung/); checks += 1;
+assert.equal(packageJson.version, '1.16.0'); checks += 1;
+assert.match(packageJson.scripts.test, /run-phase39-dependency-impact-tests/); checks += 1;
+assert.match(packageJson.scripts['test:phase39'], /run-phase39-ui-report-tests/); checks += 1;
+
+const project = createDemoProject();
+const system = project.systems[0];
+project.calculationResult = ProjectCalculationService.calculate(project, system.id);
+const model = ReportEngine.createReportModel(project, { system });
+assert.ok(model.projectDependencies); checks += 1;
+assert.equal(model.projectDependencies.conflicts.counts.critical, 0); checks += 1;
+const plan = ReportEngine.createPagePlan(model);
+assert.ok(plan.entries.some(entry => entry.key === 'projectDependencies')); checks += 1;
+const html = ReportEngine.renderReportBody(model);
+assert.match(html, /Struktur- und Abhängigkeitsprüfung/); checks += 1;
+assert.match(html, /Projektverknüpfungen, Änderungsfolgen und Konfliktkontrolle/); checks += 1;
+const renderedPages = (html.match(/<section class="report-page/g) || []).length;
+assert.equal(renderedPages, plan.totalPages); checks += 1;
+const csv = ReportEngine.createCsv(model);
+assert.match(csv, /Struktur- und Abhaengigkeitspruefung/); checks += 1;
+assert.match(csv, /Struktur-Score/); checks += 1;
+
+const malformed = structuredClone(project);
+malformed.systems[0].formParts[0].sectionId = 'nicht-vorhanden';
+const malformedModel = ReportEngine.createReportModel(malformed, { system: malformed.systems[0] });
+assert.ok(malformedModel.projectDependencies.conflicts.counts.critical > 0); checks += 1;
+assert.match(ReportEngine.renderReportBody(malformedModel), /FORMPART_INVALID_REFERENCE/); checks += 1;
+
+const analysis = ProjectDependencyEngine.analyze(project);
+assert.ok(analysis.summary.links > 0); checks += 1;
+
+console.log(`Phase 39.00 UI/Report: ${checks} Prüfungen bestanden.`);

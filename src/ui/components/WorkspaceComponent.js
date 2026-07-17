@@ -5,9 +5,9 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=38.00';
+import ReportEngine from '../../report/ReportEngine.js?v=39.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=38.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
@@ -89,22 +89,23 @@ import {
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=38.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=39.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
 import UiDialogService from '../core/UiDialogService.js?v=22.03';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=38.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=38.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=38.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=38.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=38.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=38.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=38.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=38.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=38.00';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=38.00';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=38.00';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=38.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=39.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=39.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {
@@ -144,6 +145,9 @@ export default class WorkspaceComponent {
     this.projectSearchQuery = '';
     this.projectSearchCategory = 'all';
     this.projectSearchSystemId = 'all';
+    this.dependencyTargetId = '';
+    this.dependencyConflictFilter = 'all';
+    this.dependencyHintKey = '';
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -170,6 +174,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'projectStandardization') return this.renderProjectStandardization(selection.data);
     if (selection.type === 'projectTaskCenter') return this.renderProjectTaskCenter(selection.data);
     if (selection.type === 'projectSearch') return this.renderProjectSearch(selection.data);
+    if (selection.type === 'projectDependencies') return this.renderProjectDependencies(selection.data);
     if (selection.type === 'projectHandover') return this.renderProjectHandover(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
     if (selection.type === 'calculationCheck') return this.renderCalculationCheck(selection.data || this.state.calculationCheck);
@@ -349,6 +354,7 @@ export default class WorkspaceComponent {
             <li><strong>Ctrl + Enter</strong> neu berechnen</li>
             <li><strong>Ctrl + B / Ctrl + P</strong> Bericht öffnen</li>
             <li><strong>Ctrl + K</strong> globale Projektsuche öffnen</li>
+            <li><strong>Ctrl + Shift + D</strong> Abhängigkeiten und Änderungsfolgen öffnen</li>
             <li><strong>Ctrl + Shift + U</strong> Projektübergabe öffnen</li>
             <li><strong>Alt + Home</strong> Startübersicht</li>
           </ul>
@@ -11741,6 +11747,250 @@ formatNumber(value, digits = 2) {
   }
 
 
+  renderProjectDependencies() {
+    const project = this.state.project;
+    if (!project) return this.renderEmpty();
+
+    const hint = this.state.dependencyTargetHint || { type: 'project', id: project.id || null };
+    const hintKey = `${hint.type || 'project'}:${hint.systemId || ''}:${hint.id || ''}:${hint.updatedAt || ''}`;
+    if (hintKey !== this.dependencyHintKey) {
+      this.dependencyTargetId = ProjectDependencyEngine.resolveTargetId(project, hint);
+      this.dependencyHintKey = hintKey;
+    }
+
+    const options = ProjectDependencyEngine.getTargetOptions(project);
+    if (!options.some(item => item.value === this.dependencyTargetId)) {
+      this.dependencyTargetId = ProjectDependencyEngine.resolveTargetId(project, { type: 'project' });
+    }
+    const model = ProjectDependencyEngine.analyze(project, { targetNodeId: this.dependencyTargetId });
+    const impact = model.impact;
+    const target = impact.target;
+    const filter = this.dependencyConflictFilter || 'all';
+    const findings = model.conflicts.findings.filter(item => filter === 'all' || item.severity === filter);
+    const severityLabel = severity => ({ critical: 'Kritisch', warning: 'Prüfen', info: 'Hinweis', ok: 'OK' })[severity] || severity;
+    const levelLabel = level => ({ direct: 'Direkt', indirect: 'Indirekt', documentation: 'Dokumentation', context: 'Kontext' })[level] || level;
+    const relationCard = (entry, direction) => `
+      <article class="dp-dependency-relation-card is-${this.escapeAttribute(entry.node.category)}">
+        <button type="button" data-dependency-open-node="${this.escapeAttribute(entry.node.id)}">
+          <span>${direction === 'incoming' ? '←' : '→'} ${this.escapeHtml(entry.edge.label)}</span>
+          <strong>${this.escapeHtml(entry.node.title)}</strong>
+          <small>${this.escapeHtml(entry.node.typeLabel)}${entry.node.subtitle ? ` · ${this.escapeHtml(entry.node.subtitle)}` : ''}</small>
+        </button>
+      </article>`;
+
+    this.root.innerHTML = `
+      <section class="dp-section-header dp-dependency-header">
+        <div>
+          <span class="dp-overline">Phase 39.00 · Projektstruktur</span>
+          <h1>Abhängigkeiten & Änderungsfolgen</h1>
+          <p>Technische Verknüpfungen, betroffene Ausgaben und Strukturkonflikte über das gesamte Projekt nachvollziehen.</p>
+        </div>
+        <div class="dp-dependency-score is-${this.escapeAttribute(model.summary.status)}">
+          <span>Struktur-Score</span>
+          <strong>${this.formatNumber(model.summary.score, 0)}</strong>
+          <small>${this.escapeHtml(model.summary.label)}</small>
+        </div>
+      </section>
+
+      <section class="dp-dependency-command" aria-label="Element für Änderungsanalyse wählen">
+        <label>
+          <span>Änderung untersuchen für</span>
+          <select data-dependency-target>
+            ${options.map(item => `<option value="${this.escapeAttribute(item.value)}" ${item.value === model.targetNodeId ? 'selected' : ''}>${this.escapeHtml(item.typeLabel)} · ${this.escapeHtml(item.label)}${item.subtitle ? ` — ${this.escapeHtml(item.subtitle)}` : ''}</option>`).join('')}
+          </select>
+        </label>
+        <button type="button" class="dp-button secondary" data-dependency-open-current ${target ? '' : 'disabled'}>Element öffnen</button>
+        <button type="button" class="dp-button secondary" data-dependency-refresh>Neu analysieren</button>
+        <button type="button" class="dp-button primary" data-dependency-export>CSV exportieren</button>
+      </section>
+
+      <section class="dp-dependency-stats" aria-label="Strukturkennwerte">
+        <article><span>Elemente</span><strong>${model.summary.nodes}</strong><small>im Projektindex</small></article>
+        <article><span>Verknüpfungen</span><strong>${model.summary.links}</strong><small>${model.summary.directLinks} direkt · ${model.summary.contextLinks} Kontext</small></article>
+        <article class="is-critical"><span>Kritisch</span><strong>${model.conflicts.counts.critical}</strong><small>blockierende Strukturpunkte</small></article>
+        <article class="is-warning"><span>Prüfen</span><strong>${model.conflicts.counts.warning}</strong><small>Zuordnungen und Eindeutigkeit</small></article>
+        <article class="is-info"><span>Hinweise</span><strong>${model.conflicts.counts.info}</strong><small>Dokumentarische Beziehungen</small></article>
+      </section>
+
+      <div class="dp-dependency-layout">
+        <main class="dp-dependency-main">
+          <section class="dp-dependency-panel dp-dependency-target-panel">
+            <header>
+              <div><span class="dp-overline">Ausgewähltes Element</span><h2>${this.escapeHtml(target?.title || 'Projekt')}</h2></div>
+              <span class="dp-chip is-info">${this.escapeHtml(target?.typeLabel || 'Projekt')}</span>
+            </header>
+            <p>${this.escapeHtml(target?.subtitle || target?.meta || 'Projektweite Analyse')}</p>
+            <div class="dp-dependency-target-meta">
+              <span><strong>${impact.incoming.length}</strong> eingehende Beziehungen</span>
+              <span><strong>${impact.outgoing.length}</strong> ausgehende Beziehungen</span>
+              <span><strong>${impact.related.length}</strong> Elemente im erweiterten Umfeld</span>
+            </div>
+          </section>
+
+          <section class="dp-dependency-panel">
+            <header><div><span class="dp-overline">Änderungsfolgen</span><h2>Betroffene Berechnungen und Ausgaben</h2></div></header>
+            <div class="dp-dependency-output-grid">
+              ${impact.outputs.map(item => `
+                <button type="button" class="dp-dependency-output is-${this.escapeAttribute(item.level)}" data-dependency-output="${this.escapeAttribute(item.id)}">
+                  <span>${this.escapeHtml(levelLabel(item.level))}</span>
+                  <strong>${this.escapeHtml(item.title)}</strong>
+                  <small>${this.escapeHtml(item.message)}</small>
+                </button>`).join('')}
+            </div>
+          </section>
+
+          <section class="dp-dependency-panel">
+            <header><div><span class="dp-overline">Beziehungsnetz</span><h2>Direkte Abhängigkeiten</h2></div></header>
+            <div class="dp-dependency-chain">
+              <div>
+                <h3>Eingehend</h3>
+                ${impact.incoming.length ? impact.incoming.map(item => relationCard(item, 'incoming')).join('') : '<p class="dp-dependency-empty">Keine eingehende Beziehung vorhanden.</p>'}
+              </div>
+              <article class="dp-dependency-focus is-${this.escapeAttribute(target?.category || 'project')}">
+                <span>${this.escapeHtml(target?.typeLabel || 'Projekt')}</span>
+                <strong>${this.escapeHtml(target?.title || 'Projekt')}</strong>
+                <small>${this.escapeHtml(target?.meta || target?.subtitle || '')}</small>
+              </article>
+              <div>
+                <h3>Ausgehend</h3>
+                ${impact.outgoing.length ? impact.outgoing.map(item => relationCard(item, 'outgoing')).join('') : '<p class="dp-dependency-empty">Keine ausgehende Beziehung vorhanden.</p>'}
+              </div>
+            </div>
+          </section>
+
+          <section class="dp-dependency-panel">
+            <header><div><span class="dp-overline">Erweitertes Umfeld</span><h2>Verknüpfte Elemente bis Tiefe 2</h2></div><strong>${impact.related.length}</strong></header>
+            <div class="dp-dependency-related-grid">
+              ${impact.related.length ? impact.related.slice(0, 40).map(entry => `
+                <button type="button" data-dependency-open-node="${this.escapeAttribute(entry.node.id)}">
+                  <span>${this.escapeHtml(entry.node.typeLabel)} · Ebene ${entry.depth}</span>
+                  <strong>${this.escapeHtml(entry.node.title)}</strong>
+                  <small>${this.escapeHtml(entry.edge.label)}</small>
+                </button>`).join('') : '<p class="dp-dependency-empty">Keine weiteren Elemente im Umfeld gefunden.</p>'}
+            </div>
+          </section>
+        </main>
+
+        <aside class="dp-dependency-aside">
+          <section class="dp-dependency-panel dp-dependency-conflicts">
+            <header>
+              <div><span class="dp-overline">Strukturkontrolle</span><h2>Konflikte & Hinweise</h2></div>
+              <strong>${model.conflicts.findings.length}</strong>
+            </header>
+            <div class="dp-dependency-filter" role="group" aria-label="Konflikte filtern">
+              ${[['all', 'Alle', model.conflicts.findings.length], ['critical', 'Kritisch', model.conflicts.counts.critical], ['warning', 'Prüfen', model.conflicts.counts.warning], ['info', 'Hinweise', model.conflicts.counts.info]].map(([value, label, count]) => `<button type="button" data-dependency-filter="${value}" class="${filter === value ? 'is-active' : ''}">${label}<strong>${count}</strong></button>`).join('')}
+            </div>
+            <div class="dp-dependency-finding-list">
+              ${findings.length ? findings.map(item => `
+                <article class="dp-dependency-finding is-${this.escapeAttribute(item.severity)}">
+                  <header><span>${this.escapeHtml(severityLabel(item.severity))}</span><code>${this.escapeHtml(item.code)}</code></header>
+                  <h3>${this.escapeHtml(item.title)}</h3>
+                  <p>${this.escapeHtml(item.message)}</p>
+                  ${item.recommendation ? `<small><strong>Empfehlung:</strong> ${this.escapeHtml(item.recommendation)}</small>` : ''}
+                  ${(item.targetId || item.systemId) ? `<button type="button" class="dp-link-button" data-dependency-open-finding="${this.escapeAttribute(item.id)}">Betroffenes Element öffnen</button>` : ''}
+                </article>`).join('') : '<div class="dp-dependency-ok"><strong>Keine Konflikte in diesem Filter</strong><p>Die aktuelle Projektstruktur ist in diesem Bereich konsistent.</p></div>'}
+            </div>
+          </section>
+          <p class="dp-dependency-disclaimer">${this.escapeHtml(model.disclaimer)}</p>
+        </aside>
+      </div>`;
+
+    this.root.querySelector('[data-dependency-target]')?.addEventListener('change', event => {
+      this.dependencyTargetId = event.currentTarget.value;
+      this.state.dependencyTargetHint = null;
+      this.renderProjectDependencies(project);
+    });
+    this.root.querySelectorAll('[data-dependency-filter]').forEach(button => button.addEventListener('click', () => {
+      this.dependencyConflictFilter = button.dataset.dependencyFilter || 'all';
+      this.renderProjectDependencies(project);
+    }));
+    this.root.querySelectorAll('[data-dependency-open-node]').forEach(button => button.addEventListener('click', () => {
+      const node = model.graph.nodeById.get(button.dataset.dependencyOpenNode);
+      if (node) this.openProjectDependencyTarget(node);
+    }));
+    this.root.querySelectorAll('[data-dependency-open-finding]').forEach(button => button.addEventListener('click', () => {
+      const finding = model.conflicts.findings.find(item => item.id === button.dataset.dependencyOpenFinding);
+      if (finding) this.openProjectDependencyTarget(finding);
+    }));
+    this.root.querySelector('[data-dependency-open-current]')?.addEventListener('click', () => this.openProjectDependencyTarget(target));
+    this.root.querySelector('[data-dependency-refresh]')?.addEventListener('click', () => this.renderProjectDependencies(project));
+    this.root.querySelector('[data-dependency-export]')?.addEventListener('click', () => ProjectDependencyEngine.downloadCsv(project, model));
+    this.root.querySelectorAll('[data-dependency-output]').forEach(button => button.addEventListener('click', () => this.openProjectDependencyOutput(button.dataset.dependencyOutput)));
+  }
+
+  openProjectDependencyTarget(target = {}) {
+    const project = this.state.project;
+    if (!project || !target) return;
+    const targetType = target.targetType || target.category || 'project';
+    const targetId = target.targetId || target.id || null;
+    const system = (project.systems || []).find(item => String(item.id) === String(target.systemId)) || this.getActiveSystem() || project.systems?.[0] || null;
+
+    if (targetType === 'project') {
+      this.state.setSelection('project', project);
+      this.state.notify();
+      return;
+    }
+    if (targetType === 'system' && system) return this.state.selectSystem(system);
+    if (targetType === 'section' && system) {
+      const section = (system.sections || []).find(item => String(item.id) === String(target.sectionId || targetId));
+      if (section) {
+        this.state.selectedSystem = system;
+        return this.state.selectSection(section);
+      }
+    }
+    if (targetType === 'formPart' && system) {
+      const part = (system.formParts || []).find(item => String(item.id) === String(targetId));
+      if (part) {
+        this.state.selectedSystem = system;
+        return this.state.selectFormPart(part);
+      }
+    }
+    if (targetType === 'specialComponent' && system) {
+      const component = (system.specialComponents || []).find(item => String(item.id) === String(targetId));
+      if (component) {
+        this.state.selectedSystem = system;
+        return this.state.selectSpecialComponent(component);
+      }
+    }
+    if (targetType === 'task') {
+      this.projectTaskFilter = 'all';
+      this.projectTaskSource = 'all';
+      this.state.setSelection('projectTaskCenter', project);
+      this.state.notify();
+      return;
+    }
+    if (targetType === 'revision') return this.openProjectDependencyOutput('revision');
+    if (targetType === 'variant') return this.openProjectDependencyOutput('simulation');
+    if (system) this.state.selectSystem(system);
+  }
+
+  openProjectDependencyOutput(outputId = '') {
+    const project = this.state.project;
+    const system = this.getActiveSystem() || project?.systems?.[0] || null;
+    if (!project) return;
+    const viewMap = {
+      quality: 'engineeringQuality',
+      schematic: 'networkSchematic',
+      simulation: 'liveSimulation',
+      report: 'report',
+      revision: 'projectCompletion',
+      completion: 'projectCompletion',
+      handover: 'projectHandover',
+      search: 'projectSearch',
+      tasks: 'projectTaskCenter',
+    };
+    if (outputId === 'calculation' || outputId === 'formParts') {
+      if (system) this.state.selectSystem(system);
+      return;
+    }
+    const view = viewMap[outputId];
+    if (!view) return;
+    if (view === 'report') return this.state.selectReport(system || project);
+    if (system) this.state.selectedSystem = system;
+    this.state.setSelection(view, ['projectSearch', 'projectTaskCenter'].includes(view) ? project : (system || project));
+    this.state.notify();
+  }
+
   renderProjectSearch() {
     const project = this.state.project;
     if (!project) return this.renderEmpty();
@@ -12014,6 +12264,7 @@ formatNumber(value, digits = 2) {
     const selection = this.state.getSelection();
     const quickViews = [
       { type: 'projectSearch', label: 'Projektsuche', meta: 'Projektindex, Querverweise und Sprungmarken', icon: '⌕' },
+      { type: 'projectDependencies', label: 'Abhängigkeiten', meta: 'Änderungsfolgen, Struktur und Konflikte', icon: '⇄' },
       { type: 'projectCockpit', label: 'Projektcockpit', meta: 'Projektweite QS und Dokumentation', icon: '◫' },
       { type: 'projectStandardization', label: 'Projektworkflow', meta: 'Prüfprofile, Vorlagen und Massenbearbeitung', icon: '≡' },
       { type: 'engineeringQuality', label: 'Engineering-QS', meta: 'Aktive Anlage fachlich prüfen', icon: '✓' },
@@ -12255,7 +12506,7 @@ formatNumber(value, digits = 2) {
     if (viewType === 'report') return this.state.selectReport(system);
     if (viewType === 'system' && system) return this.state.selectSystem(system);
     if (viewType === 'section' && target.sectionId) return;
-    const projectViews = ['project', 'projectSearch', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
+    const projectViews = ['project', 'projectSearch', 'projectDependencies', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
     const systemViews = ['engineeringQuality', 'networkSchematic', 'liveSimulation', 'projectCompletion', 'projectSafety', 'projectHandover'];
     if (projectViews.includes(viewType)) {
       this.state.setSelection(viewType, project);

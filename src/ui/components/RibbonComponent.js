@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
 
-import RibbonActions from '../core/RibbonActions.js?v=38.00';
+import RibbonActions from '../core/RibbonActions.js?v=39.00';
 
 const RIBBON_GROUPS = [
   {
@@ -10,6 +10,7 @@ const RIBBON_GROUPS = [
     actions: [
       { action: 'showDashboard', label: 'Start', icon: 'home', title: 'Zur Projekt- und Anlagenübersicht (Alt+Home)' },
       { action: 'showProjectSearch', label: 'Suche', icon: 'search', title: 'Projektweit suchen, Querverweise und Sprungmarken öffnen (Ctrl+K)' },
+      { action: 'showProjectDependencies', label: 'Struktur', icon: 'network', title: 'Abhängigkeiten, Änderungsfolgen und Strukturkonflikte öffnen (Strg+Umschalt+D)' },
       { action: 'showSystemManager', label: 'Anlagen', icon: 'layers', title: 'Anlagen anlegen, duplizieren, ordnen und vergleichen (Strg+Umschalt+A)' },
       { action: 'showProjectCockpit', label: 'Cockpit', icon: 'pulse', title: 'Projektweite QS, Risikomatrix und Dokumentationsstatus öffnen (Strg+Umschalt+Q)' },
       { action: 'showProjectStandardization', label: 'Workflow', icon: 'sliders', title: 'Projektvorlagen, Prüfprofile und Massenbearbeitung öffnen (Strg+Umschalt+W)' },
@@ -199,6 +200,7 @@ export default class RibbonComponent {
     const projectStandardizationButton = this.root.querySelector('[data-action="showProjectStandardization"]');
     const projectTaskCenterButton = this.root.querySelector('[data-action="showProjectTaskCenter"]');
     const projectSearchButton = this.root.querySelector('[data-action="showProjectSearch"]');
+    const projectDependenciesButton = this.root.querySelector('[data-action="showProjectDependencies"]');
     const qualityButton = this.root.querySelector('[data-action="showEngineeringQuality"]');
     const schematicButton = this.root.querySelector('[data-action="showNetworkSchematic"]');
     const simulationButton = this.root.querySelector('[data-action="showLiveSimulation"]');
@@ -224,6 +226,9 @@ export default class RibbonComponent {
     if (selectionType === 'projectSearch') {
       projectSearchButton?.classList.add('is-current');
       projectSearchButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectDependencies') {
+      projectDependenciesButton?.classList.add('is-current');
+      projectDependenciesButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'projectTaskCenter') {
       projectTaskCenterButton?.classList.add('is-current');
       projectTaskCenterButton?.setAttribute('aria-current', 'page');

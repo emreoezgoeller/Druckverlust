@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=38.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=39.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -116,6 +116,8 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Layout', label: 'Aufgaben-CSS', path: `src/ui/phase37_00.css?v=${version}` },
     { area: 'Suche', label: 'Globaler Projektindex', path: `src/project/ProjectSearchEngine.js?v=${version}` },
     { area: 'Layout', label: 'Projektsuche-CSS', path: `src/ui/phase38_00.css?v=${version}` },
+    { area: 'Struktur', label: 'Abhängigkeiten und Konfliktprüfung', path: `src/project/ProjectDependencyEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Abhängigkeitsanalyse-CSS', path: `src/ui/phase39_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },

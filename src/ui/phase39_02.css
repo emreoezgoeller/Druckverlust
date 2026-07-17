@@ -1,0 +1,145 @@
+/* Druckverlust Pro – Phase 39.02
+   Vollständige Werkzeugbeschriftungen in der einzeiligen Registerleiste.
+   Auf Desktopbreiten bleibt unter jedem Symbol die Funktionsbezeichnung
+   sichtbar. Bei geringerer Breite scrollt die Werkzeugzeile horizontal,
+   statt Beschriftungen auszublenden oder Gruppen umzubrechen. */
+
+@media (min-width: 901px) {
+  :root {
+    --dp-ribbon-height: 88px;
+  }
+
+  .dp-ribbon {
+    min-height: var(--dp-ribbon-height);
+    height: var(--dp-ribbon-height);
+  }
+
+  .dp-ribbon-content,
+  .dp-tabs.dp-ribbon-groups,
+  .dp-ribbon-group,
+  .dp-ribbon-group-actions {
+    min-width: 0;
+  }
+
+  .dp-ribbon-content {
+    overflow: hidden;
+  }
+
+  .dp-tabs.dp-ribbon-groups {
+    align-items: stretch;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 3px;
+    padding-top: 10px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  }
+
+  .dp-tabs.dp-ribbon-groups::-webkit-scrollbar {
+    display: block;
+    height: 3px;
+  }
+
+  .dp-tabs.dp-ribbon-groups::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dp-tabs.dp-ribbon-groups::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .dp-ribbon-group {
+    flex: 0 0 auto;
+    overflow: visible;
+    padding-inline: 4px;
+  }
+
+  .dp-ribbon-group-actions {
+    flex-wrap: nowrap;
+    overflow: visible;
+    gap: 2px;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 45px;
+    height: 55px;
+    min-height: 55px;
+    padding: 4px 6px 3px;
+    gap: 2px;
+  }
+
+  .dp-ribbon-action-icon {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
+  }
+
+  /* Überschreibt die Ausblendregeln aus Phase 39.01. */
+  .dp-ribbon-action .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action] .dp-ribbon-action-label {
+    display: block !important;
+    width: auto;
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    font-size: 0.54rem;
+    font-weight: 650;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  .dp-ribbon-group-label {
+    margin-top: 1px;
+    font-size: 0.55rem;
+    line-height: 1;
+  }
+}
+
+/* Auf mittleren Desktopbreiten bleiben die Texte ebenfalls sichtbar.
+   Die Leiste darf kontrolliert horizontal scrollen, damit keine zweite
+   Reihe entsteht und keine Funktion unbeschriftet bleibt. */
+@media (min-width: 901px) and (max-width: 1640px) {
+  .dp-ribbon {
+    grid-template-columns: minmax(188px, 210px) minmax(0, 1fr);
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 42px;
+    padding-inline: 5px;
+  }
+
+  .dp-ribbon-action .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action] .dp-ribbon-action-label {
+    font-size: 0.5rem;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1240px) {
+  .dp-ribbon {
+    grid-template-columns: 176px minmax(0, 1fr);
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 40px;
+    padding-inline: 4px;
+  }
+
+  .dp-ribbon-action .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action] .dp-ribbon-action-label {
+    font-size: 0.47rem;
+  }
+}
+
+@media print {
+  .dp-ribbon {
+    display: none !important;
+  }
+}

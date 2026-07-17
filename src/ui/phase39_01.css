@@ -1,0 +1,276 @@
+/* Druckverlust Pro – Phase 39.01
+   Registerleisten-Korrektur: Logo und Werkzeuge bilden eine gemeinsame,
+   einzeilige Kopfzeile. Sekundäre Beschriftungen werden bei begrenzter
+   Breite kompakt dargestellt, statt in eine zweite Reihe auszuweichen. */
+
+:root {
+  --dp-ribbon-height: 82px;
+}
+
+/* Gemeinsame, feste Registerzeile */
+.dp-ribbon {
+  display: grid;
+  grid-template-columns: minmax(220px, 248px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  min-height: var(--dp-ribbon-height);
+  height: var(--dp-ribbon-height);
+  padding: 0 14px;
+  overflow: hidden;
+}
+
+/* Logo ist optisch Bestandteil der Registerleiste */
+.dp-brand {
+  position: relative;
+  align-self: stretch;
+  min-width: 0;
+  padding-right: 8px;
+}
+
+.dp-brand::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 0;
+  bottom: 14px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.dp-brand-home {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 8px 8px 8px 2px;
+  border-radius: 10px;
+}
+
+.dp-brand-logo {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  object-fit: contain;
+}
+
+.dp-brand-text strong {
+  font-size: 1rem;
+  line-height: 1.05;
+}
+
+.dp-brand-text > span {
+  margin-top: 3px;
+  font-size: 0.66rem;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+/* Kein vertikales Ausbrechen der Werkzeuggruppen */
+.dp-ribbon-content {
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dp-tabs.dp-ribbon-groups {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 2px;
+  padding: 13px 0 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.dp-tabs.dp-ribbon-groups::-webkit-scrollbar {
+  display: none;
+}
+
+.dp-ribbon-group {
+  min-width: 0;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding-inline: 5px;
+  overflow: hidden;
+}
+
+.dp-ribbon-group-actions {
+  flex-wrap: nowrap;
+  gap: 2px;
+}
+
+.dp-tabs .dp-ribbon-action {
+  min-width: 40px;
+  min-height: 47px;
+  height: 47px;
+  gap: 2px;
+  padding: 4px 5px 3px;
+  border-radius: 9px;
+}
+
+.dp-ribbon-action-icon {
+  width: 21px;
+  height: 21px;
+}
+
+.dp-ribbon-action-label {
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.61rem;
+}
+
+.dp-ribbon-group-label {
+  font-size: 0.57rem;
+  letter-spacing: 0.065em;
+}
+
+.dp-ribbon-context {
+  top: 3px;
+  right: 3px;
+  max-width: 190px;
+  font-size: 0.62rem;
+}
+
+/* Auf normalen Desktopbreiten bleiben die wichtigsten Beschriftungen sichtbar.
+   Sekundäre Werkzeuge verwenden Symbol + Tooltip und sparen dadurch Breite. */
+@media (max-width: 2200px) and (min-width: 901px) {
+  .dp-ribbon-action-label {
+    display: none;
+  }
+
+  .dp-ribbon-action[data-action="showDashboard"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="saveProject"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="addSection"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="addFormPart"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="addSpecialComponent"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="calculate"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="showReport"] .dp-ribbon-action-label {
+    display: block;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 39px;
+    padding-inline: 4px;
+  }
+}
+
+@media (max-width: 1640px) and (min-width: 901px) {
+  .dp-ribbon {
+    grid-template-columns: minmax(190px, 214px) minmax(0, 1fr);
+    gap: 6px;
+    padding-inline: 10px;
+  }
+
+  .dp-brand-logo {
+    width: 43px;
+    height: 43px;
+    flex-basis: 43px;
+  }
+
+  .dp-brand-text strong {
+    font-size: 0.9rem;
+  }
+
+  .dp-brand-text > span {
+    display: none;
+  }
+
+  .dp-ribbon-group {
+    padding-inline: 3px;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 37px;
+  }
+
+  .dp-ribbon-action[data-action="addSection"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="addFormPart"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="addSpecialComponent"] .dp-ribbon-action-label {
+    display: none;
+  }
+
+  .dp-ribbon-context {
+    display: none;
+  }
+}
+
+@media (max-width: 1240px) and (min-width: 901px) {
+  .dp-ribbon {
+    grid-template-columns: 178px minmax(0, 1fr);
+  }
+
+  .dp-brand-text strong {
+    font-size: 0.82rem;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 35px;
+    padding-inline: 3px;
+  }
+
+  .dp-ribbon-action[data-action="showDashboard"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="saveProject"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="calculate"] .dp-ribbon-action-label,
+  .dp-ribbon-action[data-action="showReport"] .dp-ribbon-action-label {
+    display: none;
+  }
+}
+
+/* Bestehendes mobiles Werkzeugmenü bleibt erhalten. */
+@media (max-width: 900px) {
+  :root {
+    --dp-ribbon-height: 68px;
+  }
+
+  .dp-ribbon {
+    display: flex;
+    height: var(--dp-ribbon-height);
+    min-height: var(--dp-ribbon-height);
+    overflow: visible;
+  }
+
+  .dp-brand {
+    padding-right: 0;
+  }
+
+  .dp-brand::after {
+    display: none;
+  }
+
+  .dp-brand-home {
+    width: auto;
+  }
+
+  .dp-ribbon-content {
+    height: auto;
+    overflow: visible;
+  }
+
+  .dp-tabs.dp-ribbon-groups {
+    height: auto;
+    overflow: auto;
+  }
+
+  .dp-ribbon-action-label {
+    display: block;
+    max-width: none;
+  }
+}
+
+@media (max-width: 440px) {
+  .dp-brand-logo {
+    width: 39px;
+    height: 39px;
+    flex-basis: 39px;
+  }
+}
+
+@media print {
+  .dp-ribbon {
+    display: none !important;
+  }
+}

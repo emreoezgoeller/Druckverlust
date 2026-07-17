@@ -1,7 +1,7 @@
 // Druckverlust Pro – StatusBarComponent
 // Zeigt Statusinformationen der Anwendung.
 
-import { APP_BUILD_LABEL } from '../../core/appVersion.js?v=38.00';
+import { APP_BUILD_LABEL } from '../../core/appVersion.js?v=39.00';
 
 export default class StatusBarComponent {
   constructor(rootElement, state) {
@@ -153,6 +153,10 @@ export default class StatusBarComponent {
 
     if (selection.type === 'projectSearch') {
       return 'Projektsuche & Index';
+    }
+
+    if (selection.type === 'projectDependencies') {
+      return 'Abhängigkeiten & Konflikte';
     }
 
     if (selection.type === 'projectStandardization') {

@@ -1,5 +1,14 @@
 # Roadmap
 
+## Phase 39.00 – abgeschlossen
+
+- projektweiter Strukturgraph für Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Varianten,
+- auswählbare Änderungsfolgen mit eingehenden, ausgehenden und erweiterten Beziehungen,
+- Konfliktkontrolle für fehlende oder doppelte IDs sowie ungültige und verwaiste Zuordnungen,
+- Struktur-Score, Filter und direkte Navigation zu betroffenen Elementen,
+- Struktur- und Konfliktanalyse als CSV,
+- eigene Struktur- und Abhängigkeitsseite im Professional Report.
+
 ## Phase 38.00 – abgeschlossen
 
 - globale Volltextsuche über alle wesentlichen Projektobjekte,
@@ -120,6 +129,9 @@
 - Phase 34.00: Mehranlagen-Verwaltung, projektweiter Anlagenvergleich und Anlagenübersicht im Professional Report
 - Phase 35.00: Projektcockpit, projektweite QS-Matrix und Dokumentationsstatus
 - Phase 36.00: Projektworkflow, Prüfprofile, Systemvorlagen, kontrollierte Massenbearbeitung und Änderungsprotokoll
+- Phase 37.00: Projekt-Navigator, Aufgaben, Favoriten und Schnellzugriffe
+- Phase 38.00: globale Projektsuche, Projektindex, Querverweise und Sprungmarken
+- Phase 39.00: Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle
 
 ## Bewusst ausgeschlossen
 
@@ -129,6 +141,7 @@
 
 ## Nächste sinnvolle Schritte
 
+- Phase 39.00 mit realen Mehranlagen-Projekten prüfen und projektspezifische Abhängigkeiten sowie Konflikthinweise fachlich gegenprüfen.
 - Phase 36.00 mit realen Mehranlagen-Projekten prüfen und projektspezifische Prüfprofile fachlich feinjustieren.
 - Systemvorlagen und Massenbearbeitung zunächst an Projektkopien beziehungsweise lokalen Sicherungen im Büroablauf gegenprüfen.
 - Anlagen-Duplikate, Sortierung und projektweiten Bericht im Büroablauf gegenprüfen.

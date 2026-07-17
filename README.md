@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.15.0 · Phase 38.00 · globale Projektsuche, Projektindex, Querverweise und Sprungmarken.
+**Aktueller Stand:** Version 1.16.0 · Phase 39.00 · Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
 ## Lokal starten
 
@@ -44,7 +44,7 @@ Druckverlust/
 │   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
-│   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, globale Suche, Projektindex, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
+│   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, Suche, Projektindex, Abhängigkeiten, Konfliktprüfung, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── revision/              technische Snapshots und Revisionsvergleich
 │   ├── report/                Bericht-, CSV- und PDF-Engine
@@ -58,6 +58,24 @@ Druckverlust/
 ├── tests/                     Node- und Browserprüfungen
 └── docs/                      technische Dokumentation
 ```
+
+## Phase 39.00
+
+Unter **Projekt → Struktur** steht jetzt eine zentrale Struktur- und Abhängigkeitsprüfung zur Verfügung:
+
+- Projektgraph für Projekt, Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Varianten,
+- auswählbare Änderungsanalyse für jedes wesentliche Projektelement,
+- Darstellung eingehender und ausgehender Beziehungen sowie des erweiterten Elementumfelds,
+- neutrale Änderungsfolgen für Berechnung, Engineering-QS, Anlagenschema, Simulation, Bericht, Revision, Abschluss und Übergabe,
+- Erkennung fehlender oder doppelter IDs, doppelter Teilstreckenbezeichnungen, ungültiger Zuordnungen und verwaister Aufgaben-, Revisions- oder Variantenbezüge,
+- Struktur-Score mit kritischen Punkten, Warnungen und Hinweisen,
+- direkte Navigation zum betroffenen Projekt-, Anlagen-, Teilstrecken- oder Bauteilelement,
+- vollständige Struktur- und Konfliktanalyse als CSV-Export,
+- eigene Seite **Struktur- und Abhängigkeitsprüfung** im Professional Report,
+- Integration in Ribbon, Sidebar, Statusleiste, Aufgaben-Schnellzugriffe und Tastenkürzel `Ctrl + Shift + D`,
+- responsive Darstellung für Desktop, Tablet und kleinere Bildschirme.
+
+Die Änderungsanalyse zeigt technische Zusammenhänge und mögliche Folgeprüfungen. Sie verändert keine Projektdaten automatisch und ersetzt keine fachliche Freigabe.
 
 ## Phase 38.00
 

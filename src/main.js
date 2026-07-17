@@ -1,18 +1,18 @@
-// Druckverlust Pro – Phase 38.00
+// Druckverlust Pro – Phase 39.00
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
-import ApplicationShell from './ui/ApplicationShell.js?v=38.00';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=38.00';
-import SidebarComponent from './ui/components/SidebarComponent.js?v=38.00';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=38.00';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=38.00';
+import ApplicationShell from './ui/ApplicationShell.js?v=39.00';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=39.00';
+import SidebarComponent from './ui/components/SidebarComponent.js?v=39.00';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=39.00';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=39.00';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
-import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=38.00';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=39.00';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=38.00';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=39.00';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 

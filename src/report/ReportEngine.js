@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=38.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=39.00';
 import LicenseGate from '../licensing/LicenseGate.js';
 import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00';
 import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00';
@@ -9,6 +9,7 @@ import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=37.00';
 import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=37.00';
 import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00';
 import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00';
+import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=39.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -529,6 +530,7 @@ export class ReportEngine {
       changeHistory: ProjectStandardizationEngine.getHistory(project),
     };
     const projectTasks = ProjectTaskCenterEngine.analyze(project, { selectedSystemId: system?.id || null, cockpit: projectCockpit });
+    const projectDependencies = ProjectDependencyEngine.analyze(project, { target: { type: 'project' } });
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -694,6 +696,7 @@ export class ReportEngine {
       projectCockpit,
       projectWorkflow,
       projectTasks,
+      projectDependencies,
       lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
@@ -1236,6 +1239,7 @@ export class ReportEngine {
     const systemsOverviewPageCount = reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1 ? 1 : 0;
     const projectCockpitPageCount = reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1 ? 1 : 0;
     const projectTaskPageCount = reportOptions.includeQualityProtocol && (model.projectTasks?.openTasks?.length || 0) > 0 ? 1 : 0;
+    const projectDependencyPageCount = reportOptions.includeQualityProtocol ? 1 : 0;
 
     const entries = [
       {
@@ -1271,6 +1275,7 @@ export class ReportEngine {
     addEntry('systemsOverview', 'Projektweite Anlagenübersicht', `${model.systemsOverview?.rows?.length || 0} Anlagen im Vergleich`, systemsOverviewPageCount);
     addEntry('projectCockpit', 'Projektweite QS-Matrix', `${model.projectCockpit?.findings?.length || 0} Feststellungen und Dokumentationsstatus`, projectCockpitPageCount);
     addEntry('projectTasks', 'Projektaufgaben', `${model.projectTasks?.openTasks?.length || 0} offene Aufgaben und Schnellzugriffe`, projectTaskPageCount);
+    addEntry('projectDependencies', 'Struktur- und Abhängigkeitsprüfung', `${model.projectDependencies?.conflicts?.findings?.length || 0} Strukturpunkte und ${model.projectDependencies?.summary?.links || 0} Verknüpfungen`, projectDependencyPageCount);
     addEntry('networkSchematic', 'Anlagenschema', `${schematicNodeCount} Teilstrecken als Funktionsschema`, schematicPageCount);
     if (reportOptions.includeLossAnalysis) {
       addEntry('lossAnalysis', 'Druckverlustanalyse', 'Verlustanteile und kritische Teilstrecken', 1);
@@ -1366,6 +1371,7 @@ export class ReportEngine {
     if (reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1) pages.push(this.renderSystemsOverviewPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1) pages.push(this.renderProjectCockpitPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeQualityProtocol && (model.projectTasks?.openTasks?.length || 0) > 0) pages.push(this.renderProjectTasksPage(model, nextPage(), totalPlaceholder));
+    if (reportOptions.includeQualityProtocol) pages.push(this.renderProjectDependenciesPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeNetworkSchematic) pages.push(...this.renderNetworkSchematicPages(model, nextPage, totalPlaceholder));
     if (reportOptions.includeLossAnalysis) pages.push(this.renderLossAnalysisPage(model, nextPage(), totalPlaceholder));
     if (reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy) pages.push(this.renderRevisionComparisonPage(model, nextPage(), totalPlaceholder));
@@ -1583,6 +1589,56 @@ export class ReportEngine {
       <div class="report-info-box compact muted"><h3>Einordnung</h3><p>${escapeHtml(taskModel.disclaimer || '')}</p></div>
     `;
     return this.renderPage(model, page, 'Projektaufgaben', 'Automatische QS-Punkte und manuelle Aufgaben', content, totalPages);
+  }
+
+
+  static renderProjectDependenciesPage(model, page, totalPages = 6) {
+    const dependency = model.projectDependencies || { summary: {}, conflicts: { findings: [], counts: {} }, graph: { nodes: [], edges: [] }, disclaimer: '' };
+    const findings = (dependency.conflicts?.findings || []).slice(0, 10);
+    const counts = dependency.conflicts?.counts || {};
+    const summary = dependency.summary || {};
+    const categoryCounts = dependency.countsByCategory || {};
+    const content = `
+      <div class="report-project-cockpit-kpis">
+        ${this.renderSummaryCard('Struktur-Score', dependency.conflicts?.label || 'Status', summary.score || 0, '')}
+        ${this.renderSummaryCard('Elemente', 'im Projektmodell', summary.nodes || 0, '')}
+        ${this.renderSummaryCard('Verknüpfungen', `${summary.directLinks || 0} direkt`, summary.links || 0, '')}
+        ${this.renderSummaryCard('Offene Strukturpunkte', `${counts.critical || 0} kritisch · ${counts.warning || 0} prüfen`, (dependency.conflicts?.findings || []).length, '')}
+      </div>
+      <div class="report-project-cockpit-grid">
+        <section class="report-info-box compact">
+          <h3>Projektstruktur</h3>
+          <table class="report-table small"><tbody>
+            ${[
+              ['Anlagen', categoryCounts.system || 0],
+              ['Teilstrecken', categoryCounts.section || 0],
+              ['Formteile', categoryCounts.formPart || 0],
+              ['Sonderbauteile', categoryCounts.specialComponent || 0],
+              ['Aufgaben', categoryCounts.task || 0],
+              ['Revisionen / Varianten', (categoryCounts.revision || 0) + (categoryCounts.variant || 0)],
+            ].map(([label, value]) => `<tr><td class="left">${escapeHtml(label)}</td><td>${value}</td></tr>`).join('')}
+          </tbody></table>
+        </section>
+        <section class="report-info-box compact">
+          <h3>Beziehungsstatus</h3>
+          ${this.renderDefinitionList([
+            ['Direkte Beziehungen', summary.directLinks || 0],
+            ['Kontextbeziehungen', summary.contextLinks || 0],
+            ['Kritische Konflikte', counts.critical || 0],
+            ['Zu prüfen', counts.warning || 0],
+            ['Hinweise', counts.info || 0],
+          ])}
+          <p class="report-small-note">Geprüft werden eindeutige IDs, gültige Teilstreckenzuordnungen, verwaiste Verweise und dokumentarische Bezüge.</p>
+        </section>
+      </div>
+      <section class="report-info-box compact">
+        <h3>Priorisierte Strukturpunkte</h3>
+        ${findings.length ? `<table class="report-table small"><thead><tr><th>Priorität</th><th>Code</th><th>Feststellung</th><th>Empfehlung</th></tr></thead><tbody>${findings.map(item => `<tr><td><span class="report-status-pill ${item.severity === 'critical' ? 'error' : item.severity === 'warning' ? 'warn' : 'ok'}">${escapeHtml(item.severityLabel || item.severity)}</span></td><td>${escapeHtml(item.code)}</td><td class="left"><strong>${escapeHtml(item.title)}</strong><br><span>${escapeHtml(item.message || '')}</span></td><td class="left">${escapeHtml(item.recommendation || '')}</td></tr>`).join('')}</tbody></table>` : '<p>Keine offenen Strukturkonflikte vorhanden.</p>'}
+        ${(dependency.conflicts?.findings || []).length > findings.length ? `<p class="report-small-note">Im Bericht werden die ersten ${findings.length} priorisierten Punkte gezeigt. Die vollständige Liste steht im Bereich „Abhängigkeiten“ und im CSV-Export zur Verfügung.</p>` : ''}
+      </section>
+      <div class="report-info-box compact muted"><h3>Einordnung</h3><p>${escapeHtml(dependency.disclaimer || '')}</p></div>
+    `;
+    return this.renderPage(model, page, 'Struktur- und Abhängigkeitsprüfung', 'Projektverknüpfungen, Änderungsfolgen und Konfliktkontrolle', content, totalPages);
   }
 
 
@@ -2879,6 +2935,23 @@ export class ReportEngine {
         formatNumber(row.baseline?.pressureLoss, 2),
         formatNumber(row.scenario?.pressureLoss, 2),
         formatNumber(row.delta?.pressureLoss, 2),
+      ])));
+    }
+
+    if (model.projectDependencies) {
+      addSection('Struktur- und Abhaengigkeitspruefung');
+      rows.push(this.csvRow(['Struktur-Score', formatNumber(model.projectDependencies.summary?.score, 0)]));
+      rows.push(this.csvRow(['Elemente', model.projectDependencies.summary?.nodes || 0]));
+      rows.push(this.csvRow(['Verknuepfungen', model.projectDependencies.summary?.links || 0]));
+      rows.push(this.csvRow(['Prioritaet', 'Code', 'Feststellung', 'Details', 'Empfehlung', 'Anlage', 'Teilstrecke']));
+      (model.projectDependencies.conflicts?.findings || []).forEach(item => rows.push(this.csvRow([
+        item.severityLabel || item.severity,
+        item.code,
+        item.title,
+        item.message || '',
+        item.recommendation || '',
+        item.systemId || '',
+        item.sectionId || '',
       ])));
     }
 

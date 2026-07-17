@@ -1,4 +1,39 @@
+# Phase 39.02 – Werkzeugbeschriftungen vollständig sichtbar
+
+- Funktionsbezeichnung unter jedem Symbol der Desktop-Registerleiste wieder eingeblendet.
+- Auch sekundäre Werkzeuge wie Suche, Struktur, Anlagen, Cockpit, Workflow, Aufgaben, Sicherung, Projektcheck, Rechen-QS, Engineering-QS, Anlagenschema, Simulation, Abschluss, Übergabe, Demo, Hilfe und Info bleiben beschriftet.
+- Einzeilige Registerleiste aus Phase 39.01 bleibt erhalten; bei geringerer Breite scrollt die Werkzeugzeile kontrolliert horizontal, statt Texte auszublenden oder Gruppen in eine zweite Reihe zu verschieben.
+- Schmale Desktopbreiten verwenden kompaktere Schrift und Abstände, ohne die Funktionsnamen zu entfernen.
+- Vorhandene Tooltips und Tastaturbeschriftungen bleiben zusätzlich erhalten.
+
+# Phase 39.01 – Registerleiste einzeilig
+
+- Logo und Werkzeuggruppen bilden jetzt eine gemeinsame, durchgehende Kopfzeile.
+- Ausgabe- und Hilfegruppen können nicht mehr in eine zweite Zeile unterhalb des dunklen Ribbons ausbrechen.
+- Sekundäre Werkzeugbeschriftungen werden auf normalen Desktopbreiten kompakt ausgeblendet; Symbole, Tooltips und Gruppenbezeichnungen bleiben erhalten.
+- Wichtigste Aktionen wie Speichern, Berechnen und Bericht bleiben beschriftet.
+- Horizontale Überbreite wird innerhalb der Registerleiste kontrolliert und ohne sichtbare Scrollleiste abgefangen.
+- Mobile Werkzeugdarstellung bleibt unverändert als aufklappbares Menü erhalten.
+
 # Änderungsverlauf
+
+## Phase 39.00 – Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle
+
+- Neuen Bereich **Projekt → Struktur** für projektweite Abhängigkeiten und Änderungsfolgen ergänzt.
+- Projektgraph für Projekt, Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Simulationsvarianten umgesetzt.
+- Auswahl eines Projektelements mit Darstellung eingehender, ausgehender und erweiterter Beziehungen ergänzt.
+- Neutrale Folgeanalyse für Berechnung, Engineering-QS, Anlagenschema, Live-Simulation, Bericht, Revisionen, Abschluss und Übergabe umgesetzt.
+- Strukturprüfung auf fehlende und doppelte IDs, doppelte Teilstreckenbezeichnungen, nicht zugeordnete Bauteile, ungültige Teilstreckenbezüge sowie verwaiste Aufgaben-, Revisions- und Variantenreferenzen ergänzt.
+- Struktur-Score mit kritischen Punkten, Warnungen, Hinweisen und filterbarer Konfliktliste eingeführt.
+- Direkte Navigation aus Beziehungen und Konflikten zum betroffenen Projekt-, Anlagen-, Teilstrecken- oder Bauteilelement ergänzt.
+- Struktur- und Konfliktanalyse als CSV-Export ergänzt.
+- Professional Report um die Seite **Struktur- und Abhängigkeitsprüfung** erweitert.
+- Gesamt-CSV um Struktur-Score, Element- und Verknüpfungsanzahl sowie Konfliktfeststellungen ergänzt.
+- Ribbon, Sidebar, Statusleiste, Aufgaben-Schnellzugriffe und Tastenkürzel `Ctrl + Shift + D` erweitert.
+- Responsive Phase-39-Oberfläche und Deployment-Diagnose ergänzt.
+- Zwei neue Testgruppen mit insgesamt 96 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.16.0 und Cachekennung auf 39.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
 
 ## Phase 38.00 – Globale Projektsuche, Projektindex und Querverweise
 

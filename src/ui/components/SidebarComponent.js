@@ -99,6 +99,15 @@ export default class SidebarComponent {
             })}
 
             ${this.renderRootItem({
+              type: 'projectDependencies',
+              id: 'project-dependencies',
+              label: 'Abhängigkeiten',
+              meta: 'Änderungsfolgen · Struktur · Konflikte',
+              icon: 'systems',
+              active: this.state.getSelectionType() === 'projectDependencies',
+            })}
+
+            ${this.renderRootItem({
               type: 'projectCockpit',
               id: 'project-cockpit',
               label: 'Projektcockpit',
@@ -396,6 +405,13 @@ export default class SidebarComponent {
 
         if (type === 'projectSearch') {
           this.state.setSelection('projectSearch', project);
+          this.state.notify();
+          return;
+        }
+
+        if (type === 'projectDependencies') {
+          this.state.dependencyTargetHint = { type: 'project', id: project.id || null, updatedAt: Date.now() };
+          this.state.setSelection('projectDependencies', project);
           this.state.notify();
           return;
         }
