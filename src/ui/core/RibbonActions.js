@@ -7,14 +7,15 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=40.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=41.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=40.00';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=40.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=41.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=41.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=40.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=40.00';
+import UiDialogService from './UiDialogService.js?v=41.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=41.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=41.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -527,9 +528,17 @@ export default class RibbonActions {
 
 
   showShortcutHelp() {
+    const selection = this.getSelection() || {};
+    const activeSystem = this.getActiveSystem();
+
     this.state.helpContext = {
       openedAt: new Date().toISOString(),
       label: APP_BUILD_LABEL,
+      source: 'ribbon',
+      topicId: HelpCenterEngine.getContextTopicId(selection.type),
+      previousSelectionType: selection.type || 'project',
+      previousSelectionId: selection.id || selection.data?.id || null,
+      previousSystemId: activeSystem?.id || null,
     };
     this.state.setSelection?.('help', this.state.helpContext);
     this.state.notify?.();
@@ -539,6 +548,7 @@ export default class RibbonActions {
     const text = [
       `Tastaturkürzel ${APP_BUILD_LABEL}`,
       '',
+      'F1 oder Ctrl + /: Hilfe-Center öffnen',
       'Ctrl + S: Projekt speichern',
       'Ctrl + O: Projekt öffnen',
       'Demo laden: Beispielprojekt mit Teilstrecken, Formteilen und Sonderbauteilen',
@@ -551,6 +561,7 @@ export default class RibbonActions {
       'Ctrl + Shift + Q: Projektcockpit öffnen',
       'Ctrl + Shift + W: Projektworkflow öffnen',
       'Ctrl + Shift + T: Projekt-Navigator und Aufgaben öffnen',
+      'Ctrl + Shift + D: Strukturprüfung und Änderungsfolgen öffnen',
       'Ctrl + K: globale Projektsuche öffnen',
       'Ctrl + Z: letzte Projektänderung rückgängig',
       'Ctrl + Y / Ctrl + Shift + Z: Änderung wiederholen',

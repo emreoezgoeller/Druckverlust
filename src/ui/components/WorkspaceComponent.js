@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=40.00';
+import ReportEngine from '../../report/ReportEngine.js?v=41.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -88,18 +88,20 @@ import {
 } from '../../testing/BetaFeedbackInbox.js?v=21.12';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=40.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=40.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=41.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=41.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=40.00';
+import UiDialogService from '../core/UiDialogService.js?v=41.00';
+import RibbonActions from '../core/RibbonActions.js?v=41.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=41.00';
 import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00';
 import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00';
 import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00';
 import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00';
 import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=40.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=40.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=41.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=41.00';
 import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00';
 import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00';
 import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00';
@@ -118,6 +120,12 @@ export default class WorkspaceComponent {
     this.state = state;
     this.registry = createDefaultFormPartRegistry();
     this.commands = new ProjectCommands(state);
+    this.helpRibbonActions = new RibbonActions(state);
+    this.helpSearch = '';
+    this.helpCategory = 'all';
+    this.helpActiveTopicId = '';
+    this.helpContextToken = '';
+    this.helpProgress = HelpCenterEngine.loadProgress();
     this.formPartLibrarySearch = '';
     this.formPartLibraryCategory = 'all';
     this.formPartLibraryFit = 'all';
@@ -216,238 +224,194 @@ export default class WorkspaceComponent {
   renderHelp(context = null) {
     const project = this.state.project;
     const system = this.state.selectedSystem || project?.systems?.[0] || null;
-    const sectionCount = system?.sections?.length || 0;
-    const formPartCount = system?.formParts?.length || 0;
-    const specialCount = system?.specialComponents?.length || 0;
-    const isDemo = Boolean(project?.demo?.isDemoProject);
-    const licenseStatus = createLicenseStatus();
-    const licenseRows = getLicenseFeatureRows().slice(0, 6);
-    const exportNotice = LicenseGate.createExportNotice();
-    const licenseMatrixHtml = licenseRows.map(row => `
-      <article><strong>${this.escapeHtml(row.label)}</strong><span>Test: ${row.test ? 'aktiv' : 'später'} · Professional: ${row.professional ? 'aktiv' : 'später'}</span></article>
-    `).join('');
+    const requestedTopicId = context?.topicId || HelpCenterEngine.getContextTopicId(context?.previousSelectionType || 'project');
+    const contextToken = String(context?.openedAt || `${context?.source || 'help'}:${requestedTopicId}`);
+
+    if (!this.helpActiveTopicId || this.helpContextToken !== contextToken) {
+      this.helpActiveTopicId = requestedTopicId;
+      this.helpContextToken = contextToken;
+    }
+
+    const categories = HelpCenterEngine.getCategories();
+    const topics = HelpCenterEngine.search(this.helpSearch, this.helpCategory);
+    const activeTopic = HelpCenterEngine.getTopic(this.helpActiveTopicId);
+    const contextTopic = HelpCenterEngine.getTopic(requestedTopicId);
+    const tourSteps = HelpCenterEngine.getTourSteps();
+    const shortcuts = HelpCenterEngine.getShortcuts();
+    const progress = HelpCenterEngine.summarizeProgress(this.helpProgress);
+    const completedStepIds = new Set(this.helpProgress.completedStepIds || []);
+    const currentSelectionLabel = this.getHelpContextLabel(context?.previousSelectionType || 'project');
+
+    const shortcutGroups = shortcuts.reduce((groups, item) => {
+      groups[item.group] = groups[item.group] || [];
+      groups[item.group].push(item);
+      return groups;
+    }, {});
 
     this.root.innerHTML = `
-      <div class="workspace-header dp-help-header">
+      <header class="workspace-header dp-help-center-header">
         <div>
-          <span class="dp-overline">Bedienungsanleitung</span>
-          <h1>Druckverlust Pro richtig benutzen</h1>
-          <p>Kurzer Leitfaden für Projektstart, Teilstrecken, Formteile, Sonderbauteile, QS und Bericht – mit Demo und Beispielwerten.</p>
+          <span class="dp-overline">Phase 41.00 · Hilfe-Center</span>
+          <h1>Bedienung, Fachlogik und nächste Schritte</h1>
+          <p>Durchsuchbare Hilfe für den aktuellen Arbeitsbereich – mit geführtem Projektablauf und direkten Sprüngen in das Tool.</p>
         </div>
         <div class="workspace-actions">
-          <button type="button" data-help-action="project">Projekt öffnen</button>
+          ${context?.previousSelectionType ? '<button type="button" data-help-action="back">Zurück zur Ansicht</button>' : ''}
           <button type="button" data-help-action="demo">Demo laden</button>
-          <button type="button" data-help-action="demo-report">Beispielbericht</button>
-        </div>
-      </div>
-
-      <section class="dp-help-hero">
-        <div>
-          <h2>Schnellstart in 4 Schritten</h2>
-          <p>Arbeite von links nach rechts: Projektdaten → Teilstrecken → Formteile/Sonderbauteile → Bericht. Die Berechnung läuft automatisch im Hintergrund.</p>
-        </div>
-        <div class="dp-help-status">
-          <span>${isDemo ? 'Demo-Projekt aktiv' : 'Aktueller Stand'}</span>
-          <strong>${this.escapeHtml(sectionCount)} TS · ${this.escapeHtml(formPartCount)} Formteile · ${this.escapeHtml(specialCount)} Sonderbauteile</strong>
-          <small>Lizenz: ${this.escapeHtml(licenseStatus.modeLabel)} · Export: ${this.escapeHtml(exportNotice.exportLabel)}</small>
-        </div>
-      </section>
-
-      <section class="dp-help-grid" aria-label="Kurzanleitung">
-        <article>
-          <span>01</span>
-          <h3>Projekt erfassen</h3>
-          <p>Projektnummer, Projektname, BKP-Nummer und Anlage eintragen. Diese Angaben erscheinen im Bericht und im Dateinamen.</p>
-          <button type="button" data-help-action="project">Zu den Projektangaben</button>
-        </article>
-        <article>
-          <span>02</span>
-          <h3>Teilstrecken eingeben</h3>
-          <p>Kanal oder Rohr wählen, Luftmenge, Länge und Abmessungen erfassen. Geschwindigkeit und Reibungsverlust werden automatisch berechnet.</p>
-          <button type="button" data-help-action="system">Zur Anlagenübersicht</button>
-        </article>
-        <article>
-          <span>03</span>
-          <h3>Formteile ergänzen</h3>
-          <p>Formteil auswählen und Teilstrecke zuordnen. Grössen und Luftmengen können automatisch aus den Teilstrecken übernommen werden.</p>
-          <button type="button" data-help-action="formparts">Formteil-Assistent öffnen</button>
-        </article>
-        <article>
-          <span>04</span>
-          <h3>Bericht erstellen</h3>
-          <p>Berechnung prüfen, Projekt-QS kontrollieren und danach den Bericht öffnen. Im Bericht kann über Drucken / PDF gespeichert werden.</p>
-          <button type="button" data-help-action="report">Bericht öffnen</button>
-        </article>
-      </section>
-
-      <section class="dp-help-panel dp-help-demo-panel">
-        <div>
-          <span class="dp-overline">Demo / Beispielnachweis</span>
-          <h2>Erst testen, dann eigenes Projekt aufbauen</h2>
-          <p>Das Demo-Projekt enthält eine kleine Zuluftanlage mit Hauptkanal, Übergang, Rundrohr, Abzweig, Sonderbauteilen und Berichtsdaten. Damit kannst du die Bedienung und den PDF-Nachweis direkt prüfen.</p>
-        </div>
-        <div class="dp-help-demo-actions">
-          <button type="button" data-help-action="demo">Demo-Projekt laden</button>
-          <button type="button" data-help-action="demo-report">Demo-Bericht öffnen</button>
-        </div>
-      </section>
-
-      <section class="dp-help-panel">
-        <div>
-          <span class="dp-overline">Beispielwerte</span>
-          <h2>Typische Eingaben im Tool</h2>
-        </div>
-        <div class="dp-help-example-grid" aria-label="Beispielwerte">
-          <article><strong>Kanal-Teilstrecke</strong><span>q 3’200 m³/h · L 8.5 m · b/h 800 × 450 mm</span></article>
-          <article><strong>Rohr-Teilstrecke</strong><span>q 1’200 m³/h · L 9.0 m · Ø 500 mm</span></article>
-          <article><strong>Formteil</strong><span>Bogen / Übergang / Abzweig mit ζ-Wert und p_dyn</span></article>
-          <article><strong>Sonderbauteil</strong><span>z. B. Filter 80 Pa oder Schalldämpfer 25 Pa</span></article>
-        </div>
-      </section>
-
-      <section class="dp-help-panel">
-        <div>
-          <span class="dp-overline">Wichtige Eingaben</span>
-          <h2>Was muss wo eingetragen werden?</h2>
-        </div>
-        <div class="dp-help-table" role="table" aria-label="Eingabefelder und Bedeutung">
-          <div role="row"><strong role="cell">Teilstrecke</strong><span role="cell">Luftmenge m³/h, Länge m, Kanal b/h oder Rohr Ø. Die Eingabe erfolgt in m; Formteile übernehmen daraus mm-Werte.</span></div>
-          <div role="row"><strong role="cell">Formteil</strong><span role="cell">Typ, zugehörige Teilstrecke, ζ-/Auswahlwerte und bei Bedarf Anschlussgrössen. Manuelle Anpassungen bleiben möglich.</span></div>
-          <div role="row"><strong role="cell">Sonderbauteil</strong><span role="cell">Hersteller/Typ und bekannter Druckverlust in Pa. Dieser Wert wird direkt in die Gesamtsumme übernommen.</span></div>
-          <div role="row"><strong role="cell">Bericht</strong><span role="cell">Bericht-Nr., Revision, Umfang und PDF-Druck über Browserdialog. Empfohlen: A4 Hochformat, 100 %, Hintergrundgrafiken aktivieren.</span></div>
-        </div>
-      </section>
-
-      <section class="dp-help-panel dp-help-two-col">
-        <div>
-          <span class="dp-overline">Rechenverständnis</span>
-          <h2>Was bedeutet welcher Druckverlust?</h2>
-          <ul>
-            <li><strong>Δp Kanal/Rohr</strong> = Reibungsverlust der geraden Teilstrecke.</li>
-            <li><strong>Δp Formteil</strong> = ζ × p_dyn des zugeordneten Formteils.</li>
-            <li><strong>Sonderbauteile</strong> = fixer Hersteller- oder Vorgabewert in Pa.</li>
-            <li><strong>Gesamt</strong> = Teilstrecken + Formteile + Sonderbauteile.</li>
-          </ul>
-        </div>
-        <div>
-          <span class="dp-overline">QS</span>
-          <h2>Vor dem Export kurz prüfen</h2>
-          <ul>
-            <li>Projektangaben vollständig?</li>
-            <li>Alle Teilstrecken mit Luftmenge und Geometrie?</li>
-            <li>Formteile den richtigen Teilstrecken zugeordnet?</li>
-            <li>Sonderbauteile mit realistischem Pa-Wert?</li>
-            <li>Gesamtdruckverlust im Bericht nachvollziehbar?</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="dp-help-panel dp-help-two-col">
-        <div>
-          <span class="dp-overline">PDF / Bericht</span>
-          <h2>Sauber als PDF speichern</h2>
-          <ul>
-            <li>Bericht öffnen.</li>
-            <li>Im Bericht auf <strong>Drucken / PDF</strong> klicken.</li>
-            <li>A4 Hochformat und Skalierung 100 % wählen.</li>
-            <li>Hintergrundgrafiken aktivieren, damit Logo und Tabellen sauber wirken.</li>
-          </ul>
-        </div>
-        <div>
-          <span class="dp-overline">Kurzbefehle</span>
-          <h2>Schneller arbeiten</h2>
-          <ul>
-            <li><strong>Ctrl + S</strong> speichern</li>
-            <li><strong>Ctrl + N</strong> neues Projekt</li>
-            <li><strong>Ctrl + Enter</strong> neu berechnen</li>
-            <li><strong>Ctrl + B / Ctrl + P</strong> Bericht öffnen</li>
-            <li><strong>Ctrl + K</strong> globale Projektsuche öffnen</li>
-            <li><strong>Ctrl + Shift + D</strong> Abhängigkeiten und Änderungsfolgen öffnen</li>
-            <li><strong>Ctrl + Shift + U</strong> Projektübergabe öffnen</li>
-            <li><strong>Alt + Home</strong> Startübersicht</li>
-          </ul>
           <button type="button" data-help-action="copy-shortcuts">Kurzbefehle kopieren</button>
         </div>
+      </header>
+
+      <section class="dp-help-center-hero">
+        <div class="dp-help-context-card">
+          <span class="dp-help-context-icon" aria-hidden="true">?</span>
+          <div>
+            <span class="dp-overline">Hilfe zur aktuellen Ansicht</span>
+            <h2>${this.escapeHtml(contextTopic.title)}</h2>
+            <p>${this.escapeHtml(contextTopic.summary)}</p>
+            <small>Ausgangspunkt: ${this.escapeHtml(currentSelectionLabel)}</small>
+          </div>
+          ${contextTopic.action ? `<button type="button" data-help-navigate="${this.escapeAttribute(contextTopic.action)}">${this.escapeHtml(contextTopic.actionLabel)}</button>` : ''}
+        </div>
+
+        <div class="dp-help-progress-card">
+          <div class="dp-help-progress-ring" style="--dp-help-progress:${progress.percent}%" aria-label="${progress.percent} Prozent abgeschlossen">
+            <strong>${progress.percent}%</strong>
+            <span>Erste Schritte</span>
+          </div>
+          <div>
+            <span class="dp-overline">Geführter Ablauf</span>
+            <h2>${progress.isComplete ? 'Grundablauf abgeschlossen' : `${progress.remaining} Schritte offen`}</h2>
+            <p>${progress.completed} von ${progress.total} Schritten wurden als erledigt markiert.</p>
+          </div>
+          <button type="button" class="dp-secondary-button" data-help-reset-progress ${progress.completed ? '' : 'disabled'}>Fortschritt zurücksetzen</button>
+        </div>
       </section>
 
+      <section class="dp-help-search-panel">
+        <label class="dp-help-search-field">
+          <span>Hilfe durchsuchen</span>
+          <input type="search" value="${this.escapeAttribute(this.helpSearch)}" placeholder="z. B. Formteil, PDF, Simulation oder Sicherung" data-help-search autocomplete="off" />
+        </label>
+        <div class="dp-help-category-list" aria-label="Hilfekategorien">
+          ${categories.map(category => `
+            <button type="button" class="${this.helpCategory === category.id ? 'is-active' : ''}" data-help-category="${this.escapeAttribute(category.id)}">
+              ${this.escapeHtml(category.label)}
+            </button>
+          `).join('')}
+        </div>
+        <span class="dp-help-result-count">${topics.length} Thema${topics.length === 1 ? '' : 'en'}</span>
+      </section>
 
-      <section class="dp-help-panel dp-license-help-panel">
+      <section class="dp-help-center-layout">
+        <aside class="dp-help-topic-list" aria-label="Hilfethemen">
+          ${topics.length ? topics.map(topic => `
+            <button type="button" class="dp-help-topic-button ${activeTopic.id === topic.id ? 'is-active' : ''}" data-help-topic="${this.escapeAttribute(topic.id)}">
+              <span>${this.escapeHtml(categories.find(item => item.id === topic.category)?.label || 'Hilfe')}</span>
+              <strong>${this.escapeHtml(topic.title)}</strong>
+              <small>${this.escapeHtml(topic.summary)}</small>
+            </button>
+          `).join('') : `
+            <div class="dp-help-empty">
+              <strong>Kein passendes Thema gefunden</strong>
+              <p>Suchbegriff vereinfachen oder eine andere Kategorie wählen.</p>
+            </div>
+          `}
+        </aside>
+
+        <article class="dp-help-topic-detail">
+          <div class="dp-help-topic-heading">
+            <div>
+              <span class="dp-overline">${this.escapeHtml(categories.find(item => item.id === activeTopic.category)?.label || 'Hilfe')}</span>
+              <h2>${this.escapeHtml(activeTopic.title)}</h2>
+              <p>${this.escapeHtml(activeTopic.summary)}</p>
+            </div>
+            ${activeTopic.action ? `<button type="button" data-help-navigate="${this.escapeAttribute(activeTopic.action)}">${this.escapeHtml(activeTopic.actionLabel)}</button>` : ''}
+          </div>
+
+          <div class="dp-help-topic-content">
+            <div>
+              <h3>Empfohlener Ablauf</h3>
+              <ol>
+                ${activeTopic.steps.map(step => `<li>${this.escapeHtml(step)}</li>`).join('')}
+              </ol>
+            </div>
+            <div>
+              <h3>Wichtige Hinweise</h3>
+              <ul>
+                ${activeTopic.tips.map(tip => `<li>${this.escapeHtml(tip)}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="dp-help-tour-panel">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Geführte Erste Schritte</span>
+            <h2>Vom Projektstamm bis zur Übergabe</h2>
+            <p>Jeder Schritt öffnet den passenden Bereich. Die Markierung ist eine persönliche Bedienhilfe und verändert keine Projektdaten.</p>
+          </div>
+          <span class="dp-help-tour-status ${progress.isComplete ? 'is-complete' : ''}">${progress.completed}/${progress.total}</span>
+        </div>
+
+        <div class="dp-help-tour-grid">
+          ${tourSteps.map(step => {
+            const isComplete = completedStepIds.has(step.id);
+            return `
+              <article class="dp-help-tour-step ${isComplete ? 'is-complete' : ''}">
+                <div class="dp-help-tour-number">${step.number}</div>
+                <div>
+                  <strong>${this.escapeHtml(step.title)}</strong>
+                  <p>${this.escapeHtml(step.description)}</p>
+                </div>
+                <div class="dp-help-tour-actions">
+                  <button type="button" data-help-tour-open="${this.escapeAttribute(step.id)}">Öffnen</button>
+                  <button type="button" class="dp-secondary-button" data-help-tour-toggle="${this.escapeAttribute(step.id)}" aria-pressed="${isComplete}">
+                    ${isComplete ? 'Erledigt ✓' : 'Als erledigt markieren'}
+                  </button>
+                </div>
+              </article>
+            `;
+          }).join('')}
+        </div>
+      </section>
+
+      <section class="dp-help-shortcuts-panel">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Tastatur</span>
+            <h2>Schneller und ohne Umwege arbeiten</h2>
+            <p><strong>F1</strong> oder <strong>Ctrl + /</strong> öffnet das Hilfe-Center aus jeder Ansicht.</p>
+          </div>
+          <button type="button" data-help-action="copy-shortcuts">Alle Kurzbefehle kopieren</button>
+        </div>
+        <div class="dp-help-shortcut-groups">
+          ${Object.entries(shortcutGroups).map(([group, items]) => `
+            <div class="dp-help-shortcut-group">
+              <h3>${this.escapeHtml(group)}</h3>
+              ${items.map(item => `
+                <div class="dp-help-shortcut-row">
+                  <kbd>${this.escapeHtml(item.keys)}</kbd>
+                  <span>${this.escapeHtml(item.label)}</span>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </section>
+
+      <section class="dp-help-current-version">
         <div>
-          <span class="dp-overline">Lizenzstatus</span>
-          <h2>Aktuell: ${this.escapeHtml(licenseStatus.modeLabel)}</h2>
-          <p>Diese Web-Version ist weiterhin direkt testbar. Login, Zahlung und technische Zugriffssperre sind noch nicht aktiv. Der Exportstatus ist vorbereitet und wird im Bericht mitgeführt.</p>
+          <span class="dp-overline">Aktueller Stand</span>
+          <h2>Druckverlust Pro ${this.escapeHtml(APP_VERSION)} · Phase ${this.escapeHtml(APP_RELEASE)}</h2>
+          <p>Mehranlagen-Projekte, Engineering-QS, Anlagenschema, Simulation, Professional Report, Revisionen, Sicherung, Übergabe, Projektsuche, Aufgaben und Änderungsverlauf sind integriert.</p>
         </div>
-        <div class="dp-license-help-grid" aria-label="Lizenzstatus im Tool">
-          <article><strong>Aktiver Plan</strong><span>${this.escapeHtml(licenseStatus.activePlan?.name || 'Professional')} · ${this.escapeHtml(licenseStatus.activePlan?.label || 'Planung / Abgabe')}</span></article>
-          <article><strong>Speicherung</strong><span>Projektdateien werden lokal als .dvp gespeichert.</span></article>
-          <article><strong>Feature-Flags</strong><span>Vorbereitet, aber ohne aktive Sperre.</span></article>
-          <article><strong>Exportstatus</strong><span>${this.escapeHtml(exportNotice.exportLabel)}</span></article>
-          ${licenseMatrixHtml}
+        <div class="dp-help-neutrality-note">
+          <strong>Herstellerneutral</strong>
+          <span>Keine Ventilatorauslegung und keine Hersteller-Bauteildatenbank.</span>
         </div>
-      </section>
-
-
-      <section id="roadmap" class="dp-help-panel">
-        <div>
-          <span class="dp-overline">Roadmap</span>
-          <h2>Was kommt als Nächstes?</h2>
-          <p>Druckverlust Pro wird kontrolliert erweitert. Der fachliche Rechenkern bleibt zuerst stabil, danach folgen weitere Gebäudetechnik-Werkzeuge.</p>
-        </div>
-        <div class="dp-product-roadmap-grid" aria-label="Produkt-Roadmap">
-          <article><span>Priorität 1</span><strong>Fachlicher Kern</strong><p>Formteile ergänzen, Rechenwerte validieren und bekannte Referenzfälle sauber vergleichen.</p></article>
-          <article><span>Priorität 2</span><strong>Weitere Module</strong><p>Luftmengenberechnung, Schallberechnung, h,x-Diagramm und Kanalschieber.</p></article>
-          <article><span>Später</span><strong>Plattform</strong><p>Lizenzierung, Firmenzugänge, Cloud-Projekte und abgestufte Professional-Funktionen.</p></article>
-        </div>
-      </section>
-
-      <section id="feedback" class="dp-help-panel">
-        <div>
-          <span class="dp-overline">Feedback</span>
-          <h2>Rückmeldung strukturiert vorbereiten</h2>
-          <p>Ein gutes Feedback enthält den betroffenen Bereich, die ausgeführten Schritte, das erwartete Ergebnis und – bei Fehlern – einen Screenshot oder die passende .dvp-Datei.</p>
-        </div>
-        <div class="dp-feedback-grid" aria-label="Feedback-Arten">
-          <article><strong>Fehler melden</strong><p>Was wurde eingegeben, was ist passiert und wie sollte das Ergebnis aussehen?</p></article>
-          <article><strong>Formteil wünschen</strong><p>Bezeichnung, Bauform, benötigte Eingaben, Quelle der ζ-Werte und wenn möglich ein Bild nennen.</p></article>
-          <article><strong>Bedienung verbessern</strong><p>Beschreiben, welcher Arbeitsschritt zu lang, unklar oder unnötig kompliziert ist.</p></article>
-        </div>
-        <div class="dp-feedback-actions">
-          <button type="button" data-help-action="copy-feedback">Feedback-Vorlage kopieren</button>
-          <button type="button" data-help-action="expert-test">Fachtest-Protokoll öffnen</button>
-          <button type="button" data-help-action="feedback-round">Fachtest-Auswertung öffnen</button>
-          <button type="button" data-help-action="release-decision">Freigabeentscheidung öffnen</button>
-          <button type="button" data-help-action="beta-release">Beta-Freigabestand öffnen</button>
-          <button type="button" data-help-action="beta-feedback">Beta-Rückmeldung erfassen</button>
-          <button type="button" data-help-action="beta-feedback-inbox">Beta-Feedback auswerten</button>
-          <button type="button" data-help-action="demo">Demo zum Vergleichen öffnen</button>
-        </div>
-      </section>
-
-      <section id="versionen" class="dp-help-panel">
-        <div>
-          <span class="dp-overline">Versionshistorie</span>
-          <h2>Aktueller Entwicklungsstand</h2>
-        </div>
-        <div class="dp-version-history-grid" aria-label="Letzte Versionen">
-          <article><span>21.11</span><strong>Beta-Feedback-Auswertung</strong><p>Mehrere JSON-Rückmeldungen importieren, priorisieren, Verantwortliche und Zielversionen zuordnen sowie als Fehlerliste exportieren.</p></article>
-          <article><span>21.10</span><strong>Beta-Feedback und Fehlererfassung</strong><p>Einzelne Auffälligkeiten, Rechenabweichungen und Funktionswünsche lokal erfassen und als JSON, TXT oder CSV exportieren.</p></article>
-          <article><span>21.09</span><strong>Öffentliche Beta konsolidiert</strong><p>Automatische Tests, Fachtest-Runde, Freigabeentscheidung und Deployment-Checkliste in einem Beta-Freigabestand zusammengeführt.</p></article>
-          <article><span>21.08</span><strong>Fachliche Freigabeentscheidung</strong><p>Formelle Entscheidung, Verantwortlichkeiten, Korrekturmassnahmen, Termine und Nachtests in einem Freigabeprotokoll dokumentieren.</p></article>
-          <article><span>21.07</span><strong>Fachtest-Runde und Freigabeauswertung</strong><p>Mehrere JSON-Protokolle importieren, Auffälligkeiten bündeln, Prioritäten bilden und Freigabeentscheidung vorbereiten.</p></article>
-          <article><span>21.06a</span><strong>Farbwelt der Hauptseite</strong><p>Dunkelblauer Kopfbereich, Blau-/Violett-Verläufe, Cyan-Akzente und helle Arbeitskarten exakt an die bereitgestellte Hauptseite angepasst. Logo, „Druckverlust Pro“ und „Professional“ bleiben erhalten.</p></article>
-          <article><span>21.06</span><strong>Einheitliches Oberflächendesign</strong><p>Berechnungstool optisch an die Produktseite angeglichen: helle Glas-Navigation, schwebende Karten, konsistente Buttons, Tabellen und Eingabefelder. Markenblock bleibt erhalten.</p></article>
-          <article><span>21.05</span><strong>Öffentliche Fachtest-Version</strong><p>Automatischer Vorabcheck, 10 manuelle Fachtest-Schritte, lokale Zwischenspeicherung sowie TXT-/CSV-Protokoll.</p></article>
-          <article><span>21.04</span><strong>Fachliche Vergleichsmatrix</strong><p>10 feste Handrechnungen mit 92 Einzelprüfungen für Kanal, Rohr, Sensitivitäten, Summenbildung und Rundung.</p></article>
-          <article><span>21.03</span><strong>Formteil-Sync-QS</strong><p>Alle 14 Formteile, Anschluss-Teilstrecken, manuelle Overrides und automatische Nachführung geprüft.</p></article>
-          <article><span>21.02</span><strong>Praxisprojekt-QS</strong><p>48 Teilstrecken, 36 Formteile, 26 Sonderbauteile, .dvp-Roundtrip und 20 Berichtseiten automatisiert geprüft.</p></article>
-          <article><span>21.01</span><strong>Formteil-QS</strong><p>14 Formteile strukturell geprüft und mit festen Excel-Referenzpunkten abgesichert.</p></article>
-          <article><span>21.00</span><strong>Rechenkern-Referenzen</strong><p>Kernformeln, Summenbildung, Rundung und TEST-001 automatisiert geprüft.</p></article>
-        </div>
-      </section>
-
-      <section class="dp-help-panel dp-help-note">
-        <strong>Hinweis:</strong>
-        <span>Die Autosicherung läuft lokal im Browser. Für die echte Ablage trotzdem regelmässig als <code>.dvp</code>-Datei speichern.</span>
       </section>
     `;
 
@@ -455,147 +419,192 @@ export default class WorkspaceComponent {
   }
 
   bindHelpActions(context = null) {
+    const searchInput = this.root.querySelector('[data-help-search]');
+    searchInput?.addEventListener('input', event => {
+      this.helpSearch = event.target.value || '';
+      const cursor = event.target.selectionStart ?? this.helpSearch.length;
+      this.renderHelp(context);
+      window.requestAnimationFrame(() => {
+        const nextInput = this.root.querySelector('[data-help-search]');
+        nextInput?.focus?.();
+        nextInput?.setSelectionRange?.(cursor, cursor);
+      });
+    });
+
+    this.root.querySelectorAll('[data-help-category]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.helpCategory = button.dataset.helpCategory || 'all';
+        this.renderHelp(context);
+      });
+    });
+
+    this.root.querySelectorAll('[data-help-topic]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.helpActiveTopicId = button.dataset.helpTopic || 'first-steps';
+        this.renderHelp(context);
+        this.root.querySelector('.dp-help-topic-detail')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+
+    this.root.querySelectorAll('[data-help-navigate]').forEach(button => {
+      button.addEventListener('click', () => this.openHelpTarget(button.dataset.helpNavigate, context));
+    });
+
+    this.root.querySelectorAll('[data-help-tour-open]').forEach(button => {
+      button.addEventListener('click', () => {
+        const step = HelpCenterEngine.getTourSteps().find(item => item.id === button.dataset.helpTourOpen);
+        if (!step) return;
+        this.helpProgress = HelpCenterEngine.setStepCompleted(this.helpProgress, step.id, true);
+        this.openHelpTarget(step.action, context);
+      });
+    });
+
+    this.root.querySelectorAll('[data-help-tour-toggle]').forEach(button => {
+      button.addEventListener('click', () => {
+        const stepId = button.dataset.helpTourToggle;
+        const isComplete = (this.helpProgress.completedStepIds || []).includes(stepId);
+        this.helpProgress = HelpCenterEngine.setStepCompleted(this.helpProgress, stepId, !isComplete);
+        this.renderHelp(context);
+      });
+    });
+
+    this.root.querySelector('[data-help-reset-progress]')?.addEventListener('click', async () => {
+      const confirmed = await UiDialogService.confirm({
+        title: 'Hilfe-Fortschritt zurücksetzen',
+        message: 'Alle Markierungen der geführten Ersten Schritte werden entfernt.',
+        confirmLabel: 'Zurücksetzen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+      this.helpProgress = HelpCenterEngine.resetProgress();
+      this.renderHelp(context);
+    });
+
     this.root.querySelectorAll('[data-help-action]').forEach(button => {
       button.addEventListener('click', () => {
         const action = button.dataset.helpAction;
-        const project = this.state.project;
-        const system = this.state.selectedSystem || project?.systems?.[0] || null;
 
-        if (action === 'project') {
-          this.state.setSelection?.('project', project);
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'system') {
-          if (system && typeof this.state.selectSystem === 'function') this.state.selectSystem(system);
-          else {
-            this.state.setSelection?.('system', system || project);
-            this.state.notify?.();
-          }
-          return;
-        }
-
-        if (action === 'formparts') {
-          if (typeof this.state.selectFormPartPicker === 'function') this.state.selectFormPartPicker(system);
-          else {
-            this.state.setSelection?.('formPartPicker', system);
-            this.state.notify?.();
-          }
-          return;
-        }
-
-        if (action === 'report') {
-          this.autoCalculateProject({ notify: false });
-          this.state.setSelection?.('report', system || project);
-          this.state.notify?.();
-          return;
-        }
-
+        if (action === 'back') return this.restoreHelpContext(context);
         if (action === 'demo') {
           window.location.href = 'app.html?demo=1';
           return;
         }
-
-        if (action === 'demo-report') {
-          window.location.href = 'app.html?demo=1&report=1';
-          return;
-        }
-
-        if (action === 'expert-test') {
-          const draft = this.loadExpertTestDraft();
-          const report = ExpertTestDiagnostics.create(draft, this.state.expertTestAutomated || null);
-          this.state.expertTestAutomated = report.automated;
-          this.state.expertTestReport = report;
-          this.state.setSelection?.('expertTest', report);
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'feedback-round') {
-          this.state.setSelection?.('expertFeedbackRound', {});
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'release-decision') {
-          this.state.setSelection?.('expertReleaseDecision', {});
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'beta-release') {
-          this.state.setSelection?.('betaReleaseReadiness', {});
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'beta-feedback') {
-          this.state.setSelection?.('betaFeedback', {});
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'beta-feedback-inbox') {
-          this.state.setSelection?.('betaFeedbackInbox', {});
-          this.state.notify?.();
-          return;
-        }
-
-        if (action === 'copy-feedback') {
-          const text = [
-            'Druckverlust Pro – Feedback',
-            '',
-            `Version: ${APP_RELEASE}`,
-            'Bereich: [Teilstrecke / Formteil / Bericht / Speichern / Oberfläche]',
-            'Art: [Fehler / Verbesserung / neues Formteil / Wunsch]',
-            '',
-            'Ausgeführte Schritte:',
-            '1. ',
-            '2. ',
-            '3. ',
-            '',
-            'Erwartetes Ergebnis:',
-            '',
-            'Tatsächliches Ergebnis:',
-            '',
-            'Zusatz: Screenshot oder .dvp-Datei beilegen, sofern möglich.',
-          ].join('\n');
-
-          if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(text).then(() => UiDialogService.alert('Feedback-Vorlage wurde kopiert.')).catch(() => UiDialogService.alert(text));
-          } else {
-            UiDialogService.alert(text);
-          }
-          return;
-        }
-
-        if (action === 'copy-shortcuts') {
-          const text = [
-            'Druckverlust Pro – Tastaturkürzel',
-            '',
-            'Ctrl + S: Projekt speichern',
-            'Ctrl + O: Projekt öffnen',
-            'Ctrl + N: Neues Projekt',
-            'Ctrl + Enter: Neu berechnen',
-            'Ctrl + B oder Ctrl + P: Bericht öffnen',
-            'Ctrl + Shift + U: Projektübergabe öffnen',
-            'Ctrl + D: ausgewähltes Element duplizieren',
-            'Entf: ausgewähltes Element löschen',
-            'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',
-            'Alt + Home: Startübersicht',
-            'Esc: zurück zur Anlagenübersicht',
-          ].join('\n');
-
-          if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(text).then(() => UiDialogService.alert('Kurzbefehle wurden kopiert.')).catch(() => UiDialogService.alert(text));
-          } else {
-            UiDialogService.alert(text);
-          }
-        }
+        if (action === 'copy-shortcuts') return this.copyHelpShortcuts();
       });
     });
   }
+
+  openHelpTarget(action = '', context = null) {
+    if (!action) return;
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0] || null;
+
+    if (action === 'openFirstSection') {
+      const section = system?.sections?.[0] || null;
+      if (section) this.state.selectSection?.(section);
+      else this.state.selectSystem?.(system);
+      return;
+    }
+
+    if (action === 'openFormPartPicker') {
+      this.state.selectFormPartPicker?.(system);
+      return;
+    }
+
+    if (action === 'openActiveSystem') {
+      if (system) this.state.selectSystem?.(system);
+      return;
+    }
+
+    const handler = this.helpRibbonActions?.[action];
+    if (typeof handler === 'function') {
+      handler.call(this.helpRibbonActions);
+      return;
+    }
+
+    if (context?.previousSelectionType) this.restoreHelpContext(context);
+  }
+
+  restoreHelpContext(context = null) {
+    const project = this.state.project;
+    const system = project?.systems?.find(item => item.id === context?.previousSystemId)
+      || this.state.selectedSystem
+      || project?.systems?.[0]
+      || null;
+    const selectionType = context?.previousSelectionType || 'project';
+    const selectionId = context?.previousSelectionId || null;
+
+    if (selectionType === 'project') {
+      this.state.setSelection?.('project', project);
+      this.state.notify?.();
+      return;
+    }
+    if (selectionType === 'system' && system) return this.state.selectSystem?.(system);
+    if (selectionType === 'section') {
+      const section = system?.sections?.find(item => item.id === selectionId);
+      if (section) return this.state.selectSection?.(section);
+    }
+    if (selectionType === 'formPart') {
+      const item = system?.formParts?.find(part => part.id === selectionId);
+      if (item) return this.state.selectFormPart?.(item);
+    }
+    if (selectionType === 'specialComponent') {
+      const item = system?.specialComponents?.find(part => part.id === selectionId);
+      if (item) return this.state.selectSpecialComponent?.(item);
+    }
+
+    const topicId = HelpCenterEngine.getContextTopicId(selectionType);
+    const topic = HelpCenterEngine.getTopic(topicId);
+    if (topic?.action) return this.openHelpTarget(topic.action, null);
+    if (system) return this.state.selectSystem?.(system);
+    this.state.setSelection?.('project', project);
+    this.state.notify?.();
+  }
+
+  copyHelpShortcuts() {
+    const text = [
+      `Druckverlust Pro ${APP_VERSION} · Phase ${APP_RELEASE}`,
+      '',
+      ...HelpCenterEngine.getShortcuts().map(item => `${item.keys}: ${item.label}`),
+      '',
+      'Hinweis: In Eingabefeldern bleibt Ctrl + Z die normale Text-Rückgängig-Funktion.',
+    ].join('\n');
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => UiDialogService.alert({ title: 'Kurzbefehle kopiert', message: 'Die Tastaturübersicht liegt in der Zwischenablage.', tone: 'success' }))
+        .catch(() => UiDialogService.alert(text));
+      return;
+    }
+    UiDialogService.alert(text);
+  }
+
+  getHelpContextLabel(selectionType = '') {
+    const labels = {
+      project: 'Projektübersicht',
+      system: 'Anlagenübersicht',
+      systemManager: 'Anlagenmanager',
+      section: 'Teilstreckeneditor',
+      formPart: 'Formteil',
+      formPartPicker: 'Formteilbibliothek',
+      specialComponent: 'Sonderbauteil',
+      engineeringQuality: 'Engineering-QS',
+      calculationCheck: 'Rechen-QS',
+      networkSchematic: 'Anlagenschema',
+      liveSimulation: 'Live-Simulation',
+      report: 'Professional Report',
+      projectCockpit: 'Projektcockpit',
+      projectTaskCenter: 'Aufgaben',
+      projectSearch: 'Projektsuche',
+      projectDependencies: 'Strukturprüfung',
+      projectSafety: 'Projektsicherung',
+      projectHistory: 'Änderungsverlauf',
+      projectCompletion: 'Projektabschluss',
+      projectHandover: 'Übergabe',
+    };
+    return labels[selectionType] || 'Druckverlust Pro';
+  }
+
 
   renderWorkflowDashboard(project = null, system = null, context = 'system') {
     if (!project || !system) return '';

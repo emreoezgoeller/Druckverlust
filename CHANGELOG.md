@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## Phase 41.00 – Hilfe-Center und geführte Erste Schritte
+
+- Alte, auf Phase 21 basierende Bedienungsseite durch ein aktuelles, durchsuchbares Hilfe-Center ersetzt.
+- Kontextbezogene Hilfe öffnet automatisch das passende Thema zur vorherigen Ansicht, etwa Teilstrecke, Formteil, Anlagenschema, Simulation oder Bericht.
+- 13 kategorisierte Hilfethemen mit verständlichem Ablauf, Hinweisen und direkten Sprüngen in die jeweiligen Werkzeugbereiche ergänzt.
+- Geführten Projektablauf mit zehn Schritten vom Projektstamm bis zur Übergabe ergänzt.
+- Persönlicher Hilfe-Fortschritt wird lokal im Browser gespeichert und verändert keine Projektdaten.
+- Vollständige Tastaturübersicht integriert; `F1` und `Ctrl + /` öffnen das Hilfe-Center aus jeder Ansicht.
+- Rücksprung zur zuvor geöffneten Ansicht ergänzt.
+- Responsive Oberfläche für Desktop, Tablet und Smartphone sowie Unterstützung für reduzierte Animationen ergänzt.
+- Deployment-QS um Hilfe-Engine und Phase-41-Stylesheet erweitert.
+- Zwei neue Testgruppen mit 61 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.18.0 und Cachekennung auf 41.00 erhöht.
+- Ventilatorauslegung und Hersteller-Bauteildatenbank bleiben weiterhin vollständig ausgeschlossen.
+
 ## Phase 40.00 – Änderungsverlauf, Rückgängig und Wiederholen
 
 - Neue `ProjectHistoryEngine` für einen sitzungsbezogenen Verlauf mit maximal 40 Projektständen ergänzt.

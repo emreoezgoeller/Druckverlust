@@ -1,5 +1,13 @@
 # Roadmap
 
+## Phase 41.00 – abgeschlossen
+
+- Kontextbezogenes Hilfe-Center mit Suche und Kategorien
+- Geführte Erste Schritte mit zehn Projektstationen
+- Direkte Sprünge aus der Hilfe in die passende Werkzeugansicht
+- Vollständige Tastaturübersicht mit `F1` und `Ctrl + /`
+- Persönlicher Hilfe-Fortschritt lokal im Browser
+
 ## Phase 40.00 – abgeschlossen
 
 - sitzungsbezogener Projektverlauf mit maximal 40 kompakten Projektständen,
@@ -142,6 +150,7 @@
 - Phase 37.00: Projekt-Navigator, Aufgaben, Favoriten und Schnellzugriffe
 - Phase 38.00: globale Projektsuche, Projektindex, Querverweise und Sprungmarken
 - Phase 39.00: Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle
+- Phase 41.00: Hilfe-Center, kontextbezogene Bedienhilfe und geführte Erste Schritte
 - Phase 40.00: Sitzungsverlauf, Rückgängig/Wiederholen und Wiederherstellungspunkte
 
 ## Bewusst ausgeschlossen

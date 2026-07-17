@@ -1,19 +1,19 @@
-// Druckverlust Pro – Phase 40.00
+// Druckverlust Pro – Phase 41.00
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
-import ApplicationShell from './ui/ApplicationShell.js?v=40.00';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=40.00';
-import SidebarComponent from './ui/components/SidebarComponent.js?v=40.00';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=40.00';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=40.00';
+import ApplicationShell from './ui/ApplicationShell.js?v=41.00';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=41.00';
+import SidebarComponent from './ui/components/SidebarComponent.js?v=41.00';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=41.00';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=41.00';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
-import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=40.00';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=41.00';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=40.00';
-import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=40.00';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=41.00';
+import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=41.00';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 
@@ -115,12 +115,26 @@ function getHelpStartupSection() {
   return String(params.get('section') || '').trim().toLowerCase();
 }
 
-function scrollToHelpSection(sectionId) {
-  if (!sectionId || typeof document === 'undefined') return;
-  window.requestAnimationFrame(() => {
-    const target = document.getElementById(sectionId);
-    target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-  });
+function resolveHelpStartupTopic(sectionId = '') {
+  const value = String(sectionId || '').trim().toLowerCase();
+  const aliases = {
+    report: 'report',
+    bericht: 'report',
+    formteile: 'form-parts',
+    formpart: 'form-parts',
+    teilstrecken: 'sections',
+    section: 'sections',
+    schema: 'schematic',
+    simulation: 'simulation',
+    qs: 'engineering-quality',
+    sicherung: 'safety',
+    safety: 'safety',
+    uebergabe: 'handover',
+    übergabe: 'handover',
+    shortcuts: 'shortcuts',
+    tastatur: 'shortcuts',
+  };
+  return aliases[value] || value || 'first-steps';
 }
 
 function cleanupHelpUrlFlag() {
@@ -383,7 +397,7 @@ function bootstrap() {
     state.setSelection('expertTest', { source: 'public-test' });
     cleanupExpertTestUrlFlag();
   } else if (helpRequested) {
-    state.setSelection('help', { source: 'landing' });
+    state.setSelection('help', { source: 'landing', topicId: resolveHelpStartupTopic(helpSection), previousSelectionType: 'project' });
     cleanupHelpUrlFlag();
   } else if (reportRequested) {
     const activeSystem = state.selectedSystem || project?.systems?.[0] || project;
@@ -401,7 +415,6 @@ function bootstrap() {
   new StatusBarComponent(document.querySelector('.dp-status'), state);
   new KeyboardShortcuts(state).install();
 
-  if (helpRequested) scrollToHelpSection(helpSection);
 
   AutoSaveEngine.install(state);
   installBeforeUnloadProtection(state);

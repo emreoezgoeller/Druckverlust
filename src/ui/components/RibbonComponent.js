@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
-// Phase 40.00: einzeiliges Ribbon mit Sitzungsverlauf, Rückgängig/Wiederholen und Tastaturführung.
+// Phase 41.00: einzeiliges Ribbon mit kontextbezogenem Hilfe-Center.
 
-import RibbonActions from '../core/RibbonActions.js?v=40.00';
+import RibbonActions from '../core/RibbonActions.js?v=41.00';
 
 const RIBBON_GROUPS = [
   {
@@ -59,7 +59,7 @@ const RIBBON_GROUPS = [
     label: 'Hilfe',
     actions: [
       { action: 'loadDemoProject', label: 'Demo', icon: 'sparkles', title: 'Beispielprojekt laden' },
-      { action: 'showShortcutHelp', label: 'Hilfe', icon: 'help', title: 'Tastaturkürzel und Bedienung anzeigen' },
+      { action: 'showShortcutHelp', label: 'Hilfe', icon: 'help', title: 'Kontextbezogenes Hilfe-Center öffnen (F1 oder Strg+/)' },
       { action: 'showAppInfo', label: 'Info', icon: 'info', title: 'Version und Projektstatus anzeigen' },
     ],
   },

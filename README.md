@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.17.0 · Phase 40.00 · Sitzungsbezogener Änderungsverlauf mit Rückgängig, Wiederholen und Wiederherstellungspunkten.
+**Aktueller Stand:** Version 1.18.0 · Phase 41.00 · Kontextbezogenes Hilfe-Center mit Suche, geführten Ersten Schritten und vollständiger Tastaturübersicht.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, sitzungsbezogener Änderungsverlauf mit Rückgängig/Wiederholen, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
@@ -42,6 +42,7 @@ Druckverlust/
 │   ├── diagnostics/           Projekt-, Rechen- und Deployment-QS
 │   ├── formteile/             Registry und 14 Formteilrechner
 │   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
+│   ├── help/                  Hilfe-Center, geführte Schritte und Tastenkürzel
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
 │   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, Suche, Verlauf, Projektindex, Abhängigkeiten, Konfliktprüfung, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
@@ -58,6 +59,19 @@ Druckverlust/
 ├── tests/                     Node- und Browserprüfungen
 └── docs/                      technische Dokumentation
 ```
+
+
+## Phase 41.00
+
+Das integrierte Hilfe-Center bündelt die inzwischen umfangreiche Bedienung an einer Stelle:
+
+- kontextbezogene Hilfe zur aktuell geöffneten Ansicht
+- Suche über Projekt, Berechnung, QS, Bericht, Sicherung und Übergabe
+- kategorisierte Hilfethemen mit direkten Sprüngen in das Tool
+- geführter Ablauf mit zehn Schritten vom Projektstamm bis zur Übergabe
+- lokal gespeicherter persönlicher Fortschritt ohne Veränderung der Projektdaten
+- vollständige Tastaturübersicht; Aufruf mit `F1` oder `Ctrl + /`
+- responsive Darstellung für Desktop, Tablet und Smartphone
 
 ## Phase 40.00
 
@@ -226,7 +240,7 @@ npm test
 Gezielte Prüfung der neuen Phase:
 
 ```bash
-npm run test:phase36
+npm run test:phase41
 ```
 
 Vorherige Projektcockpit-Prüfung:

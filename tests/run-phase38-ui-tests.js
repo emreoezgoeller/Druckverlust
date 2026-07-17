@@ -19,11 +19,11 @@ const engine = read('src/project/ProjectSearchEngine.js');
 const packageJson = JSON.parse(read('package.json'));
 
 assert.match(appHtml, /phase38_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=40\.00/); checks += 1;
-assert.match(main, /Phase 40\.00/); checks += 1;
-assert.match(main, /WorkspaceComponent\.js\?v=40\.00/); checks += 1;
-assert.match(version, /APP_RELEASE = '40\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '1\.17\.0'/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=41\.00/); checks += 1;
+assert.match(main, /Phase 41\.00/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=41\.00/); checks += 1;
+assert.match(version, /APP_RELEASE = '41\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '1\.18\.0'/); checks += 1;
 assert.match(ribbon, /showProjectSearch/); checks += 1;
 assert.match(ribbon, /label: 'Suche'/); checks += 1;
 assert.match(ribbon, /icon: 'search'/); checks += 1;
@@ -43,7 +43,7 @@ assert.match(css, /@media \(max-width: 560px\)/); checks += 1;
 assert.match(engine, /buildIndex/); checks += 1;
 assert.match(engine, /togglePin/); checks += 1;
 assert.match(engine, /createIndexCsv/); checks += 1;
-assert.equal(packageJson.version, '1.17.0'); checks += 1;
+assert.equal(packageJson.version, '1.18.0'); checks += 1;
 assert.match(packageJson.scripts.test, /run-phase38-project-search-tests/); checks += 1;
 assert.match(packageJson.scripts['test:phase38'], /run-phase38-ui-tests/); checks += 1;
 
