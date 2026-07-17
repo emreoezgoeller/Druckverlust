@@ -23,7 +23,7 @@ const quality = read('src/quality/EngineeringQualityEngine.js');
 const report = read('src/report/ReportEngine.js');
 
 assert.match(appHtml, /phase36_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=39\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=39\.03/); checks += 1;
 assert.match(ribbon, /showProjectStandardization/); checks += 1;
 assert.match(ribbon, /label: 'Workflow'/); checks += 1;
 assert.match(actions, /showProjectStandardization/); checks += 1;

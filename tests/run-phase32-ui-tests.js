@@ -13,7 +13,7 @@ const files = {
 
 const expectations = [
   [files.app.includes('phase32_00.css?v=38.00'), 'Phase-32-CSS ist eingebunden.'],
-  [files.app.includes('src/main.js?v=39.00'), 'Main-Modul verwendet Cache-Version 39.00.'],
+  [files.app.includes('src/main.js?v=39.03'), 'Main-Modul verwendet Cache-Version 39.03.'],
   [files.ribbon.includes("action: 'showProjectSafety'"), 'Ribbon enthält Projektsicherheit.'],
   [files.ribbon.includes("selectionType === 'projectSafety'"), 'Ribbon markiert die aktive Sicherheitsansicht.'],
   [files.actions.includes('showProjectSafety()'), 'RibbonActions öffnet die Sicherheitsansicht.'],

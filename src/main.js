@@ -3,7 +3,7 @@
 
 import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js?v=39.00';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=39.00';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=39.03';
 import SidebarComponent from './ui/components/SidebarComponent.js?v=39.00';
 import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=39.00';
 import StatusBarComponent from './ui/components/StatusBarComponent.js?v=39.00';

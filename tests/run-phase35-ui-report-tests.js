@@ -21,7 +21,7 @@ const report = read('src/report/ReportEngine.js');
 const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
 
 assert.match(appHtml, /phase35_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=39\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=39\.03/); checks += 1;
 assert.match(ribbon, /showProjectCockpit/); checks += 1;
 assert.match(ribbon, /label: 'Cockpit'/); checks += 1;
 assert.match(sidebar, /type: 'projectCockpit'/); checks += 1;

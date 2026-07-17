@@ -1,3 +1,17 @@
+# CHANGELOG
+
+## Phase 39.03 – Registerführung und Überlaufnavigation
+
+- Einzeilige Registerleiste um sichtbare Links-/Rechts-Navigation ergänzt.
+- Scrollpfeile erscheinen nur, wenn nicht alle vollständig beschrifteten Werkzeuge gleichzeitig sichtbar sind.
+- Dezente Kantenverläufe zeigen weitere Werkzeuge ausserhalb des sichtbaren Bereichs an.
+- Gruppenbezeichnungen Projekt, Einfügen, Berechnung, Ausgabe und Hilfe sind anklickbar und springen direkt zur jeweiligen Werkzeuggruppe.
+- Aktive Ansicht markiert zusätzlich die zugehörige Werkzeuggruppe.
+- Aktive Werkzeuge werden beim Ansichtswechsel automatisch in den sichtbaren Bereich geführt.
+- Tastaturnavigation innerhalb der Werkzeugleiste mit Pfeiltasten sowie Pos1/Ende ergänzt.
+- Mobile Werkzeugdarstellung bleibt unverändert als aufklappbares Menü erhalten.
+- Berechnungs-, Speicher-, Lade- und Berichtlogik nicht verändert.
+
 # Phase 39.02 – Werkzeugbeschriftungen vollständig sichtbar
 
 - Funktionsbezeichnung unter jedem Symbol der Desktop-Registerleiste wieder eingeblendet.

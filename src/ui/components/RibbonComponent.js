@@ -1,5 +1,5 @@
 // Druckverlust Pro – RibbonComponent
-// Phase 22.01: gruppiertes Ribbon mit klarer Priorität, Statusanzeige und mobilem Menü.
+// Phase 39.03: einzeiliges Ribbon mit Gruppen-Navigation, Überlaufsteuerung und Tastaturführung.
 
 import RibbonActions from '../core/RibbonActions.js?v=39.00';
 
@@ -74,6 +74,10 @@ export default class RibbonComponent {
     this.unsubscribe = null;
     this.boundDocumentClick = event => this.handleDocumentClick(event);
     this.boundDocumentKeydown = event => this.handleDocumentKeydown(event);
+    this.boundRibbonScroll = () => this.updateScrollControls();
+    this.boundRibbonResize = () => this.updateScrollControls();
+    this.resizeObserver = null;
+    this.lastSelectionType = null;
   }
 
   render() {
@@ -116,9 +120,31 @@ export default class RibbonComponent {
           <span data-ribbon-context-text>Projekt bereit</span>
         </div>
 
-        <nav id="dp-ribbon-tools" class="dp-tabs dp-ribbon-groups" aria-label="Werkzeuge">
-          ${RIBBON_GROUPS.map(group => this.renderGroup(group)).join('')}
-        </nav>
+        <div class="dp-ribbon-scroll-shell" data-ribbon-scroll-shell>
+          <button
+            type="button"
+            class="dp-ribbon-scroll-button dp-ribbon-scroll-button--previous"
+            data-ribbon-scroll="previous"
+            title="Werkzeugleiste nach links bewegen"
+            aria-label="Werkzeugleiste nach links bewegen"
+          >
+            ${this.icon('chevronLeft')}
+          </button>
+
+          <nav id="dp-ribbon-tools" class="dp-tabs dp-ribbon-groups" aria-label="Werkzeuge">
+            ${RIBBON_GROUPS.map(group => this.renderGroup(group)).join('')}
+          </nav>
+
+          <button
+            type="button"
+            class="dp-ribbon-scroll-button dp-ribbon-scroll-button--next"
+            data-ribbon-scroll="next"
+            title="Werkzeugleiste nach rechts bewegen"
+            aria-label="Werkzeugleiste nach rechts bewegen"
+          >
+            ${this.icon('chevronRight')}
+          </button>
+        </div>
       </div>
     `;
 
@@ -133,7 +159,13 @@ export default class RibbonComponent {
         <div class="dp-ribbon-group-actions">
           ${group.actions.map(action => this.renderAction(action)).join('')}
         </div>
-        <span class="dp-ribbon-group-label">${group.label}</span>
+        <button
+          type="button"
+          class="dp-ribbon-group-label"
+          data-ribbon-jump="${group.id}"
+          title="Zur Werkzeuggruppe ${group.label} springen"
+          aria-label="Zur Werkzeuggruppe ${group.label} springen"
+        >${group.label}</button>
       </section>
     `;
   }
@@ -176,6 +208,30 @@ export default class RibbonComponent {
       event.stopPropagation();
       this.setMenuOpen(!this.root.classList.contains('is-menu-open'));
     });
+
+    this.root.querySelectorAll('[data-ribbon-scroll]').forEach(button => {
+      button.addEventListener('click', () => this.scrollRibbon(button.dataset.ribbonScroll));
+    });
+
+    this.root.querySelectorAll('[data-ribbon-jump]').forEach(button => {
+      button.addEventListener('click', () => this.scrollGroupIntoView(button.dataset.ribbonJump));
+    });
+
+    const ribbonNav = this.getRibbonNav();
+    ribbonNav?.removeEventListener('scroll', this.boundRibbonScroll);
+    ribbonNav?.addEventListener('scroll', this.boundRibbonScroll, { passive: true });
+    ribbonNav?.addEventListener('keydown', event => this.handleRibbonNavigationKeydown(event));
+
+    this.resizeObserver?.disconnect();
+    if (typeof ResizeObserver !== 'undefined' && ribbonNav) {
+      this.resizeObserver = new ResizeObserver(this.boundRibbonResize);
+      this.resizeObserver.observe(ribbonNav);
+    } else {
+      window.removeEventListener?.('resize', this.boundRibbonResize);
+      window.addEventListener?.('resize', this.boundRibbonResize, { passive: true });
+    }
+
+    requestAnimationFrame(() => this.updateScrollControls());
 
     document.removeEventListener('click', this.boundDocumentClick, true);
     document.addEventListener('click', this.boundDocumentClick, true);
@@ -278,12 +334,100 @@ export default class RibbonComponent {
         contextText.textContent = 'Projekt gespeichert und aktuell';
       }
     }
+
+    this.updateCurrentGroup();
+    this.revealCurrentAction(selectionType);
+    requestAnimationFrame(() => this.updateScrollControls());
+  }
+
+  getRibbonNav() {
+    return this.root.querySelector('#dp-ribbon-tools');
+  }
+
+  scrollRibbon(direction) {
+    const ribbonNav = this.getRibbonNav();
+    if (!ribbonNav) return;
+
+    const distance = Math.max(280, Math.round(ribbonNav.clientWidth * 0.72));
+    const multiplier = direction === 'previous' ? -1 : 1;
+    ribbonNav.scrollBy({ left: distance * multiplier, behavior: 'smooth' });
+  }
+
+  scrollGroupIntoView(groupId) {
+    const group = this.root.querySelector(`[data-ribbon-group="${groupId}"]`);
+    if (!group) return;
+
+    group.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    const firstAction = group.querySelector('.dp-ribbon-action');
+    requestAnimationFrame(() => firstAction?.focus({ preventScroll: true }));
+  }
+
+  updateScrollControls() {
+    const ribbonNav = this.getRibbonNav();
+    if (!ribbonNav) return;
+
+    const maxScrollLeft = Math.max(0, ribbonNav.scrollWidth - ribbonNav.clientWidth);
+    const hasOverflow = maxScrollLeft > 2;
+    const canScrollPrevious = hasOverflow && ribbonNav.scrollLeft > 2;
+    const canScrollNext = hasOverflow && ribbonNav.scrollLeft < maxScrollLeft - 2;
+
+    this.root.classList.toggle('has-ribbon-overflow', hasOverflow);
+    this.root.classList.toggle('can-scroll-ribbon-previous', canScrollPrevious);
+    this.root.classList.toggle('can-scroll-ribbon-next', canScrollNext);
+
+    const previousButton = this.root.querySelector('[data-ribbon-scroll="previous"]');
+    const nextButton = this.root.querySelector('[data-ribbon-scroll="next"]');
+
+    if (previousButton) previousButton.disabled = !canScrollPrevious;
+    if (nextButton) nextButton.disabled = !canScrollNext;
+  }
+
+  updateCurrentGroup() {
+    this.root.querySelectorAll('.dp-ribbon-group.is-current-group').forEach(group => {
+      group.classList.remove('is-current-group');
+    });
+
+    const currentAction = this.root.querySelector('.dp-ribbon-action.is-current');
+    currentAction?.closest('.dp-ribbon-group')?.classList.add('is-current-group');
+  }
+
+  revealCurrentAction(selectionType) {
+    if (selectionType === this.lastSelectionType) return;
+    this.lastSelectionType = selectionType;
+
+    const currentAction = this.root.querySelector('.dp-ribbon-action.is-current');
+    if (!currentAction || window.matchMedia?.('(max-width: 900px)').matches) return;
+
+    requestAnimationFrame(() => {
+      currentAction.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    });
+  }
+
+  handleRibbonNavigationKeydown(event) {
+    const current = event.target.closest?.('.dp-ribbon-action');
+    if (!current) return;
+
+    const actions = [...this.root.querySelectorAll('.dp-ribbon-action:not(:disabled)')];
+    const index = actions.indexOf(current);
+    if (index < 0) return;
+
+    let target = null;
+    if (event.key === 'ArrowRight') target = actions[(index + 1) % actions.length];
+    if (event.key === 'ArrowLeft') target = actions[(index - 1 + actions.length) % actions.length];
+    if (event.key === 'Home') target = actions[0];
+    if (event.key === 'End') target = actions.at(-1);
+    if (!target) return;
+
+    event.preventDefault();
+    target.focus();
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   }
 
   setMenuOpen(isOpen) {
     this.root.classList.toggle('is-menu-open', Boolean(isOpen));
     const toggle = this.root.querySelector('[data-ribbon-menu-toggle]');
     toggle?.setAttribute('aria-expanded', String(Boolean(isOpen)));
+    requestAnimationFrame(() => this.updateScrollControls());
   }
 
   handleDocumentClick(event) {
@@ -322,6 +466,8 @@ export default class RibbonComponent {
       layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
       tasks: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/><path d="m7 8 .8.8L9.5 7"/>',
       search: '<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>',
+      chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+      chevronRight: '<path d="m9 18 6-6-6-6"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
     };
 

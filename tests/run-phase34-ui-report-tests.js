@@ -21,7 +21,7 @@ const css = read('src/ui/phase34_00.css');
 const version = read('src/core/appVersion.js');
 
 assert.match(appHtml, /phase34_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=39\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=39\.03/); checks += 1;
 assert.match(ribbon, /showSystemManager/); checks += 1;
 assert.match(ribbon, /label: 'Anlagen'/); checks += 1;
 assert.match(sidebar, /type: 'systemManager'/); checks += 1;

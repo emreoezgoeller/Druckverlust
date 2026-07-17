@@ -24,7 +24,7 @@ const reportSource = read('src/report/ReportEngine.js');
 const packageJson = JSON.parse(read('package.json'));
 
 assert.match(appHtml, /phase39_00\.css\?v=39\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=39\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=39\.03/); checks += 1;
 assert.match(appHtml, /ApplicationShell\.css\?v=39\.00/); checks += 1;
 assert.match(main, /Phase 39\.00/); checks += 1;
 assert.match(main, /WorkspaceComponent\.js\?v=39\.00/); checks += 1;
