@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.16.0 · Phase 39.00 · Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle.
+**Aktueller Stand:** Version 1.17.0 · Phase 40.00 · Sitzungsbezogener Änderungsverlauf mit Rückgängig, Wiederholen und Wiederherstellungspunkten.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, sitzungsbezogener Änderungsverlauf mit Rückgängig/Wiederholen, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
 ## Lokal starten
 
@@ -44,7 +44,7 @@ Druckverlust/
 │   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
-│   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, Suche, Projektindex, Abhängigkeiten, Konfliktprüfung, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
+│   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, Suche, Verlauf, Projektindex, Abhängigkeiten, Konfliktprüfung, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
 │   ├── quality/               herstellerneutrale Engineering-QS
 │   ├── revision/              technische Snapshots und Revisionsvergleich
 │   ├── report/                Bericht-, CSV- und PDF-Engine
@@ -58,6 +58,25 @@ Druckverlust/
 ├── tests/                     Node- und Browserprüfungen
 └── docs/                      technische Dokumentation
 ```
+
+## Phase 40.00
+
+Unter **Projekt → Verlauf** steht jetzt ein sitzungsbezogener Änderungsverlauf zur Verfügung:
+
+- automatische Zusammenfassung zusammengehöriger Projektänderungen,
+- Rückgängig und Wiederholen über Ribbon, Verlaufsansicht und Tastatur,
+- Tastenkürzel `Ctrl + Z`, `Ctrl + Y` beziehungsweise `Ctrl + Shift + Z`,
+- eigene Verlaufsansicht mit aktuellem Stand, älteren Ständen und Redo-Zweig,
+- gezielte Wiederherstellung beliebiger Sitzungsstände,
+- manuelle Kennzeichnung wichtiger Wiederherstellungspunkte,
+- Filter für ältere, spätere und markierte Stände,
+- Export des Sitzungsjournals als CSV,
+- Schutz der nativen Rückgängig-Funktion innerhalb von Eingabefeldern,
+- automatische Neuberechnung und Wiederherstellung der betroffenen Auswahl nach Undo/Redo,
+- Begrenzung auf maximal 40 Projektstände, damit grosse Projekte kontrolliert im Arbeitsspeicher bleiben,
+- Integration in Ribbon, Sidebar, Statusleiste und Aufgaben-Schnellzugriffe.
+
+Der Änderungsverlauf gilt bewusst nur für die aktuelle Browser-Sitzung und wird nicht in der `.dvp`-Datei gespeichert. Für dauerhafte Sicherungen bleiben die bestehenden Projektdateien, Revisionsstände und Sicherungsarchive zuständig.
 
 ## Phase 39.00
 

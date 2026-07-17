@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=39.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=40.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -118,6 +118,8 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Layout', label: 'Projektsuche-CSS', path: `src/ui/phase38_00.css?v=${version}` },
     { area: 'Struktur', label: 'Abhängigkeiten und Konfliktprüfung', path: `src/project/ProjectDependencyEngine.js?v=${version}` },
     { area: 'Layout', label: 'Abhängigkeitsanalyse-CSS', path: `src/ui/phase39_00.css?v=${version}` },
+    { area: 'Verlauf', label: 'Änderungsverlauf und Wiederherstellung', path: `src/project/ProjectHistoryEngine.js?v=${version}` },
+    { area: 'Layout', label: 'Änderungsverlauf-CSS', path: `src/ui/phase40_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
@@ -296,6 +298,9 @@ function checkUiShell() {
     'newProject',
     'openProject',
     'saveProject',
+    'undoProjectChange',
+    'redoProjectChange',
+    'showProjectHistory',
     'addSection',
     'addFormPart',
     'addSpecialComponent',

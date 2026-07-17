@@ -1,7 +1,7 @@
 // Druckverlust Pro – KeyboardShortcuts
 // Zentrale Tastaturbedienung für schnelle Projektarbeit.
 
-import RibbonActions from './RibbonActions.js?v=39.00';
+import RibbonActions from './RibbonActions.js?v=40.00';
 
 export default class KeyboardShortcuts {
   constructor(state, options = {}) {
@@ -43,7 +43,14 @@ export default class KeyboardShortcuts {
     if (hasModifier && event.shiftKey && key === 'w') return this.run(event, 'showProjectStandardization');
     if (hasModifier && event.shiftKey && key === 't') return this.run(event, 'showProjectTaskCenter');
     if (hasModifier && event.shiftKey && key === 'd') return this.run(event, 'showProjectDependencies');
+    if (hasModifier && event.shiftKey && key === 'h') return this.run(event, 'showProjectHistory');
     if (hasModifier && (key === 'k' || (event.shiftKey && key === 'f'))) return this.run(event, 'showProjectSearch');
+
+    if (hasModifier && !this.isEditableTarget(event.target)) {
+      if (key === 'z' && event.shiftKey) return this.run(event, 'redoProjectChange');
+      if (key === 'z') return this.run(event, 'undoProjectChange');
+      if (key === 'y') return this.run(event, 'redoProjectChange');
+    }
 
     if (hasModifier) {
       if (key === 's') return this.run(event, 'saveProject');

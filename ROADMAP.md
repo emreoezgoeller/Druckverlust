@@ -1,5 +1,15 @@
 # Roadmap
 
+## Phase 40.00 – abgeschlossen
+
+- sitzungsbezogener Projektverlauf mit maximal 40 kompakten Projektständen,
+- Rückgängig und Wiederholen über Ribbon, Tastatur und eigene Verlaufsansicht,
+- automatische Bündelung zusammengehöriger Eingabe- und Berechnungsänderungen,
+- Wiederherstellung beliebiger Sitzungsstände mit Auswahl- und Neuberechnungswiederherstellung,
+- markierbare Wiederherstellungspunkte, Filter und CSV-Export,
+- Schutz der nativen Eingabefeld-Undo-Funktion,
+- Integration in Sidebar, Statusleiste und Aufgaben-Schnellzugriffe.
+
 ## Phase 39.00 – abgeschlossen
 
 - projektweiter Strukturgraph für Anlagen, Teilstrecken, Formteile, Sonderbauteile, Aufgaben, Revisionen und Varianten,
@@ -132,6 +142,7 @@
 - Phase 37.00: Projekt-Navigator, Aufgaben, Favoriten und Schnellzugriffe
 - Phase 38.00: globale Projektsuche, Projektindex, Querverweise und Sprungmarken
 - Phase 39.00: Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle
+- Phase 40.00: Sitzungsverlauf, Rückgängig/Wiederholen und Wiederherstellungspunkte
 
 ## Bewusst ausgeschlossen
 
@@ -141,6 +152,7 @@
 
 ## Nächste sinnvolle Schritte
 
+- Phase 40.00 im Büroablauf mit längeren Eingabeserien, Strukturänderungen und gezielten Wiederherstellungen prüfen.
 - Phase 39.00 mit realen Mehranlagen-Projekten prüfen und projektspezifische Abhängigkeiten sowie Konflikthinweise fachlich gegenprüfen.
 - Phase 36.00 mit realen Mehranlagen-Projekten prüfen und projektspezifische Prüfprofile fachlich feinjustieren.
 - Systemvorlagen und Massenbearbeitung zunächst an Projektkopien beziehungsweise lokalen Sicherungen im Büroablauf gegenprüfen.

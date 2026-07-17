@@ -11,8 +11,8 @@ const [appHtml, main, ribbon, css] = await Promise.all([
 
 const checks = [
   [appHtml.includes('phase39_03.css?v=39.03'), 'Phase-39.03-CSS ist eingebunden.'],
-  [appHtml.includes('src/main.js?v=39.03'), 'Main-Modul verwendet Cache-Version 39.03.'],
-  [main.includes('RibbonComponent.js?v=39.03'), 'RibbonComponent wird cache-sicher geladen.'],
+  [appHtml.includes('src/main.js?v=40.00'), 'Main-Modul verwendet den aktuellen Cache-Stand.'],
+  [main.includes('RibbonComponent.js?v=40.00'), 'RibbonComponent wird cache-sicher geladen.'],
   [ribbon.includes('data-ribbon-scroll-shell'), 'Scroll-Shell ist vorhanden.'],
   [ribbon.includes('data-ribbon-scroll="previous"'), 'Linke Überlaufnavigation ist vorhanden.'],
   [ribbon.includes('data-ribbon-scroll="next"'), 'Rechte Überlaufnavigation ist vorhanden.'],

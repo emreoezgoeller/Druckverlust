@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
-// Phase 39.03: einzeiliges Ribbon mit Gruppen-Navigation, Überlaufsteuerung und Tastaturführung.
+// Phase 40.00: einzeiliges Ribbon mit Sitzungsverlauf, Rückgängig/Wiederholen und Tastaturführung.
 
-import RibbonActions from '../core/RibbonActions.js?v=39.00';
+import RibbonActions from '../core/RibbonActions.js?v=40.00';
 
 const RIBBON_GROUPS = [
   {
@@ -9,6 +9,9 @@ const RIBBON_GROUPS = [
     label: 'Projekt',
     actions: [
       { action: 'showDashboard', label: 'Start', icon: 'home', title: 'Zur Projekt- und Anlagenübersicht (Alt+Home)' },
+      { action: 'undoProjectChange', label: 'Rückgängig', icon: 'undo', title: 'Letzte Projektänderung rückgängig machen (Ctrl+Z)' },
+      { action: 'redoProjectChange', label: 'Wiederholen', icon: 'redo', title: 'Rückgängig gemachte Änderung wiederholen (Ctrl+Y)' },
+      { action: 'showProjectHistory', label: 'Verlauf', icon: 'history', title: 'Sitzungsverlauf und Wiederherstellungspunkte öffnen (Ctrl+Shift+H)' },
       { action: 'showProjectSearch', label: 'Suche', icon: 'search', title: 'Projektweit suchen, Querverweise und Sprungmarken öffnen (Ctrl+K)' },
       { action: 'showProjectDependencies', label: 'Struktur', icon: 'network', title: 'Abhängigkeiten, Änderungsfolgen und Strukturkonflikte öffnen (Strg+Umschalt+D)' },
       { action: 'showSystemManager', label: 'Anlagen', icon: 'layers', title: 'Anlagen anlegen, duplizieren, ordnen und vergleichen (Strg+Umschalt+A)' },
@@ -76,6 +79,7 @@ export default class RibbonComponent {
     this.boundDocumentKeydown = event => this.handleDocumentKeydown(event);
     this.boundRibbonScroll = () => this.updateScrollControls();
     this.boundRibbonResize = () => this.updateScrollControls();
+    this.boundHistoryChange = () => this.updateState();
     this.resizeObserver = null;
     this.lastSelectionType = null;
   }
@@ -233,6 +237,9 @@ export default class RibbonComponent {
 
     requestAnimationFrame(() => this.updateScrollControls());
 
+    window.removeEventListener?.('druckverlust:history-change', this.boundHistoryChange);
+    window.addEventListener?.('druckverlust:history-change', this.boundHistoryChange);
+
     document.removeEventListener('click', this.boundDocumentClick, true);
     document.addEventListener('click', this.boundDocumentClick, true);
 
@@ -250,6 +257,9 @@ export default class RibbonComponent {
     const saveButton = this.root.querySelector('[data-action="saveProject"]');
     const calculateButton = this.root.querySelector('[data-action="calculate"]');
     const dashboardButton = this.root.querySelector('.dp-ribbon-groups [data-action="showDashboard"]');
+    const undoButton = this.root.querySelector('[data-action="undoProjectChange"]');
+    const redoButton = this.root.querySelector('[data-action="redoProjectChange"]');
+    const historyButton = this.root.querySelector('[data-action="showProjectHistory"]');
     const reportButton = this.root.querySelector('[data-action="showReport"]');
     const systemManagerButton = this.root.querySelector('[data-action="showSystemManager"]');
     const projectCockpitButton = this.root.querySelector('[data-action="showProjectCockpit"]');
@@ -274,12 +284,29 @@ export default class RibbonComponent {
     saveButton?.classList.toggle('needs-attention', hasUnsavedChanges);
     calculateButton?.classList.toggle('needs-attention', hasCalculationIssue);
 
+    const historyState = this.state.historyEngine?.getState?.() || { canUndo: false, canRedo: false, undoCount: 0, redoCount: 0 };
+    if (undoButton) {
+      undoButton.disabled = !historyState.canUndo;
+      undoButton.title = historyState.canUndo
+        ? `Letzte Projektänderung rückgängig machen (${historyState.undoCount} verfügbar)`
+        : 'Keine Projektänderung zum Rückgängigmachen vorhanden';
+    }
+    if (redoButton) {
+      redoButton.disabled = !historyState.canRedo;
+      redoButton.title = historyState.canRedo
+        ? `Projektänderung wiederholen (${historyState.redoCount} verfügbar)`
+        : 'Keine Projektänderung zum Wiederholen vorhanden';
+    }
+
     this.root.querySelectorAll('.dp-ribbon-action.is-current').forEach(button => {
       button.classList.remove('is-current');
       button.removeAttribute('aria-current');
     });
 
-    if (selectionType === 'projectSearch') {
+    if (selectionType === 'projectHistory') {
+      historyButton?.classList.add('is-current');
+      historyButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectSearch') {
       projectSearchButton?.classList.add('is-current');
       projectSearchButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'projectDependencies') {
@@ -466,6 +493,9 @@ export default class RibbonComponent {
       layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
       tasks: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/><path d="m7 8 .8.8L9.5 7"/>',
       search: '<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>',
+      undo: '<path d="M9 7 4 12l5 5"/><path d="M5 12h8a6 6 0 0 1 6 6v1"/>',
+      redo: '<path d="m15 7 5 5-5 5"/><path d="M19 12h-8a6 6 0 0 0-6 6v1"/>',
+      history: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/>',
       chevronLeft: '<path d="m15 18-6-6 6-6"/>',
       chevronRight: '<path d="m9 18 6-6-6-6"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',

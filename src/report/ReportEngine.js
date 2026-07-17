@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=39.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=40.00';
 import LicenseGate from '../licensing/LicenseGate.js';
 import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00';
 import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00';

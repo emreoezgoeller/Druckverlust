@@ -1,7 +1,7 @@
 // Druckverlust Pro – StatusBarComponent
 // Zeigt Statusinformationen der Anwendung.
 
-import { APP_BUILD_LABEL } from '../../core/appVersion.js?v=39.00';
+import { APP_BUILD_LABEL } from '../../core/appVersion.js?v=40.00';
 
 export default class StatusBarComponent {
   constructor(rootElement, state) {
@@ -19,6 +19,7 @@ export default class StatusBarComponent {
         this.state.lastAutoSaveAt = event.detail?.savedAt || null;
         this.render();
       });
+      window.addEventListener('druckverlust:history-change', () => this.render());
     }
 
     this.render();
@@ -33,6 +34,7 @@ export default class StatusBarComponent {
     const quality = this.getQualityStatus();
     const lastCalculation = this.getLastCalculationLabel();
     const autoSave = this.getAutoSaveLabel();
+    const history = this.state.historyEngine?.getState?.() || null;
 
     this.root.innerHTML = `
       <div class="dp-status-left">
@@ -43,7 +45,8 @@ export default class StatusBarComponent {
         Auswahl: ${label}
         ${lastCalculation ? `<span class="dp-status-muted"> · ${lastCalculation}</span>` : ''}
         ${autoSave ? `<span class="dp-status-muted"> · ${autoSave}</span>` : ''}
-        <span class="dp-status-muted dp-status-shortcuts"> · Ctrl+S speichern · Ctrl+K Suche · Alt+Home Start</span>
+        ${history ? `<span class="dp-status-muted"> · Verlauf ${history.undoCount}/${history.redoCount}</span>` : ''}
+        <span class="dp-status-muted dp-status-shortcuts"> · Ctrl+S speichern · Ctrl+Z rückgängig · Ctrl+K Suche</span>
       </div>
 
       <div class="dp-status-right">
@@ -153,6 +156,10 @@ export default class StatusBarComponent {
 
     if (selection.type === 'projectSearch') {
       return 'Projektsuche & Index';
+    }
+
+    if (selection.type === 'projectHistory') {
+      return 'Änderungsverlauf';
     }
 
     if (selection.type === 'projectDependencies') {

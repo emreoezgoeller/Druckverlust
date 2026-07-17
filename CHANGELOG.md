@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Phase 40.00 – Änderungsverlauf, Rückgängig und Wiederholen
+
+- Neue `ProjectHistoryEngine` für einen sitzungsbezogenen Verlauf mit maximal 40 Projektständen ergänzt.
+- Zusammengehörige Eingaben werden zeitlich gebündelt, damit das Tippen eines Werts nicht unnötig viele Einträge erzeugt.
+- Flüchtige Berechnungsergebnisse werden aus den Snapshots entfernt; fachliche Projekt-, Anlagen-, Teilstrecken- und Bauteildaten bleiben enthalten.
+- Rückgängig und Wiederholen im Ribbon mit vollständiger Beschriftung und zustandsabhängiger Deaktivierung ergänzt.
+- Tastenkürzel `Ctrl + Z`, `Ctrl + Y`, `Ctrl + Shift + Z` und `Ctrl + Shift + H` ergänzt.
+- Native Rückgängig-Funktion innerhalb von Eingabe-, Text- und Auswahlfeldern bleibt geschützt.
+- Neue Ansicht **Projekt → Verlauf** mit Sitzungsjournal, Filtern, aktuellem Stand, Redo-Zweig und gezielter Wiederherstellung ergänzt.
+- Manuell benennbare Wiederherstellungspunkte und CSV-Export des Verlaufs ergänzt.
+- Beim Wiederherstellen werden aktive Anlage beziehungsweise Elementauswahl rekonstruiert und das Projekt neu berechnet.
+- Verlauf in Sidebar, Statusleiste und Aufgaben-Schnellzugriffe integriert.
+- Neue responsive Phase-40-Oberfläche ergänzt.
+- Zwei neue Testgruppen mit 73 Einzelprüfungen ergänzt; vollständige bestehende Testsuite weiterhin bestanden.
+- App-Version auf 1.17.0 und Cachekennung auf 40.00 erhöht.
+- Phase 25 Ventilatorauslegung und Phase 27 Hersteller-Bauteildatenbank bleiben vollständig ausgeschlossen.
+
 ## Phase 39.03 – Registerführung und Überlaufnavigation
 
 - Einzeilige Registerleiste um sichtbare Links-/Rechts-Navigation ergänzt.
@@ -918,3 +935,13 @@
 - Fehler in der Hilfe-Aktionsbindung bereinigt, sodass Projekt, Anlagenübersicht, Formteil-Assistent und Bericht zuverlässig geöffnet werden.
 - Demo-Projekt mit klarerem Zweck und Berichtshinweis ergänzt.
 - Cache-Busting auf `19.07` erhöht.
+
+## Phase 40.10 – Produktstartseite aktualisiert
+
+- `index.html` vollständig auf den Funktionsstand von Phase 40.00 gebracht.
+- Neue Produktvorschau im Design der aktuellen Druckverlust-Pro-Oberfläche.
+- Aktuelle Bereiche für Engineering-QS, Anlagenschema, Projektsteuerung, Professional Report und Projektsicherheit ergänzt.
+- Veraltete Phase-21.12-, Lizenzmatrix- und Roadmap-Aussagen von der Startseite entfernt.
+- Responsive Navigation, aktive Abschnittsmarkierung und mobile Menüführung ergänzt.
+- Lokaler Start-Hinweis für `file://` weiterhin erhalten.
+- Herstellerneutralität sowie Ausschluss von Ventilatorauslegung und Herstellerdatenbank sichtbar klargestellt.

@@ -6,7 +6,7 @@ import ProjectFileDiagnostics from '../diagnostics/ProjectFileDiagnostics.js';
 import ProjectDiagnostics from '../diagnostics/ProjectDiagnostics.js';
 import CalculationDiagnostics from '../diagnostics/CalculationDiagnostics.js';
 import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=33.00';
-import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=33.00';
+import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=40.00';
 
 export const PROJECT_ARCHIVE_FILE_TYPE = 'DruckverlustProArchive';
 export const PROJECT_ARCHIVE_SCHEMA_VERSION = '1.0.0';

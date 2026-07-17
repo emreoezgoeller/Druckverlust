@@ -21,7 +21,7 @@ const report = read('src/report/ReportEngine.js');
 const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
 
 assert.match(appHtml, /phase35_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=39\.03/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=40\.00/); checks += 1;
 assert.match(ribbon, /showProjectCockpit/); checks += 1;
 assert.match(ribbon, /label: 'Cockpit'/); checks += 1;
 assert.match(sidebar, /type: 'projectCockpit'/); checks += 1;
@@ -35,8 +35,8 @@ assert.match(report, /renderProjectCockpitPage/); checks += 1;
 assert.match(report, /Projektweite QS-Matrix/); checks += 1;
 assert.match(deployment, /ProjectPortfolioQualityEngine/); checks += 1;
 assert.match(deployment, /phase35_00\.css/); checks += 1;
-assert.match(version, /APP_RELEASE = '39\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '1\.16\.0'/); checks += 1;
+assert.match(version, /APP_RELEASE = '40\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '1\.17\.0'/); checks += 1;
 
 const project = createDemoProject();
 project.projectNumber = 'P-35';

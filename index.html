@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Druckverlust Pro – Druckverlustberechnung online</title>
-  <meta name="description" content="Druckverlust Pro ist ein professionelles Web-Tool für Druckverlustberechnung, Formteil-Nachweis, QS und PDF-Bericht." />
+  <title>Druckverlust Pro – Professionelle Druckverlustberechnung</title>
+  <meta name="description" content="Druckverlust Pro verbindet Kanal- und Rohrberechnung, Formteile, Engineering-QS, Anlagenschema, Variantenvergleich, Revisionsführung und Professional Report in einer herstellerneutralen Web-Anwendung." />
   <meta name="application-name" content="Druckverlust Pro" />
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#073a6f" />
+  <meta name="theme-color" content="#061a2f" />
   <link rel="canonical" href="https://emreoezgoeller.github.io/Druckverlust/" />
   <link rel="icon" href="favicon.ico" />
   <link rel="manifest" href="site.webmanifest" />
@@ -16,14 +16,14 @@
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="de_CH" />
   <meta property="og:site_name" content="Druckverlust Pro" />
-  <meta property="og:title" content="Druckverlust Pro – Druckverlustberechnung online" />
-  <meta property="og:description" content="Teilstrecken, Formteile, Sonderbauteile, QS und PDF-Bericht in einer professionellen Web-Oberfläche." />
+  <meta property="og:title" content="Druckverlust Pro – Professionelle Druckverlustberechnung" />
+  <meta property="og:description" content="Vom Kanalnetz bis zur revisionssicheren Abgabe: Berechnung, Engineering-QS, Schema, Simulation und Bericht in einer Oberfläche." />
   <meta property="og:url" content="https://emreoezgoeller.github.io/Druckverlust/" />
   <meta property="og:image" content="https://emreoezgoeller.github.io/Druckverlust/assets/report/duct-network-hero.png" />
-  <meta property="og:image:alt" content="Druckverlust Pro Bericht- und Kanalnetz-Vorschau" />
+  <meta property="og:image:alt" content="Druckverlust Pro Kanalnetz und Berichtsvorschau" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Druckverlust Pro – Druckverlustberechnung online" />
-  <meta name="twitter:description" content="Professionelles Web-Tool für Lüftungs-Druckverlustberechnung mit QS und PDF-Bericht." />
+  <meta name="twitter:title" content="Druckverlust Pro – Professionelle Druckverlustberechnung" />
+  <meta name="twitter:description" content="Herstellerneutrale Druckverlustberechnung mit Engineering-QS, Anlagenschema und Professional Report." />
   <meta name="twitter:image" content="https://emreoezgoeller.github.io/Druckverlust/assets/report/duct-network-hero.png" />
   <script type="application/ld+json">
   {
@@ -32,407 +32,305 @@
     "name": "Druckverlust Pro",
     "applicationCategory": "EngineeringApplication",
     "operatingSystem": "Web",
-    "description": "Web-Tool für Druckverlustberechnung, Formteil-Nachweis, QS und PDF-Bericht.",
+    "softwareVersion": "1.17.0",
+    "description": "Herstellerneutrale Web-Anwendung für Druckverlustberechnung, Engineering-QS, Anlagenschema, Variantenvergleich, Revisionsführung und Bericht.",
     "creator": { "@type": "Person", "name": "Emre Özgöller" }
   }
   </script>
-  <link rel="stylesheet" href="src/landing/landing.css?v=21.12" />
+  <link rel="stylesheet" href="src/landing/landing-phase40.css?v=40.10" />
 </head>
 <body>
+  <svg class="dp-symbols" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" /></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" /></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 7v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7l8-4Z" /><path d="m8.5 12 2.2 2.2 4.8-5" /></symbol>
+    <symbol id="i-network" viewBox="0 0 24 24"><rect x="3" y="9" width="6" height="6" rx="1.5" /><rect x="15" y="3" width="6" height="6" rx="1.5" /><rect x="15" y="15" width="6" height="6" rx="1.5" /><path d="M9 12h3a3 3 0 0 0 3-3M12 12h3M12 12a3 3 0 0 1 3 3" /></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3z" /><path d="M3 7V5h7l2 2" /></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M4 7v5h5M5.5 16A8 8 0 1 0 4 12" /><path d="M12 8v5l3 2" /></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h8M16 18h4" /><circle cx="16" cy="6" r="2" /><circle cx="9" cy="12" r="2" /><circle cx="14" cy="18" r="2" /></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5z" /><path d="M8 3v6h8V3M8 21v-7h8v7" /></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></symbol>
+  </svg>
+
   <a class="dp-skip-link" href="#hauptinhalt">Zum Inhalt springen</a>
-  <header class="dp-landing-header">
-    <a class="dp-landing-brand" href="index.html" aria-label="Druckverlust Pro Produktseite">
+
+  <header class="dp-site-header" data-site-header>
+    <a class="dp-brand" href="index.html" aria-label="Druckverlust Pro Startseite">
       <img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" />
-      <span>
-        <strong>Druckverlust Pro</strong>
-        <em>Professional</em>
-      </span>
+      <span><strong>Druckverlust Pro</strong><em>Professional</em></span>
     </a>
-    <nav aria-label="Produktnavigation">
+
+    <button class="dp-menu-toggle" type="button" aria-expanded="false" aria-controls="produktnavigation" data-menu-toggle>
+      <svg aria-hidden="true"><use href="#i-menu" /></svg>
+      <span>Menü</span>
+    </button>
+
+    <nav id="produktnavigation" class="dp-site-nav" aria-label="Produktnavigation" data-site-nav>
+      <a href="#ueberblick">Überblick</a>
       <a href="#funktionen">Funktionen</a>
-      <a href="#ablauf">So funktioniert’s</a>
-      <a href="#berichte">Berichte</a>
-      <a href="#beispiel">Beispiel</a>
-      <a href="#einsatz">Einsatz</a>
-      <a href="#lizenz">Lizenz</a>
-      <a href="#weiterentwicklung">Ausblick</a>
-      <a href="#kontakt">Kontakt</a>
+      <a href="#engineering">Engineering</a>
+      <a href="#anlagenschema">Anlagenschema</a>
+      <a href="#projektsteuerung">Projekt</a>
+      <a href="#bericht">Bericht</a>
+      <a href="#sicherheit">Sicherheit</a>
       <a href="app.html?help=1">Anleitung</a>
-      <a class="dp-nav-button" href="app.html">Tool starten</a>
+      <a class="dp-nav-cta" href="app.html">Tool starten <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
     </nav>
   </header>
 
   <main id="hauptinhalt">
-    <section class="dp-hero">
+    <section id="ueberblick" class="dp-hero dp-section-shell">
       <div class="dp-hero-copy">
-        <span class="dp-eyebrow">Phase 21.12 · Bereinigter und geprüfter Projektstand</span>
-        <h1>Druckverlustberechnung sauber, nachvollziehbar und berichtsfertig.</h1>
+        <div class="dp-kicker-row">
+          <span class="dp-kicker">Aktueller Stand · Phase 40.00</span>
+          <span class="dp-status"><i></i> Professional Projektworkflow</span>
+        </div>
+        <h1>Vom Kanalnetz bis zur <span>revisionssicheren Abgabe.</span></h1>
         <p>
-          Druckverlust Pro verbindet Teilstrecken, Formteile, Sonderbauteile, automatische QS und PDF-Bericht in einer Oberfläche.
-          Mit Demo-Projekt und Beispielbericht kannst du den Ablauf sofort testen – ohne eigene Projektdaten.
+          Druckverlust Pro verbindet Druckverlustberechnung, Formteile, Engineering-QS, interaktives Anlagenschema,
+          Variantenvergleich, Projektsteuerung und Professional Report in einer klaren, herstellerneutralen Oberfläche.
         </p>
         <div class="dp-hero-actions">
-          <a class="dp-primary" href="app.html">Tool starten</a>
-          <a class="dp-secondary" href="app.html?demo=1">Demo-Projekt testen</a>
+          <a class="dp-button dp-button-primary" href="app.html">Tool starten <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
+          <a class="dp-button dp-button-secondary" href="app.html?demo=1">Demo-Projekt öffnen</a>
+          <a class="dp-text-link" href="app.html?help=1">Bedienungsanleitung</a>
         </div>
-        <a class="dp-beta-inline-link" href="beta.html">Öffentliche Beta · Testhinweise und Status</a>
-        <ul class="dp-hero-points">
-          <li>Automatische Berechnung von Kanal/Rohr, Formteilen und Sonderbauteilen</li>
-          <li>Projekt-, Rechen- und Export-QS für saubere Abgaben</li>
-          <li>PDF-/HTML-Bericht mit nachvollziehbarer Druckverlust-Aufteilung</li>
-        </ul>
+        <div class="dp-hero-proof" aria-label="Kernmerkmale">
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Herstellerneutral</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Lokale Projektdateien</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Mehranlagenfähig</span>
+        </div>
       </div>
-      <div class="dp-hero-card" aria-label="Produktvorschau">
-        <div class="dp-card-top">
-          <span></span><span></span><span></span>
+
+      <div class="dp-product-window" aria-label="Vorschau der Druckverlust-Pro-Oberfläche">
+        <div class="dp-window-ribbon">
+          <div class="dp-window-brand"><img src="assets/logo/eo-logo.png" alt="" /><span>Druckverlust Pro<small>Professional</small></span></div>
+          <div class="dp-window-tools" aria-hidden="true">
+            <b class="is-active">Start</b><b>Projekt</b><b>Berechnung</b><b>Engineering</b><b>Ausgabe</b>
+          </div>
+          <span class="dp-window-save"><i></i> Gespeichert</span>
         </div>
-        <h2>Projektübersicht</h2>
-        <div class="dp-preview-grid">
-          <div><span>Gesamt</span><strong>185.4 Pa</strong></div>
-          <div><span>Teilstrecken</span><strong>5</strong></div>
-          <div><span>Formteile</span><strong>8</strong></div>
-          <div><span>QS</span><strong>OK</strong></div>
-        </div>
-        <div class="dp-preview-table">
-          <div><b>TS</b><b>v</b><b>Δp</b></div>
-          <div><span>Zuluft 01</span><span>3.1 m/s</span><span>24.8 Pa</span></div>
-          <div><span>Bogen</span><span>ζ 0.24</span><span>3.9 Pa</span></div>
-          <div><span>Filter</span><span>Sonder</span><span>80.0 Pa</span></div>
+        <div class="dp-window-body">
+          <aside class="dp-window-sidebar">
+            <strong>Projektstruktur</strong>
+            <div class="dp-window-search"><svg aria-hidden="true"><use href="#i-search" /></svg>Projekt durchsuchen</div>
+            <span class="dp-tree-item is-selected">DEMO-244.1<small>Beispielprojekt</small></span>
+            <span class="dp-tree-item">Zuluftanlage Demo<small>5 Teilstrecken</small></span>
+            <span class="dp-tree-item">Projektcockpit<small>QS · Aufgaben</small></span>
+          </aside>
+          <div class="dp-window-workspace">
+            <div class="dp-workspace-title">
+              <span><small>PROJEKTSTAMM</small><strong>Beispielprojekt Druckverlust Pro</strong></span>
+              <span class="dp-active-system"><small>AKTIVE ANLAGE</small><strong>Zuluftanlage Demo</strong></span>
+            </div>
+            <div class="dp-dashboard-grid">
+              <article><svg aria-hidden="true"><use href="#i-calc" /></svg><span>Gesamtdruckverlust</span><strong>154.5 Pa</strong></article>
+              <article><svg aria-hidden="true"><use href="#i-network" /></svg><span>Teilstrecken</span><strong>5</strong></article>
+              <article><svg aria-hidden="true"><use href="#i-shield" /></svg><span>Engineering-QS</span><strong>92 / 100</strong></article>
+              <article><svg aria-hidden="true"><use href="#i-file" /></svg><span>Projektstatus</span><strong>Bereit</strong></article>
+            </div>
+            <div class="dp-workflow-preview">
+              <div class="dp-workflow-head"><strong>Was als Nächstes?</strong><span>Bereit</span></div>
+              <ol><li class="is-done">Projekt</li><li class="is-done">Teilstrecken</li><li class="is-done">Formteile</li><li class="is-done">QS</li><li>Bericht</li></ol>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="dp-value-strip" aria-label="Kurzvorteile">
-      <article>
-        <strong>Ohne Excel-Chaos</strong>
-        <span>Projekt, Teilstrecken und Formteile bleiben in einer sauberen Struktur.</span>
-      </article>
-      <article>
-        <strong>Nachvollziehbar</strong>
-        <span>Δp wird getrennt nach Kanal/Rohr, Formteilen und Sonderbauteilen dargestellt.</span>
-      </article>
-      <article>
-        <strong>Berichtsfertig</strong>
-        <span>Die Druckansicht ist für PDF-Abgabe und interne Kontrolle vorbereitet.</span>
-      </article>
+    <section class="dp-metric-strip dp-section-shell" aria-label="Produktkennwerte">
+      <article><strong>14</strong><span>geprüfte Formteiltypen</span></article>
+      <article><strong>Mehranlagen</strong><span>Zuluft, Abluft, Aussenluft und Fortluft</span></article>
+      <article><strong>40</strong><span>Projektstände für Rückgängig/Wiederholen</span></article>
+      <article><strong>3 Formate</strong><span>.dvp · .dvpa · .dvph</span></article>
     </section>
 
-    <section id="funktionen" class="dp-section">
-      <div class="dp-section-head">
-        <span class="dp-eyebrow">Funktionen</span>
-        <h2>Alles, was für den Nachweis wichtig ist.</h2>
+    <section id="funktionen" class="dp-section dp-section-shell">
+      <div class="dp-section-heading">
+        <span class="dp-kicker">Kernfunktionen</span>
+        <h2>Eine Fachanwendung statt lose Einzellösungen.</h2>
+        <p>Alle Bereiche greifen auf dasselbe Projektmodell zu. Änderungen bleiben nachvollziehbar und müssen nicht zwischen Tabellen übertragen werden.</p>
       </div>
       <div class="dp-feature-grid">
         <article>
-          <h3>Teilstrecken</h3>
-          <p>Kanal und Rohr mit Luftmenge, Geometrie, Geschwindigkeit, Reibung und Druckverlust.</p>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-calc" /></svg></span>
+          <h3>Druckverlustberechnung</h3>
+          <p>Rechteckkanal und Rundrohr mit Luftmenge, Geschwindigkeit, Reibung, Formteil- und Gesamtdruckverlust.</p>
+          <ul><li>Automatische Neuberechnung</li><li>Teilstreckenbezogene Ergebnisse</li><li>Nachvollziehbare Verlustaufteilung</li></ul>
         </article>
         <article>
-          <h3>Formteile</h3>
-          <p>Bibliothek mit Bildern, Grössenübernahme, Anschluss-Sync und ζ-/Formteilverlust.</p>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-network" /></svg></span>
+          <h3>Formteile & Sonderbauteile</h3>
+          <p>Herstellerneutrale Formteilbibliothek mit Grössenübernahme, ζ-Werten und frei definierbaren Druckverlusten.</p>
+          <ul><li>14 geprüfte Formteiltypen</li><li>Zuordnung zur Teilstrecke</li><li>Neutrale Sonderbauteile</li></ul>
         </article>
         <article>
-          <h3>Sonderbauteile</h3>
-          <p>Filter, Schalldämpfer, Volumenstromregler und freie Bauteile mit direktem Pa-Wert.</p>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-shield" /></svg></span>
+          <h3>Engineering-QS</h3>
+          <p>Prüft Geschwindigkeit, Reibungsgradient, Verlustkonzentration, Zuordnungen und Vollständigkeit.</p>
+          <ul><li>Konfigurierbare Prüfprofile</li><li>Priorisierte Empfehlungen</li><li>Projektweiter Qualitäts-Score</li></ul>
         </article>
         <article>
-          <h3>QS-Prüfung</h3>
-          <p>Projekt-, Rechen-, Datei- und Exportlogik sind vorbereitet, damit Fehler früher auffallen.</p>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-sliders" /></svg></span>
+          <h3>Live-Simulation</h3>
+          <p>Vergleicht Luftmengen- und Dimensionsvarianten, ohne den bestehenden Projektstand sofort zu verändern.</p>
+          <ul><li>Bestand gegen Variante</li><li>Teilstreckenvergleich</li><li>Gezielte Übernahme</li></ul>
+        </article>
+        <article>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-folder" /></svg></span>
+          <h3>Projektsteuerung</h3>
+          <p>Mehranlagenmanager, Cockpit, Aufgaben, Projektsuche, Strukturprüfung und Änderungsverlauf in einem Projekt.</p>
+          <ul><li>Mehrere Anlagen verwalten</li><li>Aufgaben und Favoriten</li><li>Globale Projektsuche</li></ul>
+        </article>
+        <article>
+          <span class="dp-icon-box"><svg aria-hidden="true"><use href="#i-file" /></svg></span>
+          <h3>Professional Report</h3>
+          <p>Technische Dokumentation mit Projektübersicht, Anlagenschema, QS, Varianten und Revisionsinformationen.</p>
+          <ul><li>PDF-/HTML-Ausgabe</li><li>Mehrseitige Anlagenzeichnung</li><li>CSV-Gesamtexport</li></ul>
         </article>
       </div>
     </section>
 
-    <section id="ablauf" class="dp-section dp-howto">
-      <div class="dp-section-head dp-howto-head">
-        <span class="dp-eyebrow">So funktioniert’s</span>
-        <h2>Druckverlustberechnung in 4 Schritten.</h2>
-        <p>Erfasse dein Projekt, lege Teilstrecken an, ergänze Formteile und erstelle direkt den PDF-Bericht.</p>
-      </div>
-      <div class="dp-howto-grid" aria-label="Kurzanleitung in vier Schritten">
-        <article><span>01</span><strong>Projekt</strong><p>Projektdaten und Anlage erfassen.</p></article>
-        <article><span>02</span><strong>Teilstrecken</strong><p>Kanal-/Rohrdaten eingeben.</p></article>
-        <article><span>03</span><strong>Formteile</strong><p>Bögen, Übergänge und Abzweige ergänzen.</p></article>
-        <article><span>04</span><strong>Bericht</strong><p>Prüfung durchführen und PDF speichern.</p></article>
-      </div>
-      <div class="dp-howto-action">
-        <a class="dp-primary" href="app.html">Tool starten</a>
-      </div>
-    </section>
-
-    <section id="berichte" class="dp-section dp-report-block">
-      <div>
-        <span class="dp-eyebrow">Bericht / Export</span>
-        <h2>Nachvollziehbarer Druckverlust statt Zahlenfriedhof.</h2>
-        <p>
-          Der Bericht trennt Kanal-/Rohr-Reibung, Formteilverluste und Sonderbauteile. Dadurch ist sichtbar,
-          wo Druckverlust entsteht und welche Teilstrecke kritisch ist.
-        </p>
-      </div>
-      <div class="dp-report-actions">
-        <a class="dp-primary" href="app.html">Zum Tool</a>
-        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
-      </div>
-    </section>
-
-    <section id="beispiel" class="dp-section dp-demo-block">
-      <div>
-        <span class="dp-eyebrow">Demo / Beispielnachweis</span>
-        <h2>Erst testen, dann eigenes Projekt aufbauen.</h2>
-        <p>Das Demo-Projekt enthält bereits Teilstrecken, Formteile und Sonderbauteile. Damit kannst du Bedienung, Rechen-QS und PDF-Bericht direkt prüfen.</p>
-      </div>
-      <div class="dp-demo-cards">
-        <article><strong>Demo öffnen</strong><span>Beispielanlage laden und Werte bearbeiten.</span></article>
-        <article><strong>Bericht ansehen</strong><span>PDF-/Druckansicht mit Druckverlust-Aufteilung prüfen.</span></article>
-        <article><strong>Danach speichern</strong><span>Eigene Projekte als .dvp-Datei ablegen.</span></article>
-      </div>
-      <div class="dp-hero-actions dp-demo-actions">
-        <a class="dp-primary" href="app.html?demo=1">Demo-Projekt testen</a>
-        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
-      </div>
-    </section>
-
-    <section id="einsatz" class="dp-section dp-trust-block">
-      <div class="dp-section-head">
-        <span class="dp-eyebrow">Professional / Einsatz</span>
-        <h2>Für Lüftungsplanung, Kontrolle und saubere Abgabe.</h2>
-        <p>
-          Druckverlust Pro ist als Arbeitswerkzeug aufgebaut: Projekt lokal erfassen, Rechenweg prüfen,
-          Bericht erzeugen und die Datei als Projektstand sichern.
-        </p>
-      </div>
-      <div class="dp-trust-grid" aria-label="Einsatzbereiche und Transparenz">
-        <article>
-          <strong>Für Planer</strong>
-          <span>Teilstrecken, Formteile und Sonderbauteile werden strukturiert statt in losen Excel-Zeilen geführt.</span>
-        </article>
-        <article>
-          <strong>Für Kontrolle</strong>
-          <span>QS-Blöcke helfen, fehlende Projektangaben, auffällige Werte und unvollständige Zuordnungen schneller zu erkennen.</span>
-        </article>
-        <article>
-          <strong>Für Abgabe</strong>
-          <span>Der Bericht zeigt Kanal/Rohr, Formteile und Sonderbauteile getrennt und nachvollziehbar.</span>
-        </article>
-      </div>
-      <div class="dp-transparency-note">
-        <strong>Transparenz:</strong>
-        <span>Die aktuelle Web-Version arbeitet ohne Cloud-Zwang. Projektstände werden als <code>.dvp</code>-Datei gespeichert und können später wieder geöffnet werden.</span>
-      </div>
-    </section>
-
-    <section id="lizenz" class="dp-section dp-license-block">
-      <div class="dp-section-head">
-        <span class="dp-eyebrow">Lizenz / Ausblick</span>
-        <h2>Lizenzmatrix sichtbar, aber noch ohne Login oder Zahlung.</h2>
-        <p>
-          Das Berechnungstool läuft aktuell im Modus <strong>Professional Preview</strong>. Für die Produktreife ist die Struktur bereits so vorbereitet,
-          dass später klare Nutzungsstufen, Exportrechte und Lizenzhinweise ergänzt werden können.
-        </p>
-      </div>
-      <div class="dp-license-status-card" aria-label="Aktueller Lizenzstatus">
-        <div><span>Aktueller Modus</span><strong>Professional Preview</strong></div>
-        <div><span>Login</span><strong>nicht aktiv</strong></div>
-        <div><span>Zahlung</span><strong>nicht aktiv</strong></div>
-        <div><span>Cloud-Zwang</span><strong>nicht aktiv</strong></div>
-        <div><span>Exportstatus</span><strong>ohne Sperre</strong></div>
-      </div>
-      <div class="dp-license-grid" aria-label="Geplante Nutzungsstufen">
-        <article>
-          <span>Test</span>
-          <strong>Demo / Prüfung</strong>
-          <p>Demo-Projekt, Bedienung und Beispielbericht prüfen, ohne eigene Projektdaten aufzubauen.</p>
-        </article>
-        <article>
-          <span>Professional</span>
-          <strong>Planung / Abgabe</strong>
-          <p>Projekte strukturiert erfassen, Formteile nachweisen und Bericht/PDF für interne Kontrolle erstellen.</p>
-        </article>
-        <article>
-          <span>Später</span>
-          <strong>Lizenz / Abo</strong>
-          <p>Vorbereitung für Aktivierung, Firmenlizenz, Exportrechte und erweiterte Funktionen.</p>
-        </article>
-      </div>
-
-      <div class="dp-license-matrix" aria-label="Lizenzmatrix kompakt">
-        <div class="dp-license-matrix-head">
-          <strong>Funktionsmatrix vorbereitet</strong>
-          <span>Aktuell sichtbar, später technisch steuerbar.</span>
+    <section id="engineering" class="dp-section dp-section-muted">
+      <div class="dp-section-shell dp-split-layout">
+        <div class="dp-section-heading dp-section-heading-left">
+          <span class="dp-kicker">Engineering-QS</span>
+          <h2>Nicht nur rechnen. Auffälligkeiten früh erkennen.</h2>
+          <p>
+            Die Engineering-QS bewertet jede Anlage mit einem projektspezifischen Prüfprofil. Kritische Punkte,
+            Warnungen und Hinweise werden priorisiert und führen direkt zum betroffenen Element.
+          </p>
+          <div class="dp-inline-features">
+            <span><svg aria-hidden="true"><use href="#i-check" /></svg>Geschwindigkeit und Reibungsgradient</span>
+            <span><svg aria-hidden="true"><use href="#i-check" /></svg>Druckverlustkonzentration</span>
+            <span><svg aria-hidden="true"><use href="#i-check" /></svg>Fehlende Zuordnungen</span>
+            <span><svg aria-hidden="true"><use href="#i-check" /></svg>Projektweite QS-Matrix</span>
+          </div>
+          <a class="dp-button dp-button-secondary" href="app.html?demo=1">QS im Demo-Projekt ansehen</a>
         </div>
-        <div class="dp-license-matrix-row"><span>Demo / Anleitung</span><b>Test</b><b>Professional</b><em>aktiv</em></div>
-        <div class="dp-license-matrix-row"><span>.dvp-Projektdatei</span><b>Test</b><b>Professional</b><em>aktiv</em></div>
-        <div class="dp-license-matrix-row"><span>Bericht / PDF</span><b>Test</b><b>Professional</b><em>aktiv</em></div>
-        <div class="dp-license-matrix-row"><span>Exportstatus / Hinweis</span><b>Test</b><b>Professional</b><em>aktiv</em></div>
-        <div class="dp-license-matrix-row"><span>Firmenlizenz / Login</span><b>—</b><b>—</b><em>später</em></div>
-      </div>
-
-      <div class="dp-license-note">
-        <strong>Hinweis:</strong>
-        <span>Diese Phase zeigt die Lizenzmatrix, Feature-Flags und den vorbereiteten Exportstatus. Zahlung, Login und Zugriffssperre bleiben weiterhin deaktiviert.</span>
-        <a href="lizenz.html">Lizenzübersicht öffnen</a>
-      </div>
-    </section>
-
-
-    <section id="weiterentwicklung" class="dp-section dp-development-block">
-      <div class="dp-section-head">
-        <span class="dp-eyebrow">Ständige Weiterentwicklung</span>
-        <h2>Druckverlust Pro wächst Schritt für Schritt zur Gebäudetechnik-Plattform.</h2>
-        <p>Die Druckverlustberechnung bleibt der stabile Kern. Weitere Fachmodule und Bibliotheken werden gezielt ergänzt – ohne die aktuelle Oberfläche zu überladen.</p>
-      </div>
-      <div class="dp-development-grid" aria-label="Roadmap von Druckverlust Pro">
-        <article>
-          <span>Als Nächstes</span>
-          <strong>Fachlicher Ausbau</strong>
-          <p>Formteilbibliothek erweitern, Rechenwerte validieren und den Bericht weiter schärfen.</p>
-        </article>
-        <article>
-          <span>Geplant</span>
-          <strong>Weitere Werkzeuge</strong>
-          <p>Luftmengenberechnung, Schallberechnung, h,x-Diagramm und Kanalschieber.</p>
-        </article>
-        <article>
-          <span>Später</span>
-          <strong>Plattform & Lizenz</strong>
-          <p>Firmenzugänge, Projektverwaltung und abgestufte Professional-Funktionen.</p>
-        </article>
-      </div>
-      <div class="dp-development-actions">
-        <a class="dp-primary" href="app.html?help=1&section=roadmap">Roadmap im Tool</a>
-        <a class="dp-secondary" href="app.html?help=1&section=feedback">Feedback vorbereiten</a>
+        <div class="dp-qs-panel">
+          <div class="dp-panel-head"><span><small>ENGINEERING-QS</small><strong>Projektbewertung</strong></span><b>92</b></div>
+          <div class="dp-score-bar"><i style="width:92%"></i></div>
+          <div class="dp-qs-summary"><span><b>0</b>Kritisch</span><span><b>2</b>Prüfen</span><span><b>5</b>Hinweise</span></div>
+          <div class="dp-issue-list">
+            <article class="is-warning"><i></i><span><strong>TS 04 · Geschwindigkeit prüfen</strong><small>5.8 m/s · Komfortprofil</small></span><em>Öffnen</em></article>
+            <article class="is-info"><i></i><span><strong>Projektangaben vollständig</strong><small>Berichtnummer und Revision vorhanden</small></span><em>OK</em></article>
+            <article class="is-success"><i></i><span><strong>Formteilzuordnungen plausibel</strong><small>5 Formteile vollständig zugeordnet</small></span><em>OK</em></article>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="kontakt" class="dp-section dp-contact-block">
-      <div class="dp-section-head">
-        <span class="dp-eyebrow">Kontakt / Feedback</span>
-        <h2>Rückmeldungen direkt für die Weiterentwicklung sammeln.</h2>
-        <p>
-          Druckverlust Pro ist aktuell als professionelle Web-Version im Aufbau. Für Tests, Rückmeldungen und neue Formteilwünsche
-          ist ein klarer Feedback-Weg vorbereitet, ohne die Hauptseite mit zu viel Text zu füllen.
-        </p>
+    <section id="anlagenschema" class="dp-section dp-section-shell">
+      <div class="dp-section-heading">
+        <span class="dp-kicker">Interaktives Anlagenschema</span>
+        <h2>Der Anlagenverlauf wird sichtbar.</h2>
+        <p>Teilstrecken, Dimensionswechsel, Formteile und Sonderbauteile werden automatisch als herstellerneutrales Funktionsschema dargestellt.</p>
       </div>
-      <div class="dp-contact-grid" aria-label="Kontakt und Feedback">
-        <article>
-          <strong>Feedback geben</strong>
-          <span>Hinweise zu Bedienung, Bericht, Formteilen oder Rechen-QS sauber sammeln.</span>
-        </article>
-        <article>
-          <strong>Fehler melden</strong>
-          <span>Screenshot, Projektstand und kurze Beschreibung helfen bei der schnellen Korrektur.</span>
-        </article>
-        <article>
-          <strong>Wünsche erfassen</strong>
-          <span>Neue Formteile, Exportwünsche oder Bedienhilfen können als nächste Ausbaustufe geplant werden.</span>
-        </article>
-      </div>
-      <div class="dp-contact-actions">
-        <a class="dp-primary" href="app.html?demo=1">Demo testen</a>
-        <a class="dp-secondary" href="app.html?help=1">Anleitung öffnen</a>
+      <div class="dp-schema-card">
+        <div class="dp-schema-toolbar">
+          <div class="dp-schema-legend"><span><i class="is-blue"></i>Teilstrecke</span><span><i class="is-orange"></i>Formteil</span><span><i class="is-purple"></i>Sonderbauteil</span></div>
+          <div><button type="button">Standard</button><button type="button">Geschwindigkeit</button><button class="is-active" type="button">Druckverlust</button></div>
+        </div>
+        <div class="dp-schema-stage" aria-label="Schematische Vorschau einer Zuluftanlage">
+          <div class="dp-air-entry"><svg aria-hidden="true"><use href="#i-arrow" /></svg><span>LUFTSTROM<small>3'200 m³/h</small></span></div>
+          <div class="dp-duct-run">
+            <article class="dp-duct-node is-low"><span class="dp-part-marker">1</span><strong>ts1</strong><small>800 × 450 mm</small><small>3'200 m³/h</small><em>4.0 Pa</em></article>
+            <i class="dp-duct is-wide"></i>
+            <article class="dp-duct-node is-mid"><span class="dp-part-marker">1</span><strong>ts2</strong><small>630 × 350 mm</small><small>2'400 m³/h</small><em>4.5 Pa</em></article>
+            <i class="dp-duct is-medium"></i>
+            <article class="dp-duct-node is-low"><span class="dp-part-marker">1</span><strong>ts3</strong><small>Ø 500 mm</small><small>1'200 m³/h</small><em>1.5 Pa</em></article>
+            <i class="dp-duct is-transition"></i>
+            <article class="dp-duct-node is-low"><span class="dp-part-marker">1</span><strong>ts4</strong><small>Ø 315 mm</small><small>650 m³/h</small><em>2.0 Pa</em></article>
+            <i class="dp-duct is-small"></i>
+            <article class="dp-duct-node is-low"><span class="dp-special-marker">1</span><strong>ts5</strong><small>400 × 250 mm</small><small>550 m³/h</small><em>1.5 Pa</em></article>
+          </div>
+          <div class="dp-air-exit"><span>ZULUFT AUSLASS<small>550 m³/h</small></span><svg aria-hidden="true"><use href="#i-arrow" /></svg></div>
+        </div>
+        <div class="dp-schema-footer"><span>Gesamtdruckverlust <strong>154.5 Pa</strong></span><span>Max. Geschwindigkeit <strong>3.02 m/s</strong></span><span>Teilstrecken <strong>5</strong></span></div>
       </div>
     </section>
 
-    <section class="dp-final-cta" aria-label="Tool starten">
-      <span class="dp-eyebrow">Bereit zum Testen?</span>
-      <h2>Starte direkt mit deinem Projekt oder öffne das Demo-Projekt.</h2>
-      <div class="dp-hero-actions">
-        <a class="dp-primary" href="app.html">Tool starten</a>
-        <a class="dp-secondary" href="app.html?demo=1">Demo-Projekt testen</a>
-        <a class="dp-secondary" href="app.html?demo=1&report=1">Beispielbericht ansehen</a>
+    <section id="projektsteuerung" class="dp-section dp-section-dark">
+      <div class="dp-section-shell">
+        <div class="dp-section-heading dp-section-heading-light">
+          <span class="dp-kicker">Projektsteuerung</span>
+          <h2>Auch grosse Projekte bleiben beherrschbar.</h2>
+          <p>Projektcockpit, globale Suche, Aufgaben, Strukturprüfung und Verlauf verbinden technische Berechnung mit einem klaren Arbeitsprozess.</p>
+        </div>
+        <div class="dp-project-grid">
+          <article><svg aria-hidden="true"><use href="#i-chart" /></svg><div><strong>Projektcockpit</strong><span>QS-Matrix, Projekt-Score und anlagenweite Kennwerte.</span></div></article>
+          <article><svg aria-hidden="true"><use href="#i-search" /></svg><div><strong>Projektsuche</strong><span>Anlagen, Teilstrecken, Bauteile, Aufgaben und Revisionen direkt finden.</span></div></article>
+          <article><svg aria-hidden="true"><use href="#i-network" /></svg><div><strong>Strukturprüfung</strong><span>Abhängigkeiten, Änderungsfolgen und Konflikte kontrollieren.</span></div></article>
+          <article><svg aria-hidden="true"><use href="#i-history" /></svg><div><strong>Änderungsverlauf</strong><span>Bis zu 40 Projektstände rückgängig machen oder wiederherstellen.</span></div></article>
+          <article><svg aria-hidden="true"><use href="#i-folder" /></svg><div><strong>Anlagenmanager</strong><span>Mehrere Anlagen anlegen, duplizieren und projektweit vergleichen.</span></div></article>
+          <article><svg aria-hidden="true"><use href="#i-check" /></svg><div><strong>Aufgaben & Freigabe</strong><span>Offene Punkte, Prüfprotokoll und Übergabestatus dokumentieren.</span></div></article>
+        </div>
       </div>
+    </section>
+
+    <section id="bericht" class="dp-section dp-section-shell dp-report-section">
+      <div class="dp-report-preview" aria-hidden="true">
+        <div class="dp-paper">
+          <div class="dp-paper-head"><img src="assets/logo/eo-logo.png" alt="" /><span><strong>PROFESSIONAL REPORT</strong><small>Druckverlustberechnung</small></span></div>
+          <h3>Projektübersicht</h3>
+          <div class="dp-paper-metrics"><span><small>Gesamtdruckverlust</small><strong>154.5 Pa</strong></span><span><small>Engineering-QS</small><strong>92 / 100</strong></span></div>
+          <div class="dp-paper-chart"><i style="height:34%"></i><i style="height:72%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:46%"></i></div>
+          <div class="dp-paper-lines"><i></i><i></i><i></i><i></i></div>
+          <footer>Projekt DEMO-244.1 · Revision 04</footer>
+        </div>
+        <div class="dp-paper dp-paper-back"><h3>Anlagenschema</h3><div class="dp-mini-schema"><i></i><b></b><i></i><b></b><i></i></div><div class="dp-paper-lines"><i></i><i></i><i></i></div></div>
+      </div>
+      <div class="dp-section-heading dp-section-heading-left">
+        <span class="dp-kicker">Professional Report</span>
+        <h2>Berechnung, QS und Projektstand in einer Abgabe.</h2>
+        <p>Der Bericht wird aus den aktuellen Projektdaten aufgebaut und kann je nach Projektumfang automatisch erweitert werden.</p>
+        <div class="dp-report-list">
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Projekt- und Anlagenübersicht</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Teilstrecken, Formteile und Sonderbauteile</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Mehrseitiges Anlagenschema</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Engineering-QS und Projektaufgaben</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Varianten- und Revisionsvergleich</span>
+          <span><svg aria-hidden="true"><use href="#i-check" /></svg>Prüf- und Übergabeprotokoll</span>
+        </div>
+        <div class="dp-hero-actions"><a class="dp-button dp-button-primary" href="app.html?demo=1&report=1">Beispielbericht öffnen</a><a class="dp-text-link" href="app.html?help=1&section=report">Berichtsfunktionen</a></div>
+      </div>
+    </section>
+
+    <section id="sicherheit" class="dp-section dp-section-muted">
+      <div class="dp-section-shell">
+        <div class="dp-section-heading">
+          <span class="dp-kicker">Projektsicherheit</span>
+          <h2>Lokale Datenhaltung mit kontrollierter Übergabe.</h2>
+          <p>Projektstände bleiben ohne Cloud-Zwang exportierbar. Sicherungen, Prüfsummen und Importvorschau schützen den Arbeitsstand.</p>
+        </div>
+        <div class="dp-security-grid">
+          <article><span>.dvp</span><strong>Projektdatei</strong><p>Normale bearbeitbare Projektdatei für den täglichen Arbeitsstand.</p></article>
+          <article><span>.dvpa</span><strong>Archivpaket</strong><p>Portables Sicherungspaket mit Diagnose, Version und Integritätsprüfung.</p></article>
+          <article><span>.dvph</span><strong>Übergabepaket</strong><p>Dokumentierter Freigabestand mit Prüfprotokoll und Prüfsumme.</p></article>
+          <article><svg aria-hidden="true"><use href="#i-save" /></svg><strong>Lokale Sicherungen</strong><p>Automatische Sicherheitsstände vor kritischen Aktionen und Wiederherstellungen.</p></article>
+        </div>
+        <div class="dp-neutral-note"><svg aria-hidden="true"><use href="#i-shield" /></svg><div><strong>Bewusst herstellerneutral</strong><span>Keine Herstellerdatenbank, keine Produktbindung und keine Ventilatorauslegung. Im Mittelpunkt bleibt die nachvollziehbare Druckverlustberechnung.</span></div></div>
+      </div>
+    </section>
+
+    <section class="dp-final-cta dp-section-shell" aria-label="Druckverlust Pro starten">
+      <div><span class="dp-kicker">Bereit für den nächsten Projektstand?</span><h2>Starte mit deinem Projekt oder prüfe zuerst das Demo.</h2><p>Die Startseite führt dich zuerst zum Produkt. Das Berechnungstool öffnet sich erst nach deiner Auswahl.</p></div>
+      <div class="dp-final-actions"><a class="dp-button dp-button-primary" href="app.html">Tool starten <svg aria-hidden="true"><use href="#i-arrow" /></svg></a><a class="dp-button dp-button-secondary" href="app.html?demo=1">Demo-Projekt testen</a></div>
     </section>
   </main>
 
-  <footer class="dp-landing-footer">
-    <span>© 2026 Emre Özgöller – Druckverlust Pro · Professional</span>
-    <span class="dp-footer-links"><a href="app.html">Tool</a><a href="app.html?help=1">Anleitung</a><a href="app.html?demo=1">Demo</a><a href="app.html?help=1&section=roadmap">Roadmap</a><a href="app.html?fachtest=1">Fachtest</a><a href="beta.html">Beta</a><a href="lizenz.html">Lizenz</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Phase 21.12</em></span>
+  <footer class="dp-site-footer">
+    <div class="dp-footer-brand"><img src="assets/logo/eo-logo.png" alt="EO Logo" /><span><strong>Druckverlust Pro</strong><small>Professional · Phase 40.00</small></span></div>
+    <div class="dp-footer-links"><a href="app.html">Tool</a><a href="app.html?help=1">Anleitung</a><a href="beta.html">Beta</a><a href="lizenz.html">Lizenz</a><a href="feedback.html">Feedback</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
+    <p>© 2026 Emre Özgöller – Druckverlust Pro · Professional</p>
   </footer>
 
-  <script>
-    (() => {
-      if (location.protocol !== 'file:') return;
-
-      const style = document.createElement('style');
-      style.textContent = `
-        .dp-local-preview-note {
-          position: sticky; top: 0; z-index: 10000; display: flex; align-items: center;
-          justify-content: center; gap: 10px; padding: 10px 18px; background: #fff4d6;
-          border-bottom: 1px solid #e5c267; color: #5a4300; font: 600 14px/1.4 Inter, Segoe UI, Arial, sans-serif;
-          text-align: center; box-sizing: border-box;
-        }
-        .dp-local-dialog-backdrop {
-          position: fixed; inset: 0; z-index: 20000; display: grid; place-items: center;
-          padding: 20px; background: rgba(4, 18, 34, .72); box-sizing: border-box;
-        }
-        .dp-local-dialog {
-          width: min(620px, 100%); padding: 28px; border-radius: 18px; background: #fff;
-          box-shadow: 0 24px 70px rgba(0, 0, 0, .28); color: #10243e;
-          font-family: Inter, Segoe UI, Arial, sans-serif; box-sizing: border-box;
-        }
-        .dp-local-dialog h2 { margin: 0 0 12px; font-size: 25px; line-height: 1.2; }
-        .dp-local-dialog p { margin: 0 0 14px; line-height: 1.6; }
-        .dp-local-dialog code { padding: 2px 7px; border-radius: 6px; background: #eef4fa; }
-        .dp-local-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-        .dp-local-dialog-actions button, .dp-local-dialog-actions a {
-          min-height: 42px; padding: 10px 16px; border-radius: 9px; border: 1px solid #b9c9d8;
-          font: 700 14px/1 Inter, Segoe UI, Arial, sans-serif; text-decoration: none; cursor: pointer;
-        }
-        .dp-local-dialog-actions button { background: #073a6f; border-color: #073a6f; color: #fff; }
-        .dp-local-dialog-actions a { background: #fff; color: #073a6f; }
-      `;
-      document.head.appendChild(style);
-
-      const note = document.createElement('div');
-      note.className = 'dp-local-preview-note';
-      note.textContent = 'Lokale Vorschau: Zum Starten der Berechnung bitte Druckverlust_starten.bat verwenden.';
-      document.body.prepend(note);
-
-      const showLocalStartInfo = () => {
-        if (document.querySelector('.dp-local-dialog-backdrop')) return;
-        const backdrop = document.createElement('div');
-        backdrop.className = 'dp-local-dialog-backdrop';
-        backdrop.setAttribute('role', 'dialog');
-        backdrop.setAttribute('aria-modal', 'true');
-        backdrop.setAttribute('aria-labelledby', 'dp-local-dialog-title');
-        backdrop.innerHTML = `
-          <section class="dp-local-dialog">
-            <h2 id="dp-local-dialog-title">Berechnung über die Startdatei öffnen</h2>
-            <p>Die Produktseite kann direkt angezeigt werden. Das eigentliche Tool benötigt wegen der Browser-Sicherheitsregeln jedoch eine lokale Webadresse.</p>
-            <p>Bitte im Druckverlust-Ordner <code>Druckverlust_starten.bat</code> doppelklicken. Danach öffnet sich zuerst diese Startseite über <code>http://127.0.0.1</code>. Anschliessend funktionieren alle Schaltflächen wie „Tool starten“, „Demo“ und „Anleitung“.</p>
-            <div class="dp-local-dialog-actions">
-              <button type="button" data-close-local-dialog>Verstanden</button>
-              <a href="LOKAL_STARTEN.txt">Kurzanleitung öffnen</a>
-            </div>
-          </section>`;
-        document.body.appendChild(backdrop);
-        const close = () => backdrop.remove();
-        backdrop.querySelector('[data-close-local-dialog]').addEventListener('click', close);
-        backdrop.addEventListener('click', event => { if (event.target === backdrop) close(); });
-        document.addEventListener('keydown', function onKey(event) {
-          if (event.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); }
-        });
-        backdrop.querySelector('button').focus();
-      };
-
-      document.addEventListener('click', event => {
-        const link = event.target.closest('a[href]');
-        if (!link) return;
-        const href = link.getAttribute('href') || '';
-        if (/^app\.html(?:[?#]|$)/i.test(href)) {
-          event.preventDefault();
-          showLocalStartInfo();
-        }
-      }, true);
-    })();
-  </script>
-
-  <script>
-    document.addEventListener('contextmenu', event => {
-      if (event.target.closest('img, .dp-hero-card')) event.preventDefault();
-    }, true);
-    document.addEventListener('dragstart', event => {
-      if (event.target.closest('img')) event.preventDefault();
-    }, true);
-  </script>
+  <script src="src/landing/landing-phase40.js?v=40.10" defer></script>
 </body>
 </html>

@@ -17,6 +17,7 @@ export default class ApplicationState {
     this.isProjectDirty = false;
     this.lastCalculationAt = null;
     this.lastAutoCalculationError = null;
+    this.historyEngine = null;
 
     this.listeners = [];
   }
@@ -50,6 +51,18 @@ export default class ApplicationState {
     this.lastAutoCalculationError = null;
 
     this.clearSelection(false);
+
+    if (this.historyEngine && !this.historyEngine.isApplying) {
+      this.historyEngine.reset(this.project, {
+        label: 'Projektstand geladen',
+        selection: {
+          type: 'project',
+          id: this.project?.id || null,
+          systemId: this.selectedSystem?.id || null,
+        },
+      });
+    }
+
     this.notify();
   }
 

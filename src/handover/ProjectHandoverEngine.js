@@ -5,7 +5,7 @@ import StorageEngine, { PROJECT_FILE_TYPE } from '../storage/StorageEngine.js';
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
 import ProjectSafetyEngine, { PROJECT_ARCHIVE_FILE_TYPE } from '../safety/ProjectSafetyEngine.js?v=33.00';
 import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=33.00';
-import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=33.00';
+import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=40.00';
 
 export const HANDOVER_FILE_TYPE = 'DruckverlustProHandover';
 export const HANDOVER_SCHEMA_VERSION = '1.0.0';

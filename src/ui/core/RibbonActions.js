@@ -7,14 +7,14 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=40.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=39.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=40.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=40.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=39.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=39.00';
+import UiDialogService from './UiDialogService.js?v=40.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=40.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -246,6 +246,40 @@ export default class RibbonActions {
 
     if (system && typeof this.state.selectSystem === 'function') {
       this.state.selectSystem(system);
+    }
+  }
+
+  showProjectHistory() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.historyEngine?.flush?.();
+    this.state.setSelection?.('projectHistory', project);
+    this.state.notify?.();
+  }
+
+  undoProjectChange() {
+    const history = this.state.historyEngine;
+    if (!history?.undo?.()) {
+      UiDialogService.alert({
+        title: 'Rückgängig',
+        message: 'In dieser Sitzung ist kein älterer Projektstand vorhanden.',
+        tone: 'info',
+      });
+    }
+  }
+
+  redoProjectChange() {
+    const history = this.state.historyEngine;
+    if (!history?.redo?.()) {
+      UiDialogService.alert({
+        title: 'Wiederholen',
+        message: 'In dieser Sitzung ist kein späterer Projektstand vorhanden.',
+        tone: 'info',
+      });
     }
   }
 
@@ -518,6 +552,9 @@ export default class RibbonActions {
       'Ctrl + Shift + W: Projektworkflow öffnen',
       'Ctrl + Shift + T: Projekt-Navigator und Aufgaben öffnen',
       'Ctrl + K: globale Projektsuche öffnen',
+      'Ctrl + Z: letzte Projektänderung rückgängig',
+      'Ctrl + Y / Ctrl + Shift + Z: Änderung wiederholen',
+      'Ctrl + Shift + H: Änderungsverlauf öffnen',
       'Ctrl + D: ausgewähltes Element duplizieren',
       'Entf: ausgewähltes Element löschen',
       'Ctrl + Alt + ↑/↓: ausgewähltes Element verschieben',

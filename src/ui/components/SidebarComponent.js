@@ -99,6 +99,15 @@ export default class SidebarComponent {
             })}
 
             ${this.renderRootItem({
+              type: 'projectHistory',
+              id: 'project-history',
+              label: 'Änderungsverlauf',
+              meta: 'Rückgängig · Wiederholen · Sitzungsstände',
+              icon: 'report',
+              active: this.state.getSelectionType() === 'projectHistory',
+            })}
+
+            ${this.renderRootItem({
               type: 'projectDependencies',
               id: 'project-dependencies',
               label: 'Abhängigkeiten',
@@ -405,6 +414,13 @@ export default class SidebarComponent {
 
         if (type === 'projectSearch') {
           this.state.setSelection('projectSearch', project);
+          this.state.notify();
+          return;
+        }
+
+        if (type === 'projectHistory') {
+          this.state.historyEngine?.flush?.();
+          this.state.setSelection('projectHistory', project);
           this.state.notify();
           return;
         }

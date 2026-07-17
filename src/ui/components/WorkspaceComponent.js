@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=39.00';
+import ReportEngine from '../../report/ReportEngine.js?v=40.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -88,18 +88,18 @@ import {
 } from '../../testing/BetaFeedbackInbox.js?v=21.12';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=39.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=40.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=40.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=22.03';
+import UiDialogService from '../core/UiDialogService.js?v=40.00';
 import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00';
 import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00';
 import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00';
 import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00';
 import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=39.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=39.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=40.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=40.00';
 import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00';
 import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00';
 import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00';
@@ -148,6 +148,13 @@ export default class WorkspaceComponent {
     this.dependencyTargetId = '';
     this.dependencyConflictFilter = 'all';
     this.dependencyHintKey = '';
+    this.projectHistoryFilter = 'all';
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('druckverlust:history-change', () => {
+        if (this.state.getSelectionType?.() === 'projectHistory') this.renderProjectHistory();
+      });
+    }
 
     this.state.subscribe(() => this.render());
     this.render();
@@ -174,6 +181,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'projectStandardization') return this.renderProjectStandardization(selection.data);
     if (selection.type === 'projectTaskCenter') return this.renderProjectTaskCenter(selection.data);
     if (selection.type === 'projectSearch') return this.renderProjectSearch(selection.data);
+    if (selection.type === 'projectHistory') return this.renderProjectHistory(selection.data);
     if (selection.type === 'projectDependencies') return this.renderProjectDependencies(selection.data);
     if (selection.type === 'projectHandover') return this.renderProjectHandover(selection.data);
     if (selection.type === 'deploymentCheck') return this.renderDeploymentCheck(selection.data || this.state.deploymentCheck);
@@ -12264,6 +12272,7 @@ formatNumber(value, digits = 2) {
     const selection = this.state.getSelection();
     const quickViews = [
       { type: 'projectSearch', label: 'Projektsuche', meta: 'Projektindex, Querverweise und Sprungmarken', icon: '⌕' },
+      { type: 'projectHistory', label: 'Änderungsverlauf', meta: 'Rückgängig, Wiederholen und Sitzungsstände', icon: '↶' },
       { type: 'projectDependencies', label: 'Abhängigkeiten', meta: 'Änderungsfolgen, Struktur und Konflikte', icon: '⇄' },
       { type: 'projectCockpit', label: 'Projektcockpit', meta: 'Projektweite QS und Dokumentation', icon: '◫' },
       { type: 'projectStandardization', label: 'Projektworkflow', meta: 'Prüfprofile, Vorlagen und Massenbearbeitung', icon: '≡' },
@@ -12486,6 +12495,156 @@ formatNumber(value, digits = 2) {
     });
   }
 
+  renderProjectHistory() {
+    const project = this.state.project;
+    const history = this.state.historyEngine;
+
+    if (!project || !history) {
+      this.root.innerHTML = `
+        <section class="dp-history-empty">
+          <span class="dp-overline">Phase 40 · Änderungsverlauf</span>
+          <h1>Kein Sitzungsverlauf verfügbar</h1>
+          <p>Der Verlauf wird nach dem Start eines Projekts automatisch aufgebaut.</p>
+        </section>
+      `;
+      return;
+    }
+
+    history.flush?.();
+    const model = history.getState();
+    const filter = this.projectHistoryFilter || 'all';
+    const entries = [...model.entries].reverse().filter(entry => {
+      if (filter === 'checkpoints') return entry.checkpoint;
+      if (filter === 'undo') return !entry.isFuture && !entry.isCurrent;
+      if (filter === 'redo') return entry.isFuture;
+      return true;
+    });
+
+    const currentLabel = model.current?.label || 'Aktueller Projektstand';
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-history-header">
+        <div>
+          <span class="dp-overline">Phase 40 · Projektsicherheit</span>
+          <h1>Änderungsverlauf</h1>
+          <p>Projektänderungen dieser Browser-Sitzung rückgängig machen, wiederholen oder gezielt wiederherstellen.</p>
+        </div>
+        <div class="dp-history-current-card">
+          <span>Aktueller Stand</span>
+          <strong>${this.escapeHtml(currentLabel)}</strong>
+          <small>${model.count} von maximal ${model.limit} Ständen</small>
+        </div>
+      </div>
+
+      <section class="dp-history-summary-grid" aria-label="Verlaufsstatus">
+        <article><span>Rückgängig</span><strong>${model.undoCount}</strong><small>ältere Stände verfügbar</small></article>
+        <article><span>Wiederholen</span><strong>${model.redoCount}</strong><small>spätere Stände verfügbar</small></article>
+        <article><span>Sitzungsstände</span><strong>${model.count}</strong><small>nur im aktuellen Browserfenster</small></article>
+        <article><span>Status</span><strong>${model.canUndo || model.canRedo ? 'Aktiv' : 'Basis'}</strong><small>${model.canRedo ? 'Projekt steht auf älterem Stand' : 'Neuester Stand aktiv'}</small></article>
+      </section>
+
+      <section class="dp-history-toolbar">
+        <div class="dp-history-primary-actions">
+          <button type="button" class="dp-button primary" data-history-action="undo" ${model.canUndo ? '' : 'disabled'}>↶ Rückgängig</button>
+          <button type="button" class="dp-button" data-history-action="redo" ${model.canRedo ? '' : 'disabled'}>↷ Wiederholen</button>
+        </div>
+        <div class="dp-history-checkpoint-form">
+          <label for="dp-history-checkpoint-name">Wiederherstellungspunkt</label>
+          <div>
+            <input id="dp-history-checkpoint-name" type="text" maxlength="80" placeholder="z. B. Vor Massenänderung" />
+            <button type="button" class="dp-button" data-history-action="checkpoint">Markieren</button>
+          </div>
+        </div>
+        <div class="dp-history-secondary-actions">
+          <button type="button" class="dp-button ghost" data-history-action="export">CSV exportieren</button>
+          <button type="button" class="dp-button ghost" data-history-action="clear">Verlauf zurücksetzen</button>
+        </div>
+      </section>
+
+      <section class="dp-history-panel">
+        <div class="dp-history-panel-head">
+          <div>
+            <span class="dp-overline">Sitzungsjournal</span>
+            <h2>${entries.length} Einträge</h2>
+          </div>
+          <div class="dp-history-filters" role="group" aria-label="Verlauf filtern">
+            ${[
+              ['all', 'Alle'],
+              ['undo', 'Rückgängig'],
+              ['redo', 'Wiederholen'],
+              ['checkpoints', 'Markiert'],
+            ].map(([value, label]) => `<button type="button" data-history-filter="${value}" class="${filter === value ? 'is-active' : ''}">${label}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="dp-history-timeline">
+          ${entries.length ? entries.map(entry => `
+            <article class="dp-history-entry ${entry.isCurrent ? 'is-current' : ''} ${entry.isFuture ? 'is-future' : ''} ${entry.checkpoint ? 'is-checkpoint' : ''}">
+              <div class="dp-history-entry-marker" aria-hidden="true"></div>
+              <div class="dp-history-entry-content">
+                <div class="dp-history-entry-title">
+                  <strong>${this.escapeHtml(entry.label)}</strong>
+                  <span>${this.escapeHtml(entry.timeLabel || '')}</span>
+                </div>
+                <div class="dp-history-entry-meta">
+                  <span>Stand ${entry.index + 1}</span>
+                  ${entry.isCurrent ? '<span class="dp-history-badge current">Aktuell</span>' : ''}
+                  ${entry.isFuture ? '<span class="dp-history-badge future">Wiederholen</span>' : ''}
+                  ${entry.checkpoint ? '<span class="dp-history-badge checkpoint">Markiert</span>' : ''}
+                </div>
+              </div>
+              <div class="dp-history-entry-actions">
+                ${entry.isCurrent ? '<span class="dp-history-current-label">Aktiver Projektstand</span>' : `<button type="button" class="dp-button ghost" data-history-restore="${entry.index}">Wiederherstellen</button>`}
+              </div>
+            </article>
+          `).join('') : '<div class="dp-empty-state"><strong>Keine Einträge in diesem Filter.</strong><span>Wähle einen anderen Filter.</span></div>'}
+        </div>
+      </section>
+
+      <aside class="dp-history-note">
+        <strong>Wichtig:</strong>
+        <span>Der Rückgängig-Verlauf gilt nur für die aktuelle Browser-Sitzung. Für eine dauerhafte Sicherung weiterhin die Projektdatei speichern oder unter „Sicherung“ ein Archiv anlegen.</span>
+      </aside>
+    `;
+
+    this.root.querySelector('[data-history-action="undo"]')?.addEventListener('click', () => history.undo());
+    this.root.querySelector('[data-history-action="redo"]')?.addEventListener('click', () => history.redo());
+    this.root.querySelector('[data-history-action="checkpoint"]')?.addEventListener('click', () => {
+      const input = this.root.querySelector('#dp-history-checkpoint-name');
+      const label = String(input?.value || '').trim() || `Wiederherstellungspunkt ${new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })}`;
+      history.createCheckpoint(label);
+      this.renderProjectHistory();
+    });
+    this.root.querySelector('[data-history-action="export"]')?.addEventListener('click', () => history.downloadCsv(project));
+    this.root.querySelector('[data-history-action="clear"]')?.addEventListener('click', async () => {
+      const confirmed = await UiDialogService.confirm({
+        title: 'Sitzungsverlauf zurücksetzen',
+        message: 'Alle älteren und späteren Sitzungsstände werden entfernt. Der aktuelle Projektstand bleibt unverändert.',
+        confirmLabel: 'Verlauf zurücksetzen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+      history.clear();
+      this.renderProjectHistory();
+    });
+    this.root.querySelectorAll('[data-history-filter]').forEach(button => button.addEventListener('click', () => {
+      this.projectHistoryFilter = button.dataset.historyFilter || 'all';
+      this.renderProjectHistory();
+    }));
+    this.root.querySelectorAll('[data-history-restore]').forEach(button => button.addEventListener('click', async () => {
+      const index = Number(button.dataset.historyRestore);
+      const entry = model.entries.find(item => item.index === index);
+      const confirmed = await UiDialogService.confirm({
+        title: 'Projektstand wiederherstellen',
+        message: `Der Projektstand „${entry?.label || `Stand ${index + 1}`}“ wird geladen. Der aktuelle Stand bleibt im Sitzungsverlauf erhalten und kann wiederhergestellt werden.`,
+        confirmLabel: 'Stand wiederherstellen',
+        tone: 'warning',
+      });
+      if (!confirmed) return;
+      history.restoreTo(index, { direction: 'restore' });
+    }));
+  }
+
   openProjectTaskTarget(target = {}) {
     const project = this.state.project;
     if (!project) return;
@@ -12506,7 +12665,7 @@ formatNumber(value, digits = 2) {
     if (viewType === 'report') return this.state.selectReport(system);
     if (viewType === 'system' && system) return this.state.selectSystem(system);
     if (viewType === 'section' && target.sectionId) return;
-    const projectViews = ['project', 'projectSearch', 'projectDependencies', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
+    const projectViews = ['project', 'projectSearch', 'projectHistory', 'projectDependencies', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
     const systemViews = ['engineeringQuality', 'networkSchematic', 'liveSimulation', 'projectCompletion', 'projectSafety', 'projectHandover'];
     if (projectViews.includes(viewType)) {
       this.state.setSelection(viewType, project);
