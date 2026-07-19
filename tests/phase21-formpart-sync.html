@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Formteil-Sync-QS 21.03</title>
+  <link rel="stylesheet" href="../src/ui/ApplicationShell.css?v=21.12" />
+  <link rel="stylesheet" href="../src/ui/phase21_00.css?v=21.12" />
+  <link rel="stylesheet" href="../src/ui/phase21_03.css?v=21.12" />
+</head>
+<body class="dp-test-page">
+  <main class="dp-test-shell">
+    <span class="dp-overline">Phase 21.03 / Synchronisation</span>
+    <h1>Formteil-Grössen- und Anschluss-Sync</h1>
+    <p id="summary">Tests werden ausgeführt …</p>
+    <section id="stats" class="dp-project-check-stats"></section>
+    <section id="results" class="dp-reference-test-list"></section>
+  </main>
+  <script type="module">
+    import { runFormPartSyncValidation } from '../src/testing/FormPartSyncRunner.js?v=21.12';
+    const report = runFormPartSyncValidation();
+    const summary = document.getElementById('summary');
+    const stats = document.getElementById('stats');
+    const results = document.getElementById('results');
+    summary.className = report.status === 'ok' ? 'dp-test-ok' : 'dp-test-error';
+    summary.textContent = report.summary;
+    stats.innerHTML = `
+      <div><span>Formteile</span><strong>${report.counts.formParts}</strong></div>
+      <div><span>Testfälle</span><strong>${report.counts.passedCases}/${report.counts.cases}</strong></div>
+      <div><span>Prüfungen</span><strong>${report.counts.passedChecks}/${report.counts.checks}</strong></div>
+      <div><span>Fehler</span><strong>${report.counts.failedChecks}</strong></div>
+    `;
+    results.innerHTML = report.results.map(result => `
+      <article class="dp-result-panel dp-reference-case ${result.passed ? 'is-ok' : 'is-error'}">
+        <div class="dp-reference-case-header">
+          <div><span>${result.partId} · ${result.id}</span><h2>${result.title}</h2></div>
+          <strong>${result.passed ? '✓ Bestanden' : '✗ Fehlgeschlagen'}</strong>
+        </div>
+        ${result.error ? `<pre class="dp-reference-error">${result.error}</pre>` : ''}
+        <table class="dp-table dp-reference-check-table">
+          <thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th></tr></thead>
+          <tbody>${(result.checks || []).map(check => `
+            <tr class="${check.passed ? 'is-ok' : 'is-error'}">
+              <td>${check.passed ? '✓' : '✗'}</td><td><strong>${check.label}</strong></td><td>${check.actualText}</td><td>${check.expectedText}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </article>`).join('');
+    if (report.status !== 'ok') throw new Error(report.summary);
+  </script>
+</body>
+</html>

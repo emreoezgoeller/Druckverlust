@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Fachliche Vergleichsmatrix 21.04</title>
+  <link rel="stylesheet" href="../src/ui/ApplicationShell.css?v=21.12" />
+  <link rel="stylesheet" href="../src/ui/phase21_00.css?v=21.12" />
+  <link rel="stylesheet" href="../src/ui/phase21_04.css?v=21.12" />
+</head>
+<body class="dp-test-page">
+  <main class="dp-test-shell">
+    <span class="dp-overline">Phase 21.04 / Handrechnungen</span>
+    <h1>Fachliche Vergleichsmatrix</h1>
+    <p id="summary">Prüfung wird ausgeführt …</p>
+    <section id="result"></section>
+  </main>
+  <script type="module">
+    import { runComparisonMatrix } from '../src/testing/ComparisonMatrixRunner.js?v=21.12';
+
+    const report = runComparisonMatrix();
+    document.getElementById('summary').textContent = report.summary;
+    const root = document.getElementById('result');
+    root.innerHTML = `
+      <div class="dp-result-panel dp-matrix-summary ${report.status === 'ok' ? 'is-ok' : 'is-error'}">
+        <strong>${report.status === 'ok' ? '✓ BESTANDEN' : '✗ FEHLER'}</strong>
+        <span>${report.counts.passedCases}/${report.counts.cases} Fälle · ${report.counts.passedChecks}/${report.counts.checks} Prüfungen</span>
+      </div>
+      <div class="dp-matrix-table-wrap">
+        <table class="dp-table dp-matrix-table">
+          <thead><tr><th>Status</th><th>ID</th><th>Gruppe</th><th>Fall</th><th>Prüfungen</th></tr></thead>
+          <tbody>${report.results.map(item => `
+            <tr class="${item.passed ? 'is-ok' : 'is-error'}">
+              <td>${item.passed ? '✓' : '✗'}</td>
+              <td>${item.id}</td>
+              <td>${item.group}</td>
+              <td>${item.title}</td>
+              <td>${item.passedCheckCount}/${item.checkCount}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+  </script>
+</body>
+</html>

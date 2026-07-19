@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Formteil-QS 21.01</title>
+  <style>
+    body{font-family:system-ui,sans-serif;margin:0;background:#f4f7fb;color:#182334}.wrap{max-width:1100px;margin:auto;padding:28px}.card{background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:20px;margin:14px 0;box-shadow:0 8px 28px rgba(25,45,80,.07)}.ok{border-left:6px solid #14804a}.error{border-left:6px solid #b42318}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #e5eaf1}code{font-size:.9em}button{padding:10px 16px;border:0;border-radius:8px;background:#164a8a;color:#fff;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Formteil-QS – Phase 21.01</h1>
+  <p>Feste Excel-Referenzpunkte und Strukturprüfung der Formteilbibliothek.</p>
+  <button id="run" type="button">Tests erneut ausführen</button>
+  <div id="result"></div>
+</main>
+<script type="module">
+  import { runFormPartValidation } from '../src/testing/FormPartValidationRunner.js?v=21.12';
+  const root = document.querySelector('#result');
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  function render(){
+    const report = runFormPartValidation();
+    root.innerHTML = `
+      <section class="card ${report.status === 'ok' ? 'ok' : 'error'}"><h2>${esc(report.label)}</h2><p>${esc(report.summary)}</p><p><strong>${report.counts.passedReferenceCases}/${report.counts.referenceCases}</strong> Referenzfälle · <strong>${report.counts.passedReferenceChecks}/${report.counts.referenceChecks}</strong> Einzelprüfungen · <strong>${report.counts.passedStructureChecks}/${report.counts.structureChecks}</strong> Strukturprüfungen</p></section>
+      ${report.referenceResults.map(item => `<section class="card ${item.passed ? 'ok' : 'error'}"><h3>${esc(item.id)} – ${esc(item.title)}</h3><p><code>${esc(item.source)}</code></p><table><thead><tr><th>Status</th><th>Prüfung</th><th>Ist</th><th>Soll</th></tr></thead><tbody>${item.checks.map(check => `<tr><td>${check.passed?'✓':'✗'}</td><td>${esc(check.label)}</td><td>${esc(check.actualText)}</td><td>${esc(check.expectedText)}</td></tr>`).join('')}</tbody></table></section>`).join('')}`;
+  }
+  document.querySelector('#run').addEventListener('click', render);
+  render();
+</script>
+</body>
+</html>

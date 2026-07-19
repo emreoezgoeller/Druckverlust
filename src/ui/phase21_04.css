@@ -1,0 +1,72 @@
+/* Druckverlust Pro – Phase 21.04: fachliche Vergleichsmatrix */
+
+.dp-matrix-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dp-matrix-summary.is-ok {
+  border-left: 4px solid #16834f;
+}
+
+.dp-matrix-summary.is-error {
+  border-left: 4px solid #b42318;
+}
+
+.dp-matrix-table-wrap {
+  overflow-x: auto;
+}
+
+.dp-matrix-table {
+  min-width: 920px;
+}
+
+.dp-matrix-table tr.is-error td {
+  background: #fff2f0;
+}
+
+.dp-matrix-group-note {
+  display: grid;
+  gap: .3rem;
+  padding: .85rem 1rem;
+  border: 1px solid #d9e3ee;
+  border-radius: .75rem;
+  background: #f7faff;
+}
+
+.dp-matrix-case-meta {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(105px, 1fr));
+  gap: .55rem;
+  margin: .8rem 0 1rem;
+}
+
+.dp-matrix-case-meta > div {
+  padding: .6rem .7rem;
+  border: 1px solid #dce5ee;
+  border-radius: .6rem;
+  background: #f8fafc;
+}
+
+.dp-matrix-case-meta span,
+.dp-matrix-case-meta strong {
+  display: block;
+}
+
+.dp-matrix-case-meta span {
+  color: #607286;
+  font-size: .74rem;
+}
+
+.dp-matrix-case-meta strong {
+  margin-top: .16rem;
+  font-size: .9rem;
+}
+
+@media (max-width: 900px) {
+  .dp-matrix-case-meta {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+}

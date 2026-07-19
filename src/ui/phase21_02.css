@@ -1,0 +1,35 @@
+/* Druckverlust Pro – Phase 21.02: Praxisprojekt- und Berichtstest */
+
+.dp-practice-summary .dp-practice-stats {
+  grid-template-columns: repeat(6, minmax(110px, 1fr));
+}
+
+.dp-practice-totals {
+  margin-top: 16px;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+}
+
+.dp-practice-check-list .dp-reference-check-table-wrap {
+  max-height: 62vh;
+  overflow: auto;
+}
+
+.dp-test-page {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+@media (max-width: 1100px) {
+  .dp-practice-summary .dp-practice-stats,
+  .dp-practice-totals {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dp-practice-summary .dp-practice-stats,
+  .dp-practice-totals {
+    grid-template-columns: 1fr;
+  }
+}

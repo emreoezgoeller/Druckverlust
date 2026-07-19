@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Phase 21 Referenztests</title>
+  <style>
+    :root { font-family: Inter, system-ui, sans-serif; color: #17324d; background: #f4f7fb; }
+    body { max-width: 1180px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { color: #073a6f; }
+    #summary { padding: 16px 18px; border-radius: 14px; font-weight: 800; margin-bottom: 20px; }
+    .ok { color: #156a42; }
+    .error { color: #a52828; }
+    #summary.ok { background: #e8f7ef; }
+    #summary.error { background: #feecec; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 14px; overflow: hidden; }
+    th, td { padding: 12px; border-bottom: 1px solid #dfe7ef; text-align: left; }
+    th { background: #073a6f; color: white; }
+    article { background: white; padding: 18px; border-radius: 14px; margin-top: 16px; }
+    li { margin: 7px 0; }
+    pre { white-space: pre-wrap; background: #feecec; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Phase 21.00 – automatische Referenztests</h1>
+  <p>Feste Sollwerte prüfen Rechenformeln, Einheiten, Rundung, Summenbildung und den bestehenden Excel-Vergleich TEST-001.</p>
+  <div id="summary">Tests werden ausgeführt …</div>
+  <table id="results">
+    <thead><tr><th>Status</th><th>ID</th><th>Gruppe</th><th>Referenzfall</th><th>Prüfungen</th><th>Quelle</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <section id="details"></section>
+  <script type="module" src="phase21-reference-tests.test.js"></script>
+</body>
+</html>
