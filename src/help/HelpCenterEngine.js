@@ -1,5 +1,5 @@
 // Druckverlust Pro – HelpCenterEngine
-// Phase 41.00: durchsuchbares Hilfe-Center, kontextbezogene Themen und geführte Erste Schritte.
+// Phase 42.00: Hilfe-Center mit Schnellerfassung, kontextbezogenen Themen und geführten Ersten Schritten.
 
 const HELP_PROGRESS_KEY = 'druckverlust-pro.help-center.progress.v1';
 
@@ -39,6 +39,17 @@ const HELP_TOPICS = Object.freeze([
     actionLabel: 'Anlagenmanager öffnen',
     steps: ['Projektstamm vervollständigen.', 'Anlagen neutral nach Luftart benennen.', 'Bei mehreren Anlagen eindeutige BKP-Nummern verwenden.'],
     tips: ['Anlagen können sicher dupliziert und danach unabhängig bearbeitet werden.'],
+  },
+  {
+    id: 'quick-entry',
+    category: 'calculation',
+    title: 'Teilstrecken schnell aus Excel übernehmen',
+    summary: 'Mehrere Teilstrecken per Zwischenablage, CSV oder TSV einlesen, prüfen und kontrolliert übernehmen.',
+    keywords: ['schnellerfassung', 'excel', 'csv', 'tsv', 'import', 'tabelle', 'zwischenablage', 'mehrere teilstrecken'],
+    action: 'showProjectQuickEntry',
+    actionLabel: 'Schnellerfassung öffnen',
+    steps: ['Tabelle aus Excel kopieren oder eine CSV-Datei wählen.', 'Übernahmemodus Anhängen, Aktualisieren oder Ersetzen festlegen.', 'Vorschau erstellen und alle Fehler korrigieren.', 'Geprüfte Tabelle erst nach der Sicherheitsabfrage übernehmen.'],
+    tips: ['Dimensionen ohne Einheit werden als Millimeter interpretiert.', 'Beim Ersetzen bleiben gleich benannte Bauteilzuordnungen erhalten; andere Zuordnungen werden zur Prüfung geleert.'],
   },
   {
     id: 'sections',
@@ -181,6 +192,7 @@ const SHORTCUTS = Object.freeze([
   { keys: 'Alt + Home', label: 'Startübersicht öffnen', group: 'Navigation' },
   { keys: 'Ctrl + K', label: 'Globale Projektsuche öffnen', group: 'Navigation' },
   { keys: 'Ctrl + Shift + A', label: 'Anlagenmanager öffnen', group: 'Navigation' },
+  { keys: 'Ctrl + Shift + E', label: 'Schnellerfassung öffnen', group: 'Navigation' },
   { keys: 'Ctrl + Shift + Q', label: 'Projektcockpit öffnen', group: 'Navigation' },
   { keys: 'Ctrl + Shift + T', label: 'Aufgaben öffnen', group: 'Navigation' },
   { keys: 'Ctrl + Shift + D', label: 'Strukturprüfung öffnen', group: 'Navigation' },
@@ -212,6 +224,7 @@ const CONTEXT_TOPIC_MAP = Object.freeze({
   projectTaskCenter: 'project-control',
   projectSearch: 'project-control',
   projectDependencies: 'project-control',
+  projectQuickEntry: 'quick-entry',
   projectStandardization: 'project-control',
   report: 'report',
   projectSafety: 'safety',

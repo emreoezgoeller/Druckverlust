@@ -166,6 +166,10 @@ export default class StatusBarComponent {
       return 'Abhängigkeiten & Konflikte';
     }
 
+    if (selection.type === 'projectQuickEntry') {
+      return 'Schnellerfassung';
+    }
+
     if (selection.type === 'projectStandardization') {
       return 'Projektworkflow';
     }

@@ -5,7 +5,7 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=41.00';
+import ReportEngine from '../../report/ReportEngine.js?v=42.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -88,20 +88,21 @@ import {
 } from '../../testing/BetaFeedbackInbox.js?v=21.12';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=41.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=41.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=41.00';
-import RibbonActions from '../core/RibbonActions.js?v=41.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=41.00';
+import UiDialogService from '../core/UiDialogService.js?v=42.00';
+import RibbonActions from '../core/RibbonActions.js?v=42.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00';
 import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00';
 import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00';
 import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00';
 import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00';
 import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=41.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=41.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00';
 import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00';
 import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00';
 import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00';
@@ -126,6 +127,12 @@ export default class WorkspaceComponent {
     this.helpActiveTopicId = '';
     this.helpContextToken = '';
     this.helpProgress = HelpCenterEngine.loadProgress();
+    this.quickEntryText = '';
+    this.quickEntryMode = 'append';
+    this.quickEntryPreview = null;
+    this.quickEntrySource = 'paste';
+    this.quickEntryActor = '';
+    this.quickEntryNote = '';
     this.formPartLibrarySearch = '';
     this.formPartLibraryCategory = 'all';
     this.formPartLibraryFit = 'all';
@@ -186,6 +193,7 @@ export default class WorkspaceComponent {
     if (selection.type === 'projectSafety') return this.renderProjectSafety(selection.data);
     if (selection.type === 'systemManager') return this.renderSystemManager(selection.data);
     if (selection.type === 'projectCockpit') return this.renderProjectCockpit(selection.data);
+    if (selection.type === 'projectQuickEntry') return this.renderProjectQuickEntry(selection.data);
     if (selection.type === 'projectStandardization') return this.renderProjectStandardization(selection.data);
     if (selection.type === 'projectTaskCenter') return this.renderProjectTaskCenter(selection.data);
     if (selection.type === 'projectSearch') return this.renderProjectSearch(selection.data);
@@ -594,6 +602,7 @@ export default class WorkspaceComponent {
       liveSimulation: 'Live-Simulation',
       report: 'Professional Report',
       projectCockpit: 'Projektcockpit',
+      projectQuickEntry: 'Schnellerfassung',
       projectTaskCenter: 'Aufgaben',
       projectSearch: 'Projektsuche',
       projectDependencies: 'Strukturprüfung',
@@ -12284,6 +12293,7 @@ formatNumber(value, digits = 2) {
       { type: 'projectHistory', label: 'Änderungsverlauf', meta: 'Rückgängig, Wiederholen und Sitzungsstände', icon: '↶' },
       { type: 'projectDependencies', label: 'Abhängigkeiten', meta: 'Änderungsfolgen, Struktur und Konflikte', icon: '⇄' },
       { type: 'projectCockpit', label: 'Projektcockpit', meta: 'Projektweite QS und Dokumentation', icon: '◫' },
+      { type: 'projectQuickEntry', label: 'Schnellerfassung', meta: 'Excel, CSV und Tabellenimport', icon: '▦' },
       { type: 'projectStandardization', label: 'Projektworkflow', meta: 'Prüfprofile, Vorlagen und Massenbearbeitung', icon: '≡' },
       { type: 'engineeringQuality', label: 'Engineering-QS', meta: 'Aktive Anlage fachlich prüfen', icon: '✓' },
       { type: 'networkSchematic', label: 'Anlagenschema', meta: 'Technische Anlagenzeichnung öffnen', icon: '⌁' },
@@ -12504,6 +12514,387 @@ formatNumber(value, digits = 2) {
     });
   }
 
+  renderProjectQuickEntry(projectInput = null) {
+    const project = projectInput || this.state.project;
+    const activeSystem = this.state.selectedSystem || project?.systems?.[0] || null;
+
+    if (!project || !activeSystem) {
+      this.root.innerHTML = `
+        <section class="dp-quick-entry-empty">
+          <span class="dp-overline">Phase 42 · Schnellerfassung</span>
+          <h1>Keine aktive Anlage vorhanden</h1>
+          <p>Lege zuerst eine Anlage an und öffne danach die Schnellerfassung.</p>
+        </section>
+      `;
+      return;
+    }
+
+    const preview = this.quickEntryPreview;
+    const previewRows = Array.isArray(preview?.rows) ? preview.rows : [];
+    const history = (Array.isArray(project.tableImportHistory) ? project.tableImportHistory : [])
+      .filter(entry => !entry.systemId || String(entry.systemId) === String(activeSystem.id))
+      .slice(0, 8);
+    const modeLabels = {
+      append: ['Anhängen', 'Neue Teilstrecken am Ende ergänzen. Bestehende Einträge bleiben unverändert.'],
+      update: ['Aktualisieren', 'Gleich benannte Teilstrecken aktualisieren; neue Bezeichnungen werden ergänzt.'],
+      replace: ['Ersetzen', 'Alle Teilstrecken der aktiven Anlage durch die geprüfte Tabelle ersetzen.'],
+    };
+    const delimiterLabel = preview?.delimiter === '\t' ? 'Tabulator / Excel' : preview?.delimiter === ';' ? 'Semikolon' : preview?.delimiter === ',' ? 'Komma' : 'Automatisch';
+    const formatInteger = value => Number(value || 0).toLocaleString('de-CH', { maximumFractionDigits: 0 });
+    const formatDecimal = (value, digits = 2) => Number(value || 0).toLocaleString('de-CH', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+    this.root.innerHTML = `
+      <div class="workspace-header dp-quick-entry-header">
+        <div>
+          <span class="dp-overline">Phase 42 · Schnellerfassung</span>
+          <h1>Teilstrecken aus Excel oder CSV übernehmen</h1>
+          <p>Tabellen einfügen, vor der Übernahme vollständig prüfen und kontrolliert in die aktive Anlage schreiben.</p>
+        </div>
+        <div class="dp-quick-entry-system-card">
+          <span>Aktive Anlage</span>
+          <strong>${this.escapeHtml(activeSystem.name || 'Anlage')}</strong>
+          <small>${activeSystem.sections?.length || 0} vorhandene Teilstrecken</small>
+        </div>
+      </div>
+
+      <section class="dp-quick-entry-safety-strip" aria-label="Sicherheitsablauf">
+        <div><strong>1</strong><span>Tabelle einfügen</span></div>
+        <i aria-hidden="true">→</i>
+        <div><strong>2</strong><span>Vorschau prüfen</span></div>
+        <i aria-hidden="true">→</i>
+        <div><strong>3</strong><span>Fehler korrigieren</span></div>
+        <i aria-hidden="true">→</i>
+        <div><strong>4</strong><span>Übernahme bestätigen</span></div>
+      </section>
+
+      <section class="dp-quick-entry-mode-grid" aria-label="Übernahmemodus">
+        ${Object.entries(modeLabels).map(([value, [label, description]]) => `
+          <label class="dp-quick-entry-mode ${this.quickEntryMode === value ? 'is-active' : ''}">
+            <input type="radio" name="quick-entry-mode" value="${value}" data-quick-entry-mode ${this.quickEntryMode === value ? 'checked' : ''} />
+            <span>
+              <strong>${label}</strong>
+              <small>${description}</small>
+            </span>
+          </label>
+        `).join('')}
+      </section>
+
+      <section class="dp-quick-entry-editor-card">
+        <div class="dp-quick-entry-card-head">
+          <div>
+            <span class="dp-overline">Tabelleneingabe</span>
+            <h2>Excel-Bereich direkt einfügen</h2>
+            <p>Unterstützt werden Tabulator, Semikolon und Komma sowie Dezimalkomma und Einheiten.</p>
+          </div>
+          <div class="dp-quick-entry-toolbar">
+            <button type="button" class="dp-button ghost" data-quick-entry-action="load-current">Aktuelle Teilstrecken laden</button>
+            <button type="button" class="dp-button ghost" data-quick-entry-action="template">Beispiel einsetzen</button>
+            <button type="button" class="dp-button ghost" data-quick-entry-action="paste">Zwischenablage</button>
+            <button type="button" class="dp-button ghost" data-quick-entry-action="select-file">Datei wählen</button>
+            <input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" data-quick-entry-file hidden />
+          </div>
+        </div>
+
+        <label class="dp-quick-entry-textarea-label" for="dp-quick-entry-text">Tabelle</label>
+        <textarea
+          id="dp-quick-entry-text"
+          data-quick-entry-text
+          spellcheck="false"
+          placeholder="Teilstrecke&#9;Bauform&#9;Luftmenge [m³/h]&#9;Länge [m]&#9;Breite [mm]&#9;Höhe [mm]&#9;Durchmesser [mm]&#9;Beschreibung"
+        >${this.escapeHtml(this.quickEntryText || '')}</textarea>
+
+        <div class="dp-quick-entry-editor-footer">
+          <div class="dp-quick-entry-export-actions">
+            <button type="button" class="dp-button ghost" data-quick-entry-action="download-template">CSV-Vorlage</button>
+            <button type="button" class="dp-button ghost" data-quick-entry-action="export-current">Aktive Anlage exportieren</button>
+            <button type="button" class="dp-button ghost" data-quick-entry-action="clear">Eingabe leeren</button>
+          </div>
+          <button type="button" class="dp-button primary" data-quick-entry-action="preview">Vorschau erstellen</button>
+        </div>
+      </section>
+
+      <section class="dp-quick-entry-help-grid">
+        <article>
+          <strong>Akzeptierte Spalten</strong>
+          <span>Teilstrecke, Bauform, Luftmenge, Länge, Breite, Höhe, Durchmesser und Beschreibung.</span>
+        </article>
+        <article>
+          <strong>Flexible Einheiten</strong>
+          <span>Dimensionen ohne Einheit gelten als mm. Möglich sind auch mm, cm und m sowie m³/h, m³/s und l/s.</span>
+        </article>
+        <article>
+          <strong>Keine blinde Übernahme</strong>
+          <span>Fehler blockieren die Übernahme. Warnungen bleiben sichtbar und müssen bewusst geprüft werden.</span>
+        </article>
+      </section>
+
+      ${preview ? `
+        <section class="dp-quick-entry-preview-card ${preview.canApply ? 'is-ready' : 'has-errors'}">
+          <div class="dp-quick-entry-preview-head">
+            <div>
+              <span class="dp-overline">Importvorschau · ${delimiterLabel}</span>
+              <h2>${preview.summary.total} Tabellenzeilen geprüft</h2>
+              <p>${preview.hasHeader ? 'Spaltenüberschriften wurden erkannt.' : 'Keine eindeutige Kopfzeile erkannt; Standardreihenfolge wird verwendet.'}</p>
+            </div>
+            <div class="dp-quick-entry-preview-status ${preview.canApply ? 'is-ready' : 'has-errors'}">
+              <strong>${preview.canApply ? 'Bereit zur Übernahme' : 'Korrektur erforderlich'}</strong>
+              <span>${preview.summary.errors} Fehler · ${preview.summary.warnings} Hinweise</span>
+            </div>
+          </div>
+
+          <div class="dp-quick-entry-summary-grid">
+            <article><span>Gültig</span><strong>${preview.summary.valid}</strong><small>von ${preview.summary.total} Zeilen</small></article>
+            <article><span>Neu</span><strong>${preview.summary.add}</strong><small>werden ergänzt</small></article>
+            <article><span>Aktualisiert</span><strong>${preview.summary.update}</strong><small>nach Bezeichnung</small></article>
+            <article class="${preview.summary.errors ? 'is-critical' : ''}"><span>Fehler</span><strong>${preview.summary.errors}</strong><small>blockieren die Übernahme</small></article>
+          </div>
+
+          <div class="dp-table-scroll dp-quick-entry-table-wrap">
+            <table class="dp-table dp-quick-entry-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Zeile</th>
+                  <th>Teilstrecke</th>
+                  <th>Bauform</th>
+                  <th>Luftmenge</th>
+                  <th>Länge</th>
+                  <th>Dimension</th>
+                  <th>Aktion / Prüfung</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${previewRows.slice(0, 100).map(row => {
+                  const section = row.section;
+                  const dimension = section.type === 'pipe'
+                    ? `Ø ${formatInteger(section.d * 1000)} mm`
+                    : `${formatInteger(section.b * 1000)} × ${formatInteger(section.h * 1000)} mm`;
+                  const issueText = row.issues.length
+                    ? row.issues.map(issue => `<span class="dp-quick-entry-issue is-${issue.severity}">${this.escapeHtml(issue.message)}</span>`).join('')
+                    : `<span class="dp-quick-entry-issue is-ok">${row.action === 'update' ? 'Bestehende Teilstrecke wird aktualisiert.' : 'Neue Teilstrecke wird ergänzt.'}</span>`;
+                  return `
+                    <tr class="is-${row.status}">
+                      <td><span class="dp-quick-entry-row-status is-${row.status}">${row.status === 'error' ? 'Fehler' : row.status === 'warning' ? 'Prüfen' : 'OK'}</span></td>
+                      <td>${row.sourceRow}</td>
+                      <td><strong>${this.escapeHtml(section.name)}</strong>${section.description ? `<small>${this.escapeHtml(section.description)}</small>` : ''}</td>
+                      <td>${section.type === 'pipe' ? 'Rundrohr' : 'Rechteckkanal'}</td>
+                      <td>${formatInteger(section.q)} m³/h</td>
+                      <td>${formatDecimal(section.l, 2)} m</td>
+                      <td>${dimension}</td>
+                      <td><div class="dp-quick-entry-issues">${issueText}</div></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${previewRows.length > 100 ? `<p class="dp-quick-entry-table-note">Weitere ${previewRows.length - 100} Zeilen wurden geprüft, werden in dieser Vorschau aber nicht eingeblendet.</p>` : ''}
+
+          <div class="dp-quick-entry-apply-panel">
+            <div class="dp-quick-entry-meta-fields">
+              <label>Bearbeiter<input type="text" data-quick-entry-actor maxlength="80" value="${this.escapeAttribute(this.quickEntryActor || project.author || '')}" placeholder="Name" /></label>
+              <label>Importvermerk<input type="text" data-quick-entry-note maxlength="160" value="${this.escapeAttribute(this.quickEntryNote || '')}" placeholder="z. B. Übernahme aus Kanalnetz Excel" /></label>
+            </div>
+            <div class="dp-quick-entry-apply-copy">
+              <strong>${modeLabels[this.quickEntryMode][0]}</strong>
+              <span>Vor der Übernahme wird automatisch eine lokale Sicherheitssicherung erstellt.</span>
+            </div>
+            <button type="button" class="dp-button primary" data-quick-entry-action="apply" ${preview.canApply ? '' : 'disabled'}>Geprüfte Tabelle übernehmen</button>
+          </div>
+        </section>
+      ` : `
+        <section class="dp-quick-entry-placeholder">
+          <div class="dp-quick-entry-placeholder-icon" aria-hidden="true">▦</div>
+          <div>
+            <strong>Noch keine Vorschau erstellt</strong>
+            <span>Füge eine Tabelle ein und wähle „Vorschau erstellen“. Das Projekt wird dabei noch nicht verändert.</span>
+          </div>
+        </section>
+      `}
+
+      <section class="dp-quick-entry-history-card">
+        <div class="dp-quick-entry-card-head">
+          <div>
+            <span class="dp-overline">Änderungsnachweis</span>
+            <h2>Letzte Tabellenübernahmen</h2>
+          </div>
+          <span class="dp-quick-entry-history-count">${history.length} Einträge</span>
+        </div>
+        ${history.length ? `
+          <div class="dp-quick-entry-history-list">
+            ${history.map(entry => `
+              <article>
+                <div>
+                  <strong>${this.escapeHtml(entry.systemName || activeSystem.name || 'Anlage')}</strong>
+                  <span>${new Date(entry.createdAt).toLocaleString('de-CH')} · ${this.escapeHtml(modeLabels[entry.mode]?.[0] || entry.mode || 'Import')}</span>
+                </div>
+                <div class="dp-quick-entry-history-values">
+                  <span>+${entry.added || 0} neu</span>
+                  <span>${entry.updated || 0} aktualisiert</span>
+                  <span>${entry.removed || 0} ersetzt</span>
+                </div>
+                <small>${this.escapeHtml(entry.note || entry.actor || 'Ohne Vermerk')}</small>
+              </article>
+            `).join('')}
+          </div>
+        ` : '<div class="dp-empty-state"><strong>Noch keine Tabellenübernahme dokumentiert.</strong><span>Erfolgreiche Übernahmen erscheinen automatisch in diesem Projekt.</span></div>'}
+      </section>
+    `;
+
+    this.bindProjectQuickEntryEvents(project, activeSystem, preview);
+  }
+
+  bindProjectQuickEntryEvents(project, activeSystem, preview) {
+    const textArea = this.root.querySelector('[data-quick-entry-text]');
+    textArea?.addEventListener('input', event => {
+      this.quickEntryText = event.target.value || '';
+      this.quickEntryPreview = null;
+    });
+
+    this.root.querySelectorAll('[data-quick-entry-mode]').forEach(input => input.addEventListener('change', event => {
+      this.quickEntryMode = event.target.value || 'append';
+      this.quickEntryPreview = null;
+      this.renderProjectQuickEntry(project);
+    }));
+
+    const fileInput = this.root.querySelector('[data-quick-entry-file]');
+    this.root.querySelector('[data-quick-entry-action="select-file"]')?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        UiDialogService.alert({ title: 'Datei zu gross', message: 'Bitte eine Tabellen- oder Textdatei bis maximal 5 MB wählen.', tone: 'warning' });
+        return;
+      }
+      try {
+        this.quickEntryText = await file.text();
+        this.quickEntrySource = 'file';
+        this.quickEntryPreview = null;
+        this.renderProjectQuickEntry(project);
+      } catch (error) {
+        UiDialogService.alert({ title: 'Datei konnte nicht gelesen werden', message: error?.message || String(error), tone: 'warning' });
+      }
+    });
+
+    this.root.querySelector('[data-quick-entry-action="load-current"]')?.addEventListener('click', () => {
+      this.quickEntryText = ProjectTableImportEngine.serializeSystem(activeSystem, { delimiter: '\t' });
+      this.quickEntryMode = 'update';
+      this.quickEntrySource = 'current-system';
+      this.quickEntryPreview = null;
+      this.renderProjectQuickEntry(project);
+    });
+
+    this.root.querySelector('[data-quick-entry-action="template"]')?.addEventListener('click', () => {
+      this.quickEntryText = ProjectTableImportEngine.createTemplate({ delimiter: '\t' });
+      this.quickEntrySource = 'template';
+      this.quickEntryPreview = null;
+      this.renderProjectQuickEntry(project);
+    });
+
+    this.root.querySelector('[data-quick-entry-action="paste"]')?.addEventListener('click', async () => {
+      try {
+        const value = await navigator.clipboard?.readText?.();
+        if (!value) throw new Error('Die Zwischenablage enthält keinen lesbaren Text. Du kannst die Tabelle auch direkt mit Ctrl+V in das Feld einfügen.');
+        this.quickEntryText = value;
+        this.quickEntrySource = 'clipboard';
+        this.quickEntryPreview = null;
+        this.renderProjectQuickEntry(project);
+      } catch (error) {
+        UiDialogService.alert({ title: 'Zwischenablage nicht verfügbar', message: error?.message || 'Bitte die Tabelle direkt in das Eingabefeld einfügen.', tone: 'info' });
+      }
+    });
+
+    this.root.querySelector('[data-quick-entry-action="clear"]')?.addEventListener('click', () => {
+      this.quickEntryText = '';
+      this.quickEntryPreview = null;
+      this.quickEntrySource = 'paste';
+      this.renderProjectQuickEntry(project);
+    });
+
+    this.root.querySelector('[data-quick-entry-action="download-template"]')?.addEventListener('click', () => {
+      ProjectTableImportEngine.downloadText(
+        ProjectTableImportEngine.createTemplate({ delimiter: ';' }),
+        'Druckverlust_Pro_Teilstrecken_Vorlage.csv',
+      );
+    });
+
+    this.root.querySelector('[data-quick-entry-action="export-current"]')?.addEventListener('click', () => {
+      ProjectTableImportEngine.downloadText(
+        ProjectTableImportEngine.serializeSystem(activeSystem, { delimiter: ';' }),
+        ProjectTableImportEngine.createFileName(activeSystem),
+      );
+    });
+
+    this.root.querySelector('[data-quick-entry-action="preview"]')?.addEventListener('click', () => {
+      this.quickEntryText = String(this.root.querySelector('[data-quick-entry-text]')?.value || this.quickEntryText || '');
+      this.quickEntryPreview = ProjectTableImportEngine.createPreview(this.quickEntryText, {
+        system: activeSystem,
+        mode: this.quickEntryMode,
+        delimiter: 'auto',
+      });
+      this.renderProjectQuickEntry(project);
+    });
+
+    this.root.querySelector('[data-quick-entry-actor]')?.addEventListener('input', event => { this.quickEntryActor = event.target.value || ''; });
+    this.root.querySelector('[data-quick-entry-note]')?.addEventListener('input', event => { this.quickEntryNote = event.target.value || ''; });
+
+    this.root.querySelector('[data-quick-entry-action="apply"]')?.addEventListener('click', async () => {
+      if (!preview?.canApply) return;
+      const actor = String(this.root.querySelector('[data-quick-entry-actor]')?.value || this.quickEntryActor || project.author || '').trim();
+      const note = String(this.root.querySelector('[data-quick-entry-note]')?.value || this.quickEntryNote || '').trim();
+      this.quickEntryActor = actor;
+      this.quickEntryNote = note;
+
+      const isReplace = this.quickEntryMode === 'replace';
+      const confirmed = await UiDialogService.confirm({
+        title: isReplace ? 'Teilstrecken vollständig ersetzen' : 'Geprüfte Tabelle übernehmen',
+        message: isReplace
+          ? `${activeSystem.sections?.length || 0} vorhandene Teilstrecken werden durch ${preview.summary.valid} geprüfte Tabellenzeilen ersetzt.`
+          : `${preview.summary.add} neue und ${preview.summary.update} bestehende Teilstrecke(n) werden übernommen.`,
+        details: [
+          'Vor der Änderung wird automatisch eine lokale Sicherheitssicherung erstellt.',
+          isReplace ? 'Nicht mehr zuordenbare Formteile oder Sonderbauteile werden bewusst als nicht zugeordnet markiert.' : 'Bestehende Bauteilzuordnungen bleiben erhalten.',
+        ],
+        confirmLabel: isReplace ? 'Teilstrecken ersetzen' : 'Tabelle übernehmen',
+        tone: isReplace ? 'warning' : 'info',
+      });
+      if (!confirmed) return;
+
+      try {
+        this.helpRibbonActions.createSafetyBackup('Vor Tabellenübernahme', 'before-table-import');
+        const result = ProjectTableImportEngine.applyPreview(activeSystem, preview, { mode: this.quickEntryMode });
+        const logEntry = ProjectTableImportEngine.createImportLogEntry(result, {
+          systemId: activeSystem.id,
+          systemName: activeSystem.name,
+          mode: this.quickEntryMode,
+          source: this.quickEntrySource,
+          actor,
+          note,
+        });
+        ProjectTableImportEngine.addImportLog(project, logEntry);
+        this.quickEntryPreview = null;
+        this.quickEntryText = ProjectTableImportEngine.serializeSystem(activeSystem, { delimiter: '\t' });
+        this.quickEntryMode = 'update';
+        this.quickEntrySource = 'current-system';
+
+        this.helpRibbonActions.calculate({ silent: true, keepDirty: true });
+        this.state.setSelection('projectQuickEntry', project);
+        this.state.notify();
+
+        const details = [
+          `${result.added} Teilstrecke(n) ergänzt`,
+          `${result.updated} Teilstrecke(n) aktualisiert`,
+          result.removed ? `${result.removed} frühere Teilstrecke(n) ersetzt` : '',
+          result.unassignedFormParts ? `${result.unassignedFormParts} Formteil(e) neu zuordnen` : '',
+          result.unassignedSpecialComponents ? `${result.unassignedSpecialComponents} Sonderbauteil(e) neu zuordnen` : '',
+        ].filter(Boolean);
+        UiDialogService.alert({ title: 'Tabellenübernahme abgeschlossen', message: details.join('\n'), tone: result.unassignedFormParts || result.unassignedSpecialComponents ? 'warning' : 'success' });
+      } catch (error) {
+        UiDialogService.alert({ title: 'Tabellenübernahme fehlgeschlagen', message: error?.message || String(error), tone: 'warning' });
+      }
+    });
+  }
+
   renderProjectHistory() {
     const project = this.state.project;
     const history = this.state.historyEngine;
@@ -12674,7 +13065,7 @@ formatNumber(value, digits = 2) {
     if (viewType === 'report') return this.state.selectReport(system);
     if (viewType === 'system' && system) return this.state.selectSystem(system);
     if (viewType === 'section' && target.sectionId) return;
-    const projectViews = ['project', 'projectSearch', 'projectHistory', 'projectDependencies', 'projectCockpit', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
+    const projectViews = ['project', 'projectSearch', 'projectHistory', 'projectDependencies', 'projectCockpit', 'projectQuickEntry', 'projectStandardization', 'projectTaskCenter', 'systemManager'];
     const systemViews = ['engineeringQuality', 'networkSchematic', 'liveSimulation', 'projectCompletion', 'projectSafety', 'projectHandover'];
     if (projectViews.includes(viewType)) {
       this.state.setSelection(viewType, project);

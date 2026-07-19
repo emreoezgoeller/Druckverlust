@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 1.18.0 · Phase 41.00 · Kontextbezogenes Hilfe-Center mit Suche, geführten Ersten Schritten und vollständiger Tastaturübersicht.
+**Aktueller Stand:** Version 1.19.0 · Phase 42.00 · Geprüfte Schnellerfassung aus Excel, CSV, TSV und Zwischenablage mit Vorschau, Sicherheitssicherung und Importnachweis.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, sitzungsbezogener Änderungsverlauf mit Rückgängig/Wiederholen, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Enthalten sind Projekt- und Mehranlagenverwaltung, Projektcockpit, Projektworkflow mit Prüfprofilen und Systemvorlagen, zentraler Projekt-Navigator mit Aufgaben und Favoriten, globale Projektsuche mit Querverweisen und Sprungmarken, Struktur- und Abhängigkeitsprüfung mit Änderungsfolgen, sitzungsbezogener Änderungsverlauf mit Rückgängig/Wiederholen, geprüfte Excel-/CSV-Schnellerfassung, projektweiter Anlagenvergleich, Teilstrecken, 14 berechnete Formteiltypen, Sonderbauteile, automatische Neuberechnung, Engineering-QS, interaktive Anlagenzeichnung, Live-Simulation, gespeicherte Varianten, Revisionssnapshots, `.dvp`-Projektdateien, lokale Sicherungshistorie, geprüfte `.dvpa`-Projektarchive, kontrollierte `.dvph`-Übergabepakete, Autosicherung und ein mehrseitiger Professional Report.
 
 ## Lokal starten
 
@@ -43,6 +43,7 @@ Druckverlust/
 │   ├── formteile/             Registry und 14 Formteilrechner
 │   ├── handover/              Importvorschau, Übergabestatus und `.dvph`-Freigabepaket
 │   ├── help/                  Hilfe-Center, geführte Schritte und Tastenkürzel
+│   ├── import/                geprüfte Excel-, CSV- und Tabellenübernahme
 │   ├── landing/               Produktseiten
 │   ├── licensing/             vorbereitete Lizenzlogik
 │   ├── project/               Projekte, Anlagenmanager, Workflow, Aufgaben, Suche, Verlauf, Projektindex, Abhängigkeiten, Konfliktprüfung, Prüfprofile, Vorlagen sowie Demo- und Praxisprojekte
@@ -60,6 +61,27 @@ Druckverlust/
 └── docs/                      technische Dokumentation
 ```
 
+
+## Phase 42.00
+
+Unter **Projekt → Schnellerfassung** lassen sich Teilstrecken kontrolliert aus Excel, CSV, TSV oder der Zwischenablage übernehmen:
+
+- automatische Erkennung von Tabulator, Semikolon und Komma als Trennzeichen,
+- automatische Zuordnung deutscher und englischer Spaltenüberschriften,
+- flexible Zahlenformate mit Dezimalkomma, Dezimalpunkt und Tausendertrennzeichen,
+- Einheitenumrechnung für mm, cm, m sowie m³/h, m³/s und l/s,
+- drei Übernahmemodi: ergänzen, nach Teilstreckenbezeichnung aktualisieren oder vollständig ersetzen,
+- prüfbare Vorschau mit Zeilenstatus, Fehlern, Warnungen und geplanter Aktion,
+- Fehler blockieren die Übernahme; Warnungen bleiben sichtbar,
+- automatische lokale Sicherheitssicherung unmittelbar vor der Änderung,
+- Neuberechnung der aktiven Anlage nach erfolgreicher Übernahme,
+- vorhandene Formteil- und Sonderbauteilzuordnungen werden beim Ersetzen nach gleicher Teilstreckenbezeichnung neu verbunden,
+- nicht mehr zuordenbare Bauteile werden nicht gelöscht, sondern bewusst als nicht zugeordnet markiert,
+- CSV-Vorlage und Export der aktiven Anlage,
+- projektbezogener Importnachweis mit Bearbeiter, Vermerk, Quelle und Änderungsumfang,
+- direkter Aufruf mit `Ctrl + Shift + E` und kontextbezogene Hilfe im Hilfe-Center.
+
+Die Schnellerfassung ergänzt die bestehende manuelle Bearbeitung. Sie übernimmt keine Herstellerdaten und führt keine Ventilatorauslegung durch.
 
 ## Phase 41.00
 
@@ -240,7 +262,7 @@ npm test
 Gezielte Prüfung der neuen Phase:
 
 ```bash
-npm run test:phase41
+npm run test:phase42
 ```
 
 Vorherige Projektcockpit-Prüfung:

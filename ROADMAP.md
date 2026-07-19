@@ -1,5 +1,16 @@
 # Roadmap
 
+## Phase 42.00 – abgeschlossen
+
+- geprüfte Schnellerfassung aus Excel, CSV, TSV und Zwischenablage,
+- automatische Spalten-, Trennzeichen-, Zahlenformat- und Einheitenerkennung,
+- Vorschau mit Fehlerblockierung und sichtbaren Warnungen,
+- Ergänzen, Aktualisieren oder vollständiges Ersetzen von Teilstrecken,
+- automatische Sicherheitssicherung und Neuberechnung vor beziehungsweise nach der Übernahme,
+- sichere Neuverknüpfung vorhandener Formteile und Sonderbauteile nach Teilstreckenbezeichnung,
+- CSV-Vorlage, Anlagenexport und projektbezogener Importnachweis,
+- Integration in Ribbon, Sidebar, Statusleiste, Hilfe-Center und Tastenkürzel `Ctrl + Shift + E`.
+
 ## Phase 41.00 – abgeschlossen
 
 - Kontextbezogenes Hilfe-Center mit Suche und Kategorien
@@ -150,6 +161,7 @@
 - Phase 37.00: Projekt-Navigator, Aufgaben, Favoriten und Schnellzugriffe
 - Phase 38.00: globale Projektsuche, Projektindex, Querverweise und Sprungmarken
 - Phase 39.00: Strukturprüfung, Abhängigkeiten, Änderungsfolgen und Konfliktkontrolle
+- Phase 42.00: Excel-/CSV-Schnellerfassung, Prüfvorschau und sicherer Importnachweis
 - Phase 41.00: Hilfe-Center, kontextbezogene Bedienhilfe und geführte Erste Schritte
 - Phase 40.00: Sitzungsverlauf, Rückgängig/Wiederholen und Wiederherstellungspunkte
 

@@ -7,15 +7,15 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=41.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=42.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=41.00';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=41.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=42.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=41.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=41.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=41.00';
+import UiDialogService from './UiDialogService.js?v=42.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -616,6 +616,17 @@ export default class RibbonActions {
   }
 
 
+
+  showProjectQuickEntry() {
+    const project = this.state.project;
+    if (!project) {
+      UiDialogService.alert('Kein Projekt vorhanden.');
+      return;
+    }
+
+    this.state.setSelection?.('projectQuickEntry', project);
+    this.state.notify?.();
+  }
 
   showProjectStandardization() {
     const project = this.state.project;

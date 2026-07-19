@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Phase 42.00 – Schnellerfassung aus Excel und CSV
+
+- Neue `ProjectTableImportEngine` für Excel-, CSV-, TSV- und Zwischenablage-Daten ergänzt.
+- Tabulator, Semikolon und Komma werden automatisch erkannt; deutsche und englische Spaltenüberschriften werden flexibel zugeordnet.
+- Zahlen mit Dezimalkomma, Dezimalpunkt und Tausendertrennzeichen sowie Dimensionen in mm, cm und m werden normalisiert.
+- Luftmengen in m³/h, m³/s und l/s werden auf m³/h vereinheitlicht.
+- Drei kontrollierte Importmodi ergänzt: Teilstrecken ergänzen, nach Bezeichnung aktualisieren oder vollständig ersetzen.
+- Prüfvorschau mit Zeilenstatus, geplanten Aktionen, Fehlern und Warnungen ergänzt; fehlerhafte Tabellen können nicht übernommen werden.
+- Vor jeder Übernahme wird automatisch eine lokale Sicherheitssicherung erstellt; danach wird die aktive Anlage vollständig neu berechnet.
+- Beim Ersetzen werden vorhandene Formteile und Sonderbauteile anhand identischer Teilstreckenbezeichnungen neu zugeordnet; nicht zuordenbare Bauteile bleiben erhalten und werden zur Prüfung markiert.
+- CSV-Vorlage, Export der aktiven Anlage und projektbezogener Importnachweis mit Bearbeiter, Vermerk und Änderungsumfang ergänzt.
+- Schnellerfassung in Ribbon, Sidebar, Statusleiste, Hilfe-Center, Startseite und Tastenkürzel `Ctrl + Shift + E` integriert.
+- Deployment-QS um Import-Engine und Phase-42-Stylesheet erweitert.
+- Zwei neue Testgruppen mit 119 Einzelprüfungen ergänzt; vollständige bestehende Testsuite erneut ausgeführt.
+- App-Version auf 1.19.0 und Cachekennung auf 42.00 erhöht.
+- Ventilatorauslegung und Hersteller-Bauteildatenbank bleiben weiterhin vollständig ausgeschlossen.
+
 ## Phase 41.00 – Hilfe-Center und geführte Erste Schritte
 
 - Alte, auf Phase 21 basierende Bedienungsseite durch ein aktuelles, durchsuchbares Hilfe-Center ersetzt.

@@ -21,7 +21,7 @@ const main = read('src/main.js');
 const version = read('src/core/appVersion.js');
 const packageJson = JSON.parse(read('package.json'));
 
-check(workspace.includes("HelpCenterEngine from '../../help/HelpCenterEngine.js?v=41.00'"), 'Workspace lädt die Hilfe-Engine cache-sicher.');
+check(workspace.includes("HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00'"), 'Workspace lädt die Hilfe-Engine cache-sicher.');
 check(workspace.includes('renderHelp(context = null)'), 'Workspace besitzt das neue Hilfe-Center.');
 check(workspace.includes('data-help-search'), 'Hilfe-Center besitzt eine Suche.');
 check(workspace.includes('data-help-category'), 'Hilfe-Center besitzt Kategorien.');
@@ -48,14 +48,14 @@ check(css.includes('@media (max-width: 560px)'), 'Hilfe-Center besitzt Smartphon
 check(css.includes('@media (prefers-reduced-motion: reduce)'), 'Reduzierte Animationen werden berücksichtigt.');
 
 check(html.includes('phase41_00.css?v=41.00'), 'App lädt das Phase-41-Stylesheet.');
-check(html.includes('src/main.js?v=41.00'), 'App lädt Main mit Phase-41-Cache-Stand.');
-check(main.includes('WorkspaceComponent.js?v=41.00'), 'Main lädt Workspace mit Phase-41-Cache-Stand.');
+check(html.includes('src/main.js?v=42.00'), 'App lädt Main mit Phase-41-Cache-Stand.');
+check(main.includes('WorkspaceComponent.js?v=42.00'), 'Main lädt Workspace mit Phase-41-Cache-Stand.');
 check(main.includes('resolveHelpStartupTopic(helpSection)'), 'Startlinks öffnen das passende Hilfethema.');
 check(main.includes("report: 'report'"), 'Berichtslink wird auf die aktuelle Berichtshilfe abgebildet.');
-check(version.includes("APP_RELEASE = '41.00'"), 'Release ist Phase 41.00.');
-check(version.includes("APP_VERSION = '1.18.0'"), 'App-Version ist 1.18.0.');
-check(packageJson.version === '1.18.0', 'Paketversion ist 1.18.0.');
+check(version.includes("APP_RELEASE = '42.00'"), 'Release ist Phase 41.00.');
+check(version.includes("APP_VERSION = '1.19.0'"), 'App-Version ist 1.18.0.');
+check(packageJson.version === '1.19.0', 'Paketversion ist 1.18.0.');
 check(packageJson.scripts['test:phase41']?.includes('run-phase41-help-center-tests.js'), 'Phase-41-Testskript ist registriert.');
-check(packageJson.scripts.test.startsWith('node tests/run-phase41-help-center-tests.js'), 'Gesamttest startet mit Phase 41.');
+check(packageJson.scripts.test.startsWith('node tests/run-phase42-table-import-tests.js'), 'Gesamttest startet mit der aktuellen Phase.');
 
 console.log(`Phase 41.00 Hilfe-Center UI/Integration: ${checks} Prüfungen bestanden.`);

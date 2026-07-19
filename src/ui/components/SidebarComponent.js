@@ -126,6 +126,15 @@ export default class SidebarComponent {
             })}
 
             ${this.renderRootItem({
+              type: 'projectQuickEntry',
+              id: 'project-quick-entry',
+              label: 'Schnellerfassung',
+              meta: 'Excel · CSV · Tabellenimport · Vorschau',
+              icon: 'table',
+              active: this.state.getSelectionType() === 'projectQuickEntry',
+            })}
+
+            ${this.renderRootItem({
               type: 'projectStandardization',
               id: 'project-standardization',
               label: 'Projektworkflow',
@@ -438,6 +447,12 @@ export default class SidebarComponent {
           return;
         }
 
+        if (type === 'projectQuickEntry') {
+          this.state.setSelection('projectQuickEntry', project);
+          this.state.notify();
+          return;
+        }
+
         if (type === 'projectStandardization') {
           this.state.setSelection('projectStandardization', project);
           this.state.notify();
@@ -721,6 +736,7 @@ export default class SidebarComponent {
       formPart: '<path d="M4 5h7v4a4 4 0 0 0 4 4h5v6h-5A10 10 0 0 1 5 9V5z"/>',
       component: '<rect x="5" y="6" width="14" height="12" rx="2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3"/>',
       report: '<path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 11h6M9 15h6M9 19h4"/>',
+      table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16M15 4v16M3 14h18"/>',
       item: '<circle cx="12" cy="12" r="4"/>',
       chevron: '<path d="m8 10 4 4 4-4"/>',
       sidebar: '<path d="M4 4h16v16H4zM9 4v16"/><path d="m7 9-2 3 2 3"/>',

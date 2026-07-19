@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
-// Phase 41.00: einzeiliges Ribbon mit kontextbezogenem Hilfe-Center.
+// Phase 42.00: einzeiliges Ribbon mit Schnellerfassung und kontextbezogenem Hilfe-Center.
 
-import RibbonActions from '../core/RibbonActions.js?v=41.00';
+import RibbonActions from '../core/RibbonActions.js?v=42.00';
 
 const RIBBON_GROUPS = [
   {
@@ -16,6 +16,7 @@ const RIBBON_GROUPS = [
       { action: 'showProjectDependencies', label: 'Struktur', icon: 'network', title: 'Abhängigkeiten, Änderungsfolgen und Strukturkonflikte öffnen (Strg+Umschalt+D)' },
       { action: 'showSystemManager', label: 'Anlagen', icon: 'layers', title: 'Anlagen anlegen, duplizieren, ordnen und vergleichen (Strg+Umschalt+A)' },
       { action: 'showProjectCockpit', label: 'Cockpit', icon: 'pulse', title: 'Projektweite QS, Risikomatrix und Dokumentationsstatus öffnen (Strg+Umschalt+Q)' },
+      { action: 'showProjectQuickEntry', label: 'Schnellerfassung', icon: 'table', title: 'Teilstrecken aus Excel, CSV oder Zwischenablage übernehmen (Strg+Umschalt+E)' },
       { action: 'showProjectStandardization', label: 'Workflow', icon: 'sliders', title: 'Projektvorlagen, Prüfprofile und Massenbearbeitung öffnen (Strg+Umschalt+W)' },
       { action: 'showProjectTaskCenter', label: 'Aufgaben', icon: 'tasks', title: 'Projekt-Navigator, Favoriten und Aufgabenliste öffnen (Strg+Umschalt+T)' },
       { action: 'newProject', label: 'Neu', icon: 'filePlus', title: 'Neues Projekt erstellen (Strg+N)' },
@@ -263,6 +264,7 @@ export default class RibbonComponent {
     const reportButton = this.root.querySelector('[data-action="showReport"]');
     const systemManagerButton = this.root.querySelector('[data-action="showSystemManager"]');
     const projectCockpitButton = this.root.querySelector('[data-action="showProjectCockpit"]');
+    const projectQuickEntryButton = this.root.querySelector('[data-action="showProjectQuickEntry"]');
     const projectStandardizationButton = this.root.querySelector('[data-action="showProjectStandardization"]');
     const projectTaskCenterButton = this.root.querySelector('[data-action="showProjectTaskCenter"]');
     const projectSearchButton = this.root.querySelector('[data-action="showProjectSearch"]');
@@ -315,6 +317,9 @@ export default class RibbonComponent {
     } else if (selectionType === 'projectTaskCenter') {
       projectTaskCenterButton?.classList.add('is-current');
       projectTaskCenterButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'projectQuickEntry') {
+      projectQuickEntryButton?.classList.add('is-current');
+      projectQuickEntryButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'projectStandardization') {
       projectStandardizationButton?.classList.add('is-current');
       projectStandardizationButton?.setAttribute('aria-current', 'page');
@@ -496,6 +501,7 @@ export default class RibbonComponent {
       undo: '<path d="M9 7 4 12l5 5"/><path d="M5 12h8a6 6 0 0 1 6 6v1"/>',
       redo: '<path d="m15 7 5 5-5 5"/><path d="M19 12h-8a6 6 0 0 0-6 6v1"/>',
       history: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/>',
+      table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16M15 4v16M3 14h18"/>',
       chevronLeft: '<path d="m15 18-6-6 6-6"/>',
       chevronRight: '<path d="m9 18 6-6-6-6"/>',
       menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
