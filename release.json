@@ -1,0 +1,30 @@
+{
+  "name": "Druckverlust Pro",
+  "edition": "Professional",
+  "version": "2.0.0",
+  "phase": "45.00",
+  "releaseDate": "2026-07-19",
+  "projectFileSchema": "1.1.0",
+  "entryPoints": {
+    "product": "index.html",
+    "application": "app.html",
+    "windowsStarter": "Druckverlust_starten.bat"
+  },
+  "projectFormats": [
+    ".dvp",
+    ".dvpa",
+    ".dvph"
+  ],
+  "quality": {
+    "referenceCases": 39,
+    "formPartTypes": 14,
+    "excelReferenceChecks": 56,
+    "practiceSections": 48,
+    "performanceSections": 200
+  },
+  "excludedModules": [
+    "Ventilatorauslegung",
+    "Hersteller-Bauteildatenbank"
+  ],
+  "notes": "Herstellerneutraler, zusammengeführter und bereinigter Release-Stand."
+}

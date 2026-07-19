@@ -1,3 +1,18 @@
+# Changelog
+
+## 2.0.0 – Phase 45.00 – 19.07.2026
+
+- Entwicklungsstände 21.12 bis 42.00 zu einem vollständigen Release zusammengeführt.
+- Versions-, Cache-, Startseiten-, Manifest- und Dokumentationsstände vereinheitlicht.
+- Produkt- und Feedback-Assets auf dauerhafte, phasenunabhängige Dateinamen umgestellt.
+- Öffentliche Beta-Seite zur aktuellen Qualitäts- und Testseite überarbeitet.
+- Veraltete Phase-21-Browserwrapper entfernt; automatisierte Node-Prüfungen und Fachreferenzen beibehalten.
+- Rückwärtskompatibilitätsprüfung für alte rohe und umhüllte `.dvp`-Strukturen ergänzt.
+- Lastprüfung für 100 Teilstrecken und Mehranlagen-Projekt mit 200 Teilstrecken ergänzt.
+- Release-Manifest, Migration, Release-Checkliste und Release Notes ergänzt.
+- Kleine Doppelanweisung in der Projektserialisierung bereinigt.
+- Ventilatorauslegung und Hersteller-Bauteildatenbank bleiben ausdrücklich ausgeschlossen.
+
 # CHANGELOG
 
 ## Phase 42.00 – Schnellerfassung aus Excel und CSV

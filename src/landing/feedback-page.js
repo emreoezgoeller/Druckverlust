@@ -8,7 +8,7 @@ import {
   createBetaFeedbackJson,
   formatBetaFeedback,
   summarizeBetaFeedback,
-} from '../testing/BetaFeedbackReport.js?v=21.12';
+} from '../testing/BetaFeedbackReport.js?v=21.12&release=45.00';
 
 const form = document.querySelector('[data-beta-feedback-form]');
 const statusNode = document.querySelector('[data-feedback-status]');
@@ -159,7 +159,7 @@ document.querySelectorAll('[data-feedback-action]').forEach(button => {
     }
 
     if (action === 'reset') {
-      if (!confirm('Eingaben der Beta-Rückmeldung wirklich zurücksetzen?')) return;
+      if (!confirm('Eingaben der Rückmeldung wirklich zurücksetzen?')) return;
       localStorage.removeItem(BETA_FEEDBACK_STORAGE_KEY);
       draft = createBetaFeedbackDraft();
       fillForm(draft);

@@ -5,23 +5,23 @@ import ProjectCalculationService from '../../project/ProjectCalculationService.j
 import { calculateSection } from '../../core/CalculationEngine.js';
 import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=42.00';
+import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=45.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=45.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.12';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.12&release=45.00';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=21.12';
+} from '../../testing/ExpertTestProtocol.js?v=21.12&release=45.00';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -31,7 +31,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=21.12';
+} from '../../testing/ExpertFeedbackRound.js?v=21.12&release=45.00';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -45,7 +45,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=21.12';
+} from '../../testing/ReleaseDecisionPlan.js?v=21.12&release=45.00';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -54,7 +54,7 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=21.12';
+} from '../../testing/BetaReleaseReadiness.js?v=21.12&release=45.00';
 import {
   BETA_FEEDBACK_CATEGORIES,
   BETA_FEEDBACK_SEVERITIES,
@@ -67,7 +67,7 @@ import {
   getBetaFeedbackCategoryLabel,
   getBetaFeedbackSeverityLabel,
   summarizeBetaFeedback,
-} from '../../testing/BetaFeedbackReport.js?v=21.12';
+} from '../../testing/BetaFeedbackReport.js?v=21.12&release=45.00';
 import {
   BETA_FEEDBACK_INBOX_STORAGE_KEY,
   BETA_FEEDBACK_TRIAGE_STATUSES,
@@ -85,30 +85,30 @@ import {
   removeBetaFeedbackInboxItem,
   serializeBetaFeedbackInbox,
   updateBetaFeedbackInboxItem,
-} from '../../testing/BetaFeedbackInbox.js?v=21.12';
+} from '../../testing/BetaFeedbackInbox.js?v=21.12&release=45.00';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=45.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00&release=45.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=42.00';
-import RibbonActions from '../core/RibbonActions.js?v=42.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00';
-import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00';
-import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00';
+import UiDialogService from '../core/UiDialogService.js?v=42.00&release=45.00';
+import RibbonActions from '../core/RibbonActions.js?v=42.00&release=45.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00&release=45.00';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00&release=45.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00&release=45.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00&release=45.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00&release=45.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00&release=45.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00&release=45.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=45.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00&release=45.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00&release=45.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00&release=45.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00&release=45.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00&release=45.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00&release=45.00';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00&release=45.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {

@@ -11,7 +11,8 @@ Druckverlust Pro ist eine statische Webanwendung ohne Build-Schritt und ohne Bac
 - `index.html` – Produkt- und Startseite
 - `app.html` – Berechnungsanwendung
 - `produkt.html` – kompatibler Weiterleitungs-Alias
-- `beta.html`, `feedback.html` – Test- und Feedbackseiten
+- `release.json` – maschinenlesbarer Release- und Prüfumfang
+- `beta.html`, `feedback.html` – Qualitätssicherung und lokale Rückmeldung
 - `lizenz.html`, `impressum.html`, `datenschutz.html`, `404.html` – Begleitseiten
 
 Der Anwendungseinstieg ist `src/main.js`.

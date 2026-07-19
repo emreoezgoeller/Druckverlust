@@ -1,7 +1,7 @@
 {
   "name": "Druckverlust Pro Professional",
   "short_name": "Druckverlust Pro",
-  "description": "Professionelles Web-Tool für Druckverlustberechnung, Formteile, QS und PDF-Bericht.",
+  "description": "Herstellerneutrale Druckverlustberechnung mit Excel-/CSV-Schnellerfassung, Engineering-QS, Anlagenschema, Projektsicherheit und Professional Report.",
   "lang": "de-CH",
   "start_url": "./index.html",
   "scope": "./",
@@ -39,37 +39,31 @@
       "name": "Demo-Projekt testen",
       "short_name": "Demo",
       "url": "./app.html?demo=1",
-      "description": "Demo-Projekt direkt laden"
+      "description": "Vollständigen Demo-Workflow laden"
+    },
+    {
+      "name": "Schnellerfassung öffnen",
+      "short_name": "Import",
+      "url": "./app.html?help=1&section=quick-entry",
+      "description": "Excel-/CSV-Schnellerfassung und Anleitung öffnen"
     },
     {
       "name": "Anleitung öffnen",
       "short_name": "Anleitung",
       "url": "./app.html?help=1",
-      "description": "Bedienungsanleitung im Tool öffnen"
+      "description": "Hilfe-Center und geführte Schritte öffnen"
     },
     {
-      "name": "Öffentliche Beta testen",
-      "short_name": "Beta",
+      "name": "Qualität und Tests",
+      "short_name": "Qualität",
       "url": "./beta.html",
-      "description": "Testhinweise und Fachtest-Zugang öffnen"
+      "description": "Prüfumfang und Fachtest-Zugang öffnen"
     },
     {
-      "name": "Beta-Feedback erfassen",
+      "name": "Rückmeldung erfassen",
       "short_name": "Feedback",
       "url": "./feedback.html",
       "description": "Auffälligkeit oder Funktionswunsch lokal dokumentieren"
-    },
-    {
-      "name": "Beta-Feedback auswerten",
-      "short_name": "Auswertung",
-      "url": "./app.html?feedback-auswertung=1",
-      "description": "Exportierte Beta-Rückmeldungen importieren und priorisieren"
-    },
-    {
-      "name": "Lizenzübersicht",
-      "short_name": "Lizenz",
-      "url": "./lizenz.html",
-      "description": "Vorbereitete Lizenz- und Produktübersicht öffnen"
     }
   ]
 }

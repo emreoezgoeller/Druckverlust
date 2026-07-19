@@ -23,7 +23,7 @@ const quality = read('src/quality/EngineeringQualityEngine.js');
 const report = read('src/report/ReportEngine.js');
 
 assert.match(appHtml, /phase36_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=42\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=45\.00/); checks += 1;
 assert.match(ribbon, /showProjectStandardization/); checks += 1;
 assert.match(ribbon, /label: 'Workflow'/); checks += 1;
 assert.match(actions, /showProjectStandardization/); checks += 1;
@@ -43,8 +43,8 @@ assert.match(quality, /resolveProfile/); checks += 1;
 assert.match(quality, /profile\.name/); checks += 1;
 assert.match(report, /projectWorkflow/); checks += 1;
 assert.match(report, /Engineering Pruefprofil/); checks += 1;
-assert.match(version, /APP_RELEASE = '42\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '1\.19\.0'/); checks += 1;
+assert.match(version, /APP_RELEASE = '45\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '2\.0\.0'/); checks += 1;
 
 const project = createDemoProject();
 project.name = 'Phase 36 Bericht';
