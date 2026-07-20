@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.6.0 – Phase 51.00 – 20.07.2026
+
+- Ribbon auf eine kompakte, einzeilige Plattformleiste mit integriertem Logo und Projektstatus vereinheitlicht.
+- Sichtbare zweite Gruppenzeile auf Desktop entfernt, ohne Überlauf-, Sprung- oder Tastaturnavigation zu verlieren.
+- Symbol- und Statuslegende für zentrale Werkzeugtypen und Projektzustände ergänzt.
+- Zentralen `UiTooltipController` für sofortige Infotexte in Ribbon, Sidebar und Arbeitsbereich ergänzt.
+- Horizontales Überragen von Projektbaum, aktiver Auswahl und Arbeitsbereichsinhalten abgesichert.
+- Responsive Legenden- und Werkzeugführung für Tablet und Smartphone ergänzt.
+- 48 automatisierte Phase-51-Prüfungen ergänzt.
+
 ## 2.5.0 – Phase 50.00 – 20.07.2026
 
 - Formteile können direkt aus der aktuell geöffneten Teilstrecke erstellt werden.

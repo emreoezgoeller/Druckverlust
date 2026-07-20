@@ -10,16 +10,16 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=50.00';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=49.00&release=50.00';
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=49.00&release=51.00';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=50.00';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=50.00';
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.00';
 import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';

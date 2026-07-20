@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 50.00
+# Druckverlust Pro – Roadmap ab Phase 51.00
 
-Aktueller Entwicklungsstand: **Version 2.5.0 · Phase 50.00**. Der Formteil-Workflow arbeitet jetzt konsequent mit dem aktuellen Teilstrecken-Kontext, schützt manuelle Werte und führt Zusatzanschlüsse kontrolliert.
+Aktueller Entwicklungsstand: **Version 2.6.0 · Phase 51.00**. Oberfläche, Ribbon, Symbolhilfe und responsive Breitenführung sind nun als gemeinsamer Plattformstandard abgeschlossen.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -10,12 +10,12 @@ Aktueller Entwicklungsstand: **Version 2.5.0 · Phase 50.00**. Der Formteil-Work
 - lokale Formteilreihenfolge je Teilstrecke,
 - klare Warnungen bei fehlenden und widersprüchlichen Zuordnungen.
 
-## Phase 51.00 – Oberflächen- und Ribbon-Abschluss
+## Phase 51.00 – Oberflächen- und Ribbon-Abschluss – abgeschlossen
 
-- Oberflächenaufbau vollständig mit der Plattform-Hauptseite abstimmen,
-- Symbollegenden und Infotexte vervollständigen,
-- Ribbon, Sidebar und Arbeitsbereich bei kleinen Bildschirmbreiten prüfen,
-- Produktseite und Berechnungsanwendung sauber getrennt halten.
+- einzeilige Plattformleiste mit integriertem Logo und Status,
+- sofortige Infotexte sowie Symbol- und Statuslegende,
+- überlaufsichere Sidebar und Arbeitsfläche,
+- responsive Werkzeugführung für Desktop, Tablet und Smartphone.
 
 ## Phase 52.00 – Vereinfachte Ergebnisdarstellung
 

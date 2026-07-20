@@ -1,19 +1,20 @@
-// Druckverlust Pro – Phase 50.00
+// Druckverlust Pro – Phase 51.00
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
-import ApplicationShell from './ui/ApplicationShell.js?v=50.00&release=50.00';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=50.00&release=50.00';
-import SidebarComponent from './ui/components/SidebarComponent.js?v=50.00&release=50.00';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=50.00&release=50.00';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=50.00&release=50.00';
+import ApplicationShell from './ui/ApplicationShell.js?v=51.00&release=51.00';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=51.00&release=51.00';
+import SidebarComponent from './ui/components/SidebarComponent.js?v=51.00&release=51.00';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=51.00&release=51.00';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=51.00&release=51.00';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
-import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=50.00&release=50.00';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=51.00&release=51.00';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=50.00&release=50.00';
-import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=50.00&release=50.00';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=51.00&release=51.00';
+import UiTooltipController from './ui/core/UiTooltipController.js?v=51.00&release=51.00';
+import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=51.00&release=51.00';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 
@@ -417,7 +418,7 @@ function bootstrap() {
   new WorkspaceComponent(document.querySelector('.dp-workspace'), state);
   new StatusBarComponent(document.querySelector('.dp-status'), state);
   new KeyboardShortcuts(state).install();
-
+  const tooltipController = new UiTooltipController(document).install();
 
   AutoSaveEngine.install(state);
   installBeforeUnloadProtection(state);
@@ -431,6 +432,7 @@ function bootstrap() {
     licenseGate: LicenseGate,
     state,
     history,
+    tooltipController,
     recalculate() {
       const result = ProjectCalculationService.calculate(state.project, state.selectedSystem?.id || state.project?.systems?.[0]?.id || null);
       state.project.calculationResult = result;

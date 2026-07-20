@@ -1,6 +1,6 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 2.5.0 · Phase 50.00
+Stand: Version 2.6.0 · Phase 51.00
 
 ## 1. Ausführung
 
@@ -51,7 +51,8 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/ui/components/WorkspaceComponent.js` – Editoren, Bibliotheken, Analyse, Simulation und Abschluss
 - `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
 - `src/ui/core/RibbonActions.js` – zentrale Aktionen
-- `src/ui/phase22_00.css` bis `src/ui/phase33_00.css` – additive, releasebezogene UI-Schichten
+- `src/ui/core/UiTooltipController.js` – sofortige, zugängliche Infotexte für Symbolschaltflächen
+- `src/ui/phase22_00.css` bis `src/ui/phase51_00.css` – additive, releasebezogene UI-Schichten
 
 ### Speicherung und Bericht
 

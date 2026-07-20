@@ -1,0 +1,598 @@
+/* Druckverlust Pro – Phase 51.00
+   Plattformabschluss: einzeiliges Ribbon, sichtbare Symbolhilfe,
+   integrierte Statuslegende und robuste Breitenführung. */
+
+:root {
+  --dp-ribbon-height: 76px;
+  --dp-ribbon-brand-width: 226px;
+}
+
+/* Eine gemeinsame Plattformleiste – Logo, Werkzeuge und Status in einer Zeile. */
+.dp-shell {
+  grid-template-rows: var(--dp-ribbon-height) minmax(0, 1fr) 38px;
+}
+
+.dp-ribbon {
+  grid-template-columns: var(--dp-ribbon-brand-width) minmax(0, 1fr);
+  gap: 10px;
+  min-height: var(--dp-ribbon-height);
+  padding: 0 14px 0 16px;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 72% -40%, rgba(67, 174, 239, .20), transparent 32rem),
+    linear-gradient(110deg, #061a2f 0%, #082f55 56%, #0b4d7d 100%);
+  box-shadow: 0 8px 26px rgba(6, 26, 47, .20);
+}
+
+.dp-brand {
+  min-width: 0;
+}
+
+.dp-brand-home {
+  max-width: 100%;
+  gap: 10px;
+  padding: 4px 7px 4px 3px;
+}
+
+.dp-brand-logo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  padding: 3px;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.dp-brand-text strong {
+  font-size: 1.08rem;
+}
+
+.dp-brand-text > span {
+  margin-top: 1px;
+  font-size: .67rem;
+  letter-spacing: .09em;
+}
+
+.dp-ribbon-content {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.dp-ribbon-scroll-shell {
+  min-width: 0;
+  height: 100%;
+}
+
+.dp-tabs.dp-ribbon-groups {
+  height: 100%;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 0;
+  scroll-padding-inline: 32px;
+}
+
+.dp-ribbon-group {
+  min-width: max-content;
+  justify-content: center;
+  gap: 0;
+  padding: 0 7px;
+  border-left-color: rgba(255, 255, 255, .12);
+  border-radius: 11px;
+}
+
+.dp-ribbon-group-actions {
+  gap: 2px;
+}
+
+/* Die Gruppenbezeichnung bleibt für Tastatur/Sprungnavigation vorhanden,
+   bildet aber keine zweite sichtbare Ribbon-Zeile mehr. */
+@media (min-width: 901px) {
+  button.dp-ribbon-group-label--compact {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .dp-ribbon-group.is-current-group {
+    background: linear-gradient(180deg, rgba(89, 189, 248, .13), rgba(89, 189, 248, .035));
+    box-shadow: inset 0 -2px 0 rgba(102, 202, 255, .66);
+  }
+}
+
+.dp-tabs .dp-ribbon-action {
+  min-width: 48px;
+  min-height: 56px;
+  gap: 4px;
+  padding: 6px 7px 5px;
+  border-radius: 10px;
+  font-size: .64rem;
+}
+
+.dp-ribbon-action-icon {
+  width: 21px;
+  height: 21px;
+}
+
+.dp-ribbon-action-label {
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dp-tabs .dp-ribbon-action:hover,
+.dp-tabs .dp-ribbon-action:focus-visible {
+  background: rgba(255, 255, 255, .11);
+}
+
+.dp-tabs .dp-ribbon-action.is-current {
+  border-color: rgba(123, 207, 255, .35);
+  background: rgba(68, 166, 226, .22);
+  box-shadow: inset 0 -2px 0 rgba(127, 211, 255, .72);
+}
+
+.dp-ribbon-meta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dp-ribbon-context {
+  position: static;
+  display: inline-flex;
+  max-width: 176px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, .78);
+  background: rgba(2, 20, 38, .20);
+  font-size: .65rem;
+  pointer-events: auto;
+}
+
+.dp-ribbon-context-dot {
+  width: 7px;
+  height: 7px;
+  flex-basis: 7px;
+}
+
+.dp-ribbon-legend-toggle {
+  display: inline-flex;
+  min-width: 42px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, .92);
+  background: rgba(255, 255, 255, .075);
+  font-size: .68rem;
+  font-weight: 760;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.dp-ribbon-legend-toggle:hover,
+.dp-ribbon-legend-toggle:focus-visible,
+.dp-ribbon-legend-toggle.is-active {
+  border-color: rgba(118, 207, 255, .62);
+  background: rgba(41, 143, 206, .28);
+  outline: none;
+}
+
+.dp-ribbon-legend-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dp-ribbon-legend-panel {
+  position: absolute;
+  z-index: 120;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(520px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid #cadbe7;
+  border-radius: 16px;
+  color: var(--dp-ink);
+  background: rgba(255, 255, 255, .985);
+  box-shadow: 0 22px 55px rgba(4, 25, 45, .28);
+  backdrop-filter: blur(16px);
+}
+
+.dp-ribbon-legend-panel[hidden] {
+  display: none !important;
+}
+
+.dp-ribbon-legend-panel::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: 19px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid #cadbe7;
+  border-left: 1px solid #cadbe7;
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.dp-ribbon-legend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid #e0e9ef;
+}
+
+.dp-ribbon-legend-head small,
+.dp-ribbon-legend-head strong {
+  display: block;
+}
+
+.dp-ribbon-legend-head small {
+  margin-bottom: 2px;
+  color: var(--dp-brand-700);
+  font-size: .61rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.dp-ribbon-legend-head strong {
+  color: var(--dp-ink-strong);
+  font-size: .95rem;
+}
+
+.dp-ribbon-legend-head button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #d5e1e9;
+  border-radius: 9px;
+  color: #506d82;
+  background: #f6f9fb;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.dp-ribbon-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  padding: 12px 0;
+}
+
+.dp-ribbon-legend-item {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid #e1e9ef;
+  border-radius: 11px;
+  background: #f8fbfd;
+}
+
+.dp-ribbon-legend-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 8px;
+  border-radius: 9px;
+  color: var(--dp-brand-700);
+  background: var(--dp-brand-100);
+}
+
+.dp-ribbon-legend-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dp-ribbon-legend-item strong,
+.dp-ribbon-legend-item small {
+  display: block;
+}
+
+.dp-ribbon-legend-item strong {
+  color: var(--dp-ink-strong);
+  font-size: .75rem;
+}
+
+.dp-ribbon-legend-item small {
+  margin-top: 2px;
+  color: var(--dp-muted);
+  font-size: .64rem;
+  line-height: 1.35;
+}
+
+.dp-ribbon-status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e9ef;
+  color: #5b7184;
+  font-size: .68rem;
+  font-weight: 720;
+}
+
+.dp-ribbon-status-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dp-ribbon-status-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #62d7ad;
+  box-shadow: 0 0 0 3px rgba(98, 215, 173, .13);
+}
+
+.dp-ribbon-status-legend i.is-unsaved {
+  background: #ffbd68;
+  box-shadow: 0 0 0 3px rgba(255, 189, 104, .14);
+}
+
+.dp-ribbon-status-legend i.is-check {
+  background: #ff8290;
+  box-shadow: 0 0 0 3px rgba(255, 130, 144, .14);
+}
+
+/* Sofort-Infotext statt verzögertem Browser-Tooltip. */
+.dp-ui-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: min(330px, calc(100vw - 16px));
+  padding: 8px 10px;
+  border: 1px solid rgba(139, 177, 202, .46);
+  border-radius: 9px;
+  color: #f7fbff;
+  background: rgba(4, 25, 45, .96);
+  box-shadow: 0 10px 28px rgba(3, 18, 33, .28);
+  font-size: .72rem;
+  font-weight: 680;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition: opacity 90ms ease, transform 90ms ease;
+}
+
+.dp-ui-tooltip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dp-ui-tooltip[hidden] {
+  display: none !important;
+}
+
+/* Seitenbereiche dürfen nie über ihre Grid-Spalte hinauswachsen. */
+.dp-sidebar,
+.dp-sidebar-content,
+.dp-sidebar-tools,
+.dp-sidebar-tool-row,
+.dp-tree,
+.dp-tree-roots,
+.dp-tree-group,
+.dp-tree-group-body,
+.dp-tree-subgroup,
+.dp-workspace,
+.dp-workspace > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dp-sidebar {
+  overflow-x: clip;
+}
+
+.dp-tree .dp-tree-item,
+.dp-tree-heading,
+.dp-tree-subheading {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dp-tree .dp-tree-item {
+  transform: none !important;
+}
+
+.dp-tree .dp-tree-item:hover {
+  box-shadow: inset 0 0 0 1px rgba(19, 119, 189, .13);
+}
+
+.dp-tree .dp-tree-item.active {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), 0 6px 16px rgba(12, 95, 157, .16);
+}
+
+.dp-tree-item-copy,
+.dp-tree-item-copy strong,
+.dp-tree-item-copy > span,
+.dp-tree-heading-label,
+.dp-tree-subheading > span {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dp-workspace {
+  overflow-x: auto;
+}
+
+.dp-workspace img,
+.dp-workspace svg,
+.dp-workspace canvas,
+.dp-workspace table {
+  max-width: 100%;
+}
+
+@media (max-width: 1420px) {
+  :root {
+    --dp-ribbon-brand-width: 208px;
+  }
+
+  .dp-ribbon-context {
+    max-width: 42px;
+    padding-inline: 10px;
+  }
+
+  .dp-ribbon-context > span:last-child {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .dp-ribbon-legend-toggle > span {
+    display: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  :root {
+    --dp-ribbon-brand-width: 190px;
+  }
+
+  .dp-brand-text > span {
+    display: none;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-width: 45px;
+    padding-inline: 5px;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --dp-ribbon-height: 68px;
+  }
+
+  .dp-ribbon {
+    display: flex;
+    min-height: var(--dp-ribbon-height);
+    padding-inline: 12px;
+  }
+
+  .dp-brand {
+    width: 100%;
+  }
+
+  .dp-ribbon-content {
+    position: static;
+    display: block;
+    width: 0;
+  }
+
+  .dp-ribbon-scroll-shell {
+    display: contents;
+  }
+
+  .dp-ribbon-meta {
+    position: absolute;
+    top: 16px;
+    right: 74px;
+  }
+
+  .dp-ribbon-context {
+    display: none;
+  }
+
+  .dp-ribbon-legend-toggle {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 8px;
+  }
+
+  .dp-ribbon-legend-toggle > span {
+    display: none;
+  }
+
+  .dp-ribbon-legend-panel {
+    position: fixed;
+    top: 75px;
+    right: 10px;
+    max-height: calc(100dvh - 88px);
+    overflow: auto;
+  }
+
+  .dp-tabs.dp-ribbon-groups {
+    top: calc(100% + 6px);
+  }
+
+  .dp-ribbon-group-label--compact {
+    display: block;
+  }
+
+  .dp-ribbon-group-actions {
+    gap: 4px;
+  }
+
+  .dp-tabs .dp-ribbon-action {
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dp-brand-text strong {
+    max-width: 150px;
+    font-size: .93rem;
+  }
+
+  .dp-ribbon-legend-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-ribbon-legend-panel {
+    right: 6px;
+    width: calc(100vw - 12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-ui-tooltip,
+  .dp-ribbon-legend-toggle {
+    transition: none !important;
+  }
+}
+
+@media print {
+  .dp-ui-tooltip,
+  .dp-ribbon-legend-panel,
+  .dp-ribbon-legend-toggle {
+    display: none !important;
+  }
+}

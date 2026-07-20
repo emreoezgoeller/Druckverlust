@@ -62,8 +62,8 @@ check(css.includes('@media (max-width: 760px)'), 'Verlaufsansicht ist responsiv.
 check(css.includes('.dp-ribbon-action:disabled'), 'Nicht verfügbare Undo-/Redo-Schaltflächen sind sichtbar deaktiviert.');
 
 check(html.includes('phase40_00.css?v=40.00'), 'App lädt das neue Phase-40-Stylesheet.');
-check(html.includes('src/main.js?v=50.00'), 'App lädt Main mit neuem Cache-Stand.');
-check(packageJson.version === '2.5.0', 'Paketversion wurde auf 1.19.0 erhöht.');
+check(html.includes('src/main.js?v=51.00'), 'App lädt Main mit neuem Cache-Stand.');
+check(packageJson.version === '2.6.0', 'Paketversion wurde auf 1.19.0 erhöht.');
 check(packageJson.scripts['test:phase40']?.includes('run-phase40-project-history-tests.js'), 'Phase-40-Testskript ist registriert.');
 
 console.log(`Phase 40.00 UI/Integration: ${checks} Prüfungen bestanden.`);

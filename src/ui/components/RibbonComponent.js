@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
-// Phase 42.00: einzeiliges Ribbon mit Schnellerfassung und kontextbezogenem Hilfe-Center.
+// Phase 51.00: einzeilige Plattformleiste mit Sofort-Infotexten und Symbollegende.
 
-import RibbonActions from '../core/RibbonActions.js?v=50.00&release=50.00';
+import RibbonActions from '../core/RibbonActions.js?v=51.00&release=51.00';
 
 const RIBBON_GROUPS = [
   {
@@ -83,6 +83,7 @@ export default class RibbonComponent {
     this.boundHistoryChange = () => this.updateState();
     this.resizeObserver = null;
     this.lastSelectionType = null;
+    this.isLegendOpen = false;
   }
 
   render() {
@@ -120,11 +121,6 @@ export default class RibbonComponent {
       </div>
 
       <div class="dp-ribbon-content">
-        <div class="dp-ribbon-context" aria-live="polite">
-          <span class="dp-ribbon-context-dot" aria-hidden="true"></span>
-          <span data-ribbon-context-text>Projekt bereit</span>
-        </div>
-
         <div class="dp-ribbon-scroll-shell" data-ribbon-scroll-shell>
           <button
             type="button"
@@ -150,6 +146,47 @@ export default class RibbonComponent {
             ${this.icon('chevronRight')}
           </button>
         </div>
+
+        <div class="dp-ribbon-meta">
+          <div class="dp-ribbon-context" aria-live="polite">
+            <span class="dp-ribbon-context-dot" aria-hidden="true"></span>
+            <span data-ribbon-context-text>Projekt bereit</span>
+          </div>
+
+          <button
+            type="button"
+            class="dp-ribbon-legend-toggle"
+            data-ribbon-legend-toggle
+            data-ui-tooltip="Symbol- und Statuslegende öffnen"
+            title="Symbol- und Statuslegende öffnen"
+            aria-label="Symbol- und Statuslegende öffnen"
+            aria-expanded="false"
+            aria-controls="dp-ribbon-legend"
+          >
+            ${this.icon('info')}
+            <span>Legende</span>
+          </button>
+
+          <aside id="dp-ribbon-legend" class="dp-ribbon-legend-panel" data-ribbon-legend-panel aria-label="Symbol- und Statuslegende" hidden>
+            <div class="dp-ribbon-legend-head">
+              <span><small>ORIENTIERUNG</small><strong>Symbole & Status</strong></span>
+              <button type="button" data-ribbon-legend-close data-ui-tooltip="Legende schliessen" title="Legende schliessen" aria-label="Legende schliessen">×</button>
+            </div>
+            <div class="dp-ribbon-legend-grid">
+              ${this.renderLegendItem('route', 'Teilstrecke', 'Neuen Kanal- oder Rohrabschnitt anlegen.')}
+              ${this.renderLegendItem('elbow', 'Formteil', 'Formteil der aktuellen Teilstrecke zuordnen.')}
+              ${this.renderLegendItem('component', 'Bauteil', 'Freies Sonderbauteil ergänzen.')}
+              ${this.renderLegendItem('refresh', 'Berechnen', 'Geänderte Eingaben neu berechnen.')}
+              ${this.renderLegendItem('report', 'Bericht', 'Auswertung und Druckansicht öffnen.')}
+              ${this.renderLegendItem('help', 'Infotext', 'Maus oder Tastaturfokus zeigt die genaue Funktion.')}
+            </div>
+            <div class="dp-ribbon-status-legend">
+              <span><i class="is-ready"></i> aktuell</span>
+              <span><i class="is-unsaved"></i> ungespeichert</span>
+              <span><i class="is-check"></i> prüfen</span>
+            </div>
+          </aside>
+        </div>
       </div>
     `;
 
@@ -166,7 +203,7 @@ export default class RibbonComponent {
         </div>
         <button
           type="button"
-          class="dp-ribbon-group-label"
+          class="dp-ribbon-group-label dp-ribbon-group-label--compact"
           data-ribbon-jump="${group.id}"
           title="Zur Werkzeuggruppe ${group.label} springen"
           aria-label="Zur Werkzeuggruppe ${group.label} springen"
@@ -183,8 +220,9 @@ export default class RibbonComponent {
         type="button"
         class="dp-ribbon-action"
         data-action="${config.action}"
-        title="${config.title}"
-        aria-label="${config.title}"
+        data-ui-tooltip="${this.escapeAttribute(config.title)}"
+        title="${this.escapeAttribute(config.title)}"
+        aria-label="${this.escapeAttribute(config.title)}"
         ${emphasis}
       >
         <span class="dp-ribbon-action-icon" aria-hidden="true">${this.icon(config.icon)}</span>
@@ -212,6 +250,16 @@ export default class RibbonComponent {
     this.root.querySelector('[data-ribbon-menu-toggle]')?.addEventListener('click', event => {
       event.stopPropagation();
       this.setMenuOpen(!this.root.classList.contains('is-menu-open'));
+    });
+
+    this.root.querySelector('[data-ribbon-legend-toggle]')?.addEventListener('click', event => {
+      event.stopPropagation();
+      this.setLegendOpen(!this.isLegendOpen);
+    });
+
+    this.root.querySelector('[data-ribbon-legend-close]')?.addEventListener('click', () => {
+      this.setLegendOpen(false);
+      this.root.querySelector('[data-ribbon-legend-toggle]')?.focus();
     });
 
     this.root.querySelectorAll('[data-ribbon-scroll]').forEach(button => {
@@ -289,15 +337,19 @@ export default class RibbonComponent {
     const historyState = this.state.historyEngine?.getState?.() || { canUndo: false, canRedo: false, undoCount: 0, redoCount: 0 };
     if (undoButton) {
       undoButton.disabled = !historyState.canUndo;
-      undoButton.title = historyState.canUndo
+      const undoTitle = historyState.canUndo
         ? `Letzte Projektänderung rückgängig machen (${historyState.undoCount} verfügbar)`
         : 'Keine Projektänderung zum Rückgängigmachen vorhanden';
+      undoButton.title = undoTitle;
+      undoButton.dataset.uiTooltip = undoTitle;
     }
     if (redoButton) {
       redoButton.disabled = !historyState.canRedo;
-      redoButton.title = historyState.canRedo
+      const redoTitle = historyState.canRedo
         ? `Projektänderung wiederholen (${historyState.redoCount} verfügbar)`
         : 'Keine Projektänderung zum Wiederholen vorhanden';
+      redoButton.title = redoTitle;
+      redoButton.dataset.uiTooltip = redoTitle;
     }
 
     this.root.querySelectorAll('.dp-ribbon-action.is-current').forEach(button => {
@@ -455,6 +507,38 @@ export default class RibbonComponent {
     target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   }
 
+  renderLegendItem(icon, label, description) {
+    return `
+      <div class="dp-ribbon-legend-item">
+        <span class="dp-ribbon-legend-icon" aria-hidden="true">${this.icon(icon)}</span>
+        <span><strong>${this.escapeHtml(label)}</strong><small>${this.escapeHtml(description)}</small></span>
+      </div>
+    `;
+  }
+
+  setLegendOpen(isOpen) {
+    this.isLegendOpen = Boolean(isOpen);
+    const panel = this.root.querySelector('[data-ribbon-legend-panel]');
+    const toggle = this.root.querySelector('[data-ribbon-legend-toggle]');
+
+    if (panel) panel.hidden = !this.isLegendOpen;
+    toggle?.setAttribute('aria-expanded', String(this.isLegendOpen));
+    toggle?.classList.toggle('is-active', this.isLegendOpen);
+  }
+
+  escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  escapeAttribute(value) {
+    return this.escapeHtml(value).replaceAll('`', '&#096;');
+  }
+
   setMenuOpen(isOpen) {
     this.root.classList.toggle('is-menu-open', Boolean(isOpen));
     const toggle = this.root.querySelector('[data-ribbon-menu-toggle]');
@@ -463,13 +547,27 @@ export default class RibbonComponent {
   }
 
   handleDocumentClick(event) {
-    if (!this.root.classList.contains('is-menu-open')) return;
-    if (this.root.contains(event.target)) return;
-    this.setMenuOpen(false);
+    if (!this.root.contains(event.target)) {
+      if (this.root.classList.contains('is-menu-open')) this.setMenuOpen(false);
+      if (this.isLegendOpen) this.setLegendOpen(false);
+      return;
+    }
+
+    if (this.isLegendOpen && !event.target.closest?.('[data-ribbon-legend-panel], [data-ribbon-legend-toggle]')) {
+      this.setLegendOpen(false);
+    }
   }
 
   handleDocumentKeydown(event) {
-    if (event.key === 'Escape' && this.root.classList.contains('is-menu-open')) {
+    if (event.key !== 'Escape') return;
+
+    if (this.isLegendOpen) {
+      this.setLegendOpen(false);
+      this.root.querySelector('[data-ribbon-legend-toggle]')?.focus();
+      return;
+    }
+
+    if (this.root.classList.contains('is-menu-open')) {
       this.setMenuOpen(false);
       this.root.querySelector('[data-ribbon-menu-toggle]')?.focus();
     }

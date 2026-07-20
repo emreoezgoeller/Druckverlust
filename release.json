@@ -1,8 +1,8 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.5.0",
-  "phase": "50.00",
+  "version": "2.6.0",
+  "phase": "51.00",
   "releaseDate": "2026-07-20",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
@@ -25,11 +25,12 @@
     "freeZetaChecks": 26,
     "sectionWorkflowChecks": 22,
     "sectionEntryChecks": 54,
-    "formPartWorkflowChecks": 37
+    "formPartWorkflowChecks": 37,
+    "interfaceCompletionChecks": 48
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Intelligenter Formteil-Workflow mit explizitem Teilstrecken-Kontext, geschützten manuellen Werten, Anschlussvorschlägen und teilsteckenbezogener Reihenfolge."
+  "notes": "Einzeilige Plattformleiste mit integrierter Symbol- und Statuslegende, sofortigen Infotexten sowie robuster Breitenführung für Ribbon, Sidebar und Arbeitsbereich."
 }

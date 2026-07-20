@@ -13,7 +13,7 @@ const files = {
 
 const expectations = [
   [files.app.includes('phase32_00.css?v=38.00'), 'Phase-32-CSS ist eingebunden.'],
-  [files.app.includes('src/main.js?v=50.00'), 'Main-Modul verwendet Cache-Version 39.03.'],
+  [files.app.includes('src/main.js?v=51.00'), 'Main-Modul verwendet Cache-Version 39.03.'],
   [files.ribbon.includes("action: 'showProjectSafety'"), 'Ribbon enthält Projektsicherheit.'],
   [files.ribbon.includes("selectionType === 'projectSafety'"), 'Ribbon markiert die aktive Sicherheitsansicht.'],
   [files.actions.includes('showProjectSafety()'), 'RibbonActions öffnet die Sicherheitsansicht.'],
@@ -26,8 +26,8 @@ const expectations = [
   [files.workspace.includes('Notfallsicherung vor Wiederherstellung'), 'Wiederherstellung erzeugt eine Notfallsicherung.'],
   [files.css.includes('.dp-safety-backup-list'), 'Sicherungshistorie ist gestaltet.'],
   [files.css.includes('@media (max-width:760px)'), 'Responsive Sicherheitsansicht ist vorhanden.'],
-  [files.version.includes("APP_RELEASE = '50.00'"), 'Release ist 39.00.'],
-  [files.version.includes("APP_VERSION = '2.5.0'"), 'App-Version ist 1.16.0.'],
+  [files.version.includes("APP_RELEASE = '51.00'"), 'Release ist 39.00.'],
+  [files.version.includes("APP_VERSION = '2.6.0'"), 'App-Version ist 1.16.0.'],
   [files.diagnostics.includes('ProjectSafetyEngine.js'), 'Deployment-QS prüft die Sicherheitsengine.'],
   [files.diagnostics.includes("'showProjectSafety'"), 'Deployment-QS erwartet den neuen Ribbon-Befehl.'],
 ];

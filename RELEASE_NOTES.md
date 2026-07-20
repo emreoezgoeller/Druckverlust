@@ -1,9 +1,19 @@
 # Release Notes
 
-**Release:** 2.5.0 · Phase 50.00  
+**Release:** 2.6.0 · Phase 51.00  
 **Datum:** 20.07.2026
 
-## Neu in Phase 50.00
+## Neu in Phase 51.00
+
+- Logo, Werkzeugleiste und Projektstatus sind in einer kompakten, einzeiligen Plattformleiste zusammengeführt.
+- Die bisherigen Gruppenbezeichnungen erzeugen auf dem Desktop keine zweite sichtbare Ribbon-Zeile mehr; Überlaufnavigation und Tastaturbedienung bleiben erhalten.
+- Neue Symbol- und Statuslegende erklärt Teilstrecke, Formteil, Sonderbauteil, Berechnung, Bericht sowie die Statusfarben.
+- Sofortige Infotexte erscheinen bei Mausberührung oder Tastaturfokus für Ribbon-, Sidebar- und Arbeitsbereichssymbole.
+- Sidebar, Projektbaum und Arbeitsbereich sind gegen horizontales Überragen und abgeschnittene Auswahlmarkierungen abgesichert.
+- Tablet- und Smartphone-Darstellung der Werkzeugleiste und Legende wurden ergänzt.
+- 48 automatisierte Phase-51-Prüfungen ergänzt.
+
+## Phase 50.00
 
 - Neue Formteile werden aus dem aktuellen Teilstrecken-Kontext angelegt; die Ziel-Teilstrecke kann in der Bibliothek vorab geändert werden.
 - Einbauposition und Reihenfolge sind im Formteilarbeitsplatz sofort sichtbar.
