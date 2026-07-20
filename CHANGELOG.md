@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.6.1 – Phase 51.10 – 20.07.2026
+
+- Sechs neue rechteckige Formteile ergänzt: Krümmerabzweig 1/2 jeweils als Abzweig und Durchgang sowie Krümmerendstück 1/2.
+- Tabellenwerte und zulässige Geometriefälle direkt aus den sechs bereitgestellten Excel-Referenzen übernommen.
+- Excel-Suchlogik umgesetzt: Geometriefall exakt, Geschwindigkeitsverhältnis exakt oder nächst kleinerer Tabellenwert.
+- Druckverlustbezug fachgerecht getrennt: Abzweig/Endstück auf `p_dyn(wA)`, Durchgang auf `p_dyn(wD)`.
+- Negative ζ-Werte der Zusammenflussvarianten bleiben erhalten und werden nicht künstlich auf 0 begrenzt.
+- Haupt-, Durchgangs- und Abzweigabmessungen sowie Luftmengen werden aus den zugeordneten Teilstrecken übernommen; manuelle Zuordnung bleibt möglich.
+- Nicht vorhandene Geometriekombinationen werden blockiert und verständlich gemeldet, statt Werte zu interpolieren oder zu erfinden.
+- Sechs PNG-Schemata und sechs Excel-Dateien als interne Formteilreferenzen eingebunden.
+- Formteilbibliothek auf 21 Typen, Excel-Referenzprüfung auf 25 Fälle / 81 Einzelprüfungen und Synchronisationsprüfung auf 179 Einzelprüfungen erweitert.
+- 65 zusätzliche Phase-51.10-Prüfungen für Registry, Tabellenwerte, Bodensuche, negative ζ-Werte, Warnungen und Teilstrecken-Synchronisation ergänzt.
+
 ## 2.6.0 – Phase 51.00 – 20.07.2026
 
 - Ribbon auf eine kompakte, einzeilige Plattformleiste mit integriertem Logo und Projektstatus vereinheitlicht.

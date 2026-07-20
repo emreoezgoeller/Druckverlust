@@ -1,7 +1,19 @@
 # Release Notes
 
-**Release:** 2.6.0 · Phase 51.00  
+**Release:** 2.6.1 · Phase 51.10  
 **Datum:** 20.07.2026
+
+## Neu in Phase 51.10
+
+- Sechs neue rechteckige Formteile: **Krümmerabzweig 1 – Abzweig**, **Krümmerabzweig 1 – Durchgang**, **Krümmerabzweig 2 – Abzweig**, **Krümmerabzweig 2 – Durchgang**, **Krümmerendstück 1** und **Krümmerendstück 2**.
+- Eingabebilder und Tabellen stammen aus den bereitgestellten PNG- und Excel-Referenzen.
+- Bei den Krümmerabzweigen wird die Geometrie über `AA/AD`, `AD/A` und `AA/A` exakt gewählt. Das Verhältnis `wA/w` beziehungsweise `wD/w` verwendet wie Excel den exakten oder nächst kleineren Tabellenwert.
+- Krümmerendstück 1 berücksichtigt zusätzlich das exakte Seitenverhältnis `a/b`; Krümmerendstück 2 verwendet `wA/w`.
+- Abzweig- und Endstückverluste beziehen sich auf den dynamischen Druck bei `wA`; Durchgangsverluste auf den dynamischen Druck bei `wD`.
+- Zusammenflussvarianten dürfen negative ζ- und Druckverlustwerte liefern; diese Tabellenwerte werden unverändert übernommen.
+- Die drei Anschluss-Teilstrecken eines Krümmerabzweigs und die zwei Anschlüsse eines Krümmerendstücks werden automatisch synchronisiert und bleiben manuell umstellbar.
+- Unzulässige Geometriekombinationen werden nicht interpoliert, sondern mit einer klaren Prüfmeldung gestoppt.
+- 65 automatisierte Phase-51.10-Prüfungen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen sowie 179 Formteil-Synchronisationsprüfungen bestanden.
 
 ## Neu in Phase 51.00
 

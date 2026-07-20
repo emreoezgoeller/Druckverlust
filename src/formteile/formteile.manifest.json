@@ -72,6 +72,60 @@
     "validatedIn": "21.01"
   },
   {
+    "id": "kruemmerabzweig_1_abzweig",
+    "name": "Krümmerabzweig 1 – Abzweig",
+    "category": "Abzweige",
+    "image": "assets/formteile/kruemmerabzweig_1_abzweig.png",
+    "referenceFile": "assets/formteile/kruemmerabzweig_1_abzweig.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
+    "id": "kruemmerabzweig_1_durchgang",
+    "name": "Krümmerabzweig 1 – Durchgang",
+    "category": "Abzweige",
+    "image": "assets/formteile/kruemmerabzweig_1_durchgang.png",
+    "referenceFile": "assets/formteile/kruemmerabzweig_1_durchgang.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
+    "id": "kruemmerabzweig_2_abzweig",
+    "name": "Krümmerabzweig 2 – Abzweig (Zusammenfluss)",
+    "category": "Abzweige",
+    "image": "assets/formteile/kruemmerabzweig_2_abzweig.png",
+    "referenceFile": "assets/formteile/kruemmerabzweig_2_abzweig.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
+    "id": "kruemmerabzweig_2_durchgang",
+    "name": "Krümmerabzweig 2 – Durchgang (Zusammenfluss)",
+    "category": "Abzweige",
+    "image": "assets/formteile/kruemmerabzweig_2_durchgang.png",
+    "referenceFile": "assets/formteile/kruemmerabzweig_2_durchgang.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
+    "id": "kruemmerendstueck_1",
+    "name": "Krümmerendstück 1",
+    "category": "Rechteck",
+    "image": "assets/formteile/kruemmerendstueck_1.png",
+    "referenceFile": "assets/formteile/kruemmerendstueck_1.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
+    "id": "kruemmerendstueck_2",
+    "name": "Krümmerendstück 2 (Zusammenfluss)",
+    "category": "Rechteck",
+    "image": "assets/formteile/kruemmerendstueck_2.png",
+    "referenceFile": "assets/formteile/kruemmerendstueck_2.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "51.10"
+  },
+  {
     "id": "t_abzweig_durchgang_rund1",
     "name": "T-Abzweig Durchgang rund 1",
     "category": "Abzweige",

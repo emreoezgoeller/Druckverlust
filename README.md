@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.6.0 · Phase 51.00 · einzeilige Plattformleiste mit vollständiger Symbolhilfe und robuster responsiver Oberfläche.
+**Aktueller Stand:** Version 2.6.1 · Phase 51.10 · sechs neue Excel-geprüfte Krümmerformteile mit automatischer Teilstreckenübernahme.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -31,7 +31,7 @@ python -m http.server 8000
 - Kanal- und Rohrabmessungen werden in der Oberfläche praxisnah in Millimeter geführt und intern weiterhin in Meter berechnet,
 - Vorschläge verändern keine Eingabe, bevor eine Abmessung ausdrücklich übernommen wird,
 - Schnellfunktion für die nächste Teilstrecke mit gleicher Luftmenge, Geometrie und Rauigkeit,
-- 15 herstellerneutrale Formteiltypen, darunter „Freier ζ-Wert“ mit `Δp = ζ × p_dyn`,
+- 21 herstellerneutrale Formteiltypen, darunter „Freier ζ-Wert“, vier Krümmerabzweige und zwei Krümmerendstücke,
 - neue Formteile werden automatisch der zuletzt erstellten Teilstrecke zugeordnet und bleiben manuell umstellbar,
 - mehrere Anlagen pro Projekt, Excel-/CSV-/TSV-Schnellerfassung, Projekt-QS und Professional Report,
 - `.dvp`, `.dvpa` und `.dvph` mit Importprüfung und Prüfsumme,
@@ -59,10 +59,10 @@ Druckverlust/
 npm test
 ```
 
-Gezielte Phase-51-Prüfung:
+Gezielte Prüfung der sechs neuen Formteile:
 
 ```bash
-npm run test:phase51
+npm run test:phase51.10
 ```
 
 Release-Kurzlauf:
@@ -71,7 +71,7 @@ Release-Kurzlauf:
 npm run test:release
 ```
 
-Der Release prüft unter anderem 48 Einzelprüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Einzelprüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 15 Formteiltypen, 56 Excel-Einzelprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
+Der Release prüft unter anderem 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
 
 ## Bewusst ausgeschlossen
 

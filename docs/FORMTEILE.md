@@ -255,7 +255,7 @@ Damit können spätere Erweiterungen schneller geprüft werden, ohne jedes Formt
 
 ## Sprint 16 Abschluss
 
-Die Formteilbibliothek 2.0 ist abgeschlossen. Alle 14 Formteile besitzen aktive Calculatoren, flexible Parameterdefinitionen, Bildreferenzen und werden in der Projektberechnung berücksichtigt.
+Die Formteilbibliothek 2.0 ist abgeschlossen. Alle 21 Formteile besitzen aktive Calculatoren, flexible Parameterdefinitionen, Bildreferenzen und werden in der Projektberechnung berücksichtigt.
 
 Ergänzt wurden ausserdem:
 
@@ -266,3 +266,42 @@ Ergänzt wurden ausserdem:
 - Abschluss-Test `tests/sprint16-final.html`
 
 Details siehe `docs/SPRINT16_ABSCHLUSS.md`.
+
+
+## Phase 51.10 – Krümmerabzweige und Krümmerendstücke
+
+Die Bibliothek wurde um sechs rechteckige Formteile erweitert:
+
+- Krümmerabzweig 1 – Abzweig
+- Krümmerabzweig 1 – Durchgang
+- Krümmerabzweig 2 – Abzweig (Zusammenfluss)
+- Krümmerabzweig 2 – Durchgang (Zusammenfluss)
+- Krümmerendstück 1
+- Krümmerendstück 2 (Zusammenfluss)
+
+### Anschlusslogik
+
+Krümmerabzweige verwenden drei Teilstrecken:
+
+- `A / W / w`: Hauptanschluss
+- `AD / WD / wD`: gerader Anschluss
+- `AA / WA / wA`: Krümmeranschluss
+
+Krümmerendstücke verwenden den Hauptanschluss `A / W / w` und den Anschluss `AA / WA / wA`. Abmessungen und Luftmengen werden aus den zugeordneten Teilstrecken übernommen. Die Zuordnung kann im Formteil weiterhin manuell geändert werden.
+
+### Tabellenlogik
+
+Für die Krümmerabzweige muss die Kombination `AA/AD`, `AD/A` und `AA/A` exakt in der Excel-Tabelle vorhanden sein. Beim Geschwindigkeitsverhältnis `wA/w` beziehungsweise `wD/w` gilt die Excel-Regel **exakt oder nächst kleinerer Tabellenwert**.
+
+Krümmerendstück 1 verlangt zusätzlich ein hinterlegtes Seitenverhältnis `a/b`. Krümmerendstück 2 verwendet ausschliesslich die Tabelle über `wA/w`. Nicht hinterlegte Geometrien werden nicht interpoliert.
+
+### Druckbezug
+
+```text
+Abzweig / Endstück: Δp = ζA × p_dyn(wA)
+Durchgang:           Δp = ζD × p_dyn(wD)
+```
+
+Negative ζ-Werte in den Zusammenfluss-Tabellen sind zulässige Referenzwerte und bleiben erhalten.
+
+Referenzen und Schemata liegen unter `assets/formteile/kruemmer*.xlsx` beziehungsweise `assets/formteile/kruemmer*.png`.

@@ -2,7 +2,7 @@
 // DOM-unabhängiger Test-Runner für automatische Grössenübernahme, Anschluss-Sync und manuelle Overrides.
 
 import WorkspaceComponent from '../ui/components/WorkspaceComponent.js';
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=47.00&release=47.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.10&release=51.10';
 
 function clone(value) {
   if (typeof structuredClone === 'function') return structuredClone(value);
@@ -13,6 +13,10 @@ function createSections() {
   return [
     { id: 'duct-main', name: 'Kanal Haupt', type: 'duct', q: 1800, l: 5, b: 0.6, h: 0.3 },
     { id: 'duct-other', name: 'Kanal Anschluss', type: 'duct', q: 900, l: 3, b: 0.4, h: 0.2 },
+    { id: 'duct-through', name: 'Kanal Durchgang', type: 'duct', q: 1260, l: 3, b: 0.6, h: 0.3 },
+    { id: 'duct-branch', name: 'Kanal Krümmeranschluss', type: 'duct', q: 540, l: 2, b: 0.6, h: 0.15 },
+    { id: 'duct-end-main', name: 'Endstück Haupt', type: 'duct', q: 1800, l: 2, b: 0.5, h: 0.5 },
+    { id: 'duct-end-other', name: 'Endstück Anschluss', type: 'duct', q: 1260, l: 2, b: 0.5, h: 0.5 },
     { id: 'pipe-main', name: 'Rohr Haupt', type: 'pipe', q: 1200, l: 5, d: 0.4 },
     { id: 'pipe-through', name: 'Rohr Durchgang', type: 'pipe', q: 800, l: 3, d: 0.315 },
     { id: 'pipe-branch', name: 'Rohr Abzweig', type: 'pipe', q: 600, l: 2, d: 0.25 },
@@ -296,6 +300,108 @@ const FORM_PART_SYNC_CASES = Object.freeze([
     expectConnections: [
       { label: 'Abzweigdurchmesser AA', field: 'AA_d', expected: 250 },
       { label: 'Abzweigluftmenge WA', field: 'WA', expected: 600 },
+    ],
+    expectedConnectionTargets: ['AA'],
+  },
+  {
+    id: 'SYNC-015', type: 'kruemmerabzweig_1_abzweig', title: 'Krümmerabzweig 1 – Abzweig mit drei Rechteckanschlüssen', sectionId: 'duct-main',
+    connections: { throughSectionId: 'duct-through', branchSectionId: 'duct-branch' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 600 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 300 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Durchgangsbreite AD', field: 'AD_breite', expected: 600 },
+      { label: 'Durchgangshöhe AD', field: 'AD_hoehe', expected: 300 },
+      { label: 'Durchgangsluftmenge WD', field: 'WD', expected: 1260 },
+      { label: 'Krümmerbreite AA', field: 'AA_breite', expected: 600 },
+      { label: 'Krümmerhöhe AA', field: 'AA_hoehe', expected: 150 },
+      { label: 'Krümmerluftmenge WA', field: 'WA', expected: 540 },
+    ],
+    expectedConnectionTargets: ['AD', 'AA'],
+  },
+  {
+    id: 'SYNC-016', type: 'kruemmerabzweig_1_durchgang', title: 'Krümmerabzweig 1 – Durchgang mit drei Rechteckanschlüssen', sectionId: 'duct-main',
+    connections: { throughSectionId: 'duct-through', branchSectionId: 'duct-branch' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 600 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 300 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Durchgangsbreite AD', field: 'AD_breite', expected: 600 },
+      { label: 'Durchgangshöhe AD', field: 'AD_hoehe', expected: 300 },
+      { label: 'Durchgangsluftmenge WD', field: 'WD', expected: 1260 },
+      { label: 'Krümmerbreite AA', field: 'AA_breite', expected: 600 },
+      { label: 'Krümmerhöhe AA', field: 'AA_hoehe', expected: 150 },
+      { label: 'Krümmerluftmenge WA', field: 'WA', expected: 540 },
+    ],
+    expectedConnectionTargets: ['AD', 'AA'],
+  },
+  {
+    id: 'SYNC-017', type: 'kruemmerabzweig_2_abzweig', title: 'Krümmerabzweig 2 – Abzweig mit drei Rechteckanschlüssen', sectionId: 'duct-main',
+    connections: { throughSectionId: 'duct-through', branchSectionId: 'duct-branch' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 600 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 300 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Durchgangsbreite AD', field: 'AD_breite', expected: 600 },
+      { label: 'Durchgangshöhe AD', field: 'AD_hoehe', expected: 300 },
+      { label: 'Durchgangsluftmenge WD', field: 'WD', expected: 1260 },
+      { label: 'Krümmerbreite AA', field: 'AA_breite', expected: 600 },
+      { label: 'Krümmerhöhe AA', field: 'AA_hoehe', expected: 150 },
+      { label: 'Krümmerluftmenge WA', field: 'WA', expected: 540 },
+    ],
+    expectedConnectionTargets: ['AD', 'AA'],
+  },
+  {
+    id: 'SYNC-018', type: 'kruemmerabzweig_2_durchgang', title: 'Krümmerabzweig 2 – Durchgang mit drei Rechteckanschlüssen', sectionId: 'duct-main',
+    connections: { throughSectionId: 'duct-through', branchSectionId: 'duct-branch' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 600 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 300 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Durchgangsbreite AD', field: 'AD_breite', expected: 600 },
+      { label: 'Durchgangshöhe AD', field: 'AD_hoehe', expected: 300 },
+      { label: 'Durchgangsluftmenge WD', field: 'WD', expected: 1260 },
+      { label: 'Krümmerbreite AA', field: 'AA_breite', expected: 600 },
+      { label: 'Krümmerhöhe AA', field: 'AA_hoehe', expected: 150 },
+      { label: 'Krümmerluftmenge WA', field: 'WA', expected: 540 },
+    ],
+    expectedConnectionTargets: ['AD', 'AA'],
+  },
+  {
+    id: 'SYNC-019', type: 'kruemmerendstueck_1', title: 'Krümmerendstück 1 mit Haupt- und Ausgangsanschluss', sectionId: 'duct-end-main',
+    connections: { branchSectionId: 'duct-end-other' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 500 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 500 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Ausgangsbreite AA', field: 'AA_breite', expected: 500 },
+      { label: 'Ausgangshöhe AA', field: 'AA_hoehe', expected: 500 },
+      { label: 'Ausgangsluftmenge WA', field: 'WA', expected: 1260 },
+    ],
+    expectedConnectionTargets: ['AA'],
+  },
+  {
+    id: 'SYNC-020', type: 'kruemmerendstueck_2', title: 'Krümmerendstück 2 mit Haupt- und Zulaufanschluss', sectionId: 'duct-end-main',
+    connections: { branchSectionId: 'duct-end-other' },
+    expectMain: [
+      { label: 'Hauptbreite A', field: 'A_breite', expected: 500 },
+      { label: 'Haupthöhe A', field: 'A_hoehe', expected: 500 },
+      { label: 'Hauptluftmenge W', field: 'W', expected: 1800 },
+    ],
+    expectConnections: [
+      { label: 'Zulaufbreite AA', field: 'AA_breite', expected: 500 },
+      { label: 'Zulaufhöhe AA', field: 'AA_hoehe', expected: 500 },
+      { label: 'Zulaufluftmenge WA', field: 'WA', expected: 1260 },
     ],
     expectedConnectionTargets: ['AA'],
   },

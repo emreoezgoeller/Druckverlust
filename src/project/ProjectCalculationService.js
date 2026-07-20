@@ -1,6 +1,6 @@
 import { calculateProject } from "../core/CalculationEngine.js";
 import ValidationEngine from "../validation/ValidationEngine.js";
-import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js";
+import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=51.10&release=51.10";
 
 function uniqueMessages(messages = []) {
   return [...new Set(messages.map(message => String(message || '').trim()).filter(Boolean))];

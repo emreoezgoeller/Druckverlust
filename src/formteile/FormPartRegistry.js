@@ -13,6 +13,14 @@ import {
 import { calculateUebergangGrossKlein, calculateUebergangKleinGross } from './calculators/uebergangCalculator.js';
 import { calculateSattelstueckMitEinstroemkonus } from './calculators/sattelstueckMitEinstroemkonusCalculator.js';
 import { calculateFreierZetaWert } from './calculators/freierZetaWertCalculator.js';
+import {
+  calculateKruemmerabzweig1Abzweig,
+  calculateKruemmerabzweig1Durchgang,
+  calculateKruemmerabzweig2Abzweig,
+  calculateKruemmerabzweig2Durchgang,
+  calculateKruemmerendstueck1,
+  calculateKruemmerendstueck2,
+} from './calculators/kruemmerFormteileCalculator.js';
 
 function cleanAssetPath(path) {
   return String(path || '')
@@ -187,9 +195,64 @@ function calculateTAbzweigGeometry(values = {}) {
     AA_area: roundTo(branchArea, 6),
     AD_area: roundTo(throughArea, 6),
     wA_w: roundTo(velocityRatio, 3),
+    wD_w: roundTo(w > 0 ? wD / w : 0, 3),
     WD_W: roundTo(wdRatio, 3),
     AA_A: roundTo(areaRatio, 3),
     AD_A: roundTo(throughAreaRatio, 3),
+    AA_AD: roundTo(throughArea > 0 ? branchArea / throughArea : 0, 3),
+  };
+}
+
+function calculateKruemmerabzweigGeometry(values = {}) {
+  const mainArea = rectangleAreaMm(values.A_breite, values.A_hoehe);
+  const throughArea = rectangleAreaMm(values.AD_breite, values.AD_hoehe);
+  const branchArea = rectangleAreaMm(values.AA_breite, values.AA_hoehe);
+
+  let W = toNumber(values.W);
+  let WA = toNumber(values.WA);
+  let WD = toNumber(values.WD);
+
+  if (W > 0 && WA > 0 && WD <= 0) WD = Math.max(W - WA, 0);
+  if (W > 0 && WD > 0 && WA <= 0) WA = Math.max(W - WD, 0);
+  if (W <= 0 && (WA > 0 || WD > 0)) W = WA + WD;
+
+  const w = velocityFromAirflow(W, mainArea);
+  const wD = velocityFromAirflow(WD, throughArea);
+  const wA = velocityFromAirflow(WA, branchArea);
+
+  return {
+    W: roundTo(W, 0),
+    WD: roundTo(WD, 0),
+    WA: roundTo(WA, 0),
+    w: roundTo(w, 3),
+    wD: roundTo(wD, 3),
+    wA: roundTo(wA, 3),
+    A_area: roundTo(mainArea, 6),
+    AD_area: roundTo(throughArea, 6),
+    AA_area: roundTo(branchArea, 6),
+    wD_w: roundTo(w > 0 ? wD / w : 0, 3),
+    wA_w: roundTo(w > 0 ? wA / w : 0, 3),
+    WD_W: roundTo(W > 0 ? WD / W : 0, 3),
+    AD_A: roundTo(mainArea > 0 ? throughArea / mainArea : 0, 3),
+    AA_A: roundTo(mainArea > 0 ? branchArea / mainArea : 0, 3),
+    AA_AD: roundTo(throughArea > 0 ? branchArea / throughArea : 0, 3),
+  };
+}
+
+function calculateKruemmerendstueckGeometry(values = {}) {
+  const mainArea = rectangleAreaMm(values.A_breite, values.A_hoehe);
+  const outletArea = rectangleAreaMm(values.AA_breite, values.AA_hoehe);
+  const w = velocityFromAirflow(values.W, mainArea);
+  const wA = velocityFromAirflow(values.WA, outletArea);
+
+  return {
+    w: roundTo(w, 3),
+    wA: roundTo(wA, 3),
+    A_area: roundTo(mainArea, 6),
+    AA_area: roundTo(outletArea, 6),
+    wA_w: roundTo(w > 0 ? wA / w : 0, 3),
+    a_b: roundTo(toNumber(values.A_breite) > 0 ? toNumber(values.A_hoehe) / toNumber(values.A_breite) : 0, 3),
+    AA_A: roundTo(mainArea > 0 ? outletArea / mainArea : 0, 3),
   };
 }
 
@@ -908,6 +971,65 @@ export class FormPartRegistry {
   }
 }
 
+
+function createKruemmerabzweigParameters(ratioField = 'wA_w') {
+  const ratioLabel = ratioField === 'wD_w' ? 'Verhältnis wD/w' : 'Verhältnis wA/w';
+
+  return [
+    { id: 'A_breite', group: 'Hauptanschluss A / W / w', default: 500, help: 'Breite des Hauptanschlusses. Wird aus der zugeordneten Rechteck-Teilstrecke übernommen.' },
+    { id: 'A_hoehe', group: 'Hauptanschluss A / W / w', default: 300, help: 'Höhe des Hauptanschlusses. Wird aus der zugeordneten Rechteck-Teilstrecke übernommen.' },
+    { id: 'W', label: 'Hauptanschluss W – Luftmenge [m³/h]', group: 'Hauptanschluss A / W / w', default: 900, step: 1, min: 0 },
+    { id: 'w', label: 'Hauptanschluss w – Geschwindigkeit [m/s]', group: 'Hauptanschluss A / W / w', readOnly: true, derived: true, precision: 3 },
+
+    { id: 'AD_breite', group: 'Durchgang AD / WD / wD', default: 500, help: 'Breite des geraden Anschlusses AD.' },
+    { id: 'AD_hoehe', group: 'Durchgang AD / WD / wD', default: 300, help: 'Höhe des geraden Anschlusses AD.' },
+    { id: 'WD', label: 'Durchgang WD – Luftmenge [m³/h]', group: 'Durchgang AD / WD / wD', default: 630, step: 1, min: 0 },
+    { id: 'wD', label: 'Durchgang wD – Geschwindigkeit [m/s]', group: 'Durchgang AD / WD / wD', readOnly: true, derived: true, precision: 3 },
+
+    { id: 'AA_breite', group: 'Krümmeranschluss AA / WA / wA', default: 500, help: 'Breite des gekrümmten Anschlusses AA.' },
+    { id: 'AA_hoehe', group: 'Krümmeranschluss AA / WA / wA', default: 150, help: 'Höhe des gekrümmten Anschlusses AA.' },
+    { id: 'WA', label: 'Krümmeranschluss WA – Luftmenge [m³/h]', group: 'Krümmeranschluss AA / WA / wA', default: 270, step: 1, min: 0 },
+    { id: 'wA', label: 'Krümmeranschluss wA – Geschwindigkeit [m/s]', group: 'Krümmeranschluss AA / WA / wA', readOnly: true, derived: true, precision: 3 },
+
+    { id: 'AA_AD', label: 'Flächenverhältnis AA/AD', type: 'number', group: 'Berechnete Tabellenwerte', default: 0, step: 0.001, readOnly: true, derived: true, precision: 3 },
+    { id: 'AD_A', label: 'Flächenverhältnis AD/A', type: 'number', group: 'Berechnete Tabellenwerte', default: 0, step: 0.001, readOnly: true, derived: true, precision: 3 },
+    { id: 'AA_A', label: 'Flächenverhältnis AA/A', type: 'number', group: 'Berechnete Tabellenwerte', default: 0, step: 0.001, readOnly: true, derived: true, precision: 3 },
+    { id: ratioField, label: ratioLabel, type: 'number', group: 'Berechnete Tabellenwerte', default: 0, step: 0.001, readOnly: true, derived: true, precision: 3 },
+  ];
+}
+
+function createKruemmerendstueckParameters(includeAspect = false) {
+  const parameters = [
+    { id: 'A_breite', group: 'Hauptanschluss A / W / w', default: 500, help: 'Breite des Hauptanschlusses. Nur Rechteckkanäle.' },
+    { id: 'A_hoehe', group: 'Hauptanschluss A / W / w', default: 500, help: 'Höhe des Hauptanschlusses. Nur Rechteckkanäle.' },
+    { id: 'W', label: 'Hauptanschluss W – Luftmenge [m³/h]', group: 'Hauptanschluss A / W / w', default: 900, step: 1, min: 0 },
+    { id: 'w', label: 'Hauptanschluss w – Geschwindigkeit [m/s]', group: 'Hauptanschluss A / W / w', readOnly: true, derived: true, precision: 3 },
+
+    { id: 'AA_breite', label: 'Anschluss AA – Breite [mm]', group: 'Anschluss AA / WA / wA', default: 500, help: 'Breite des zweiten Rechteckanschlusses.' },
+    { id: 'AA_hoehe', label: 'Anschluss AA – Höhe [mm]', group: 'Anschluss AA / WA / wA', default: 500, help: 'Höhe des zweiten Rechteckanschlusses.' },
+    { id: 'WA', label: 'Anschluss WA – Luftmenge [m³/h]', group: 'Anschluss AA / WA / wA', default: 900, step: 1, min: 0 },
+    { id: 'wA', label: 'Anschluss wA – Geschwindigkeit [m/s]', group: 'Anschluss AA / WA / wA', readOnly: true, derived: true, precision: 3 },
+    { id: 'wA_w', label: 'Verhältnis wA/w', type: 'number', group: 'Berechnete Tabellenwerte', default: 0, step: 0.001, readOnly: true, derived: true, precision: 3 },
+  ];
+
+  if (includeAspect) {
+    parameters.push({
+      id: 'a_b',
+      label: 'Seitenverhältnis a/b',
+      type: 'number',
+      group: 'Berechnete Tabellenwerte',
+      default: 1,
+      step: 0.001,
+      readOnly: true,
+      derived: true,
+      precision: 3,
+      help: 'Gemäss Skizze: a = Kanalhöhe, b = Kanalbreite. Zulässige Tabellenwerte: 0,25 / 0,5 / 0,75 / 1 / 1,5 / 2.',
+    });
+  }
+
+  return parameters;
+}
+
 export const defaultFormParts = [
   {
     id: 'freier_zeta_wert',
@@ -1366,6 +1488,84 @@ export const defaultFormParts = [
         help: 'Wird automatisch aus WA und der Abzweiggrösse AA berechnet.',
       },
     ],
+  },
+  {
+    id: 'kruemmerabzweig_1_abzweig',
+    category: 'Abzweige',
+    name: 'Krümmerabzweig 1 – Abzweig',
+    image: formPartImage('kruemmerabzweig_1_abzweig'),
+    imageFallbacks: formPartImageSources('kruemmerabzweig_1_abzweig'),
+    referenceFile: formPartExcel('kruemmerabzweig_1_abzweig'),
+    keywords: ['krümmerabzweig', 'kruemmerabzweig', 'abzweig', 'rechteck', 'zeta a'],
+    description: 'Krümmerabzweig für Rechteckkanäle. ζA wird aus AA/AD, AD/A, AA/A und wA/w bestimmt und auf pdyn(wA) bezogen.',
+    derive: calculateKruemmerabzweigGeometry,
+    calculate: calculateKruemmerabzweig1Abzweig,
+    parameters: createKruemmerabzweigParameters('wA_w'),
+  },
+  {
+    id: 'kruemmerabzweig_1_durchgang',
+    category: 'Abzweige',
+    name: 'Krümmerabzweig 1 – Durchgang',
+    image: formPartImage('kruemmerabzweig_1_durchgang'),
+    imageFallbacks: formPartImageSources('kruemmerabzweig_1_durchgang'),
+    referenceFile: formPartExcel('kruemmerabzweig_1_durchgang'),
+    keywords: ['krümmerabzweig', 'kruemmerabzweig', 'durchgang', 'rechteck', 'zeta d'],
+    description: 'Krümmerabzweig für Rechteckkanäle. ζD wird aus AA/AD, AD/A, AA/A und wD/w bestimmt und auf pdyn(wD) bezogen.',
+    derive: calculateKruemmerabzweigGeometry,
+    calculate: calculateKruemmerabzweig1Durchgang,
+    parameters: createKruemmerabzweigParameters('wD_w'),
+  },
+  {
+    id: 'kruemmerabzweig_2_abzweig',
+    category: 'Abzweige',
+    name: 'Krümmerabzweig 2 – Abzweig (Zusammenfluss)',
+    image: formPartImage('kruemmerabzweig_2_abzweig'),
+    imageFallbacks: formPartImageSources('kruemmerabzweig_2_abzweig'),
+    referenceFile: formPartExcel('kruemmerabzweig_2_abzweig'),
+    keywords: ['krümmerabzweig', 'kruemmerabzweig', 'zusammenfluss', 'abzweig', 'rechteck', 'zeta a'],
+    description: 'Zusammenfluss-Variante des Krümmerabzweigs. ζA wird aus der exakten Geometriezeile und wA/w bestimmt; negative ζ-Werte bleiben erhalten.',
+    derive: calculateKruemmerabzweigGeometry,
+    calculate: calculateKruemmerabzweig2Abzweig,
+    parameters: createKruemmerabzweigParameters('wA_w'),
+  },
+  {
+    id: 'kruemmerabzweig_2_durchgang',
+    category: 'Abzweige',
+    name: 'Krümmerabzweig 2 – Durchgang (Zusammenfluss)',
+    image: formPartImage('kruemmerabzweig_2_durchgang'),
+    imageFallbacks: formPartImageSources('kruemmerabzweig_2_durchgang'),
+    referenceFile: formPartExcel('kruemmerabzweig_2_durchgang'),
+    keywords: ['krümmerabzweig', 'kruemmerabzweig', 'zusammenfluss', 'durchgang', 'rechteck', 'zeta d'],
+    description: 'Zusammenfluss-Variante des Krümmerabzweigs. ζD wird aus der exakten Geometriezeile und wD/w bestimmt; negative ζ-Werte bleiben erhalten.',
+    derive: calculateKruemmerabzweigGeometry,
+    calculate: calculateKruemmerabzweig2Durchgang,
+    parameters: createKruemmerabzweigParameters('wD_w'),
+  },
+  {
+    id: 'kruemmerendstueck_1',
+    category: 'Rechteck',
+    name: 'Krümmerendstück 1',
+    image: formPartImage('kruemmerendstueck_1'),
+    imageFallbacks: formPartImageSources('kruemmerendstueck_1'),
+    referenceFile: formPartExcel('kruemmerendstueck_1'),
+    keywords: ['krümmerendstück', 'kruemmerendstueck', 'endstück', 'endstueck', 'rechteck', 'umlenkung'],
+    description: 'Krümmerendstück für Rechteckkanäle. ζA wird aus dem Seitenverhältnis a/b und wA/w bestimmt und auf pdyn(wA) bezogen.',
+    derive: calculateKruemmerendstueckGeometry,
+    calculate: calculateKruemmerendstueck1,
+    parameters: createKruemmerendstueckParameters(true),
+  },
+  {
+    id: 'kruemmerendstueck_2',
+    category: 'Rechteck',
+    name: 'Krümmerendstück 2 (Zusammenfluss)',
+    image: formPartImage('kruemmerendstueck_2'),
+    imageFallbacks: formPartImageSources('kruemmerendstueck_2'),
+    referenceFile: formPartExcel('kruemmerendstueck_2'),
+    keywords: ['krümmerendstück', 'kruemmerendstueck', 'zusammenfluss', 'endstück', 'endstueck', 'rechteck'],
+    description: 'Zusammenfluss-Variante des Krümmerendstücks. ζA wird aus wA/w bestimmt und auf pdyn(wA) bezogen.',
+    derive: calculateKruemmerendstueckGeometry,
+    calculate: calculateKruemmerendstueck2,
+    parameters: createKruemmerendstueckParameters(false),
   },
   {
     id: 't_abzweig_durchgang_rund1',

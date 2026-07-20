@@ -19,6 +19,14 @@ import {
 import { calculateTStueck90, calculateTStueck90Variante2 } from '../formteile/calculators/tStueck90Calculator.js';
 import { calculateSattelstueckMitEinstroemkonus } from '../formteile/calculators/sattelstueckMitEinstroemkonusCalculator.js';
 import { calculateFreierZetaWert } from '../formteile/calculators/freierZetaWertCalculator.js';
+import {
+  calculateKruemmerabzweig1Abzweig,
+  calculateKruemmerabzweig1Durchgang,
+  calculateKruemmerabzweig2Abzweig,
+  calculateKruemmerabzweig2Durchgang,
+  calculateKruemmerendstueck1,
+  calculateKruemmerendstueck2,
+} from '../formteile/calculators/kruemmerFormteileCalculator.js';
 
 const excel = id => `assets/formteile/${id}.xlsx`;
 const zeta = (expected, tolerance = 1e-10) => ({ label: 'ζ-Wert', path: 'zeta', expected, tolerance });
@@ -110,6 +118,42 @@ export const FORM_PART_REFERENCE_CASES = Object.freeze([
     id: 'FP-014B', partId: 'sattelstueck_mit_einstroemkonus', title: 'Sattelstück – Kurve b', source: excel('sattelstueck_mit_einstroemkonus'),
     calculate: calculateSattelstueckMitEinstroemkonus, input: { W: 1, WA: 1, w: 1, wA: 1.2, curve: 'b' },
     expectations: [zeta(0.54), numeric('Tabellenspalte wA/w', 'calculation.ratioLookup', 1.2), exact('Kurve', 'calculation.curve', 'b')],
+  },
+  {
+    id: 'FP-015', partId: 'kruemmerabzweig_1_abzweig', title: 'Krümmerabzweig 1 – Abzweig', source: excel('kruemmerabzweig_1_abzweig'),
+    calculate: calculateKruemmerabzweig1Abzweig,
+    input: { W: 1000, WD: 600, WA: 400, w: 2, wD: 1.6, wA: 1.2, A_area: 1, AD_area: 0.5, AA_area: 0.5, AA_AD: 1, AD_A: 0.5, AA_A: 0.5, wA_w: 0.6 },
+    expectations: [zeta(1), numeric('Tabellenspalte wA/w', 'calculation.ratioLookup', 0.6), numeric('Geometrie AA/AD', 'calculation.geometryLookup.AA_AD', 1), exact('Bezugsdruck', 'calculation.pressureReference', 'wA')],
+  },
+  {
+    id: 'FP-016', partId: 'kruemmerabzweig_1_durchgang', title: 'Krümmerabzweig 1 – Durchgang', source: excel('kruemmerabzweig_1_durchgang'),
+    calculate: calculateKruemmerabzweig1Durchgang,
+    input: { W: 1000, WD: 600, WA: 400, w: 2, wD: 1.6, wA: 1.2, A_area: 1, AD_area: 0.5, AA_area: 0.5, AA_AD: 1, AD_A: 0.5, AA_A: 0.5, wD_w: 0.8 },
+    expectations: [zeta(0.06), numeric('Tabellenspalte wD/w', 'calculation.ratioLookup', 0.8), numeric('Geometrie AD/A', 'calculation.geometryLookup.AD_A', 0.5), exact('Bezugsdruck', 'calculation.pressureReference', 'wD')],
+  },
+  {
+    id: 'FP-017', partId: 'kruemmerabzweig_2_abzweig', title: 'Krümmerabzweig 2 – Abzweig', source: excel('kruemmerabzweig_2_abzweig'),
+    calculate: calculateKruemmerabzweig2Abzweig,
+    input: { W: 1000, WD: 600, WA: 400, w: 2, wD: 1.6, wA: 1.2, A_area: 1, AD_area: 0.5, AA_area: 0.5, AA_AD: 1, AD_A: 0.5, AA_A: 0.5, wA_w: 0.6 },
+    expectations: [zeta(-2.9), numeric('Tabellenspalte wA/w', 'calculation.ratioLookup', 0.6), exact('Negative ζ bleiben erhalten', 'zeta', -2.9), exact('Bezugsdruck', 'calculation.pressureReference', 'wA')],
+  },
+  {
+    id: 'FP-018', partId: 'kruemmerabzweig_2_durchgang', title: 'Krümmerabzweig 2 – Durchgang', source: excel('kruemmerabzweig_2_durchgang'),
+    calculate: calculateKruemmerabzweig2Durchgang,
+    input: { W: 1000, WD: 600, WA: 400, w: 2, wD: 1.6, wA: 1.2, A_area: 1, AD_area: 0.5, AA_area: 0.5, AA_AD: 1, AD_A: 0.5, AA_A: 0.5, wD_w: 0.8 },
+    expectations: [zeta(0), numeric('Tabellenspalte wD/w', 'calculation.ratioLookup', 0.8), exact('Bezugsdruck', 'calculation.pressureReference', 'wD')],
+  },
+  {
+    id: 'FP-019', partId: 'kruemmerendstueck_1', title: 'Krümmerendstück 1', source: excel('kruemmerendstueck_1'),
+    calculate: calculateKruemmerendstueck1,
+    input: { W: 1000, WA: 1000, w: 2, wA: 1.4, A_area: 1, AA_area: 1, a_b: 1, wA_w: 0.7 },
+    expectations: [zeta(0.49), numeric('Tabellenspalte wA/w', 'calculation.ratioLookup', 0.7), numeric('Seitenverhältnis a/b', 'calculation.aspectLookup', 1), exact('Bezugsdruck', 'calculation.pressureReference', 'wA')],
+  },
+  {
+    id: 'FP-020', partId: 'kruemmerendstueck_2', title: 'Krümmerendstück 2', source: excel('kruemmerendstueck_2'),
+    calculate: calculateKruemmerendstueck2,
+    input: { W: 1000, WA: 1000, w: 2, wA: 1, A_area: 1, AA_area: 1, wA_w: 0.5 },
+    expectations: [zeta(0.28), numeric('Tabellenspalte wA/w', 'calculation.ratioLookup', 0.5), exact('Bezugsdruck', 'calculation.pressureReference', 'wA')],
   },
   {
     id: 'FP-L01', partId: 'hosenstueck', title: 'Hosenstück – Excel-Bodensuche 0.85 → 0.8', source: excel('hosenstueck'),

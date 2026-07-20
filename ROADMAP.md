@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 51.00
+# Druckverlust Pro – Roadmap ab Phase 51.10
 
-Aktueller Entwicklungsstand: **Version 2.6.0 · Phase 51.00**. Oberfläche, Ribbon, Symbolhilfe und responsive Breitenführung sind nun als gemeinsamer Plattformstandard abgeschlossen.
+Aktueller Entwicklungsstand: **Version 2.6.1 · Phase 51.10**. Die Plattformoberfläche ist abgeschlossen und die Formteilbibliothek wurde um sechs Excel-geprüfte Krümmerformteile erweitert.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -16,6 +16,15 @@ Aktueller Entwicklungsstand: **Version 2.6.0 · Phase 51.00**. Oberfläche, Ribb
 - sofortige Infotexte sowie Symbol- und Statuslegende,
 - überlaufsichere Sidebar und Arbeitsfläche,
 - responsive Werkzeugführung für Desktop, Tablet und Smartphone.
+
+## Phase 51.10 – Sechs neue Krümmerformteile – abgeschlossen
+
+- vier Krümmerabzweige für Abzweig/Durchgang und Verteilung/Zusammenfluss,
+- zwei Krümmerendstücke für Rechteckkanäle,
+- automatische Übernahme der Haupt-, Durchgangs- und Abzweig-Teilstrecken,
+- Excel-getreue Geometrie- und Geschwindigkeitsverhältnis-Suche,
+- kontrollierte negative ζ-Werte und klare Sperre bei nicht hinterlegten Geometrien,
+- Formteilbibliothek auf 21 Typen erweitert.
 
 ## Phase 52.00 – Vereinfachte Ergebnisdarstellung
 

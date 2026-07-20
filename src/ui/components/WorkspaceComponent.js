@@ -10,16 +10,16 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.00';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=49.00&release=51.00';
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.10';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.10&release=51.10';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.00';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.00';
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.10';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.10';
 import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
@@ -3463,22 +3463,31 @@ export default class WorkspaceComponent {
     const supportsBranch = parameterIds.has('WA') && hasAny(['AA_breite', 'AA_hoehe', 'AA_d']);
 
     if (supportsThrough) {
+      const isKruemmerZusammenfluss = type.includes('kruemmerabzweig_2');
       connections.push({
         field: 'throughSectionId',
         target: 'AD',
         airflow: 'WD',
-        label: 'Durchgang AD/WD aus Teilstrecke',
-        help: 'Grösse AD und Luftmenge WD werden aus der gewählten Durchgangs-Teilstrecke übernommen.',
+        label: isKruemmerZusammenfluss ? 'Gerader Zulauf AD/WD aus Teilstrecke' : 'Durchgang AD/WD aus Teilstrecke',
+        help: isKruemmerZusammenfluss
+          ? 'Grösse AD und Luftmenge WD werden aus der gewählten geraden Zulauf-Teilstrecke übernommen.'
+          : 'Grösse AD und Luftmenge WD werden aus der gewählten Durchgangs-Teilstrecke übernommen.',
       });
     }
 
     if (supportsBranch) {
+      const isEndstueck = type.includes('kruemmerendstueck');
+      const isZusammenfluss = type.includes('kruemmerendstueck_2') || type.includes('kruemmerabzweig_2');
       connections.push({
         field: 'branchSectionId',
         target: 'AA',
         airflow: 'WA',
-        label: 'Abzweig AA/WA aus Teilstrecke',
-        help: 'Grösse AA und Luftmenge WA werden aus der gewählten Abzweig-Teilstrecke übernommen.',
+        label: isEndstueck
+          ? `${isZusammenfluss ? 'Zulauf' : 'Ausgang'} AA/WA aus Teilstrecke`
+          : `${isZusammenfluss ? 'Krümmer-Zulauf' : 'Krümmerabzweig'} AA/WA aus Teilstrecke`,
+        help: isEndstueck
+          ? `Grösse AA und Luftmenge WA werden aus der gewählten ${isZusammenfluss ? 'Zulauf' : 'Ausgangs'}-Teilstrecke übernommen.`
+          : `Grösse AA und Luftmenge WA werden aus der gewählten ${isZusammenfluss ? 'Krümmer-Zulauf' : 'Abzweig'}-Teilstrecke übernommen.`,
       });
     }
 
@@ -3769,7 +3778,9 @@ export default class WorkspaceComponent {
       type.includes('hosenstueck') ||
       type.includes('t_abzweig') ||
       type.includes('t_stueck') ||
-      type.includes('sattelstueck')
+      type.includes('sattelstueck') ||
+      type.includes('kruemmerabzweig') ||
+      type.includes('kruemmerendstueck')
     ) {
       setShape('A');
       set('W', geometry.q);
@@ -9682,18 +9693,31 @@ export default class WorkspaceComponent {
       't_abzweig_durchgang_rund2',
       't_abzweig_rund1',
       't_abzweig_rund2',
+      'kruemmerabzweig_1_abzweig',
+      'kruemmerabzweig_1_durchgang',
+      'kruemmerabzweig_2_abzweig',
+      'kruemmerabzweig_2_durchgang',
+      'kruemmerendstueck_1',
+      'kruemmerendstueck_2',
     ].includes(type)) {
       if (W <= 0) warnings.push('Hauptluftmenge W fehlt oder ist 0 m³/h.');
       if (WA < 0) warnings.push('Abzweigluftmenge WA darf nicht negativ sein.');
-      if (WA > W && W > 0) warnings.push('Abzweigluftmenge WA ist grösser als Hauptluftmenge W. Bitte Strömungsaufteilung prüfen.');
+      if (WA > W && W > 0 && !type.startsWith('kruemmer')) warnings.push('Abzweigluftmenge WA ist grösser als Hauptluftmenge W. Bitte Strömungsaufteilung prüfen.');
       if (w <= 0 && W > 0) warnings.push('Hauptgeschwindigkeit w konnte nicht berechnet werden. Bitte Hauptanschluss-Grösse prüfen.');
       if (wA <= 0 && WA > 0) warnings.push('Abzweiggeschwindigkeit wA konnte nicht berechnet werden. Bitte Abzweig-Grösse prüfen.');
     }
 
-    if (type.startsWith('t_abzweig') && W > 0 && WA > 0 && WD > 0) {
+    if ((type.startsWith('t_abzweig') || type.startsWith('kruemmerabzweig')) && W > 0 && WA > 0 && WD > 0) {
       const balance = Math.abs(W - (WA + WD));
       if (balance > Math.max(1, W * 0.02)) {
-        warnings.push('Bei diesem T-Abzweig sollte W ungefähr WA + WD entsprechen. Bitte Luftmengen prüfen.');
+        warnings.push('Bei diesem Abzweig sollte W ungefähr WA + WD entsprechen. Bitte Luftmengen prüfen.');
+      }
+    }
+
+    if (type.startsWith('kruemmerendstueck') && W > 0 && WA > 0) {
+      const balance = Math.abs(W - WA);
+      if (balance > Math.max(1, W * 0.02)) {
+        warnings.push('Beim Krümmerendstück sollten W und WA ungefähr gleich sein. Bitte Luftmengen prüfen.');
       }
     }
 

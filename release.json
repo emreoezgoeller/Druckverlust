@@ -1,8 +1,8 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.6.0",
-  "phase": "51.00",
+  "version": "2.6.1",
+  "phase": "51.10",
   "releaseDate": "2026-07-20",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
@@ -17,8 +17,8 @@
   ],
   "quality": {
     "referenceCases": 39,
-    "formPartTypes": 15,
-    "excelReferenceChecks": 56,
+    "formPartTypes": 21,
+    "excelReferenceChecks": 81,
     "practiceSections": 48,
     "performanceSections": 200,
     "sectionFrictionChecks": 46,
@@ -26,11 +26,13 @@
     "sectionWorkflowChecks": 22,
     "sectionEntryChecks": 54,
     "formPartWorkflowChecks": 37,
-    "interfaceCompletionChecks": 48
+    "interfaceCompletionChecks": 48,
+    "sixNewFormPartChecks": 65,
+    "formPartSyncChecks": 179
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Einzeilige Plattformleiste mit integrierter Symbol- und Statuslegende, sofortigen Infotexten sowie robuster Breitenführung für Ribbon, Sidebar und Arbeitsbereich."
+  "notes": "Sechs neue rechteckige Krümmerformteile mit Excel-getreuer Tabellenlogik, automatischer Teilstrecken-Synchronisation, direktem Druckbezug und kontrollierter Behandlung negativer ζ-Werte."
 }

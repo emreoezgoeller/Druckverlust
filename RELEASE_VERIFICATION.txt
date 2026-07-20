@@ -1,5 +1,5 @@
-DRUCKVERLUST PRO 2.6.0 – RELEASE 51.00
-Prüfung Oberflächen- und Ribbon-Abschluss
+DRUCKVERLUST PRO 2.6.1 – RELEASE 51.10
+Prüfung sechs neue Krümmerformteile und bestehender Release-Stand
 Datum: 20.07.2026
 
 ZUSÄTZLICH GEPRÜFT
@@ -34,3 +34,10 @@ abgesichert. Die reale Sichtkontrolle im lokalen Edge/Chrome-Browser bleibt Teil
 Phase 50.00: 37 Prüfungen für Formteil-Kontext, lokale Reihenfolge, Anschlussvorschläge, Warnungen und UI-Integration bestanden.
 
 Phase 51.00: 48 Prüfungen für einzeiliges Ribbon, Symbollegende, Sofort-Infotexte, Responsive-Verhalten und Breitenführung bestanden.
+
+
+Phase 51.10: 65 Prüfungen für sechs neue Formteile, Registry-/Asset-Integration, Excel-Tabellenwerte, Bodensuche, negative ζ-Werte, Geometriefehler und Teilstrecken-Synchronisation bestanden.
+
+Formteil-Referenzprüfung: 21/21 Formteiltypen, 25/25 Excel-Referenzfälle und 81/81 Einzelprüfungen bestanden.
+
+Formteil-Synchronisation: 21/21 Formteiltypen und 179/179 Einzelprüfungen bestanden.

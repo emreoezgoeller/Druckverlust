@@ -1,4 +1,4 @@
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=47.00&release=47.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.10&release=51.10';
 
 // Druckverlust Pro – ValidationEngine
 // Prüft Eingaben, Berechnungsergebnisse und Projektstruktur.
