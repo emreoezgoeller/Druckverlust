@@ -1,8 +1,8 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.2.0",
-  "phase": "47.00",
+  "version": "2.5.0",
+  "phase": "50.00",
   "releaseDate": "2026-07-20",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
@@ -22,11 +22,14 @@
     "practiceSections": 48,
     "performanceSections": 200,
     "sectionFrictionChecks": 46,
-    "freeZetaChecks": 26
+    "freeZetaChecks": 26,
+    "sectionWorkflowChecks": 22,
+    "sectionEntryChecks": 54,
+    "formPartWorkflowChecks": 37
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Neues herstellerneutrales Formteil „Freier ζ-Wert“: nur ζ eingeben; Δp wird automatisch mit dem dynamischen Druck der zugeordneten Teilstrecke berechnet."
+  "notes": "Intelligenter Formteil-Workflow mit explizitem Teilstrecken-Kontext, geschützten manuellen Werten, Anschlussvorschlägen und teilsteckenbezogener Reihenfolge."
 }

@@ -48,14 +48,14 @@ check(css.includes('@media (max-width: 560px)'), 'Hilfe-Center besitzt Smartphon
 check(css.includes('@media (prefers-reduced-motion: reduce)'), 'Reduzierte Animationen werden berücksichtigt.');
 
 check(html.includes('phase41_00.css?v=41.00'), 'App lädt das Phase-41-Stylesheet.');
-check(html.includes('src/main.js?v=47.00'), 'App lädt Main mit Phase-41-Cache-Stand.');
-check(main.includes('WorkspaceComponent.js?v=47.00'), 'Main lädt Workspace mit Phase-41-Cache-Stand.');
+check(html.includes('src/main.js?v=50.00'), 'App lädt Main mit Phase-41-Cache-Stand.');
+check(main.includes('WorkspaceComponent.js?v=50.00'), 'Main lädt Workspace mit Phase-41-Cache-Stand.');
 check(main.includes('resolveHelpStartupTopic(helpSection)'), 'Startlinks öffnen das passende Hilfethema.');
 check(main.includes("report: 'report'"), 'Berichtslink wird auf die aktuelle Berichtshilfe abgebildet.');
-check(version.includes("APP_RELEASE = '47.00'"), 'Release ist Phase 41.00.');
-check(version.includes("APP_VERSION = '2.2.0'"), 'App-Version ist 1.18.0.');
-check(packageJson.version === '2.2.0', 'Paketversion ist 1.18.0.');
+check(version.includes("APP_RELEASE = '50.00'"), 'Release ist Phase 41.00.');
+check(version.includes("APP_VERSION = '2.5.0'"), 'App-Version ist 1.18.0.');
+check(packageJson.version === '2.5.0', 'Paketversion ist 1.18.0.');
 check(packageJson.scripts['test:phase41']?.includes('run-phase41-help-center-tests.js'), 'Phase-41-Testskript ist registriert.');
-check(packageJson.scripts.test.startsWith('node tests/run-phase47-free-zeta-tests.js'), 'Gesamttest startet mit der aktuellen Phase.');
+check(packageJson.scripts.test.startsWith('node tests/run-phase50-formpart-workflow-tests.js'), 'Gesamttest startet mit der aktuellen Phase.');
 
 console.log(`Phase 41.00 Hilfe-Center UI/Integration: ${checks} Prüfungen bestanden.`);

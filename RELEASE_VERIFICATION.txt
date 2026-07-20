@@ -1,37 +1,34 @@
-DRUCKVERLUST PRO 2.0.0 – RELEASE 45.00
-Abschlussprüfung Phase 43–45
-Datum: 19.07.2026
+DRUCKVERLUST PRO 2.5.0 – RELEASE 50.00
+Prüfung vereinfachte Teilstreckenerfassung
+Datum: 20.07.2026
 
-GEPRÜFTER UMFANG
-- Gesamtintegration aller produktiven Funktionen bis Phase 42.00
-- Bereinigung veralteter Browser-Testhüllen und historischer Asset-Namen
-- Startseite, Anwendung, Hilfe, Feedback, rechtliche Seiten und Manifest
-- Berechnung, Formteile, Sonderbauteile, Mehranlagen-Projekte und Berichte
-- Speicherung, Wiederherstellung, Revisionen, Varianten und Übergabepakete
-- Schnellerfassung aus Excel/CSV
-- Rückwärtskompatibilität älterer .dvp-Projektstände
-- Lastfälle mit 100 und 200 Teilstrecken
+ZUSÄTZLICH GEPRÜFT
+- Zielgeschwindigkeiten 2,0 / 3,0 / 4,0 m/s und freier Zielwert
+- neutrale Standardabmessungen für Rechteckkanäle und Rundrohre
+- korrekte Flächen- und Geschwindigkeitsberechnung
+- keine Veränderung der Teilstrecke vor ausdrücklicher Übernahme
+- sichere Umrechnung zwischen Millimeter-Oberfläche und Meter-Rechenmodell
+- Erkennung historischer Millimeterwerte
+- Folge-Teilstrecke mit gleicher Geometrie und Länge 0 m
+- kontrollierte Hinweise bei fehlender Luftmenge und aussergewöhnlich grossen Werten
+- responsive Darstellung des Assistenten
+- 54 automatisierte Phase-49-Einzelprüfungen
 
-BESTANDENE PRÜFUNGEN
-- 1'326 Release-Integrationsprüfungen
-- 23 Kompatibilitäts- und Lastprüfungen
-- 39 feste Rechenreferenzprüfungen
-- alle 14 Formteiltypen
-- 56 Excel-Referenzprüfungen
-- Praxisprojekt mit 48 Teilstrecken, 36 Formteilen und 26 Sonderbauteilen
-- Professional Report mit 35 Seiten
-- JavaScript-Syntax-, JSON-, Bild-, Excel-, Import- und Dateipfadprüfung
-- lokale HTTP-Aufrufe der öffentlichen Seiten und Release-Dateien
+WEITERHIN GEPRÜFT
+- vollständige bestehende Testsuite aus den Phasen 21 bis 48
+- Berechnung, Formteile, Speicherung, Berichte und Rückwärtskompatibilität
+- lokale Datei- und Importpfade
+- Praxis- und Lastfälle bis 200 Teilstrecken
 
 BEWUSST NICHT ENTHALTEN
 - keine Ventilatorauslegung
 - keine SFP-, Motorleistungs- oder Energiekostenberechnung
 - keine Hersteller-Bauteildatenbank
-- keine Marken- oder Produktempfehlungen
 
 HINWEIS ZUR BROWSERPRÜFUNG
 Ein automatisierter Chromium-Screenshot konnte in der isolierten Prüfungsumgebung wegen
 Systemrichtlinien und Laufzeitbeschränkungen nicht stabil abgeschlossen werden. Die Anwendung
-wurde deshalb über die vollständige automatisierte Funktions-, DOM-, Import-, HTTP-, Syntax-
-und Strukturprüfung abgesichert. Die reale Sichtkontrolle im lokalen Edge/Chrome-Browser bleibt
-Teil der abschliessenden Anwenderabnahme.
+wurde deshalb über automatisierte Funktions-, DOM-, Import-, HTTP-, Syntax- und Strukturprüfungen
+abgesichert. Die reale Sichtkontrolle im lokalen Edge/Chrome-Browser bleibt Teil der Anwenderabnahme.
+
+Phase 50.00: 37 Prüfungen für Formteil-Kontext, lokale Reihenfolge, Anschlussvorschläge, Warnungen und UI-Integration bestanden.

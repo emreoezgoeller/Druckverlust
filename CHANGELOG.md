@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.5.0 – Phase 50.00 – 20.07.2026
+
+- Formteile können direkt aus der aktuell geöffneten Teilstrecke erstellt werden.
+- Die Formteilbibliothek zeigt eine änderbare Ziel-Teilstrecke vor der Auswahl.
+- Der Formteilarbeitsplatz zeigt die Einbauposition im Kanalstrang mit Vor-/Zurück-Navigation.
+- Manuell geänderte Anschluss- und Geometriewerte bleiben beim Wechsel der Teilstrecke geschützt.
+- Automatische Werte können bewusst über „Automatik wieder übernehmen“ neu synchronisiert werden.
+- Übergänge und Abzweige erhalten bestätigbare Vorschläge für zusätzliche Anschluss-Teilstrecken.
+- Ungültige oder widersprüchliche Haupt-/Zusatzzuordnungen werden sichtbar gewarnt und nicht still auf TS 1 umgebogen.
+- Formteile werden innerhalb ihrer zugeordneten Teilstrecke sortiert; andere Teilstrecken bleiben unberührt.
+- 37 automatisierte Phase-50-Prüfungen ergänzt.
+
+## 2.4.0 – Phase 49.00
+
+- vereinfachte Teilstreckenerfassung mit herstellerneutralem Dimensionierungsassistenten,
+- Zielgeschwindigkeiten 2,0 / 3,0 / 4,0 m/s sowie freier Zielwert,
+- bis zu vier Standardabmessungen für Rechteckkanal und Rundrohr,
+- bewusste Bestätigung vor jeder Geometrieänderung,
+- Geometrieeingaben in Millimeter bei unverändertem Meter-Rechenmodell,
+- Schnellfunktion für die nächste Teilstrecke mit gleicher Grösse und Länge 0 m,
+- 54 automatisierte Phase-49-Prüfungen.
+
+## 2.3.0 – Phase 48.00 – 20.07.2026
+
+- Reihenfolge der Teilstreckenfelder auf **Name → Luftmenge → Rauigkeit → Querschnittstyp → Breite/Höhe bzw. Durchmesser → Länge** angepasst.
+- Der Anwendungskontext merkt sich je Anlage die zuletzt erstellte Teilstrecke.
+- Neue Formteile werden automatisch dieser zuletzt erstellten Teilstrecke zugeordnet, statt auf die erste Teilstrecke zurückzufallen.
+- Manuelle Umzuordnung im Formteileditor bleibt unverändert möglich.
+- Sortieren von Teilstrecken verändert die gemerkte Standard-Zuordnung nicht.
+- Duplizieren, Löschen, Altprojekt-Laden und Anlagen ohne Teilstrecken besitzen kontrollierte Rückfälle.
+- Formteilbibliothek zeigt die tatsächliche Standard-Zuordnung samt Hinweis auf die manuelle Änderbarkeit.
+- 22 neue automatisierte Workflow-Prüfungen ergänzt.
+
 ## 2.2.0 – Phase 47.00 – 20.07.2026
 
 - Neues herstellerneutrales Formteil **„Freier ζ-Wert“** ergänzt.

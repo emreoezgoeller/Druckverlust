@@ -1,25 +1,41 @@
-# Druckverlust Pro – Roadmap nach Release 2.1
+# Druckverlust Pro – Roadmap ab Phase 50.00
 
-Die Hauptentwicklung ist mit Version 2.2.0 / Phase 47.00 abgeschlossen. Weitere Arbeiten erfolgen nur als gezielte, fachlich begründete Wartungs- oder Integrationspakete.
+Aktueller Entwicklungsstand: **Version 2.5.0 · Phase 50.00**. Der Formteil-Workflow arbeitet jetzt konsequent mit dem aktuellen Teilstrecken-Kontext, schützt manuelle Werte und führt Zusatzanschlüsse kontrolliert.
 
-## Priorität 1 – Büroabnahme
+## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
-- reale Projekte unterschiedlicher Grösse in Edge und Chrome prüfen,
-- PDF-Ausgabe auf den tatsächlich eingesetzten Druckern kontrollieren,
-- ältere `.dvp`-Dateien aus dem Bürobestand einmalig migrieren und neu speichern,
-- Rückmeldungen nur mit nachvollziehbarem Testfall übernehmen.
+- Formteile aus aktueller Teilstrecke oder frei gewähltem Picker-Kontext erstellen,
+- manuelle Geometrie- und Anschlusswerte beim Umordnen schützen,
+- bestätigbare Anschlussvorschläge für Übergänge und Abzweige,
+- lokale Formteilreihenfolge je Teilstrecke,
+- klare Warnungen bei fehlenden und widersprüchlichen Zuordnungen.
 
-## Priorität 2 – Plattformintegration
+## Phase 51.00 – Oberflächen- und Ribbon-Abschluss
+
+- Oberflächenaufbau vollständig mit der Plattform-Hauptseite abstimmen,
+- Symbollegenden und Infotexte vervollständigen,
+- Ribbon, Sidebar und Arbeitsbereich bei kleinen Bildschirmbreiten prüfen,
+- Produktseite und Berechnungsanwendung sauber getrennt halten.
+
+## Phase 52.00 – Vereinfachte Ergebnisdarstellung
+
+- Reibungs-, Formteil- und Gesamtverlust klarer trennen,
+- kritische Teilstrecke hervorheben,
+- Standardansicht vereinfachen und technische Details einklappbar machen.
+
+## Phase 53.00 bis 58.00 – Bericht, Schema und Finalisierung
+
+- PDF-Deckblatt und Seitenumbrüche abschliessen,
+- Anlagenschema und Symbollegende überarbeiten,
+- Rückwärtskompatibilität älterer `.dvp`-Dateien absichern,
+- reale Büroprojekte in Edge und Chrome prüfen,
+- Release Candidate bereinigen und Druckverlust Pro 3.0 finalisieren.
+
+## Spätere Plattformintegration
 
 - gemeinsames Projektcenter mit Luftmengen, Schall, Hx und Kanalschieber,
-- kontrollierter Datenaustausch zwischen den herstellerneutralen Tools,
+- kontrollierter Datenaustausch zwischen den Tools,
 - Windows-Installationspaket für die gesamte Plattform.
-
-## Optionale spätere Erweiterungen
-
-- direkter `.xlsx`-Dateiimport zusätzlich zu Kopieren/CSV,
-- Mehrsprachigkeit Deutsch/Französisch/Englisch,
-- neutraler DXF-Export des Funktionsschemas.
 
 ## Dauerhaft ausgeschlossen
 

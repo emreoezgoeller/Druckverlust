@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.2.0 · Phase 47.00 · zusammengeführt, bereinigt und als vollständiger Release geprüft.
+**Aktueller Stand:** Version 2.5.0 · Phase 50.00 · intelligenter Formteil-Workflow mit sicherem Teilstrecken-Kontext und geschützten manuellen Werten.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Excel-/CSV-Schnellerfassung, Teilstrecken, 15 herstellerneutrale Formteiltypen, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation, Aufgaben, Revisionen, Projektsicherheit und Professional Report in einem gemeinsamen Projektmodell.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
 ## Lokal starten
 
@@ -26,17 +26,16 @@ python -m http.server 8000
 
 ## Kernfunktionen
 
-- Rechteckkanäle und Rundrohre mit teil­streckenbezogener Rauigkeit k (Standard 0,15 mm), automatisch berechneter Reibungszahl λ sowie Reibungs-, Formteil- und Gesamtdruckverlust,
-- 15 herstellerneutrale Formteiltypen mit Excel-Referenzwerten, darunter „Freier ζ-Wert“ mit automatischer Berechnung `Δp = ζ × p_dyn`,
-- Sonderbauteile mit frei definierbarem Druckverlust,
-- mehrere Anlagen pro Projekt, Projektcockpit und projektweite QS,
-- Excel-/CSV-/TSV-Schnellerfassung mit Vorschau, Sicherung und Importnachweis,
-- interaktive SVG-Anlagenzeichnung und mehrseitiges PDF-Schema,
-- nicht-destruktive Live-Simulation und Variantenvergleich,
-- Aufgaben, Suche, Abhängigkeiten, Verlauf, Revisionen und Prüfprotokoll,
+- Rechteckkanäle und Rundrohre mit teil­streckenbezogener Rauigkeit k und automatisch berechneter Darcy-Reibungszahl λ,
+- Dimensionierungsassistent mit Zielgeschwindigkeiten 2,0 / 3,0 / 4,0 m/s, freiem Zielwert und neutralen Standardabmessungen,
+- Kanal- und Rohrabmessungen werden in der Oberfläche praxisnah in Millimeter geführt und intern weiterhin in Meter berechnet,
+- Vorschläge verändern keine Eingabe, bevor eine Abmessung ausdrücklich übernommen wird,
+- Schnellfunktion für die nächste Teilstrecke mit gleicher Luftmenge, Geometrie und Rauigkeit,
+- 15 herstellerneutrale Formteiltypen, darunter „Freier ζ-Wert“ mit `Δp = ζ × p_dyn`,
+- neue Formteile werden automatisch der zuletzt erstellten Teilstrecke zugeordnet und bleiben manuell umstellbar,
+- mehrere Anlagen pro Projekt, Excel-/CSV-/TSV-Schnellerfassung, Projekt-QS und Professional Report,
 - `.dvp`, `.dvpa` und `.dvph` mit Importprüfung und Prüfsumme,
-- Professional Report als Druck-/PDF-/HTML-Ansicht sowie CSV-Exporte,
-- Hilfe-Center und geführte Erste Schritte.
+- Hilfe-Center, Projektverlauf, Revisionen, Aufgaben, Simulation und Übergabeprüfung.
 
 ## Projektstruktur
 
@@ -50,7 +49,7 @@ Druckverlust/
 ├── src/                       Rechenkern, Projektmodule, UI und Berichte
 ├── tests/                     automatisierte Node-Prüfungen
 ├── docs/                      Architektur, Testplan, Migration und Releasecheck
-└── RELEASE_NOTES.md           Änderungen der Version 2.1
+└── RELEASE_NOTES.md           Änderungen der aktuellen Version
 ```
 
 ## Tests
@@ -59,13 +58,19 @@ Druckverlust/
 npm test
 ```
 
-Zusätzlicher Release-Kurzlauf:
+Gezielte Phase-49-Prüfung:
+
+```bash
+npm run test:phase49
+```
+
+Release-Kurzlauf:
 
 ```bash
 npm run test:release
 ```
 
-Der finale Release prüft unter anderem 39 feste Rechenreferenzen, 14 Formteiltypen, 56 Excel-Einzelprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
+Der Release prüft unter anderem 54 Einzelprüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 15 Formteiltypen, 56 Excel-Einzelprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
 
 ## Bewusst ausgeschlossen
 

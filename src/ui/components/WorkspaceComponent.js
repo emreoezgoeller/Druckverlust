@@ -3,8 +3,23 @@
 
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import { calculateSection } from '../../core/CalculationEngine.js';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=47.00&release=47.00';
-import ProjectCommands from '../../app/ProjectCommands.js';
+import {
+  DEFAULT_TARGET_VELOCITY_MS,
+  applySectionSizingSuggestion,
+  createFollowingSectionTemplate,
+  createSectionSizingResult,
+  dimensionToMillimetres,
+  normalizeTargetVelocity,
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=50.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=49.00&release=50.00';
+import {
+  getAdjacentSection,
+  getConnectionAssignmentIssues,
+  getFormPartPosition,
+  getSuggestedConnectionSectionId,
+  resolveFormPartContextSection,
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=50.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=50.00';
 import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
@@ -164,6 +179,7 @@ export default class WorkspaceComponent {
     this.dependencyConflictFilter = 'all';
     this.dependencyHintKey = '';
     this.projectHistoryFilter = 'all';
+    this.sectionSizingTargets = new Map();
 
     if (typeof window !== 'undefined') {
       window.addEventListener('druckverlust:history-change', () => {
@@ -1386,6 +1402,7 @@ export default class WorkspaceComponent {
           <small>${result ? `${this.formatNumber(result.velocity, 2)} m/s · ${this.formatAirflow(section?.q ?? 0)} m³/h` : 'Noch keine gültige Berechnung'}</small>
         </div>
         <div class="workspace-actions">
+          <button type="button" class="primary" data-section-action="add-formpart" data-section-id="${this.escapeAttribute(section?.id)}">+ Formteil</button>
           <button type="button" data-section-action="duplicate" data-section-id="${this.escapeAttribute(section?.id)}">Duplizieren</button>
           <button type="button" data-section-action="up" data-section-id="${this.escapeAttribute(section?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
           <button type="button" data-section-action="down" data-section-id="${this.escapeAttribute(section?.id)}" ${index < 0 || index >= sections.length - 1 ? 'disabled' : ''}>↓</button>
@@ -1395,6 +1412,7 @@ export default class WorkspaceComponent {
       ${this.renderDirtyHint()}
       ${this.renderValidationMessages(this.getSectionValidationWarnings(section))}
       ${this.renderSectionInputQuality(section)}
+      ${this.renderSectionSizingAssistant(section)}
 
       <section class="dp-editor-panel dp-section-editor-panel">
         <div class="dp-panel-header">
@@ -1422,24 +1440,6 @@ export default class WorkspaceComponent {
             <small class="dp-field-meta">Volumenstrom dieser Teilstrecke</small>
           </label>
 
-          <label class="dp-field-card">
-            <span>Querschnittstyp</span>
-            <select data-field="type">
-              <option value="duct" ${this.isDuctSection(section) ? 'selected' : ''}>Rechteckkanal</option>
-              <option value="pipe" ${this.isPipeSection(section) ? 'selected' : ''}>Rundrohr</option>
-            </select>
-            <small class="dp-field-meta">Steuert die sichtbaren Geometriefelder</small>
-          </label>
-
-          <label class="dp-field-card">
-            <span>Länge</span>
-            <div class="dp-unit-control">
-              <input data-field="l" type="number" step="0.01" value="${section?.l ?? section?.length ?? 0}">
-              <span class="dp-unit">m</span>
-            </div>
-            <small class="dp-field-meta">Gerade Länge für den Reibungsverlust</small>
-          </label>
-
           <label class="dp-field-card dp-friction-input-card">
             <span>Rauigkeit k</span>
             <div class="dp-unit-control">
@@ -1449,7 +1449,25 @@ export default class WorkspaceComponent {
             <small class="dp-field-meta">Standard 0,15 mm; je Teilstrecke individuell anpassbar</small>
           </label>
 
+          <label class="dp-field-card">
+            <span>Querschnittstyp</span>
+            <select data-field="type">
+              <option value="duct" ${this.isDuctSection(section) ? 'selected' : ''}>Rechteckkanal</option>
+              <option value="pipe" ${this.isPipeSection(section) ? 'selected' : ''}>Rundrohr</option>
+            </select>
+            <small class="dp-field-meta">Steuert die sichtbaren Geometriefelder</small>
+          </label>
+
           ${this.renderGeometryFields(section)}
+
+          <label class="dp-field-card">
+            <span>Länge</span>
+            <div class="dp-unit-control">
+              <input data-field="l" type="number" step="0.01" value="${section?.l ?? section?.length ?? 0}">
+              <span class="dp-unit">m</span>
+            </div>
+            <small class="dp-field-meta">Gerade Länge für den Reibungsverlust</small>
+          </label>
 
           <label class="dp-field-card dp-project-meta-wide">
             <span>Beschreibung / Hinweis</span>
@@ -1465,9 +1483,134 @@ export default class WorkspaceComponent {
       ${this.renderSectionFormParts(section)}
     `;
 
+    this.bindSectionSizingAssistant(section);
     this.bindSectionEditor(section);
     this.bindSectionFormPartActions(section);
     this.bindSectionManagement();
+  }
+
+  getSectionSizingTarget(section = {}) {
+    const sectionId = section?.id || '__temporary__';
+    return normalizeTargetVelocity(
+      this.sectionSizingTargets.get(sectionId),
+      DEFAULT_TARGET_VELOCITY_MS,
+    );
+  }
+
+  renderSectionSizingAssistant(section = {}) {
+    const targetVelocityMs = this.getSectionSizingTarget(section);
+    const sizing = createSectionSizingResult(section, { targetVelocityMs, limit: 4 });
+    const currentVelocity = Number(sizing.currentVelocityMs || 0);
+    const difference = currentVelocity - targetVelocityMs;
+    const tolerance = Math.max(0.15, targetVelocityMs * 0.08);
+    const currentStatus = currentVelocity <= 0
+      ? { label: 'noch nicht berechenbar', tone: 'neutral' }
+      : Math.abs(difference) <= tolerance
+        ? { label: 'nahe am Ziel', tone: 'good' }
+        : difference > 0
+          ? { label: 'über dem Ziel', tone: 'warning' }
+          : { label: 'unter dem Ziel', tone: 'neutral' };
+    const presetValues = [2, 3, 4];
+    const suggestions = sizing.suggestions || [];
+
+    return `
+      <section class="dp-editor-panel dp-section-sizing-assistant ${sizing.status === 'limit-exceeded' ? 'is-warning' : ''}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">Schnelle Dimensionierung</span>
+            <h2>Dimensionierungsassistent</h2>
+            <p>Luftmenge und Zielgeschwindigkeit wählen – das Tool schlägt passende herstellerneutrale Standardabmessungen vor.</p>
+          </div>
+          <span class="dp-sizing-status dp-sizing-status-${currentStatus.tone}">${this.escapeHtml(currentStatus.label)}</span>
+        </div>
+
+        <div class="dp-sizing-layout">
+          <div class="dp-sizing-target-card">
+            <span class="dp-sizing-card-label">Zielgeschwindigkeit</span>
+            <div class="dp-sizing-presets" role="group" aria-label="Zielgeschwindigkeit wählen">
+              ${presetValues.map(value => `
+                <button type="button" data-section-sizing-target="${value}" class="${Math.abs(targetVelocityMs - value) < 0.001 ? 'active' : ''}">${this.formatNumber(value, 1)} m/s</button>
+              `).join('')}
+            </div>
+            <label class="dp-sizing-custom-target">
+              <span>Eigener Zielwert</span>
+              <div class="dp-unit-control">
+                <input data-section-sizing-custom type="number" min="0.5" max="12" step="0.1" value="${this.escapeAttribute(targetVelocityMs)}">
+                <span class="dp-unit">m/s</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="dp-sizing-current-card">
+            <span class="dp-sizing-card-label">Aktueller Stand</span>
+            <strong>${currentVelocity > 0 ? `${this.formatNumber(currentVelocity, 2)} m/s` : '–'}</strong>
+            <small>${this.formatAirflow(sizing.airflowM3h)} m³/h · Ziel ${this.formatNumber(targetVelocityMs, 1)} m/s</small>
+            <p>${this.escapeHtml(sizing.message)}</p>
+          </div>
+
+          <div class="dp-sizing-suggestions-card">
+            <span class="dp-sizing-card-label">Abmessungsvorschläge</span>
+            ${suggestions.length ? `
+              <div class="dp-sizing-suggestions">
+                ${suggestions.map((suggestion, index) => `
+                  <button type="button" data-section-sizing-apply="${index}" class="${index === 0 ? 'primary' : ''}" ${sizing.status === 'limit-exceeded' ? 'disabled aria-disabled="true"' : ''}>
+                    <strong>${this.escapeHtml(suggestion.label)}</strong>
+                    <span>ca. ${this.formatNumber(suggestion.velocityMs, 2)} m/s</span>
+                    ${index === 0 ? '<em>Empfehlung</em>' : ''}
+                  </button>
+                `).join('')}
+              </div>
+            ` : '<div class="dp-sizing-empty">Noch kein Abmessungsvorschlag verfügbar.</div>'}
+          </div>
+        </div>
+
+        <div class="dp-sizing-footer">
+          <p><strong>Sicher:</strong> Ohne Klick auf einen Abmessungsvorschlag werden keine Kanal- oder Rohrmasse verändert.</p>
+          <button type="button" data-section-sizing-next ${sizing.airflowM3h > 0 && sizing.currentAreaM2 > 0 ? '' : 'disabled'}>+ nächste TS mit gleicher Grösse</button>
+        </div>
+      </section>
+    `;
+  }
+
+  bindSectionSizingAssistant(section = {}) {
+    const sectionId = section?.id || '__temporary__';
+
+    this.root.querySelectorAll('[data-section-sizing-target]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = normalizeTargetVelocity(button.dataset.sectionSizingTarget);
+        this.sectionSizingTargets.set(sectionId, target);
+        this.renderSection(section);
+      });
+    });
+
+    const customTarget = this.root.querySelector('[data-section-sizing-custom]');
+    customTarget?.addEventListener('change', () => {
+      const target = normalizeTargetVelocity(customTarget.value);
+      this.sectionSizingTargets.set(sectionId, target);
+      this.renderSection(section);
+    });
+
+    this.root.querySelectorAll('[data-section-sizing-apply]').forEach(button => {
+      button.addEventListener('click', () => {
+        const targetVelocityMs = this.getSectionSizingTarget(section);
+        const sizing = createSectionSizingResult(section, { targetVelocityMs, limit: 4 });
+        const suggestion = sizing.suggestions?.[Number(button.dataset.sectionSizingApply)] || null;
+        if (!suggestion) return;
+
+        applySectionSizingSuggestion(section, suggestion);
+        this.syncAssignedFormPartsForSection(section);
+        this.autoCalculateProject();
+      });
+    });
+
+    this.root.querySelector('[data-section-sizing-next]')?.addEventListener('click', () => {
+      const nextSection = this.commands.addSection(createFollowingSectionTemplate(section));
+      nextSection.description = '';
+      nextSection.note = '';
+      nextSection.l = 0;
+      nextSection.length = 0;
+      this.autoCalculateProject();
+    });
   }
 
   bindSectionEditor(section) {
@@ -1475,8 +1618,9 @@ export default class WorkspaceComponent {
       input.addEventListener('change', () => {
         const field = input.dataset.field;
 
+        const numericValue = Number(input.value);
         section[field] = input.type === 'number'
-          ? Number(input.value)
+          ? (input.dataset.fieldUnit === 'mm' ? numericValue / 1000 : numericValue)
           : input.value;
 
         if (field === 'description') {
@@ -1552,6 +1696,11 @@ export default class WorkspaceComponent {
           if (action === 'add') {
             this.commands.addSection();
             this.autoCalculateProject();
+            return;
+          }
+
+          if (action === 'add-formpart') {
+            this.commands.openFormPartPicker(sectionId);
             return;
           }
 
@@ -1631,9 +1780,9 @@ export default class WorkspaceComponent {
                   <th>Typ</th>
                   <th>Luftmenge<br>[m³/h]</th>
                   <th>Länge<br>[m]</th>
-                  <th>Breite<br>[m]</th>
-                  <th>Höhe<br>[m]</th>
-                  <th>Ø<br>[m]</th>
+                  <th>Breite<br>[mm]</th>
+                  <th>Höhe<br>[mm]</th>
+                  <th>Ø<br>[mm]</th>
                   <th>k<br>[mm]</th>
                   <th>λ<br>[-]</th>
                   <th>v<br>[m/s]</th>
@@ -1676,9 +1825,9 @@ export default class WorkspaceComponent {
         </td>
         <td><input data-section-quick-field="q" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="1" value="${this.formatAirflowInput(section?.q ?? section?.volumeFlow ?? section?.airVolume ?? 0)}"></td>
         <td><input data-section-quick-field="l" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.01" value="${this.escapeAttribute(section?.l ?? section?.length ?? 0)}"></td>
-        <td><input data-section-quick-field="b" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.b ?? section?.width ?? 0)}" ${isPipe ? 'disabled' : ''}></td>
-        <td><input data-section-quick-field="h" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.h ?? section?.height ?? 0)}" ${isPipe ? 'disabled' : ''}></td>
-        <td><input data-section-quick-field="d" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.d ?? section?.diameter ?? 0)}" ${isPipe ? '' : 'disabled'}></td>
+        <td><input data-section-quick-field="b" data-field-unit="mm" data-section-id="${this.escapeAttribute(section?.id)}" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.b ?? section?.width ?? 0))}" ${isPipe ? 'disabled' : ''}></td>
+        <td><input data-section-quick-field="h" data-field-unit="mm" data-section-id="${this.escapeAttribute(section?.id)}" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.h ?? section?.height ?? 0))}" ${isPipe ? 'disabled' : ''}></td>
+        <td><input data-section-quick-field="d" data-field-unit="mm" data-section-id="${this.escapeAttribute(section?.id)}" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.d ?? section?.diameter ?? 0))}" ${isPipe ? '' : 'disabled'}></td>
         <td><input data-section-quick-field="roughnessMm" data-section-id="${this.escapeAttribute(section?.id)}" type="number" min="0" step="0.01" value="${this.escapeAttribute(section?.roughnessMm ?? 0.15)}"></td>
         <td>${result ? this.formatNumber(result.frictionFactor ?? result.lambda, 4) : '-'}</td>
         <td>${result ? this.formatNumber(result.velocity, 2) : '-'}</td>
@@ -1701,7 +1850,8 @@ export default class WorkspaceComponent {
         } else if (field === 'q') {
           section.q = Math.round(Number(input.value || 0));
         } else {
-          section[field] = Number(input.value || 0);
+          const numericValue = Number(input.value || 0);
+          section[field] = input.dataset.fieldUnit === 'mm' ? numericValue / 1000 : numericValue;
         }
 
         this.syncAssignedFormPartsForSection(section);
@@ -1779,20 +1929,23 @@ export default class WorkspaceComponent {
     return groups.map(group => `
       <div class="dp-formpart-management-group">
         <div class="dp-formpart-management-heading">
-          <strong>${this.escapeHtml(group.title)}</strong>
-          <span>${this.escapeHtml(group.subtitle)}</span>
+          <div>
+            <strong>${this.escapeHtml(group.title)}</strong>
+            <span>${this.escapeHtml(group.subtitle)}</span>
+          </div>
+          ${group.id !== 'unassigned' && group.id !== 'all' ? `<button type="button" data-formpart-action="add-section" data-section-id="${this.escapeAttribute(group.id)}">+ Formteil</button>` : ''}
         </div>
         <div class="dp-formpart-list">
-          ${group.parts.map(part => this.renderFormPartManagementRow(part, formParts)).join('')}
+          ${group.parts.map(part => this.renderFormPartManagementRow(part, group.parts)).join('')}
         </div>
       </div>
     `).join('');
   }
 
-  renderFormPartManagementRow(formPart = {}, allFormParts = []) {
+  renderFormPartManagementRow(formPart = {}, sectionFormParts = []) {
     const entry = this.getRegistryEntry(formPart);
-    const index = allFormParts.findIndex(item => item.id === formPart?.id);
-    const total = allFormParts.length;
+    const index = sectionFormParts.findIndex(item => item.id === formPart?.id);
+    const total = sectionFormParts.length;
     const pressureLoss = this.getFormPartPressureLoss(formPart);
     const sectionName = this.getSectionNameById(formPart?.sectionId);
     const category = entry?.category || formPart?.category || 'Formteil';
@@ -1802,7 +1955,7 @@ export default class WorkspaceComponent {
       <div class="dp-formpart-row ${this.state.isSelected('formPart', formPart?.id) ? 'active' : ''}">
         <button type="button" class="dp-formpart-row-main" data-formpart-action="select" data-formpart-id="${this.escapeAttribute(formPart?.id)}">
           <strong>${this.escapeHtml(name)}</strong>
-          <span>${this.escapeHtml(category)} · ${this.escapeHtml(sectionName)}${pressureLoss !== null ? ` · ${this.formatNumber(pressureLoss)} Pa` : ''}</span>
+          <span>${this.escapeHtml(category)} · Position ${index + 1}/${total} · ${this.escapeHtml(sectionName)}${pressureLoss !== null ? ` · ${this.formatNumber(pressureLoss)} Pa` : ''}</span>
         </button>
         <div class="dp-formpart-row-actions">
           <button type="button" data-formpart-action="up" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${index <= 0 ? 'disabled' : ''}>↑</button>
@@ -1824,6 +1977,11 @@ export default class WorkspaceComponent {
         try {
           if (action === 'add') {
             this.commands.openFormPartPicker();
+            return;
+          }
+
+          if (action === 'add-section') {
+            this.commands.openFormPartPicker(button.dataset.sectionId || null);
             return;
           }
 
@@ -1856,7 +2014,7 @@ export default class WorkspaceComponent {
           }
 
           if (action === 'up' || action === 'down') {
-            this.commands.moveFormPart(formPartId, action === 'up' ? -1 : 1);
+            this.commands.moveFormPartWithinSection(formPartId, action === 'up' ? -1 : 1);
             this.autoCalculateProject();
             return;
           }
@@ -2501,7 +2659,7 @@ export default class WorkspaceComponent {
 
   renderFormPartPicker() {
     const system = this.state.selectedSystem || this.state.project?.systems?.[0];
-    const selectedSection = this.state.selectedSection || system?.sections?.[0] || null;
+    const selectedSection = this.getDefaultFormPartSection(system);
     const allGroups = this.getFormPartLibraryGroups({ ignoreFilters: true });
     const groups = this.getFormPartLibraryGroups();
     const filteredCount = groups.reduce((sum, group) => sum + group.items.length, 0);
@@ -2514,10 +2672,19 @@ export default class WorkspaceComponent {
           <h1>Formteil auswählen</h1>
           <p>Bibliothek nach Bauform und Funktion filtern. Nach der Auswahl öffnet sich direkt der passende Fachparameter-Editor.</p>
         </div>
-        <div class="dp-page-summary dp-library-context-card" aria-label="Aktive Teilstrecke">
-          <span>Aktive Teilstrecke</span>
-          <strong>${this.escapeHtml(selectedSection ? this.getSectionNameById(selectedSection.id) : 'Keine Teilstrecke')}</strong>
-          <small>${selectedSection ? this.escapeHtml(this.getSectionShapeLabel(selectedSection)) : 'Formteil wird zunächst ohne Zuordnung erstellt'}</small>
+        <div class="dp-page-summary dp-library-context-card" aria-label="Ziel-Teilstrecke für neue Formteile">
+          <span>Standard-Zuordnung für neue Formteile</span>
+          <em>Ziel-Teilstrecke für neue Formteile</em>
+          ${system?.sections?.length ? `
+            <select data-formpart-picker-section aria-label="Ziel-Teilstrecke wählen">
+              ${system.sections.map(section => `
+                <option value="${this.escapeAttribute(section.id)}" ${selectedSection?.id === section.id ? 'selected' : ''}>
+                  ${this.escapeHtml(this.getSectionNameById(section.id))} · ${this.escapeHtml(this.getSectionShapeLabel(section))}
+                </option>
+              `).join('')}
+            </select>
+          ` : '<strong>Keine Teilstrecke</strong>'}
+          <small>${selectedSection ? 'Dieses Formteil wird direkt hier eingeordnet; im Formteil weiterhin änderbar.' : 'Formteil wird zunächst ohne Zuordnung erstellt.'}</small>
         </div>
       </div>
 
@@ -2725,6 +2892,13 @@ export default class WorkspaceComponent {
     return `Kanal ${this.formatNumber(geometry.widthMm, 0)} × ${this.formatNumber(geometry.heightMm, 0)} mm · ${this.formatAirflow(geometry.q)} m³/h`;
   }
 
+  getSectionDimensionLabel(section = {}) {
+    const geometry = this.getSectionGeometryForFormPart(section);
+    return geometry.isPipe
+      ? `Ø ${this.formatNumber(geometry.diameterMm, 0)} mm`
+      : `${this.formatNumber(geometry.widthMm, 0)} × ${this.formatNumber(geometry.heightMm, 0)} mm`;
+  }
+
   truncateText(value = '', maxLength = 120) {
     const text = String(value || '').trim();
     if (text.length <= maxLength) return text;
@@ -2799,6 +2973,16 @@ export default class WorkspaceComponent {
   bindFormPartPicker() {
     this.bindLibraryFilterControls();
 
+    this.root.querySelector('[data-formpart-picker-section]')?.addEventListener('change', event => {
+      const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+      if (typeof this.state.setFormPartPickerSection === 'function') {
+        this.state.setFormPartPickerSection(event.target.value, system);
+      } else {
+        this.state.formPartPickerSectionId = event.target.value || null;
+        this.renderFormPartPicker();
+      }
+    });
+
     this.root.querySelectorAll('[data-formpart-fit]').forEach(button => {
       button.addEventListener('click', () => {
         this.formPartLibraryFit = button.dataset.formpartFit || 'all';
@@ -2831,7 +3015,7 @@ export default class WorkspaceComponent {
     const selectedCategory = options.ignoreFilters ? 'all' : String(this.formPartLibraryCategory || 'all');
     const fitFilter = options.ignoreFilters ? 'all' : String(this.formPartLibraryFit || 'all');
     const system = this.state.selectedSystem || this.state.project?.systems?.[0];
-    const selectedSection = this.state.selectedSection || system?.sections?.[0] || null;
+    const selectedSection = this.getDefaultFormPartSection(system);
 
     this.registry.all()
       .filter(item => {
@@ -2889,11 +3073,12 @@ export default class WorkspaceComponent {
     this.calculateAndStoreFormPart(formPart, { silent: true });
 
     const formPartIndex = system?.formParts?.findIndex(item => item.id === formPart?.id) ?? -1;
+    const formPartPosition = getFormPartPosition(system?.formParts || [], formPart);
 
     this.root.innerHTML = `
       <div class="workspace-header dp-page-header">
         <div class="dp-page-heading">
-          <span class="dp-overline">Formteil ${formPartIndex >= 0 ? formPartIndex + 1 : '–'} von ${system?.formParts?.length || 0}</span>
+          <span class="dp-overline">Position ${formPartPosition.index >= 0 ? formPartPosition.index + 1 : '–'} von ${formPartPosition.total || 0} in ${this.escapeHtml(this.getSectionNameById(formPart?.sectionId))}</span>
           <h1>${this.escapeHtml(formPart?.name ?? 'Formteil')}</h1>
           <p>Formteiltyp, Teilstreckenzuordnung und Fachparameter bearbeiten; der Druckverlust wird live nachgeführt.</p>
         </div>
@@ -2903,15 +3088,17 @@ export default class WorkspaceComponent {
           <small>${this.escapeHtml(this.getSectionNameById(formPart?.sectionId))}</small>
         </div>
         <div class="workspace-actions">
+          <button type="button" class="primary" data-formpart-workflow-action="add-same-section">+ weiteres Formteil</button>
           <button type="button" data-formpart-action="duplicate" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Duplizieren</button>
-          <button type="button" data-formpart-action="up" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartIndex <= 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" data-formpart-action="down" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartIndex < 0 || formPartIndex >= (system?.formParts?.length || 0) - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" data-formpart-action="up" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartPosition.index <= 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" data-formpart-action="down" data-formpart-id="${this.escapeAttribute(formPart?.id)}" ${formPartPosition.index < 0 || formPartPosition.index >= formPartPosition.total - 1 ? 'disabled' : ''}>↓</button>
           <button type="button" class="danger" data-formpart-action="delete" data-formpart-id="${this.escapeAttribute(formPart?.id)}">Löschen</button>
         </div>
       </div>
       ${this.renderDirtyHint()}
       ${this.renderValidationMessages(this.getFormPartValidationWarnings(formPart))}
       ${this.renderFormPartOverview(formPart)}
+      ${this.renderFormPartWorkflowBar(formPart, sections)}
 
       <section class="dp-editor-panel dp-formpart-editor-panel">
         <div class="dp-panel-header">
@@ -2940,13 +3127,14 @@ export default class WorkspaceComponent {
           <label class="dp-field-card">
             <span>Teilstrecke</span>
             <select data-field="sectionId">
+              <option value="" ${!sections.some(section => section.id === formPart?.sectionId) ? 'selected' : ''}>Bitte Teilstrecke wählen</option>
               ${sections.map(section => `
                 <option value="${this.escapeAttribute(section.id)}" ${formPart?.sectionId === section.id ? 'selected' : ''}>
-                  ${this.escapeHtml(section.name ?? section.ts ?? section.id)}
+                  ${this.escapeHtml(section.name ?? section.ts ?? section.id)} · ${this.escapeHtml(this.getSectionDimensionLabel(section))} · ${this.formatAirflow(section?.q || 0)} m³/h
                 </option>
               `).join('')}
             </select>
-            <small class="dp-field-meta">Luftmenge und Geometrie werden automatisch übernommen</small>
+            <small class="dp-field-meta">Beim Wechsel bleiben manuell geänderte Anschlusswerte erhalten</small>
           </label>
         </div>
 
@@ -2967,16 +3155,113 @@ export default class WorkspaceComponent {
     `;
 
     this.bindFormPartEditor(formPart);
+    this.bindFormPartWorkflow(formPart);
     this.bindFormPartManagement();
     this.bindFormPartImageFallbacks();
+  }
+
+  renderFormPartWorkflowBar(formPart, sections = []) {
+    const current = this.getSectionById(formPart?.sectionId);
+    const previous = current ? getAdjacentSection(sections, current.id, -1) : null;
+    const next = current ? getAdjacentSection(sections, current.id, 1) : null;
+    const geometry = current ? this.getSectionGeometryForFormPart(current) : null;
+    const manualPrimary = Boolean(formPart?.autoSizeManualOverride);
+    const manualConnections = Boolean(formPart?.connectionAutoSizeManualOverride);
+    const syncLabel = manualPrimary || manualConnections
+      ? 'Manuelle Werte geschützt'
+      : 'Automatisch synchronisiert';
+    const syncTone = manualPrimary || manualConnections ? 'manual' : 'automatic';
+
+    return `
+      <section class="dp-editor-panel dp-formpart-workflow-panel">
+        <div class="dp-formpart-workflow-copy">
+          <span class="dp-overline">Einbauposition im Kanalstrang</span>
+          <h2>${current ? this.escapeHtml(this.getSectionNameById(current.id)) : 'Keine gültige Teilstrecke'}</h2>
+          <p>${current
+            ? `${this.isPipeSection(current) ? 'Rundrohr' : 'Rechteckkanal'} · ${this.formatAirflow(geometry?.q || 0)} m³/h · ${this.escapeHtml(this.getSectionDimensionLabel(current))}`
+            : 'Bitte eine Teilstrecke wählen. Das Formteil bleibt erhalten und wird nicht automatisch gelöscht.'}</p>
+        </div>
+        <div class="dp-formpart-workflow-status dp-workflow-${syncTone}">
+          <strong>${this.escapeHtml(syncLabel)}</strong>
+          <small>${manualPrimary || manualConnections
+            ? 'Beim Wechsel der Teilstrecke bleiben deine manuell geänderten Anschlusswerte erhalten.'
+            : 'Luftmenge und passende Anschlussgrössen folgen der gewählten Teilstrecke.'}</small>
+        </div>
+        <div class="dp-formpart-workflow-actions">
+          <button type="button" data-formpart-workflow-action="previous-section" ${previous ? '' : 'disabled'}>← ${previous ? this.escapeHtml(this.getSectionNameById(previous.id)) : 'Vorherige TS'}</button>
+          <button type="button" data-formpart-workflow-action="open-section" ${current ? '' : 'disabled'}>Teilstrecke öffnen</button>
+          <button type="button" data-formpart-workflow-action="next-section" ${next ? '' : 'disabled'}>${next ? this.escapeHtml(this.getSectionNameById(next.id)) : 'Nächste TS'} →</button>
+        </div>
+      </section>
+    `;
+  }
+
+  bindFormPartWorkflow(formPart) {
+    this.root.querySelectorAll('[data-formpart-workflow-action]').forEach(button => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.formpartWorkflowAction;
+        const system = this.state.selectedSystem || this.state.project?.systems?.[0];
+        const sections = system?.sections || [];
+        const current = this.getSectionById(formPart?.sectionId);
+
+        if (action === 'add-same-section') {
+          this.commands.openFormPartPicker(current?.id || null);
+          return;
+        }
+
+        if (action === 'open-section') {
+          if (current) this.state.selectSection(current);
+          return;
+        }
+
+        if (action === 'previous-section' || action === 'next-section') {
+          const target = current
+            ? getAdjacentSection(sections, current.id, action === 'previous-section' ? -1 : 1)
+            : null;
+          if (!target) return;
+
+          this.updateFormPartSection(formPart, target.id, { preserveManualValues: true });
+          this.autoCalculateProject();
+        }
+      });
+    });
+  }
+
+  updateFormPartSection(formPart, sectionId, options = {}) {
+    const preserveManualValues = options.preserveManualValues !== false;
+    const primaryManual = Boolean(formPart?.autoSizeManualOverride);
+    const connectionManual = Boolean(formPart?.connectionAutoSizeManualOverride);
+
+    formPart.sectionId = sectionId || null;
+
+    this.applySectionDimensionsToFormPart(formPart, {
+      force: !(preserveManualValues && primaryManual),
+      clearManualOverride: !(preserveManualValues && primaryManual),
+    });
+
+    this.applyConnectionSectionsToFormPart(formPart, {
+      force: !(preserveManualValues && connectionManual),
+      clearManualOverride: !(preserveManualValues && connectionManual),
+    });
+
+    this.deriveAndStoreFormPart(formPart);
+    this.calculateAndStoreFormPart(formPart, { silent: true });
+    return formPart;
   }
 
   bindFormPartEditor(formPart) {
     this.root.querySelectorAll('[data-field]').forEach(input => {
       input.addEventListener('change', () => {
         const field = input.dataset.field;
+        const nextValue = this.readFormPartFieldValue(formPart, field, input);
 
-        formPart[field] = this.readFormPartFieldValue(formPart, field, input);
+        if (field === 'sectionId') {
+          this.updateFormPartSection(formPart, nextValue, { preserveManualValues: true });
+          this.autoCalculateProject();
+          return;
+        }
+
+        formPart[field] = nextValue;
 
         if (field === 'type') {
           const entry = this.getRegistryEntry(formPart);
@@ -2987,13 +3272,13 @@ export default class WorkspaceComponent {
           }
 
           this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
-        }
-
-        if (field === 'sectionId') {
-          this.applySectionDimensionsToFormPart(formPart, { force: true, clearManualOverride: true });
-          this.applyConnectionSectionsToFormPart(formPart);
-        } else if (this.isFormPartConnectionSelectorField(field)) {
           this.applyConnectionSectionsToFormPart(formPart, { force: true, clearManualOverride: true });
+        } else if (this.isFormPartConnectionSelectorField(field)) {
+          const preserveManualValues = Boolean(formPart.connectionAutoSizeManualOverride);
+          this.applyConnectionSectionsToFormPart(formPart, {
+            force: !preserveManualValues,
+            clearManualOverride: !preserveManualValues,
+          });
         } else if (this.isFormPartAutoSizeField(field)) {
           formPart.autoSizeManualOverride = true;
 
@@ -3002,6 +3287,20 @@ export default class WorkspaceComponent {
           }
         }
 
+        this.deriveAndStoreFormPart(formPart);
+        this.calculateAndStoreFormPart(formPart, { silent: true });
+        this.autoCalculateProject();
+      });
+    });
+
+    this.root.querySelectorAll('[data-formpart-connection-suggest]').forEach(button => {
+      button.addEventListener('click', () => {
+        const field = button.dataset.formpartConnectionSuggest;
+        const sectionId = button.dataset.sectionId;
+        if (!field || !sectionId) return;
+
+        formPart[field] = sectionId;
+        this.applyConnectionSectionsToFormPart(formPart, { force: true, clearManualOverride: true });
         this.deriveAndStoreFormPart(formPart);
         this.calculateAndStoreFormPart(formPart, { silent: true });
         this.autoCalculateProject();
@@ -3061,10 +3360,10 @@ export default class WorkspaceComponent {
             Gewählte Teilstrecke: <strong>${this.escapeHtml(sectionName)}</strong>.
             ${section ? 'Kanal-/Rohrgrösse und Hauptluftmenge werden beim Anwählen automatisch übernommen.' : 'Bitte zuerst eine Teilstrecke zuordnen.'}
           </p>
-          <small>${this.escapeHtml(fieldSummary)}${manual ? ' · manuell angepasst' : ''}</small>
+          <small>${this.escapeHtml(fieldSummary)}${manual ? ' · manuell angepasst und bei Teilstreckenwechsel geschützt' : ''}</small>
         </div>
         <button type="button" data-formpart-size-action="apply-section" ${section ? '' : 'disabled'}>
-          Grössen übernehmen
+          ${manual ? 'Automatik wieder übernehmen' : 'Grössen übernehmen'}
         </button>
       </section>
     `;
@@ -3091,25 +3390,41 @@ export default class WorkspaceComponent {
         </div>
 
         <div class="dp-editor-grid dp-connection-grid">
-          ${connections.map(connection => `
-            <label>
-              <span>${this.escapeHtml(connection.label)}</span>
-              <select data-field="${this.escapeAttribute(connection.field)}">
-                <option value="">manuell erfassen</option>
-                ${sections.map(section => `
-                  <option value="${this.escapeAttribute(section.id)}" ${formPart?.[connection.field] === section.id ? 'selected' : ''}>
-                    ${this.escapeHtml(this.getSectionNameById(section.id))}
-                  </option>
-                `).join('')}
-              </select>
-              <p class="dp-field-hint">${this.escapeHtml(connection.help)}</p>
-            </label>
-          `).join('')}
+          ${connections.map(connection => {
+            const suggestionId = getSuggestedConnectionSectionId(formPart, connection, sections);
+            const suggestion = sections.find(section => section.id === suggestionId) || null;
+            const selected = sections.find(section => section.id === formPart?.[connection.field]) || null;
+
+            return `
+              <div class="dp-connection-card">
+                <label>
+                  <span>${this.escapeHtml(connection.label)}</span>
+                  <select data-field="${this.escapeAttribute(connection.field)}">
+                    <option value="">manuell erfassen</option>
+                    ${sections.map(section => `
+                      <option value="${this.escapeAttribute(section.id)}" ${formPart?.[connection.field] === section.id ? 'selected' : ''}>
+                        ${this.escapeHtml(this.getSectionNameById(section.id))} · ${this.escapeHtml(this.getSectionDimensionLabel(section))} · ${this.formatAirflow(section?.q || 0)} m³/h
+                      </option>
+                    `).join('')}
+                  </select>
+                </label>
+                <p class="dp-field-hint">${this.escapeHtml(connection.help)}</p>
+                <div class="dp-connection-card-footer">
+                  <small>${selected
+                    ? `Gewählt: ${this.escapeHtml(this.getSectionNameById(selected.id))}`
+                    : suggestion
+                      ? `Vorschlag: ${this.escapeHtml(this.getSectionNameById(suggestion.id))}`
+                      : 'Keine weitere passende Teilstrecke verfügbar'}</small>
+                  ${!selected && suggestion ? `<button type="button" data-formpart-connection-suggest="${this.escapeAttribute(connection.field)}" data-section-id="${this.escapeAttribute(suggestion.id)}">Vorschlag übernehmen</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
 
         <div class="dp-connection-summary">
-          <span>${this.escapeHtml(summary)}${manual ? ' · manuell angepasst' : ''}</span>
-          <button type="button" data-formpart-size-action="apply-connections">Anschlüsse übernehmen</button>
+          <span>${this.escapeHtml(summary)}${manual ? ' · manuelle Werte bleiben geschützt' : ''}</span>
+          <button type="button" data-formpart-size-action="apply-connections">${manual ? 'Automatik wieder übernehmen' : 'Anschlüsse übernehmen'}</button>
         </div>
       </section>
     `;
@@ -9060,6 +9375,18 @@ export default class WorkspaceComponent {
     );
   }
 
+  getDefaultFormPartSection(system = null) {
+    const activeSystem = system || this.state.selectedSystem || this.state.project?.systems?.[0] || null;
+    const rememberedSection = typeof this.state.getLastCreatedSection === 'function'
+      ? this.state.getLastCreatedSection(activeSystem)
+      : null;
+
+    return resolveFormPartContextSection(activeSystem, {
+      requestedSectionId: this.state.formPartPickerSectionId,
+      rememberedSectionId: rememberedSection?.id,
+    });
+  }
+
   isPipeSection(section = {}) {
     const type = String(section?.type || section?.kind || '').toLowerCase();
     return ['pipe', 'rohr', 'round', 'rund', 'rundrohr'].includes(type);
@@ -9075,8 +9402,8 @@ export default class WorkspaceComponent {
         <label class="dp-field-card">
           <span>Durchmesser</span>
           <div class="dp-unit-control">
-            <input data-field="d" type="number" step="0.001" value="${section?.d ?? section?.diameter ?? 0}">
-            <span class="dp-unit">m</span>
+            <input data-field="d" data-field-unit="mm" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.d ?? section?.diameter ?? 0))}">
+            <span class="dp-unit">mm</span>
           </div>
           <small class="dp-field-meta">Innendurchmesser des Rundrohrs</small>
         </label>
@@ -9087,8 +9414,8 @@ export default class WorkspaceComponent {
       <label class="dp-field-card">
         <span>Breite</span>
         <div class="dp-unit-control">
-          <input data-field="b" type="number" step="0.001" value="${section?.b ?? section?.width ?? 0}">
-          <span class="dp-unit">m</span>
+          <input data-field="b" data-field-unit="mm" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.b ?? section?.width ?? 0))}">
+          <span class="dp-unit">mm</span>
         </div>
         <small class="dp-field-meta">Innenmass des Rechteckkanals</small>
       </label>
@@ -9096,12 +9423,17 @@ export default class WorkspaceComponent {
       <label class="dp-field-card">
         <span>Höhe</span>
         <div class="dp-unit-control">
-          <input data-field="h" type="number" step="0.001" value="${section?.h ?? section?.height ?? 0}">
-          <span class="dp-unit">m</span>
+          <input data-field="h" data-field-unit="mm" type="number" min="0" step="10" value="${this.escapeAttribute(this.toMillimetres(section?.h ?? section?.height ?? 0))}">
+          <span class="dp-unit">mm</span>
         </div>
         <small class="dp-field-meta">Innenmass des Rechteckkanals</small>
       </label>
     `;
+  }
+
+  toMillimetres(value) {
+    const millimetres = dimensionToMillimetres(value);
+    return Number.isFinite(millimetres) ? Math.round(millimetres * 10) / 10 : 0;
   }
 
   renderSectionResult(result, item, section = null) {
@@ -9324,8 +9656,13 @@ export default class WorkspaceComponent {
     });
 
     this.addFormPartRelationWarnings(formPart, warnings);
+    warnings.push(...getConnectionAssignmentIssues(
+      formPart,
+      this.getFormPartConnectionDefinitions(formPart),
+      sections,
+    ));
 
-    return warnings;
+    return [...new Set(warnings)];
   }
 
   addFormPartRelationWarnings(formPart = {}, warnings = []) {
@@ -9383,13 +9720,12 @@ export default class WorkspaceComponent {
   }
 
   ensureFormPartSection(formPart, sections = []) {
-    if (!formPart || !sections.length) return;
+    if (!formPart) return false;
+    if (!sections.length) return !formPart.sectionId;
 
-    const hasValidSection = sections.some(section => section.id === formPart.sectionId);
-
-    if (!formPart.sectionId || !hasValidSection) {
-      formPart.sectionId = sections[0].id;
-    }
+    // Ungültige Altzuordnungen werden bewusst nicht still auf TS 1 umgebogen.
+    // Die Warnung bleibt sichtbar, bis der Nutzer eine gültige Teilstrecke bestätigt.
+    return Boolean(formPart.sectionId && sections.some(section => section.id === formPart.sectionId));
   }
 
   getSectionById(sectionId) {

@@ -6,6 +6,9 @@ export default class ApplicationState {
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
     this.selectedReport = null;
+    this.formPartPickerSectionId = null;
+    this.lastCreatedSectionIds = new Map();
+    this.lastKnownSectionCounts = new Map();
 
     this.selection = {
       type: 'none',
@@ -49,6 +52,17 @@ export default class ApplicationState {
     this.isProjectDirty = false;
     this.lastCalculationAt = null;
     this.lastAutoCalculationError = null;
+    this.formPartPickerSectionId = null;
+    this.lastCreatedSectionIds = new Map(
+      (this.project?.systems || [])
+        .map(system => [system?.id, Array.isArray(system?.sections) ? system.sections.at(-1)?.id : null])
+        .filter(([systemId, sectionId]) => systemId && sectionId)
+    );
+    this.lastKnownSectionCounts = new Map(
+      (this.project?.systems || [])
+        .filter(system => system?.id)
+        .map(system => [system.id, Array.isArray(system.sections) ? system.sections.length : 0])
+    );
 
     this.clearSelection(false);
 
@@ -153,16 +167,98 @@ export default class ApplicationState {
     this.notify();
   }
 
-  selectFormPartPicker(data = null) {
+  selectFormPartPicker(data = null, options = {}) {
+    const system = data || this.selectedSystem || this.project?.systems?.[0] || null;
+    const sections = Array.isArray(system?.sections) ? system.sections : [];
+    const requestedSectionId = options?.sectionId || this.selectedSection?.id || this.formPartPickerSectionId || null;
+    const validContext = requestedSectionId
+      ? sections.find(section => section?.id === requestedSectionId)
+      : null;
+
+    this.formPartPickerSectionId = validContext?.id || null;
     this.selectedSection = null;
     this.selectedFormPart = null;
     this.selectedSpecialComponent = null;
     this.selectedReport = null;
 
-    this.setSelection('formPartPicker', data || this.selectedSystem);
+    this.setSelection('formPartPicker', system);
     this.notify();
   }
 
+  setFormPartPickerSection(sectionId = null, system = null) {
+    const activeSystem = system || this.selectedSystem || this.project?.systems?.[0] || null;
+    const sections = Array.isArray(activeSystem?.sections) ? activeSystem.sections : [];
+    const section = sections.find(item => item?.id === sectionId) || null;
+
+    this.formPartPickerSectionId = section?.id || null;
+    this.notify();
+    return section;
+  }
+
+
+  rememberCreatedSection(section, system = null) {
+    const activeSystem = system || this.selectedSystem || this.project?.systems?.[0] || null;
+
+    if (!activeSystem?.id || !section?.id) return null;
+
+    this.lastCreatedSectionIds.set(activeSystem.id, section.id);
+    this.lastKnownSectionCounts.set(activeSystem.id, Array.isArray(activeSystem.sections) ? activeSystem.sections.length : 0);
+    return section;
+  }
+
+  getLastCreatedSection(system = null) {
+    const activeSystem = system || this.selectedSystem || this.project?.systems?.[0] || null;
+    const sections = Array.isArray(activeSystem?.sections) ? activeSystem.sections : [];
+
+    if (!sections.length) return null;
+
+    const rememberedId = activeSystem?.id
+      ? this.lastCreatedSectionIds.get(activeSystem.id)
+      : null;
+    const rememberedCount = activeSystem?.id
+      ? this.lastKnownSectionCounts.get(activeSystem.id)
+      : undefined;
+
+    // Werden Teilstrecken ausserhalb von ProjectCommands angehängt, etwa per
+    // Schnellerfassung, gilt die neue letzte Zeile ebenfalls als zuletzt erstellt.
+    if (Number.isInteger(rememberedCount) && sections.length > rememberedCount) {
+      const appended = sections[sections.length - 1] || null;
+      if (activeSystem?.id && appended?.id) {
+        this.lastCreatedSectionIds.set(activeSystem.id, appended.id);
+        this.lastKnownSectionCounts.set(activeSystem.id, sections.length);
+      }
+      return appended;
+    }
+
+    const remembered = rememberedId
+      ? sections.find(section => section?.id === rememberedId)
+      : null;
+
+    if (remembered) {
+      if (activeSystem?.id) this.lastKnownSectionCounts.set(activeSystem.id, sections.length);
+      return remembered;
+    }
+
+    const fallback = sections[sections.length - 1] || null;
+    if (activeSystem?.id && fallback?.id) {
+      this.lastCreatedSectionIds.set(activeSystem.id, fallback.id);
+      this.lastKnownSectionCounts.set(activeSystem.id, sections.length);
+    }
+
+    return fallback;
+  }
+
+  forgetCreatedSection(sectionId, system = null) {
+    const activeSystem = system || this.selectedSystem || this.project?.systems?.[0] || null;
+
+    if (!activeSystem?.id || this.lastCreatedSectionIds.get(activeSystem.id) !== sectionId) {
+      return;
+    }
+
+    this.lastCreatedSectionIds.delete(activeSystem.id);
+    this.lastKnownSectionCounts.delete(activeSystem.id);
+    this.getLastCreatedSection(activeSystem);
+  }
 
   selectReport(data = null) {
     this.selectedSection = null;

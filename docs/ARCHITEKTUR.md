@@ -1,6 +1,6 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 2.1.0 · Phase 46.00
+Stand: Version 2.5.0 · Phase 50.00
 
 ## 1. Ausführung
 
@@ -187,3 +187,8 @@ Die Prüfsumme des Projektpakets wird über eine kanonische `.dvp`-Dateihülle g
 Alle Laufzeitpfade sind relativ zum Projektstamm. Aktive Formteilmedien liegen kanonisch unter `assets/formteile/`.
 
 Bewusst nicht vorhanden sind Ventilatorauslegung, SFP/Energieauswertung sowie Hersteller-, Produkt- oder Artikelnummerndatenbanken. Analyse, Simulation, Abschluss und Bericht bleiben herstellerneutral.
+
+
+## Phase 50.00 – Formteil-Workflow
+
+`FormPartWorkflowEngine` kapselt die reine Kontextauflösung, lokale Reihenfolge, Strangnavigation und Anschlussvorschläge. Der `ApplicationState` hält die Ziel-Teilstrecke des Pickers, während `ProjectCommands` Erstellung und Sortierung kontrolliert ausführt. Manuelle Formteilwerte werden im Workspace bei einer Umzuordnung nicht still überschrieben.

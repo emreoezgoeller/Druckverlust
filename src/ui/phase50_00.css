@@ -1,0 +1,202 @@
+/* Druckverlust Pro – Phase 50.00
+   Intelligenter Formteil-Workflow mit sicherer Teilstrecken-Zuordnung. */
+
+.dp-library-context-card select {
+  width: min(100%, 380px);
+  min-height: 38px;
+  margin: 5px 0 3px;
+  padding: 7px 34px 7px 10px;
+  border: 1px solid #a9c5de;
+  border-radius: 9px;
+  background: #fff;
+  color: #153f63;
+  font: inherit;
+  font-weight: 750;
+}
+
+.dp-formpart-management-heading {
+  gap: 12px;
+}
+
+.dp-formpart-management-heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.dp-formpart-management-heading button,
+.dp-connection-card-footer button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #aac6de;
+  border-radius: 9px;
+  background: #fff;
+  color: #174c77;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-formpart-management-heading button:hover,
+.dp-connection-card-footer button:hover {
+  border-color: #4f8fbe;
+  background: #eef7fd;
+}
+
+.dp-formpart-workflow-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.2fr) minmax(220px, .8fr);
+  gap: 14px 18px;
+  border-color: #a9cbe5;
+  background: linear-gradient(145deg, #ffffff 0%, #f1f8fd 100%);
+}
+
+.dp-formpart-workflow-copy h2 {
+  margin: 3px 0 5px;
+  color: #103f67;
+}
+
+.dp-formpart-workflow-copy p,
+.dp-formpart-workflow-status small {
+  margin: 0;
+  color: #526c83;
+  line-height: 1.45;
+}
+
+.dp-formpart-workflow-status {
+  align-self: center;
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  border: 1px solid #b5d2e7;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .85);
+}
+
+.dp-formpart-workflow-status strong {
+  color: #14547f;
+}
+
+.dp-formpart-workflow-status.dp-workflow-manual {
+  border-color: #dfbd75;
+  background: #fff9ec;
+}
+
+.dp-formpart-workflow-status.dp-workflow-manual strong {
+  color: #805713;
+}
+
+.dp-formpart-workflow-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 9px;
+  padding-top: 12px;
+  border-top: 1px solid #d4e3ef;
+}
+
+.dp-formpart-workflow-actions button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #aec9de;
+  border-radius: 10px;
+  background: #fff;
+  color: #174c77;
+  font: inherit;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.dp-formpart-workflow-actions button:first-child {
+  text-align: left;
+}
+
+.dp-formpart-workflow-actions button:last-child {
+  text-align: right;
+}
+
+.dp-formpart-workflow-actions button:hover:not(:disabled) {
+  border-color: #4e8fbd;
+  background: #eef7fd;
+}
+
+.dp-formpart-workflow-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+.dp-connection-grid {
+  align-items: stretch;
+}
+
+.dp-connection-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #cadbe9;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dp-connection-card label {
+  display: grid;
+  gap: 6px;
+}
+
+.dp-connection-card select {
+  width: 100%;
+}
+
+.dp-connection-card .dp-field-hint {
+  margin: 8px 0 12px;
+}
+
+.dp-connection-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e0eaf2;
+}
+
+.dp-connection-card-footer small {
+  color: #587084;
+  line-height: 1.35;
+}
+
+.workspace-actions .primary {
+  border-color: #0b5b99;
+  background: #0b5b99;
+  color: #fff;
+}
+
+.workspace-actions .primary:hover {
+  background: #084b7e;
+}
+
+@media (max-width: 850px) {
+  .dp-formpart-workflow-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-formpart-workflow-actions {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .dp-formpart-workflow-actions button,
+  .dp-formpart-workflow-actions button:first-child,
+  .dp-formpart-workflow-actions button:last-child {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dp-connection-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

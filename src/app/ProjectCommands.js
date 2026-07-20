@@ -1,7 +1,11 @@
 // Druckverlust Pro – ProjectCommands
 // Zentrale Projektbefehle für UI, Ribbon und spätere Dialoge.
 
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=47.00&release=47.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=49.00&release=50.00';
+import {
+  moveFormPartWithinSection as moveFormPartWithinSectionInCollection,
+  resolveFormPartContextSection,
+} from '../formteile/FormPartWorkflowEngine.js?v=50.00&release=50.00';
 import createDefaultProject from '../project/defaultProject.js';
 
 
@@ -151,6 +155,7 @@ export default class ProjectCommands {
     };
 
     system.sections.push(section);
+    this.state.rememberCreatedSection?.(section, system);
     this.state.selectSection(section);
     this.state.markCalculationDirty();
 
@@ -208,6 +213,7 @@ export default class ProjectCommands {
     }
 
     const [removed] = system.sections.splice(index, 1);
+    this.state.forgetCreatedSection?.(removed?.id, system);
 
     // Zugeordnete Formteile bleiben erhalten, werden aber bewusst entkoppelt.
     // Dadurch gehen keine Formteile verloren und die Plausibilitätsprüfung weist auf fehlende Zuordnung hin.
@@ -282,7 +288,7 @@ export default class ProjectCommands {
     return this.openFormPartPicker();
   }
 
-  openFormPartPicker() {
+  openFormPartPicker(sectionId = null) {
     const project = this.state.project;
     const system = this.state.selectedSystem || project?.systems?.[0];
 
@@ -290,9 +296,15 @@ export default class ProjectCommands {
       throw new Error('Es ist kein Projekt oder keine Anlage vorhanden.');
     }
 
+    const contextSection = this.getDefaultFormPartSection(system, {
+      requestedSectionId: sectionId,
+      usePickerContext: false,
+    });
+
     if (typeof this.state.selectFormPartPicker === 'function') {
-      this.state.selectFormPartPicker(system);
+      this.state.selectFormPartPicker(system, { sectionId: contextSection?.id || null });
     } else {
+      this.state.formPartPickerSectionId = contextSection?.id || null;
       this.state.setSelection('formPartPicker', system);
       this.state.notify();
     }
@@ -300,7 +312,26 @@ export default class ProjectCommands {
     return system;
   }
 
-  createFormPart(type = 'kreis_bogen') {
+  getDefaultFormPartSection(system = null, options = {}) {
+    const activeSystem = system || this.state.selectedSystem || this.state.project?.systems?.[0] || null;
+    const rememberedSection = typeof this.state.getLastCreatedSection === 'function'
+      ? this.state.getLastCreatedSection(activeSystem)
+      : null;
+
+    const pickerContextId = options.usePickerContext === false
+      ? null
+      : this.state.getSelectionType?.() === 'formPartPicker'
+        ? this.state.formPartPickerSectionId
+        : null;
+
+    return resolveFormPartContextSection(activeSystem, {
+      requestedSectionId: options.requestedSectionId ?? pickerContextId,
+      selectedSectionId: options.selectedSectionId,
+      rememberedSectionId: rememberedSection?.id,
+    });
+  }
+
+  createFormPart(type = 'kreis_bogen', options = {}) {
     const project = this.state.project;
     const system = this.state.selectedSystem || project?.systems?.[0];
 
@@ -317,7 +348,9 @@ export default class ProjectCommands {
     system.formParts = system.formParts || [];
 
     const number = system.formParts.length + 1;
-    const selectedSection = this.state.selectedSection || system.sections?.[0] || null;
+    const selectedSection = options.sectionId
+      ? this.getDefaultFormPartSection(system, { requestedSectionId: options.sectionId })
+      : this.getDefaultFormPartSection(system);
     const defaults = typeof this.formPartRegistry.getDefaultValues === 'function'
       ? this.formPartRegistry.getDefaultValues(definition.id)
       : {};
@@ -443,6 +476,22 @@ export default class ProjectCommands {
     this.state.selectFormPart(formPart);
     this.state.markProjectDirty();
 
+    return formPart;
+  }
+
+  moveFormPartWithinSection(formPartId, direction = 0) {
+    const project = this.state.project;
+    const system = this.state.selectedSystem || project?.systems?.[0];
+
+    if (!project || !system || !Array.isArray(system.formParts)) {
+      throw new Error('Es ist kein Projekt oder keine Anlage vorhanden.');
+    }
+
+    const formPart = moveFormPartWithinSectionInCollection(system.formParts, formPartId, direction);
+    if (!formPart) return null;
+
+    this.state.selectFormPart(formPart);
+    this.state.markProjectDirty();
     return formPart;
   }
 
