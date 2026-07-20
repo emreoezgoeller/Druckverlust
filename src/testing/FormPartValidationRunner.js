@@ -1,7 +1,7 @@
 // Druckverlust Pro – Formteilbibliothek- und Excel-Referenztest-Runner
 // DOM-unabhängig; im Browser und mit Node.js ausführbar.
 
-import { defaultFormParts } from '../formteile/FormPartRegistry.js';
+import { defaultFormParts } from '../formteile/FormPartRegistry.js?v=47.00&release=47.00';
 import { FORM_PART_REFERENCE_CASES } from './formPartReferenceCases.js';
 
 function getPath(source, path = '') {

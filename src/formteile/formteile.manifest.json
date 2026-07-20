@@ -1,5 +1,14 @@
 [
   {
+    "id": "freier_zeta_wert",
+    "name": "Freier ζ-Wert",
+    "category": "Spezial",
+    "image": "assets/formteile/freier_zeta_wert.png",
+    "referenceFile": "assets/formteile/freier_zeta_wert.xlsx",
+    "status": "Excel-Referenztest bestanden",
+    "validatedIn": "47.00"
+  },
+  {
     "id": "kreis_bogen",
     "name": "Kreisförmiger Bogen / Krümmer",
     "category": "Rund",

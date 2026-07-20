@@ -2,8 +2,8 @@
 // Phase 31.00: Variantenarchiv, detaillierte Revisionen und neutraler Projektabschluss.
 
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=32.00&release=45.00';
-import RevisionComparisonEngine from '../revision/RevisionComparisonEngine.js?v=32.00&release=45.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=32.00&release=46.00';
+import RevisionComparisonEngine from '../revision/RevisionComparisonEngine.js?v=32.00&release=46.00';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));
@@ -56,7 +56,11 @@ function stableNormalize(value) {
   if (!value || typeof value !== 'object') return value;
 
   return Object.keys(value)
-    .filter(key => !['calculationResult', 'calculation', 'validation', '_importInfo'].includes(key))
+    .filter(key => ![
+      'calculationResult', 'calculation', 'validation', '_importInfo',
+      'sectionRoughnessMm', 'sectionFrictionFactor', 'sectionReynoldsNumber',
+      'frictionSourceSectionId', 'frictionInheritedAt'
+    ].includes(key))
     .sort()
     .reduce((result, key) => {
       result[key] = stableNormalize(value[key]);

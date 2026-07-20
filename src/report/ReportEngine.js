@@ -1,15 +1,15 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=40.00&release=45.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=40.00&release=46.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00&release=45.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00&release=45.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=37.00&release=45.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=37.00&release=45.00';
-import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=37.00&release=45.00';
-import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=37.00&release=45.00';
-import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=37.00&release=45.00';
-import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00&release=45.00';
-import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00&release=45.00';
-import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=39.00&release=45.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00&release=46.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00&release=46.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=37.00&release=46.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=37.00&release=46.00';
+import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=37.00&release=46.00';
+import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=37.00&release=46.00';
+import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=37.00&release=46.00';
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00&release=46.00';
+import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00&release=46.00';
+import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -568,6 +568,10 @@ export class ReportEngine {
         airflow: result.q ?? section.q ?? section.volumeFlow ?? section.airVolume,
         velocity: result.velocity,
         dynamicPressure: result.dynamicPressure,
+        roughnessMm: toNumber(result.roughnessMm, toNumber(section.roughnessMm, 0.15)),
+        reynoldsNumber: toNumber(result.reynoldsNumber),
+        frictionFactor: toNumber(result.frictionFactor ?? result.lambda),
+        frictionRate: toNumber(result.frictionRate),
         frictionLoss: toNumber(result.frictionLoss),
         zetaLoss: toNumber(result.zetaLoss),
         directLoss: toNumber(result.directFormPartLoss),
@@ -646,7 +650,8 @@ export class ReportEngine {
       },
       settings: {
         rho: toNumber(settings.rho, 1.21),
-        lambda: toNumber(settings.lambda, 0.025),
+        defaultRoughnessMm: toNumber(settings.defaultRoughnessMm, 0.15),
+        kinematicViscosity: toNumber(settings.kinematicViscosity, 0.0000151),
         sectionRoundingStep: toNumber(settings.sectionRoundingStep, 0.5),
       },
       counts: {
@@ -802,6 +807,9 @@ export class ReportEngine {
       type: registryEntry?.name ?? result.name ?? formPart.type ?? '-',
       category: registryEntry?.category ?? result.category ?? '-',
       sectionId: formPart.sectionId ?? '-',
+      roughnessMm: toNumber(sectionResult?.roughnessMm, toNumber(formPart.sectionRoughnessMm, 0.15)),
+      frictionFactor: toNumber(sectionResult?.frictionFactor ?? sectionResult?.lambda, toNumber(formPart.sectionFrictionFactor)),
+      reynoldsNumber: toNumber(sectionResult?.reynoldsNumber, toNumber(formPart.sectionReynoldsNumber)),
       zeta,
       dynamicPressure,
       pressureLoss,
@@ -1916,11 +1924,11 @@ export class ReportEngine {
         <table class="report-table compact report-table-network">
           <thead>
             <tr>
-              <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>Fläche<br>m²</th><th>v<br>m/s</th><th>Δp<br>Kanal/Rohr<br>Pa</th>
+              <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>k<br>mm</th><th>λ<br>-</th><th>v<br>m/s</th><th>R<br>Pa/m</th><th>Δp<br>Kanal/Rohr<br>Pa</th>
             </tr>
           </thead>
-          <tbody>${rows || '<tr><td colspan="12">Keine Teilstrecken vorhanden.</td></tr>'}</tbody>
-          ${isLastChunk ? `<tfoot><tr><td colspan="11" class="left"><strong>Summe Kanäle / Teilstrecken</strong></td><td><strong>${formatNumber(model.totals.friction, 1)} Pa</strong></td></tr></tfoot>` : ''}
+          <tbody>${rows || '<tr><td colspan="14">Keine Teilstrecken vorhanden.</td></tr>'}</tbody>
+          ${isLastChunk ? `<tfoot><tr><td colspan="13" class="left"><strong>Summe Kanäle / Teilstrecken</strong></td><td><strong>${formatNumber(model.totals.friction, 1)} Pa</strong></td></tr></tfoot>` : ''}
         </table>
 
         ${isLastChunk ? `${this.renderMainNetworkLegend()}${this.renderHiddenEntriesNote(model.reportScope?.hiddenSections, 'leere Teilstrecken')}` : '<p class="report-continuation-note">Fortsetzung der Teilstrecken auf der nächsten Seite.</p>'}
@@ -1942,8 +1950,10 @@ export class ReportEngine {
         <td>${section.type === 'Rohr' ? '-' : formatSmart(toNumber(section.height) * 1000, 0)}</td>
         <td>${section.type === 'Rohr' ? formatSmart(toNumber(section.diameter) * 1000, 0) : '-'}</td>
         <td>${formatSmart(section.length, 2)}</td>
-        <td>${formatNumber(section.area, 3)}</td>
+        <td>${formatNumber(section.roughnessMm, 2)}</td>
+        <td>${formatNumber(section.frictionFactor, 4)}</td>
         <td>${formatNumber(section.velocity, 2)}</td>
+        <td>${formatNumber(section.frictionRate, 3)}</td>
         <td>${formatNumber(section.frictionLoss, 3)}</td>
       </tr>
     `;
@@ -1956,7 +1966,9 @@ export class ReportEngine {
         <span><strong>v</strong> = Luftgeschwindigkeit</span>
         <span><strong>Δp Kanal/Rohr</strong> = Reibungsdruckverlust der Teilstrecke ohne Formteile</span>
         <span><strong>ζ</strong> = Formbeiwert</span>
-        <span><strong>λ</strong> = Reibungszahl</span>
+        <span><strong>k</strong> = absolute Rauigkeit je Teilstrecke</span>
+        <span><strong>λ</strong> = automatisch berechnete Darcy-Reibungszahl</span>
+        <span><strong>R</strong> = Reibungsgefälle</span>
         <span><strong>ρ</strong> = Luftdichte</span>
       </div>
     `;
@@ -2014,6 +2026,10 @@ export class ReportEngine {
     return `
       <div class="report-formpart-box">
         <h3>${escapeHtml(title)}</h3>
+        <div class="report-formpart-friction">
+          <span>Von Teilstrecke übernommen</span>
+          <strong>k ${formatNumber(section.roughnessMm, 2)} mm · λ ${formatNumber(section.frictionFactor, 4)} · Re ${formatNumber(section.reynoldsNumber, 0)}</strong>
+        </div>
         <table class="report-table small">
           <thead><tr><th>Formteil</th><th>Skizze</th><th>ζ</th><th>Δp</th></tr></thead>
           <tbody>
@@ -2264,7 +2280,7 @@ export class ReportEngine {
       <div class="report-info-box">
         <h3>Berechnungsgrundlagen</h3>
         <p>Luftdichte ρ = ${formatNumber(model.settings.rho, 2)} kg/m³</p>
-        <p>Reibungszahl λ = ${formatNumber(model.settings.lambda, 3)}</p>
+        <p>Rauigkeit wird je Teilstrecke geführt; Standard k = ${formatNumber(model.settings.defaultRoughnessMm, 2)} mm. λ wird automatisch berechnet.</p>
         <p>Die Berechnung erfolgt nach den in der Software hinterlegten Formeln für Luftleitteile und Druckverlustkomponenten.</p>
       </div>
 
@@ -2493,7 +2509,8 @@ export class ReportEngine {
         <h3>Verwendete Berechnungsgrundlagen</h3>
         <ul>
           <li>Berechnung nach den in der Software hinterlegten Formeln.</li>
-          <li>Luftdichte ρ = ${formatNumber(model.settings.rho, 2)} kg/m³ · Reibungszahl λ = ${formatNumber(model.settings.lambda, 3)}</li>
+          <li>Luftdichte ρ = ${formatNumber(model.settings.rho, 2)} kg/m³ · Standard-Rauigkeit k = ${formatNumber(model.settings.defaultRoughnessMm, 2)} mm</li>
+          <li>Die Darcy-Reibungszahl λ wird für jede Teilstrecke aus Rauigkeit, Reynolds-Zahl und hydraulischem Durchmesser berechnet.</li>
           <li>Formbeiwerte nach hinterlegten Tabellen aus der Formteilbibliothek.</li>
           <li>Druckverlustberechnung nach Darcy-Weisbach.</li>
         </ul>
@@ -2721,6 +2738,8 @@ export class ReportEngine {
       .report-formpart-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
       .report-formpart-box{border:1px solid var(--report-line);border-radius:6px;overflow:hidden;background:white}
       .report-formpart-box h3{margin:0;background:var(--report-blue);color:white;padding:7px 9px;font-size:10px}
+      .report-formpart-friction{display:flex;justify-content:space-between;gap:8px;padding:5px 8px;background:#eef5fc;border-bottom:1px solid var(--report-line);font-size:7.5px;color:#40566f}
+      .report-formpart-friction strong{color:#123b64;text-align:right}
       .report-part-img{max-width:82px;max-height:50px;object-fit:contain}
       .report-catalog-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .report-catalog-card{display:grid;grid-template-columns:30mm 1fr;gap:9px;border:1px solid var(--report-line);border-radius:7px;background:#fff;overflow:hidden;min-height:31mm;break-inside:avoid;page-break-inside:avoid}
@@ -2820,7 +2839,7 @@ export class ReportEngine {
     rows.push(this.csvRow(['Engineering Pruefprofil', model.projectWorkflow?.profile?.name || model.engineeringQuality?.profile?.name || 'Allgemeine Planung']));
 
     addSection('Teilstrecken');
-    rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Flaeche m2', 'v m/s', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
+    rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Rauigkeit k mm', 'Reynolds Re', 'Reibungszahl Lambda', 'v m/s', 'Reibungsgefaelle Pa/m', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
     (model.sections || []).forEach(section => {
       rows.push(this.csvRow([
         section.position,
@@ -2832,8 +2851,11 @@ export class ReportEngine {
         section.type === 'Rohr' ? '-' : formatSmart(toNumber(section.height) * 1000, 0),
         section.type === 'Rohr' ? formatSmart(toNumber(section.diameter) * 1000, 0) : '-',
         formatSmart(section.length, 2),
-        formatNumber(section.area, 3),
+        formatNumber(section.roughnessMm, 2),
+        formatNumber(section.reynoldsNumber, 0),
+        formatNumber(section.frictionFactor, 5),
         formatNumber(section.velocity, 2),
+        formatNumber(section.frictionRate, 4),
         formatNumber(section.frictionLoss, 3),
         formatNumber(section.zetaLoss, 3),
         formatNumber(section.directLoss, 3),
@@ -2842,7 +2864,7 @@ export class ReportEngine {
     });
 
     addSection('Formteile');
-    rows.push(this.csvRow(['Teilstrecke', 'Formteil', 'Kategorie', 'Bezug', 'Zeta', 'Dynamischer Druck Pa', 'Druckverlust Pa']));
+    rows.push(this.csvRow(['Teilstrecke', 'Formteil', 'Kategorie', 'Bezug', 'Rauigkeit k mm', 'Reynolds Re', 'Reibungszahl Lambda', 'Zeta', 'Dynamischer Druck Pa', 'Druckverlust Pa']));
     (model.formPartsBySection || []).forEach(group => {
       (group.formParts || []).forEach(part => {
         rows.push(this.csvRow([
@@ -2850,6 +2872,9 @@ export class ReportEngine {
           part.type || part.name,
           part.category,
           part.reference,
+          formatNumber(part.roughnessMm, 2),
+          formatNumber(part.reynoldsNumber, 0),
+          formatNumber(part.frictionFactor, 5),
           formatNumber(part.zeta, 3),
           formatNumber(part.dynamicPressure, 3),
           formatNumber(part.pressureLoss, 3),

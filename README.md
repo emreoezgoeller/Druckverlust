@@ -1,8 +1,8 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.0.0 · Phase 45.00 · zusammengeführt, bereinigt und als vollständiger Release geprüft.
+**Aktueller Stand:** Version 2.2.0 · Phase 47.00 · zusammengeführt, bereinigt und als vollständiger Release geprüft.
 
-Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Excel-/CSV-Schnellerfassung, Teilstrecken, 14 berechnete Formteiltypen, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation, Aufgaben, Revisionen, Projektsicherheit und Professional Report in einem gemeinsamen Projektmodell.
+Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Excel-/CSV-Schnellerfassung, Teilstrecken, 15 herstellerneutrale Formteiltypen, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation, Aufgaben, Revisionen, Projektsicherheit und Professional Report in einem gemeinsamen Projektmodell.
 
 ## Lokal starten
 
@@ -26,8 +26,8 @@ python -m http.server 8000
 
 ## Kernfunktionen
 
-- Rechteckkanäle und Rundrohre mit Reibungs-, Formteil- und Gesamtdruckverlust,
-- 14 herstellerneutrale Formteiltypen mit Excel-Referenzwerten,
+- Rechteckkanäle und Rundrohre mit teil­streckenbezogener Rauigkeit k (Standard 0,15 mm), automatisch berechneter Reibungszahl λ sowie Reibungs-, Formteil- und Gesamtdruckverlust,
+- 15 herstellerneutrale Formteiltypen mit Excel-Referenzwerten, darunter „Freier ζ-Wert“ mit automatischer Berechnung `Δp = ζ × p_dyn`,
 - Sonderbauteile mit frei definierbarem Druckverlust,
 - mehrere Anlagen pro Projekt, Projektcockpit und projektweite QS,
 - Excel-/CSV-/TSV-Schnellerfassung mit Vorschau, Sicherung und Importnachweis,
@@ -50,7 +50,7 @@ Druckverlust/
 ├── src/                       Rechenkern, Projektmodule, UI und Berichte
 ├── tests/                     automatisierte Node-Prüfungen
 ├── docs/                      Architektur, Testplan, Migration und Releasecheck
-└── RELEASE_NOTES.md           Änderungen der Version 2.0
+└── RELEASE_NOTES.md           Änderungen der Version 2.1
 ```
 
 ## Tests

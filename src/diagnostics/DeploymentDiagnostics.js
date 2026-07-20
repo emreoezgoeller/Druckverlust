@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=45.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=46.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -125,6 +125,11 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'Schnellerfassung', label: 'Excel-/CSV-Import', path: `src/import/ProjectTableImportEngine.js?v=${version}` },
     { area: 'Layout', label: 'Schnellerfassung-CSS', path: `src/ui/phase42_00.css?v=${version}` },
     { area: 'Berechnung', label: 'Aktiver Rechenkern', path: `src/core/CalculationEngine.js?v=${version}` },
+    { area: 'Berechnung', label: 'Teilstrecken-Rauigkeit und Reibungszahl', path: `src/core/FrictionFactorEngine.js?v=${version}` },
+    { area: 'Formteile', label: 'Freier ζ-Wert – Calculator', path: `src/formteile/calculators/freierZetaWertCalculator.js?v=${version}` },
+    { area: 'Formteile', label: 'Freier ζ-Wert – Skizze', path: 'assets/formteile/freier_zeta_wert.png' },
+    { area: 'Formteile', label: 'Freier ζ-Wert – Excel-Referenz', path: 'assets/formteile/freier_zeta_wert.xlsx' },
+    { area: 'Layout', label: 'Teilstrecken-Reibungs-CSS', path: `src/ui/phase46_00.css?v=${version}` },
     { area: 'Oberfläche', label: 'Workspace-Komponente', path: `src/ui/components/WorkspaceComponent.js?v=${version}` },
     { area: 'Oberfläche', label: 'Ribbon-Aktionen', path: `src/ui/core/RibbonActions.js?v=${version}` },
     { area: 'Oberfläche', label: 'Dialogdienst', path: `src/ui/core/UiDialogService.js?v=${version}` },

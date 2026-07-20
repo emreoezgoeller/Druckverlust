@@ -34,6 +34,7 @@ function createDuctSection(systemId, position, sizeIndex = 0) {
     h: height,
     d: 0,
     l: round(4.5 + ((position - 1) % 7) * 1.35, 2),
+    roughnessMm: 0.15,
     zetaSum: 0,
   };
 }
@@ -54,6 +55,7 @@ function createPipeSection(systemId, position, diameterIndex = 0) {
     h: 0,
     d: diameter,
     l: round(5.25 + ((position - 1) % 6) * 1.45, 2),
+    roughnessMm: 0.15,
     zetaSum: 0,
   };
 }
@@ -191,7 +193,8 @@ export function createPracticeProject(options = {}) {
     datum: options.datum || '2026-07-11',
     settings: {
       rho: 1.21,
-      lambda: 0.025,
+      defaultRoughnessMm: 0.15,
+      kinematicViscosity: 0.0000151,
       sectionRoundingStep: 0.5,
       ...(options.settings || {}),
     },

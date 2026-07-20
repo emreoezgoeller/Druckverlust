@@ -1,7 +1,8 @@
 import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js';
+import { calculateSection } from '../core/CalculationEngine.js';
 
 export const PROJECT_FILE_TYPE = 'DruckverlustPro';
-export const PROJECT_FILE_SCHEMA_VERSION = '1.1.0';
+export const PROJECT_FILE_SCHEMA_VERSION = '1.2.0';
 
 function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -81,12 +82,20 @@ export function normalizeProjectForStorage(projectInput = {}, context = {}) {
   project.company = String(project.company ?? project.meta?.company ?? project.report?.company ?? '').trim();
   project.address = String(project.address ?? project.meta?.address ?? project.report?.address ?? '').trim();
   project.note = String(project.note ?? project.meta?.note ?? project.report?.hinweis ?? '').trim();
+  const sourceSettings = isPlainObject(project.settings) ? project.settings : {};
   project.settings = {
-    rho: toNumber(project.settings?.rho, 1.21),
-    lambda: toNumber(project.settings?.lambda, 0.025),
-    sectionRoundingStep: toNumber(project.settings?.sectionRoundingStep, 0.5),
-    ...(isPlainObject(project.settings) ? project.settings : {}),
+    ...sourceSettings,
+    rho: toNumber(sourceSettings.rho, 1.21),
+    defaultRoughnessMm: toNumber(sourceSettings.defaultRoughnessMm, 0.15),
+    kinematicViscosity: toNumber(sourceSettings.kinematicViscosity, 0.0000151),
+    sectionRoundingStep: toNumber(sourceSettings.sectionRoundingStep, 0.5),
   };
+  if ('lambda' in project.settings || 'legacyLambda' in project.settings) {
+    warnings.push('Ein alter globaler λ-Wert wurde verworfen; λ wird jetzt je Teilstrecke automatisch berechnet.');
+  }
+  delete project.settings.lambda;
+  delete project.settings.legacyLambda;
+  delete project.settings.frictionFactorMode;
 
   if (!Array.isArray(project.systems) || project.systems.length === 0) {
     warnings.push('Keine Anlage gefunden. Eine leere Anlage wurde ergänzt.');
@@ -134,6 +143,11 @@ export function normalizeProjectForStorage(projectInput = {}, context = {}) {
       section.b = toNumber(section.b ?? section.width, 0);
       section.h = toNumber(section.h ?? section.height, 0);
       section.d = toNumber(section.d ?? section.diameter, 0);
+      section.roughnessMm = Math.max(0, toNumber(section.roughnessMm ?? section.roughness ?? section.k ?? section.epsilonMm, project.settings.defaultRoughnessMm));
+      delete section.roughness;
+      delete section.k;
+      delete section.epsilonMm;
+      delete section.lambda;
       section.zetaSum = toNumber(section.zetaSum, 0);
       return section;
     });
@@ -164,6 +178,22 @@ export function normalizeProjectForStorage(projectInput = {}, context = {}) {
       if (formPart.sectionId && !sectionIds.has(formPart.sectionId)) {
         warnings.push(`Formteil „${formPart.name}“ hatte eine ungültige Teilstrecken-Zuordnung. Die Zuordnung wurde geleert.`);
         formPart.sectionId = null;
+      }
+
+      const sourceSection = formPart.sectionId
+        ? system.sections.find(section => section.id === formPart.sectionId)
+        : null;
+      if (sourceSection) {
+        const sectionResult = calculateSection(sourceSection, { settings: project.settings });
+        formPart.sectionRoughnessMm = toNumber(sectionResult.roughnessMm, sourceSection.roughnessMm);
+        formPart.sectionFrictionFactor = toNumber(sectionResult.frictionFactor ?? sectionResult.lambda, 0);
+        formPart.sectionReynoldsNumber = toNumber(sectionResult.reynoldsNumber, 0);
+        formPart.frictionSourceSectionId = sourceSection.id;
+      } else {
+        delete formPart.sectionRoughnessMm;
+        delete formPart.sectionFrictionFactor;
+        delete formPart.sectionReynoldsNumber;
+        delete formPart.frictionSourceSectionId;
       }
 
       return formPart;

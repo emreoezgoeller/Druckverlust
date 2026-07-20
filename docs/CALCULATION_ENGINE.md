@@ -1,6 +1,6 @@
 # CalculationEngine – Druckverlust Pro
 
-Version: 0.4.2
+Version: 0.5.0
 
 Diese Engine ist die zentrale mathematische Grundlage von Druckverlust Pro.
 Sie ist unabhängig von HTML, CSS, PDF und Projektverwaltung.
@@ -41,3 +41,11 @@ R' = λ / d_h × p_dyn
 ## Ziel
 
 Alle Oberflächen- und PDF-Funktionen sollen künftig diese Engine verwenden, damit Web-App, PDF und Tests immer dieselben Ergebnisse liefern.
+
+## Teilstreckenbezogene Rauigkeit und Reibungszahl
+
+Jede Teilstrecke besitzt eine eigene absolute Rauigkeit `k` in Millimetern. Neue Teilstrecken erhalten standardmässig `k = 0,15 mm`; der Wert kann pro Teilstrecke angepasst werden.
+
+Die Darcy-Reibungszahl `λ` wird nicht global vorgegeben. Sie wird aus Reynolds-Zahl, relativer Rauigkeit und charakteristischem Durchmesser berechnet. Bei Rechteckkanälen wird der hydraulische Durchmesser verwendet, bei Rundrohren der tatsächliche Rohrdurchmesser.
+
+Zugeordnete Formteile übernehmen `k`, `Re` und `λ` von der jeweiligen Teilstrecke zur Dokumentation. Der Formteildruckverlust bleibt `ζ × p_dyn`; die Rauigkeit wird nicht zusätzlich in den Formteilverlust eingerechnet.

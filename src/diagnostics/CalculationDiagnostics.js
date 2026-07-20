@@ -295,16 +295,21 @@ export default class CalculationDiagnostics {
     const items = [];
     const settings = calculation?.settings || {};
     const rho = toNumber(settings.rho, 1.21);
-    const lambda = toNumber(settings.lambda, 0.025);
+    const defaultRoughnessMm = toNumber(settings.defaultRoughnessMm, 0.15);
+    const kinematicViscosity = toNumber(settings.kinematicViscosity, 0.0000151);
     const roundingStep = toNumber(settings.sectionRoundingStep, 0.5);
 
     items.push(rho > 0.9 && rho < 1.35
       ? createItem('ok', 'Einstellungen', 'Luftdichte ρ', 'Luftdichte liegt im üblichen Bereich.', `${rho} kg/m³`)
       : createItem('warning', 'Einstellungen', 'Luftdichte ρ', 'Luftdichte liegt ausserhalb des üblichen Bereichs. Einstellung prüfen.', `${rho} kg/m³`));
 
-    items.push(lambda > 0.005 && lambda < 0.08
-      ? createItem('ok', 'Einstellungen', 'Rohrreibungszahl λ', 'λ liegt in einem plausiblen Bereich.', `${lambda}`)
-      : createItem('warning', 'Einstellungen', 'Rohrreibungszahl λ', 'λ liegt ausserhalb des üblichen Bereichs. Einstellung prüfen.', `${lambda}`));
+    items.push(defaultRoughnessMm >= 0 && defaultRoughnessMm <= 10
+      ? createItem('ok', 'Einstellungen', 'Standard-Rauigkeit k', 'Neue Teilstrecken erhalten einen gültigen Standardwert.', `${defaultRoughnessMm} mm`)
+      : createItem('warning', 'Einstellungen', 'Standard-Rauigkeit k', 'Standard-Rauigkeit liegt ausserhalb des erwarteten Bereichs.', `${defaultRoughnessMm} mm`));
+
+    items.push(kinematicViscosity > 0
+      ? createItem('ok', 'Einstellungen', 'Kinematische Viskosität', 'Viskosität für die Reynolds- und λ-Berechnung ist positiv.', `${kinematicViscosity} m²/s`)
+      : createItem('warning', 'Einstellungen', 'Kinematische Viskosität', 'Viskosität fehlt oder ist 0.'));
 
     items.push(roundingStep > 0
       ? createItem('ok', 'Einstellungen', 'Rundungsschritt', 'Rundungsschritt ist positiv.', `${roundingStep} Pa`)

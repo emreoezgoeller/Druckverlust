@@ -1,7 +1,7 @@
 {
   "name": "Druckverlust Pro Professional",
   "short_name": "Druckverlust Pro",
-  "description": "Herstellerneutrale Druckverlustberechnung mit Excel-/CSV-Schnellerfassung, Engineering-QS, Anlagenschema, Projektsicherheit und Professional Report.",
+  "description": "Herstellerneutrale Druckverlustberechnung mit Rauigkeit k je Teilstrecke, automatischer Reibungszahl λ, Excel-/CSV-Schnellerfassung, Engineering-QS, Anlagenschema und Professional Report.",
   "lang": "de-CH",
   "start_url": "./index.html",
   "scope": "./",

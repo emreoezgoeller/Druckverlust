@@ -1,15 +1,15 @@
 # Datenmodell – Druckverlust Pro
 
-Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · Anwendung 1.10.0 · Phase 33.00
+Stand: `.dvp`-Schema 1.2.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · Anwendung 2.1.0 · Phase 46.00
 
 ## 1. Dateihülle
 
 ```json
 {
   "fileType": "DruckverlustPro",
-  "schemaVersion": "1.1.0",
-  "appVersion": "1.10.0",
-  "appRelease": "33.00",
+  "schemaVersion": "1.2.0",
+  "appVersion": "2.1.0",
+  "appRelease": "46.00",
   "exportedAt": "2026-07-15T08:00:00.000Z",
   "summary": {},
   "project": {}
@@ -32,7 +32,8 @@ Stand: `.dvp`-Schema 1.1.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · An
   "note": "Hinweis",
   "settings": {
     "rho": 1.21,
-    "lambda": 0.025,
+    "defaultRoughnessMm": 0.15,
+    "kinematicViscosity": 0.0000151,
     "sectionRoundingStep": 0.5
   },
   "meta": {},
@@ -225,8 +226,8 @@ Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erz
 {
   "fileType": "DruckverlustProArchive",
   "schemaVersion": "1.0.0",
-  "appVersion": "1.10.0",
-  "appRelease": "33.00",
+  "appVersion": "2.1.0",
+  "appRelease": "46.00",
   "createdAt": "2026-07-16T10:30:00.000Z",
   "label": "Projektpaket für Übergabe",
   "note": "Optionaler Hinweis",
@@ -237,7 +238,7 @@ Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erz
   "checksum": "a1b2c3d4",
   "projectFile": {
     "fileType": "DruckverlustPro",
-    "schemaVersion": "1.1.0",
+    "schemaVersion": "1.2.0",
     "project": {}
   },
   "diagnostics": {
@@ -315,8 +316,8 @@ Zulässige Statuswerte sind `draft`, `prepared`, `checked` und `released`. Die f
 {
   "fileType": "DruckverlustProHandover",
   "schemaVersion": "1.0.0",
-  "appVersion": "1.10.0",
-  "appRelease": "33.00",
+  "appVersion": "2.1.0",
+  "appRelease": "46.00",
   "status": "released",
   "projectName": "2026-001",
   "systemId": "system-1",
@@ -330,3 +331,10 @@ Zulässige Statuswerte sind `draft`, `prepared`, `checked` und `released`. Die f
 ```
 
 `projectArchive` ist ein vollständiges `.dvpa`-Archiv mit normaler `.dvp`-Nutzdatei. Die äussere Prüfsumme schützt Manifest, Freigabestatus und eingebettetes Projektarchiv gemeinsam.
+
+## Teilstrecken-Rauigkeit und Reibungszahl
+
+- `section.roughnessMm` ist die absolute Rauigkeit `k` der einzelnen Teilstrecke in Millimetern.
+- Fehlt der Wert beim Öffnen einer alten Datei, ergänzt die Migration `0.15`.
+- `λ`, Reynolds-Zahl und Reibungsgefälle sind berechnete Ergebnisse und werden nicht als globaler Projektwert vorgegeben.
+- Zugeordnete Formteile können `sectionRoughnessMm`, `sectionFrictionFactor` und `sectionReynoldsNumber` als synchronisierte Nachweisdaten führen.

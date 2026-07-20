@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap nach Release 2.0
+# Druckverlust Pro – Roadmap nach Release 2.1
 
-Die Hauptentwicklung ist mit Version 2.0.0 / Phase 45.00 abgeschlossen. Weitere Arbeiten erfolgen nur als gezielte, fachlich begründete Wartungs- oder Integrationspakete.
+Die Hauptentwicklung ist mit Version 2.2.0 / Phase 47.00 abgeschlossen. Weitere Arbeiten erfolgen nur als gezielte, fachlich begründete Wartungs- oder Integrationspakete.
 
 ## Priorität 1 – Büroabnahme
 

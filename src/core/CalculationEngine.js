@@ -1,3 +1,11 @@
+import {
+  DEFAULT_ROUGHNESS_MM,
+  DEFAULT_KINEMATIC_VISCOSITY,
+  calcDarcyFrictionFactor,
+  calcReynoldsNumber,
+  calcRelativeRoughness,
+} from './FrictionFactorEngine.js';
+
 /**
  * Druckverlust Pro – CalculationEngine
  * Version 0.5.0
@@ -17,7 +25,10 @@
 
 const DEFAULTS = Object.freeze({
   rho: 1.21,
-  lambda: 0.025,
+  defaultRoughnessMm: DEFAULT_ROUGHNESS_MM,
+  kinematicViscosity: DEFAULT_KINEMATIC_VISCOSITY,
+  frictionFactorMode: 'automatic',
+  lambda: 0.025, // nur für explizite Legacy-/Referenztests im Modus „fixed“
   round: false,
 });
 
@@ -165,7 +176,26 @@ export function calculateSection(section = {}, options = {}) {
 
   const velocity = calcVelocity(q, area);
   const dynamicPressure = calcDynamicPressure(velocity, settings.rho);
-  const frictionRate = calcFrictionRate(settings.lambda, hydraulicDiameter, dynamicPressure);
+  const roughnessMm = Math.max(0, toNumber(
+    section.roughnessMm ?? section.roughness ?? section.k ?? section.epsilonMm,
+    settings.defaultRoughnessMm ?? DEFAULT_ROUGHNESS_MM
+  ));
+  const frictionData = settings.frictionFactorMode === 'fixed'
+    ? {
+        frictionFactor: toNumber(section.lambda ?? settings.lambda, 0.025),
+        reynoldsNumber: calcReynoldsNumber(velocity, hydraulicDiameter, settings.kinematicViscosity),
+        relativeRoughness: calcRelativeRoughness(roughnessMm, hydraulicDiameter),
+        roughnessMm,
+        flowRegime: 'fixed',
+      }
+    : calcDarcyFrictionFactor({
+        velocityMs: velocity,
+        characteristicDiameterM: hydraulicDiameter,
+        roughnessMm,
+        kinematicViscosity: settings.kinematicViscosity,
+      });
+  const frictionFactor = frictionData.frictionFactor;
+  const frictionRate = calcFrictionRate(frictionFactor, hydraulicDiameter, dynamicPressure);
   const frictionLoss = frictionRate * length;
   const zetaLoss = calcZetaLoss(zetaSum, dynamicPressure);
   const specialLoss = toNumber(section.pa ?? section.pressureLoss);
@@ -181,6 +211,8 @@ export function calculateSection(section = {}, options = {}) {
   if (velocity > 6) warnings.push('Luftgeschwindigkeit über 6 m/s prüfen.');
   if (velocity > 10) warnings.push('Luftgeschwindigkeit sehr hoch. Dimensionierung prüfen.');
   if (zetaSum < 0) warnings.push('Σζ ist negativ. Eingabe/Formteil prüfen.');
+  if (roughnessMm < 0) warnings.push('Rauigkeit k darf nicht negativ sein.');
+  if (frictionFactor <= 0 && velocity > 0 && hydraulicDiameter > 0) warnings.push('Reibungszahl λ konnte nicht ermittelt werden.');
 
   return createResult({
     id: section.id,
@@ -196,6 +228,12 @@ export function calculateSection(section = {}, options = {}) {
     hydraulicDiameter,
     velocity,
     dynamicPressure,
+    roughnessMm: frictionData.roughnessMm,
+    relativeRoughness: frictionData.relativeRoughness,
+    reynoldsNumber: frictionData.reynoldsNumber,
+    flowRegime: frictionData.flowRegime,
+    frictionFactor,
+    lambda: frictionFactor,
     frictionRate,
     frictionLoss,
     zetaSum,
@@ -222,6 +260,12 @@ function createResult(values) {
     hydraulicDiameter: values.hydraulicDiameter || 0,
     velocity: values.velocity || 0,
     dynamicPressure: values.dynamicPressure || 0,
+    roughnessMm: values.roughnessMm ?? DEFAULT_ROUGHNESS_MM,
+    relativeRoughness: values.relativeRoughness || 0,
+    reynoldsNumber: values.reynoldsNumber || 0,
+    flowRegime: values.flowRegime || 'none',
+    frictionFactor: values.frictionFactor || values.lambda || 0,
+    lambda: values.lambda || values.frictionFactor || 0,
     frictionRate: values.frictionRate || 0,
     frictionLoss: values.frictionLoss || 0,
     zetaSum: values.zetaSum || 0,
@@ -362,7 +406,17 @@ export class CalculationEngine {
   hydraulicDiameterRectangle(width, height) { return calcHydraulicDiameter(width, height); }
   velocity(q, area) { return calcVelocity(q, area); }
   dynamicPressure(v) { return calcDynamicPressure(v, this.settings.rho); }
-  frictionRate(pdyn, dh) { return calcFrictionRate(this.settings.lambda, dh, pdyn); }
+  frictionRate(pdyn, dh, velocity = 0, roughnessMm = this.settings.defaultRoughnessMm) {
+    const factor = this.settings.frictionFactorMode === 'fixed'
+      ? this.settings.lambda
+      : calcDarcyFrictionFactor({
+          velocityMs: velocity,
+          characteristicDiameterM: dh,
+          roughnessMm,
+          kinematicViscosity: this.settings.kinematicViscosity,
+        }).frictionFactor;
+    return calcFrictionRate(factor, dh, pdyn);
+  }
 }
 
 CalculationEngine.defaults = DEFAULTS;
@@ -376,6 +430,8 @@ CalculationEngine.hydraulicDiameterRectangle = calcHydraulicDiameter;
 CalculationEngine.velocity = calcVelocity;
 CalculationEngine.dynamicPressure = calcDynamicPressure;
 CalculationEngine.frictionRate = (lambda, dh, pdyn) => calcFrictionRate(lambda, dh, pdyn);
+CalculationEngine.frictionFactor = calcDarcyFrictionFactor;
+CalculationEngine.reynoldsNumber = calcReynoldsNumber;
 CalculationEngine.zetaPressureLoss = calcZetaLoss;
 CalculationEngine.calculateSection = calculateSection;
 CalculationEngine.calculateProject = calculateProject;

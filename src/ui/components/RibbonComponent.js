@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 42.00: einzeiliges Ribbon mit Schnellerfassung und kontextbezogenem Hilfe-Center.
 
-import RibbonActions from '../core/RibbonActions.js?v=42.00&release=45.00';
+import RibbonActions from '../core/RibbonActions.js?v=42.00&release=46.00';
 
 const RIBBON_GROUPS = [
   {

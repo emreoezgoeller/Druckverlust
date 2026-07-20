@@ -23,7 +23,8 @@ export function createDemoProject(options = {}) {
     datum: options.datum || today(),
     settings: {
       rho: 1.21,
-      lambda: 0.025,
+      defaultRoughnessMm: 0.15,
+      kinematicViscosity: 0.0000151,
       sectionRoundingStep: 0.5,
       ...(options.settings || {}),
     },
@@ -43,6 +44,7 @@ export function createDemoProject(options = {}) {
       h: 0.45,
       d: 0,
       l: 8.5,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -55,6 +57,7 @@ export function createDemoProject(options = {}) {
       h: 0.35,
       d: 0,
       l: 12,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -67,6 +70,7 @@ export function createDemoProject(options = {}) {
       h: 0,
       d: 0.5,
       l: 9,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -79,6 +83,7 @@ export function createDemoProject(options = {}) {
       h: 0,
       d: 0.315,
       l: 7.5,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -91,6 +96,7 @@ export function createDemoProject(options = {}) {
       h: 0.25,
       d: 0,
       l: 6,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
   ];

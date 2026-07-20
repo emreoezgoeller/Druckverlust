@@ -1,4 +1,4 @@
-# Testplan – Druckverlust Pro 2.0
+# Testplan – Druckverlust Pro 2.1
 
 ## Automatischer Gesamtlauf
 
@@ -26,3 +26,19 @@ npm run test:release
 8. `.dvpa`- und `.dvph`-Pakete exportieren und wieder importieren.
 
 Browser-Testwrapper aus Phase 21 wurden im finalen Release entfernt. Die fachlichen Node-Runner und Referenzquellen bleiben erhalten.
+
+## Phase 46
+
+- Standard-Rauigkeit und individuelle Teilstreckenwerte prüfen.
+- unterschiedliche λ-Werte für Rechteckkanal und Rundrohr prüfen.
+- automatische Übernahme von k, Re und λ in zugeordnete Formteile prüfen.
+- Migration alter Projekte und Excel-/CSV-Roundtrip prüfen.
+
+
+## Phase 47
+
+- Freien ζ-Wert eingeben und unverändert übernehmen.
+- Zugeordnete Teilstrecke liefert den dynamischen Druck.
+- Δp = ζ × p_dyn wird automatisch berechnet.
+- Änderungen von Luftmenge, Dimension und ζ aktualisieren den Pa-Wert.
+- Bericht, Formteilbibliothek, Excel-Referenz und Speicher-Roundtrip prüfen.

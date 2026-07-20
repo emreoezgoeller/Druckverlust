@@ -2,8 +2,8 @@
 // Projektweites Cockpit und herstellerneutrale Qualitätsmatrix für Mehranlagen-Projekte.
 
 import ProjectCalculationService from './ProjectCalculationService.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=36.00&release=45.00';
-import SystemPortfolioEngine from './SystemPortfolioEngine.js?v=36.00&release=45.00';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=36.00&release=46.00';
+import SystemPortfolioEngine from './SystemPortfolioEngine.js?v=36.00&release=46.00';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));

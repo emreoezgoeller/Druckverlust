@@ -2,7 +2,7 @@
 // DOM-unabhängiger Test-Runner für automatische Grössenübernahme, Anschluss-Sync und manuelle Overrides.
 
 import WorkspaceComponent from '../ui/components/WorkspaceComponent.js';
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=47.00&release=47.00';
 
 function clone(value) {
   if (typeof structuredClone === 'function') return structuredClone(value);
@@ -374,8 +374,15 @@ export function runFormPartSyncValidation() {
   const failedCases = results.filter(item => !item.passed);
   const failedChecks = checks.filter(item => !item.passed);
   const covered = new Set(caseResults.map(item => item.partId));
-  const registryIds = harness.workspace.registry.getAll().map(item => item.id);
-  const uncovered = registryIds.filter(id => !covered.has(id));
+  const definitions = harness.workspace.registry.getAll();
+  const registryIds = definitions.map(item => item.id);
+  const syncExempt = new Set(
+    definitions
+      .filter(item => item.editorMode === 'zeta-only' || item.syncMode === 'none')
+      .map(item => item.id),
+  );
+  const uncovered = registryIds.filter(id => !covered.has(id) && !syncExempt.has(id));
+  const coveredOrExempt = registryIds.filter(id => covered.has(id) || syncExempt.has(id));
   const status = failedCases.length || failedChecks.length || uncovered.length ? 'error' : 'ok';
 
   return {
@@ -389,14 +396,16 @@ export function runFormPartSyncValidation() {
     durationMs: Date.now() - startedAt.getTime(),
     counts: {
       formParts: registryIds.length,
-      coveredFormParts: registryIds.length - uncovered.length,
+      coveredFormParts: coveredOrExempt.length,
       cases: results.length,
       passedCases: results.length - failedCases.length,
       failedCases: failedCases.length,
       checks: checks.length,
       passedChecks: checks.length - failedChecks.length,
       failedChecks: failedChecks.length,
+      syncExemptFormParts: syncExempt.size,
     },
+    syncExempt: [...syncExempt],
     uncovered,
     results,
   };

@@ -18,6 +18,7 @@ import {
 } from '../formteile/calculators/tAbzweigCalculator.js';
 import { calculateTStueck90, calculateTStueck90Variante2 } from '../formteile/calculators/tStueck90Calculator.js';
 import { calculateSattelstueckMitEinstroemkonus } from '../formteile/calculators/sattelstueckMitEinstroemkonusCalculator.js';
+import { calculateFreierZetaWert } from '../formteile/calculators/freierZetaWertCalculator.js';
 
 const excel = id => `assets/formteile/${id}.xlsx`;
 const zeta = (expected, tolerance = 1e-10) => ({ label: 'ζ-Wert', path: 'zeta', expected, tolerance });
@@ -25,6 +26,11 @@ const exact = (label, path, expected) => ({ label, path, expected, exact: true }
 const numeric = (label, path, expected, tolerance = 1e-10) => ({ label, path, expected, tolerance });
 
 export const FORM_PART_REFERENCE_CASES = Object.freeze([
+  {
+    id: 'FP-000', partId: 'freier_zeta_wert', title: 'Freier ζ-Wert', source: excel('freier_zeta_wert'),
+    calculate: calculateFreierZetaWert, input: { zeta: 0.35 },
+    expectations: [zeta(0.35), exact('Eingabemodus', 'calculation.inputMode', 'manual-zeta'), exact('Bezugsdruck', 'calculation.pressureReference', 'Teilstrecke')],
+  },
   {
     id: 'FP-001', partId: 'kreis_bogen', title: 'Kreisförmiger Bogen', source: excel('kreis_bogen'),
     calculate: calculateKreisBogen, input: { R: 110, d: 50, alpha: 90 },

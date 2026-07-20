@@ -9,6 +9,7 @@ const DEFAULT_COLUMNS = Object.freeze([
   'b',
   'h',
   'd',
+  'roughnessMm',
   'description',
 ]);
 
@@ -47,6 +48,11 @@ const COLUMN_DEFINITIONS = Object.freeze([
     key: 'd',
     label: 'Durchmesser [mm]',
     aliases: ['d', 'durchmesser', 'diameter', 'dn', 'rohrdurchmesser'],
+  },
+  {
+    key: 'roughnessMm',
+    label: 'Rauigkeit k [mm]',
+    aliases: ['rauigkeit', 'rauigkeit k', 'reibungswert', 'roughness', 'epsilon', 'k mm', 'k'],
   },
   {
     key: 'description',
@@ -148,6 +154,7 @@ function cloneSection(section = {}) {
     b: Number(section.b || 0),
     h: Number(section.h || 0),
     d: Number(section.d || 0),
+    roughnessMm: Number(section.roughnessMm ?? 0.15),
     description: String(section.description || ''),
     zetaSum: Number(section.zetaSum || 0),
   };
@@ -328,6 +335,7 @@ export default class ProjectTableImportEngine {
       const b = this.parseNumber(values.b, { kind: 'dimension', defaultUnit: 'mm' });
       const h = this.parseNumber(values.h, { kind: 'dimension', defaultUnit: 'mm' });
       const d = this.parseNumber(values.d, { kind: 'dimension', defaultUnit: 'mm' });
+      const roughnessMm = this.parseNumber(values.roughnessMm, { kind: 'plain' });
       const type = this.normalizeType(values.type, { b, h, d });
       const normalizedName = normalizeText(name);
 
@@ -343,6 +351,9 @@ export default class ProjectTableImportEngine {
       if (!(q > 0)) issues.push({ severity: 'error', code: 'AIRFLOW_INVALID', message: 'Luftmenge muss grösser als 0 m³/h sein.' });
       if (l === null || l < 0) issues.push({ severity: 'error', code: 'LENGTH_INVALID', message: 'Länge muss 0 m oder grösser sein.' });
       else if (l === 0) issues.push({ severity: 'warning', code: 'LENGTH_ZERO', message: 'Länge ist 0 m. Reibungsverlust dieser Teilstrecke ist dadurch 0 Pa.' });
+
+      if (roughnessMm !== null && roughnessMm < 0) issues.push({ severity: 'error', code: 'ROUGHNESS_INVALID', message: 'Rauigkeit darf nicht negativ sein.' });
+      if (roughnessMm === null || values.roughnessMm === undefined || String(values.roughnessMm).trim() === '') issues.push({ severity: 'warning', code: 'ROUGHNESS_DEFAULT', message: 'Rauigkeit wurde mit dem Standardwert 0,15 mm ergänzt.' });
 
       if (type === 'pipe') {
         if (!(d > 0)) issues.push({ severity: 'error', code: 'DIAMETER_INVALID', message: 'Für ein Rundrohr ist ein Durchmesser grösser als 0 mm erforderlich.' });
@@ -360,6 +371,7 @@ export default class ProjectTableImportEngine {
         b: type === 'duct' ? (b ?? 0) : 0,
         h: type === 'duct' ? (h ?? 0) : 0,
         d: type === 'pipe' ? (d ?? 0) : 0,
+        roughnessMm: roughnessMm ?? 0.15,
         description: String(values.description || '').trim(),
         zetaSum: 0,
       };
@@ -501,6 +513,7 @@ export default class ProjectTableImportEngine {
       section.type === 'pipe' ? '' : Math.round(Number(section.b || 0) * 1000),
       section.type === 'pipe' ? '' : Math.round(Number(section.h || 0) * 1000),
       section.type === 'pipe' ? Math.round(Number(section.d || 0) * 1000) : '',
+      Number(section.roughnessMm ?? 0.15),
       section.description || '',
     ]);
 
@@ -513,8 +526,8 @@ export default class ProjectTableImportEngine {
     const delimiter = options.delimiter || '\t';
     const rows = [
       COLUMN_DEFINITIONS.map(column => column.label),
-      ['ts1', 'Rechteckkanal', '3200', '12.5', '800', '450', '', 'Hauptkanal'],
-      ['ts2', 'Rundrohr', '1200', '8', '', '', '500', 'Abzweig'],
+      ['ts1', 'Rechteckkanal', '3200', '12.5', '800', '450', '', '0.15', 'Hauptkanal'],
+      ['ts2', 'Rundrohr', '1200', '8', '', '', '500', '0.15', 'Abzweig'],
     ];
 
     return rows.map(row => row.map(value => formatCsvValue(value, delimiter)).join(delimiter)).join('\r\n');

@@ -3,25 +3,25 @@
 
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import { calculateSection } from '../../core/CalculationEngine.js';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=47.00&release=47.00';
 import ProjectCommands from '../../app/ProjectCommands.js';
-import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=45.00';
+import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=45.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.12&release=45.00';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.12&release=46.00';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=21.12&release=45.00';
+} from '../../testing/ExpertTestProtocol.js?v=21.12&release=46.00';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -31,7 +31,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=21.12&release=45.00';
+} from '../../testing/ExpertFeedbackRound.js?v=21.12&release=46.00';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -45,7 +45,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=21.12&release=45.00';
+} from '../../testing/ReleaseDecisionPlan.js?v=21.12&release=46.00';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -54,7 +54,7 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=21.12&release=45.00';
+} from '../../testing/BetaReleaseReadiness.js?v=21.12&release=46.00';
 import {
   BETA_FEEDBACK_CATEGORIES,
   BETA_FEEDBACK_SEVERITIES,
@@ -67,7 +67,7 @@ import {
   getBetaFeedbackCategoryLabel,
   getBetaFeedbackSeverityLabel,
   summarizeBetaFeedback,
-} from '../../testing/BetaFeedbackReport.js?v=21.12&release=45.00';
+} from '../../testing/BetaFeedbackReport.js?v=21.12&release=46.00';
 import {
   BETA_FEEDBACK_INBOX_STORAGE_KEY,
   BETA_FEEDBACK_TRIAGE_STATUSES,
@@ -85,30 +85,30 @@ import {
   removeBetaFeedbackInboxItem,
   serializeBetaFeedbackInbox,
   updateBetaFeedbackInboxItem,
-} from '../../testing/BetaFeedbackInbox.js?v=21.12&release=45.00';
+} from '../../testing/BetaFeedbackInbox.js?v=21.12&release=46.00';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=45.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00&release=45.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=46.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00&release=46.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=42.00&release=45.00';
-import RibbonActions from '../core/RibbonActions.js?v=42.00&release=45.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00&release=45.00';
-import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00&release=45.00';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00&release=45.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00&release=45.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00&release=45.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00&release=45.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00&release=45.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=45.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00&release=45.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00&release=45.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00&release=45.00';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00&release=45.00';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00&release=45.00';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00&release=45.00';
-import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00&release=45.00';
+import UiDialogService from '../core/UiDialogService.js?v=42.00&release=46.00';
+import RibbonActions from '../core/RibbonActions.js?v=42.00&release=46.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00&release=46.00';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00&release=46.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00&release=46.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00&release=46.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00&release=46.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00&release=46.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00&release=46.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=46.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00&release=46.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00&release=46.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00&release=46.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00&release=46.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00&release=46.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00&release=46.00';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 
 export default class WorkspaceComponent {
@@ -1440,6 +1440,15 @@ export default class WorkspaceComponent {
             <small class="dp-field-meta">Gerade Länge für den Reibungsverlust</small>
           </label>
 
+          <label class="dp-field-card dp-friction-input-card">
+            <span>Rauigkeit k</span>
+            <div class="dp-unit-control">
+              <input data-field="roughnessMm" type="number" min="0" step="0.01" value="${this.escapeAttribute(section?.roughnessMm ?? 0.15)}">
+              <span class="dp-unit">mm</span>
+            </div>
+            <small class="dp-field-meta">Standard 0,15 mm; je Teilstrecke individuell anpassbar</small>
+          </label>
+
           ${this.renderGeometryFields(section)}
 
           <label class="dp-field-card dp-project-meta-wide">
@@ -1609,7 +1618,7 @@ export default class WorkspaceComponent {
           <div>
             <span class="dp-overline">Schnellerfassung</span>
             <h2>Teilstrecken kompakt bearbeiten</h2>
-            <p>Luftmenge, Länge und Geometrie direkt in der Anlagenübersicht anpassen. Zugeordnete Formteile werden automatisch mitgeführt.</p>
+            <p>Luftmenge, Länge, Geometrie und Rauigkeit direkt anpassen. Zugeordnete Formteile übernehmen die Werte automatisch.</p>
           </div>
         </div>
 
@@ -1625,6 +1634,8 @@ export default class WorkspaceComponent {
                   <th>Breite<br>[m]</th>
                   <th>Höhe<br>[m]</th>
                   <th>Ø<br>[m]</th>
+                  <th>k<br>[mm]</th>
+                  <th>λ<br>[-]</th>
                   <th>v<br>[m/s]</th>
                   <th>Δp TS<br>[Pa]</th>
                 </tr>
@@ -1668,6 +1679,8 @@ export default class WorkspaceComponent {
         <td><input data-section-quick-field="b" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.b ?? section?.width ?? 0)}" ${isPipe ? 'disabled' : ''}></td>
         <td><input data-section-quick-field="h" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.h ?? section?.height ?? 0)}" ${isPipe ? 'disabled' : ''}></td>
         <td><input data-section-quick-field="d" data-section-id="${this.escapeAttribute(section?.id)}" type="number" step="0.001" value="${this.escapeAttribute(section?.d ?? section?.diameter ?? 0)}" ${isPipe ? '' : 'disabled'}></td>
+        <td><input data-section-quick-field="roughnessMm" data-section-id="${this.escapeAttribute(section?.id)}" type="number" min="0" step="0.01" value="${this.escapeAttribute(section?.roughnessMm ?? 0.15)}"></td>
+        <td>${result ? this.formatNumber(result.frictionFactor ?? result.lambda, 4) : '-'}</td>
         <td>${result ? this.formatNumber(result.velocity, 2) : '-'}</td>
         <td><strong>${Number.isFinite(totalLoss) ? this.formatNumber(totalLoss, 1) : '-'}</strong></td>
       </tr>
@@ -2661,6 +2674,7 @@ export default class WorkspaceComponent {
     if (this.hasLockedAngleSelection(item)) badges.push({ label: 'α/β-Auswahl', className: 'ok' });
     if (this.supportsFormPartAutoSync(item)) badges.push({ label: 'Grössen-Sync', className: 'ok' });
     if (this.getFormPartConnectionDefinitions({ type: item.id }).length) badges.push({ label: 'Anschluss-Sync', className: 'ok' });
+    if (item?.editorMode === 'zeta-only') badges.push({ label: 'ζ frei', className: 'ok' });
 
     return { compatible, hasSectionContext, badges };
   }
@@ -2867,8 +2881,10 @@ export default class WorkspaceComponent {
 
     this.ensureFormPartSection(formPart, sections);
     this.applyFormPartDefaults(formPart);
-    const autoSizeResult = this.applySectionDimensionsToFormPart(formPart);
-    const connectionAutoSizeResult = this.applyConnectionSectionsToFormPart(formPart);
+    const registryEntry = this.getRegistryEntry(formPart);
+    const isZetaOnly = registryEntry?.editorMode === 'zeta-only';
+    const autoSizeResult = isZetaOnly ? null : this.applySectionDimensionsToFormPart(formPart);
+    const connectionAutoSizeResult = isZetaOnly ? null : this.applyConnectionSectionsToFormPart(formPart);
     this.deriveAndStoreFormPart(formPart);
     this.calculateAndStoreFormPart(formPart, { silent: true });
 
@@ -2934,9 +2950,13 @@ export default class WorkspaceComponent {
           </label>
         </div>
 
-        ${this.renderFormPartAutoSizePanel(formPart, autoSizeResult)}
+        ${isZetaOnly ? `
+          <div class="dp-dirty-hint">
+            Nur den ζ-Wert eintragen. Der dynamische Druck wird aus der zugeordneten Teilstrecke übernommen und Δp automatisch berechnet.
+          </div>
+        ` : this.renderFormPartAutoSizePanel(formPart, autoSizeResult)}
 
-        ${this.renderFormPartConnectionPanel(formPart, sections, connectionAutoSizeResult)}
+        ${isZetaOnly ? '' : this.renderFormPartConnectionPanel(formPart, sections, connectionAutoSizeResult)}
 
         ${this.renderFormPartParameters(formPart)}
 
@@ -3310,6 +3330,13 @@ export default class WorkspaceComponent {
       return { applied: false, status: 'missing', message: 'Keine Teilstrecke zugeordnet.' };
     }
 
+    const sectionResult = calculateSection(section, { settings: this.state.project?.settings || {} });
+    formPart.sectionRoughnessMm = Number(sectionResult.roughnessMm ?? section.roughnessMm ?? 0.15);
+    formPart.sectionFrictionFactor = Number(sectionResult.frictionFactor ?? sectionResult.lambda ?? 0);
+    formPart.sectionReynoldsNumber = Number(sectionResult.reynoldsNumber ?? 0);
+    formPart.frictionSourceSectionId = section.id;
+    formPart.frictionInheritedAt = new Date().toISOString();
+
     const force = Boolean(options.force);
     const signature = this.getSectionAutoSizeSignature(section);
 
@@ -3451,6 +3478,8 @@ export default class WorkspaceComponent {
       widthMm: this.toMillimetres(section?.b ?? section?.width ?? 0),
       heightMm: this.toMillimetres(section?.h ?? section?.height ?? 0),
       diameterMm: this.toMillimetres(section?.d ?? section?.diameter ?? 0),
+      roughnessMm: Number(section?.roughnessMm ?? 0.15),
+      frictionFactor: Number(calculateSection(section, { settings: this.state.project?.settings || {} })?.frictionFactor ?? 0),
     };
   }
 
@@ -3472,6 +3501,8 @@ export default class WorkspaceComponent {
       geometry.widthMm,
       geometry.heightMm,
       geometry.diameterMm,
+      geometry.roughnessMm,
+      geometry.frictionFactor,
     ].join('|');
   }
 
@@ -3628,6 +3659,14 @@ export default class WorkspaceComponent {
               <tr>
                 <th>Geschwindigkeit</th>
                 <td>${this.formatNumber(sectionResult.velocity)} m/s</td>
+              </tr>
+              <tr>
+                <th>Übernommene Rauigkeit k</th>
+                <td>${this.formatNumber(sectionResult.roughnessMm, 2)} mm</td>
+              </tr>
+              <tr>
+                <th>Übernommene Reibungszahl λ</th>
+                <td>${this.formatNumber(sectionResult.frictionFactor ?? sectionResult.lambda, 4)}</td>
               </tr>
             ` : ''}
             ${this.renderFormPartReferenceRows(formPart, formPartResult)}
@@ -4877,7 +4916,10 @@ export default class WorkspaceComponent {
     }
 
     project.settings.rho = project.settings.rho ?? 1.21;
-    project.settings.lambda = project.settings.lambda ?? 0.025;
+    project.settings.defaultRoughnessMm = project.settings.defaultRoughnessMm ?? 0.15;
+    project.settings.kinematicViscosity = project.settings.kinematicViscosity ?? 0.0000151;
+    delete project.settings.lambda;
+    delete project.settings.frictionFactorMode;
 
     if (!project.reportOptions || typeof project.reportOptions !== 'object') {
       project.reportOptions = {};
@@ -5180,10 +5222,11 @@ export default class WorkspaceComponent {
               <input data-report-setting="rho" type="number" step="0.01" value="${this.escapeAttribute(settings.rho ?? 1.21)}">
             </label>
 
-            <label>
-              <span>Reibungszahl λ [-]</span>
-              <input data-report-setting="lambda" type="number" step="0.001" value="${this.escapeAttribute(settings.lambda ?? 0.025)}">
-            </label>
+            <div class="dp-report-setting-info">
+              <span>Reibung je Teilstrecke</span>
+              <strong>k = ${this.formatNumber(settings.defaultRoughnessMm ?? 0.15, 2)} mm Standard</strong>
+              <small>λ wird je Kanal oder Rohr automatisch aus Rauigkeit, Reynolds-Zahl und hydraulischem Durchmesser berechnet.</small>
+            </div>
 
             <label class="dp-report-settings-wide">
               <span>Bemerkung / Hinweis</span>
@@ -8992,6 +9035,10 @@ export default class WorkspaceComponent {
           <strong>${this.formatNumber(dynamicPressure, 1)} Pa</strong>
         </div>
         <div>
+          <small>k / λ</small>
+          <strong>${this.formatNumber(sectionResult?.roughnessMm ?? formPart.sectionRoughnessMm ?? 0.15, 2)} / ${this.formatNumber(sectionResult?.frictionFactor ?? formPart.sectionFrictionFactor ?? 0, 4)}</strong>
+        </div>
+        <div>
           <small>Druckverlust</small>
           <strong class="${pressureLoss < 0 ? 'dp-negative-value' : ''}">${this.formatNumber(pressureLoss)} Pa</strong>
         </div>
@@ -9118,6 +9165,22 @@ export default class WorkspaceComponent {
                 <td>${this.formatNumber(result.dynamicPressure)} Pa</td>
               </tr>
               <tr>
+                <th>Rauigkeit k</th>
+                <td>${this.formatNumber(result.roughnessMm, 2)} mm</td>
+              </tr>
+              <tr>
+                <th>Reynolds-Zahl Re</th>
+                <td>${this.formatNumber(result.reynoldsNumber, 0)}</td>
+              </tr>
+              <tr>
+                <th>Reibungszahl λ</th>
+                <td>${this.formatNumber(result.frictionFactor ?? result.lambda, 4)}</td>
+              </tr>
+              <tr>
+                <th>Reibungsgefälle R</th>
+                <td>${this.formatNumber(result.frictionRate, 3)} Pa/m</td>
+              </tr>
+              <tr>
                 <th>Reibungsverlust</th>
                 <td>${this.formatNumber(result.frictionLoss)} Pa</td>
               </tr>
@@ -9176,6 +9239,11 @@ export default class WorkspaceComponent {
 
     if (!Number.isFinite(length) || length < 0) {
       warnings.push('Länge der Teilstrecke darf nicht negativ sein.');
+    }
+
+    const roughnessMm = Number(section.roughnessMm ?? 0.15);
+    if (!Number.isFinite(roughnessMm) || roughnessMm < 0) {
+      warnings.push('Rauigkeit k darf nicht negativ sein.');
     }
 
     if (this.isPipeSection(section)) {

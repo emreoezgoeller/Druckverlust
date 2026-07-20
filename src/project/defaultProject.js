@@ -3,7 +3,8 @@
 
 const DEFAULT_SETTINGS = Object.freeze({
   rho: 1.21,
-  lambda: 0.025,
+  defaultRoughnessMm: 0.15,
+  kinematicViscosity: 0.0000151,
   sectionRoundingStep: 0.5,
 });
 
@@ -19,6 +20,7 @@ function createDefaultSections(systemId) {
       h: 0.45,
       d: 0,
       l: 1.25,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -31,6 +33,7 @@ function createDefaultSections(systemId) {
       h: 0.8,
       d: 0,
       l: 1.25,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -43,6 +46,7 @@ function createDefaultSections(systemId) {
       h: 0,
       d: 0.5,
       l: 1.25,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -55,6 +59,7 @@ function createDefaultSections(systemId) {
       h: 0,
       d: 0.3,
       l: 1.25,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
     {
@@ -67,6 +72,7 @@ function createDefaultSections(systemId) {
       h: 0,
       d: 0.4,
       l: 1.25,
+      roughnessMm: 0.15,
       zetaSum: 0,
     },
   ];

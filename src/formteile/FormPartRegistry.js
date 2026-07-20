@@ -12,6 +12,7 @@ import {
 } from './calculators/tAbzweigCalculator.js';
 import { calculateUebergangGrossKlein, calculateUebergangKleinGross } from './calculators/uebergangCalculator.js';
 import { calculateSattelstueckMitEinstroemkonus } from './calculators/sattelstueckMitEinstroemkonusCalculator.js';
+import { calculateFreierZetaWert } from './calculators/freierZetaWertCalculator.js';
 
 function cleanAssetPath(path) {
   return String(path || '')
@@ -908,6 +909,31 @@ export class FormPartRegistry {
 }
 
 export const defaultFormParts = [
+  {
+    id: 'freier_zeta_wert',
+    category: 'Spezial',
+    name: 'Freier ζ-Wert',
+    image: formPartImage('freier_zeta_wert'),
+    imageFallbacks: formPartImageSources('freier_zeta_wert'),
+    referenceFile: formPartExcel('freier_zeta_wert'),
+    keywords: ['frei', 'zeta', 'zetawert', 'widerstandsbeiwert', 'manuell', 'druckverlust'],
+    description: 'Herstellerneutrales Formteil mit frei einstellbarem ζ-Wert. Δp wird automatisch mit dem dynamischen Druck der zugeordneten Teilstrecke berechnet.',
+    editorMode: 'zeta-only',
+    parameters: [
+      {
+        id: 'zeta',
+        label: 'ζ-Wert [-]',
+        type: 'number',
+        group: 'Widerstandsbeiwert',
+        default: 0,
+        step: 0.001,
+        precision: 3,
+        placeholder: 'z. B. 0,35',
+        help: 'Widerstandsbeiwert des Formteils. Der Druckverlust wird automatisch als Δp = ζ × p_dyn der zugeordneten Teilstrecke berechnet.',
+      },
+    ],
+    calculate: calculateFreierZetaWert,
+  },
   {
     id: 'kreis_bogen',
     category: 'Rund',

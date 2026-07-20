@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.2.0 – Phase 47.00 – 20.07.2026
+
+- Neues herstellerneutrales Formteil **„Freier ζ-Wert“** ergänzt.
+- Als einzigen Fachparameter wird der Widerstandsbeiwert ζ eingegeben.
+- Der dynamische Druck wird automatisch aus der zugeordneten Teilstrecke übernommen.
+- Der Formteildruckverlust wird live als `Δp = ζ × p_dyn` berechnet und bei Änderungen von Luftmenge oder Dimension automatisch aktualisiert.
+- Formteilbibliothek, Bericht, CSV/PDF-Ausgabe, Projektberechnung und Formteil-QS um den neuen Typ erweitert.
+- Neutrale Skizze, Excel-Referenz und eigene Phase-47-Prüfungen ergänzt.
+
+## 2.1.0 – Phase 46.00 – 20.07.2026
+
+- Globalen Reibungszahl-Eingabewert aus den Berichtseinstellungen entfernt.
+- Absolute Rauigkeit `k` wird jetzt je Teilstrecke geführt; Standardwert für neue und alte Teilstrecken ist 0,15 mm.
+- Rauigkeit kann in jeder Teilstrecke und in der Teilstrecken-Schnellerfassung individuell angepasst werden.
+- Darcy-Reibungszahl `λ` wird je Teilstrecke automatisch aus Rauigkeit, Reynolds-Zahl und charakteristischem Durchmesser ermittelt.
+- Rechteckkanäle verwenden den hydraulischen Durchmesser, Rundrohre den Rohrdurchmesser; dadurch entstehen fachlich getrennte λ-Werte.
+- Zugeordnete Formteile übernehmen Rauigkeit, Reynolds-Zahl und λ automatisch von ihrer Teilstrecke; die Formteilberechnung bleibt korrekt über ζ und dynamischen Druck.
+- Excel-/CSV-Import, Export, Professional Report, CSV-Bericht, Revisionen und Projektmigration um k, Re und λ erweitert.
+- Projektschema auf 1.2.0 und Anwendung auf 2.1.0 angehoben.
+
 ## 2.0.0 – Phase 45.00 – 19.07.2026
 
 - Entwicklungsstände 21.12 bis 42.00 zu einem vollständigen Release zusammengeführt.

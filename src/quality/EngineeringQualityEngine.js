@@ -1,7 +1,7 @@
 // Druckverlust Pro – EngineeringQualityEngine
 // Herstellerneutrale fachliche Projektprüfung und priorisierte Empfehlungen.
 
-import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=36.00&release=45.00';
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=36.00&release=46.00';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));

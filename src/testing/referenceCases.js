@@ -7,6 +7,7 @@
 const CORE_SETTINGS = Object.freeze({
   rho: 1.21,
   lambda: 0.025,
+  frictionFactorMode: 'fixed',
   sectionRoundingStep: 0.5,
 });
 

@@ -1,10 +1,10 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.0.0",
-  "phase": "45.00",
-  "releaseDate": "2026-07-19",
-  "projectFileSchema": "1.1.0",
+  "version": "2.2.0",
+  "phase": "47.00",
+  "releaseDate": "2026-07-20",
+  "projectFileSchema": "1.2.0",
   "entryPoints": {
     "product": "index.html",
     "application": "app.html",
@@ -17,14 +17,16 @@
   ],
   "quality": {
     "referenceCases": 39,
-    "formPartTypes": 14,
+    "formPartTypes": 15,
     "excelReferenceChecks": 56,
     "practiceSections": 48,
-    "performanceSections": 200
+    "performanceSections": 200,
+    "sectionFrictionChecks": 46,
+    "freeZetaChecks": 26
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Herstellerneutraler, zusammengeführter und bereinigter Release-Stand."
+  "notes": "Neues herstellerneutrales Formteil „Freier ζ-Wert“: nur ζ eingeben; Δp wird automatisch mit dem dynamischen Druck der zugeordneten Teilstrecke berechnet."
 }

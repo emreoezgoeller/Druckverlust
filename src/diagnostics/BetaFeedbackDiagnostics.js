@@ -9,7 +9,7 @@ import {
   parseBetaFeedbackJson,
   summarizeBetaFeedback,
   validateBetaFeedbackDraft,
-} from '../testing/BetaFeedbackReport.js?v=21.12&release=45.00';
+} from '../testing/BetaFeedbackReport.js?v=21.12&release=46.00';
 
 function runCheck(label, fn) {
   try {
