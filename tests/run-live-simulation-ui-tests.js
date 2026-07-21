@@ -58,7 +58,7 @@ assert.match(ribbonSource, /action: 'showLiveSimulation'/);
 assert.match(ribbonSource, /label: 'Simulation'/);
 assert.match(ribbonSource, /selectionType === 'liveSimulation'/);
 assert.match(ribbonActionsSource, /showLiveSimulation\(\)/);
-assert.match(appHtml, /phase26_28\.css\?v=38\.00/);
-assert.match(appHtml, /phase29_00\.css\?v=38\.00/);
+assert.match(appHtml, /phase26_28\.css\?v=57\.00/);
+assert.match(appHtml, /phase29_00\.css\?v=57\.00/);
 
 console.log('Live-Simulation UI: 24 Prüfungen bestanden.');

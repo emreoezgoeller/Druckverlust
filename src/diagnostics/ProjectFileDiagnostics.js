@@ -1,8 +1,8 @@
 // Druckverlust Pro – ProjectFileDiagnostics
 // Prüft, ob das aktuelle Projekt sauber als .dvp-Datei gespeichert/geöffnet werden kann.
 
-import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js';
-import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js';
+import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=57.00';
+import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=57.00';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };
@@ -117,6 +117,17 @@ export default class ProjectFileDiagnostics {
       ? createItem('ok', 'Dateigrösse', 'Projektgrösse', `Projektdatei ist kompakt: ca. ${sizeKb} kB.`)
       : createItem('warning', 'Dateigrösse', 'Projektgrösse', `Projektdatei ist gross: ca. ${sizeKb} kB.`, 'Prüfen, ob unnötige Daten im Projekt gespeichert werden.'));
 
+    if (importInfo?.migrationRequired) {
+      const stats = importInfo.migrationStats || {};
+      const details = [
+        `Schema ${importInfo.sourceSchemaVersion || 'älter'} → ${importInfo.targetSchemaVersion || PROJECT_FILE_SCHEMA_VERSION}`,
+        importInfo.backupCreated && importInfo.backupFileName ? `Original gesichert als ${importInfo.backupFileName}` : 'Originaldatei blieb unverändert',
+        `${stats.preservedAssignments || 0} Zuordnung(en) erhalten`,
+        `${stats.clearedAssignments || 0} ungültige Zuordnung(en) gelöst`,
+      ].join(' · ');
+      items.push(createItem('warning', 'Migration', 'Rückwärtskompatibilität', 'Das geöffnete Projekt wurde aus einem älteren Dateistand migriert.', details));
+    }
+
     if (importInfo?.warnings?.length || importInfo?.normalizedWarnings?.length) {
       const warnings = importInfo.normalizedWarnings || importInfo.warnings || [];
       items.push(createItem('warning', 'Import', 'Öffnungsprotokoll', `Beim Öffnen wurden ${warnings.length} Punkt(e) normalisiert.`, warnings.join(' · ')));
@@ -165,6 +176,8 @@ export default class ProjectFileDiagnostics {
       `Status: ${check.label || '-'}`,
       `Dateiname: ${check.fileName || '-'}`,
       `Schema: ${check.schemaVersion || PROJECT_FILE_SCHEMA_VERSION}`,
+      check.importInfo?.migrationRequired ? `Migration: ${check.importInfo.sourceSchemaVersion || 'älter'} → ${check.importInfo.targetSchemaVersion || PROJECT_FILE_SCHEMA_VERSION}` : '',
+      check.importInfo?.backupCreated && check.importInfo?.backupFileName ? `Originalsicherung: ${check.importInfo.backupFileName}` : '',
       `Projektumfang: ${check.projectSummary?.systems ?? 0} Anlage(n), ${check.projectSummary?.sections ?? 0} Teilstrecke(n), ${check.projectSummary?.formParts ?? 0} Formteil(e), ${check.projectSummary?.specialComponents ?? 0} Sonderbauteil(e)`,
       '',
     ];

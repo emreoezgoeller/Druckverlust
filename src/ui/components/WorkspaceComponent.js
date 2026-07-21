@@ -10,33 +10,33 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=53.00';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=53.00';
+} from '../../sections/SectionSizingAssistant.js?v=57.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=57.00';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=53.00';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=53.00';
-import ReportEngine from '../../report/ReportEngine.js?v=53.00&release=53.00';
+} from '../../formteile/FormPartWorkflowEngine.js?v=57.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=57.00';
+import ReportEngine from '../../report/ReportEngine.js?v=57.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=57.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=21.12&release=46.00';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=57.00';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=21.12&release=46.00';
+} from '../../testing/ExpertTestProtocol.js?v=57.00';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -46,7 +46,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=21.12&release=46.00';
+} from '../../testing/ExpertFeedbackRound.js?v=57.00';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -60,7 +60,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=21.12&release=46.00';
+} from '../../testing/ReleaseDecisionPlan.js?v=57.00';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -69,7 +69,7 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=21.12&release=46.00';
+} from '../../testing/BetaReleaseReadiness.js?v=57.00';
 import {
   BETA_FEEDBACK_CATEGORIES,
   BETA_FEEDBACK_SEVERITIES,
@@ -82,7 +82,7 @@ import {
   getBetaFeedbackCategoryLabel,
   getBetaFeedbackSeverityLabel,
   summarizeBetaFeedback,
-} from '../../testing/BetaFeedbackReport.js?v=21.12&release=46.00';
+} from '../../testing/BetaFeedbackReport.js?v=57.00';
 import {
   BETA_FEEDBACK_INBOX_STORAGE_KEY,
   BETA_FEEDBACK_TRIAGE_STATUSES,
@@ -100,30 +100,30 @@ import {
   removeBetaFeedbackInboxItem,
   serializeBetaFeedbackInbox,
   updateBetaFeedbackInboxItem,
-} from '../../testing/BetaFeedbackInbox.js?v=21.12&release=46.00';
+} from '../../testing/BetaFeedbackInbox.js?v=57.00';
 import createPracticeProject from '../../project/practiceProject.js';
-import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=53.00&release=53.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00&release=46.00';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=57.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=57.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=57.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=42.00&release=46.00';
-import RibbonActions from '../core/RibbonActions.js?v=42.00&release=46.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00&release=46.00';
-import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=42.00&release=46.00';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=39.00&release=46.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=39.00&release=46.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=39.00&release=46.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=39.00&release=46.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=39.00&release=46.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=46.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=42.00&release=46.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=39.00&release=46.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=39.00&release=46.00';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=39.00&release=46.00';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=39.00&release=46.00';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00&release=46.00';
-import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
+import UiDialogService from '../core/UiDialogService.js?v=57.00';
+import RibbonActions from '../core/RibbonActions.js?v=57.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=57.00';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=57.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=57.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=57.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=57.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=57.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=57.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=57.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=57.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=57.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=57.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=57.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=57.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=57.00';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=57.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import {
   SIA_OPERATION_MODES,
@@ -132,14 +132,14 @@ import {
   analyzeSystemVelocityCompliance,
   evaluateSectionVelocityCompliance,
   normalizeSiaVelocityConfig,
-} from '../../standards/SiaVelocityCompliance.js?v=51.20';
+} from '../../standards/SiaVelocityCompliance.js?v=57.00';
 import {
   RESULT_GLOSSARY,
   RESULT_VIEW_MODES,
   createSectionResultPresentation,
   createSystemResultPresentation,
   normalizeResultViewMode,
-} from '../../results/ResultPresentationEngine.js?v=52.00&release=53.00';
+} from '../../results/ResultPresentationEngine.js?v=57.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -934,6 +934,15 @@ export default class WorkspaceComponent {
           </div>
           <button type="button" data-file-check-action="open">Details öffnen</button>
         </div>
+
+        ${check.importInfo?.migrationRequired ? `
+          <div class="dp-project-check-item warning">
+            <strong>Migration ${this.escapeHtml(check.importInfo.sourceSchemaVersion || 'älter')} → ${this.escapeHtml(check.importInfo.targetSchemaVersion || check.schemaVersion || '-')}</strong>
+            <span>${check.importInfo.backupCreated && check.importInfo.backupFileName
+              ? `Original gesichert als ${this.escapeHtml(check.importInfo.backupFileName)}.`
+              : 'Die Originaldatei blieb unverändert; bitte den migrierten Stand neu speichern.'}</span>
+          </div>
+        ` : ''}
 
         ${visibleItems.length ? `
           <div class="dp-project-check-list compact">
@@ -5088,6 +5097,18 @@ export default class WorkspaceComponent {
             <span>Schema</span>
             <strong>${this.escapeHtml(result.schemaVersion || '-')}</strong>
           </div>
+          ${result.importInfo?.migrationRequired ? `
+          <div>
+            <span>Migriert von</span>
+            <strong>${this.escapeHtml(result.importInfo.sourceSchemaVersion || 'älter')}</strong>
+          </div>
+          ` : ''}
+          ${result.importInfo?.backupCreated && result.importInfo?.backupFileName ? `
+          <div>
+            <span>Originalsicherung</span>
+            <strong>${this.escapeHtml(result.importInfo.backupFileName)}</strong>
+          </div>
+          ` : ''}
           <div>
             <span>Version</span>
             <strong>${this.escapeHtml(result.appRelease || APP_RELEASE)}</strong>
@@ -5212,15 +5233,15 @@ export default class WorkspaceComponent {
         <div class="dp-deploy-meta-grid dp-rc-meta">
           <div>
             <span>Version</span>
-            <strong>${this.escapeHtml(result?.release || APP_RELEASE)}</strong>
+            <strong>${this.escapeHtml(result?.version || APP_VERSION)} · Phase ${this.escapeHtml(result?.release || APP_RELEASE)}</strong>
           </div>
           <div>
-            <span>Projekt</span>
-            <strong>${this.escapeHtml(result?.projectName || this.state.project?.name || '-')}</strong>
+            <span>Projektumfang</span>
+            <strong>${this.escapeHtml(result?.projectCounts?.systems ?? 0)} Anlagen · ${this.escapeHtml(result?.projectCounts?.sections ?? 0)} TS</strong>
           </div>
           <div>
-            <span>Anlage</span>
-            <strong>${this.escapeHtml(result?.systemName || this.state.selectedSystem?.name || '-')}</strong>
+            <span>Bericht</span>
+            <strong>${this.escapeHtml(result?.metrics?.reportPages ?? 0)} Seiten · ${this.escapeHtml(Math.round(Number(result?.metrics?.reportMs || 0)))} ms</strong>
           </div>
           <div>
             <span>Geprüft</span>
@@ -5240,7 +5261,7 @@ export default class WorkspaceComponent {
           </div>
         ` : `
           <div class="dp-empty-state">
-            Noch keine Schlussprüfung vorhanden. Der RC-Check ist der letzte technische Sammeltest von Phase 18.
+            Noch keine Schlussprüfung vorhanden. Der RC-Check ist die technische Schlussprüfung von Phase 57 vor dem finalen Release 3.0.
           </div>
         `}
       </section>

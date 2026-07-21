@@ -1,98 +1,41 @@
 # Release Notes
 
-**Release:** Version 2.8.0 · Phase 53.00  
+**Release:** Version 2.12.0 · Phase 57.00  
 **Datum:** 21.07.2026
 
-## Neu in Phase 53.00
+## Neu in Phase 57.00
 
-- Das PDF-Deckblatt besitzt einen weissen Hintergrund, das reguläre Logo oben links und ein grosses, dezentes Symbol-Wasserzeichen auf der rechten Seite.
-- Der bisherige Bildbereich wurde durch einen technischen Dokumentblock mit Anlage, SIA-Raumnutzung, Betriebsart, Elektro-Vollaststunden, QS-Status und dynamischem Berichtsumfang ersetzt.
-- Inhaltsverzeichnis und Seitennummerierung werden aus einem gemeinsamen Seitenplan erzeugt und bleiben auch bei grossen Projekten konsistent.
-- Die Hauptberechnung verwendet maximal 15 Teilstrecken je Seite, damit Tabellenzeilen, Legende und Summen nicht abgeschnitten werden.
-- Zugeordnete Formteile werden mit höchstens vier Teilstreckenboxen je Seite und maximal fünf Formteilzeilen je Box auf Fortsetzungsseiten verteilt.
-- Sonderbauteile, Engineering-QS, QS-Prüfprotokoll und Formteilkatalog besitzen eigene drucksichere Seitengrenzen.
-- Seiten mit Engineering- oder QS-Übersicht erhalten bewusst weniger Tabellenzeilen als reine Fortsetzungsseiten.
-- Vor dem Drucken prüft der Bericht jede A4-Seite auf vertikale und horizontale Überfüllung.
-- Der Druckdialog meldet verständlich, ob das Layout geprüft ist oder ob eine überfüllte Seite vor dem PDF-Export kontrolliert werden muss.
-- Eine grosse Stressprüfung mit 67 Teilstrecken, 210 Formteilen, 45 Sonderbauteilen, 31 Engineering-Feststellungen und 40 QS-Hinweisen wurde als 43-seitiger Bericht geprüft.
-- 74 automatisierte Phase-53-Prüfungen kontrollieren Seitenplan, Deckblatt, Fortsetzungsseiten, Layoutaudit, A4-CSS und Releaseintegration.
+- Die technische **RC-Prüfung** ist wieder direkt über das Ribbon erreichbar.
+- Der RC-Check berechnet nicht nur die aktive Anlage, sondern **alle Anlagen des Projekts** neu.
+- Projektcheck und Rechen-QS werden anlagenweise zusammengeführt; blockierende Fehler bleiben eindeutig sichtbar.
+- Der Professional Report wird für jede Anlage auf Modell, Titel, Inhalt und Seitenplan geprüft.
+- Ein echter `.dvp`-Roundtrip kontrolliert Speichern, erneutes Öffnen und unveränderte Druckverlustresultate.
+- Ein deterministisches Büro-Praxisprojekt dient als zusätzlicher Rechen-, Bericht- und Datei-Smoketest.
+- Berechnung, Bericht und Projektdatei werden mit konservativen RC-Zeitbudgets bewertet.
+- SIA-Raumnutzung und Betriebsart werden für sämtliche Anlagen auf Vollständigkeit geprüft.
+- Das RC-Protokoll enthält Projektumfang, Dateischema, Berichtseiten und gemessene Laufzeiten.
+- Sämtliche bestehenden statischen Modul- und App-Asset-Kennungen wurden auf den einheitlichen Cache-Stand `57.00` bereinigt; widersprüchliche parallele `release`-Querystrings wurden entfernt.
+- Versionsangaben, Startseite, Qualitätsseite, Rechtstexte, Datenmodell und Release-Metadaten wurden auf Version 2.12.0 vereinheitlicht.
 
-## Neu in Phase 52.00
+## Qualitätsstatus
 
-- Neue Anlagenübersicht **„Ergebnis auf einen Blick“** direkt am Seitenanfang.
-- Gesamtdruckverlust, Reibungsverlust, Formteilverlust und Sonderbauteilverlust sind klar getrennt und mit Anteilen dargestellt.
-- Die Teilstrecke mit dem höchsten Druckverlust wird als **kritische Teilstrecke** hervorgehoben und kann direkt geöffnet werden.
-- Umschaltbare **Standardansicht** für den schnellen Büroalltag und **Profi-Ansicht** mit den fünf druckverluststärksten Teilstrecken.
-- Die gewählte Ansicht wird lokal gespeichert und beim nächsten Öffnen wieder verwendet.
-- Technische Anlagen- und Teilstreckendetails sind in der Standardansicht eingeklappt; in der Profi-Ansicht werden sie automatisch geöffnet.
-- Teilstreckenergebnis zeigt Gesamt-, Reibungs- und Formteilverlust sowie Geschwindigkeit und SIA-Status auf einen Blick.
-- Neues verständliches Glossar für Δp, λ, ζ, Rauigkeit k und dynamischen Druck p_dyn.
-- Vollständige Ergebnistabelle bereinigt und in den technischen Detailbereich verschoben.
-- 83 automatisierte Phase-52-Prüfungen für Rechenmodell, kritische Teilstrecke, Ansichtsschalter, UI, CSS und Release-Integration ergänzt.
+- vollständige Phase-57-RC- und Cachekonsistenzprüfung,
+- vollständige bestehende Regressionstestkette,
+- JavaScript-Syntaxprüfung aller Runtime- und Testdateien,
+- reproduzierbare A4-PDF-Prüfung mit 30 Seiten,
+- Patch-Installation und ZIP-Strukturprüfung.
 
-## Neu in Phase 51.20
+## Browser-Abnahme
 
-- Jede Anlage erhält eine verbindliche Auswahl der **Raumnutzung nach SIA 2024:2021, Tabelle 13** und der Betriebsart **1-stufig**, **2-stufig** oder **stufenlos**.
-- Aus diesen Angaben werden die jährlichen **Elektro-Vollaststunden** automatisch ermittelt.
-- Für jede Teilstrecke wird der maximale Richtwert für runde Luftleitungen nach **SIA 382/1:2025, Tabelle 49** aus Luftmenge und Elektro-Vollaststunden bestimmt. Zwischen 2’000, 4’000 und 8’000 h/a wird linear interpoliert.
-- Rechteckkanäle erhalten zusätzlich den Reduktionsfaktor aus **Tabelle 50** anhand des Seitenverhältnisses. Zwischenwerte werden interpoliert.
-- Seitenverhältnisse ab 1:6 werden als nicht empfohlen gekennzeichnet; Werte über 1:10 werden nicht extrapoliert, sondern vorsichtig mit dem Tabellenrand 1:10 bewertet.
-- Die Anlagenübersicht zeigt Ist-Geschwindigkeit, Rundrohr-Richtwert, Reduktionsfaktor, maximalen Kanalrichtwert und Status für alle Teilstrecken.
-- Im Teilstreckeneditor erscheint eine kompakte Einzelprüfung mit Istwert, Grenzwert und Auslastung.
-- Auswahl, Prüfergebnis und Normgrundlagen werden in Projektdatei, Validierung, Qualitätsübersicht und Professional Report übernommen.
-- Hinweis zum Normkontext: Bei verzweigten Netzen ist der kritische Strang massgebend; untergeordnete Stränge sind zusätzlich bezüglich Druckniveau und Schall zu beurteilen.
-- 252 automatisierte Phase-51.20-Prüfungen für Raumdaten, Interpolation, Rechteckfaktoren, Speicherung, Bericht und UI-Integration bestanden.
+Der automatisierte Chromium-Prozess kann in der isolierten Prüfcontainer-Laufzeit weiterhin nicht zuverlässig starten. Die 30-seitige A4-Ausgabe wird deshalb reproduzierbar mit dem vorhandenen PDF-Renderer geprüft. Die abschliessende manuelle Druckabnahme unter **Windows mit Chrome und Microsoft Edge** bleibt ein ausdrücklich dokumentierter Freigabepunkt für Phase 58.00.
 
-## Neu in Phase 51.10
+## Testbefehle
 
-- Sechs neue rechteckige Formteile: **Krümmerabzweig 1 – Abzweig**, **Krümmerabzweig 1 – Durchgang**, **Krümmerabzweig 2 – Abzweig**, **Krümmerabzweig 2 – Durchgang**, **Krümmerendstück 1** und **Krümmerendstück 2**.
-- Eingabebilder und Tabellen stammen aus den bereitgestellten PNG- und Excel-Referenzen.
-- Bei den Krümmerabzweigen wird die Geometrie über `AA/AD`, `AD/A` und `AA/A` exakt gewählt. Das Verhältnis `wA/w` beziehungsweise `wD/w` verwendet wie Excel den exakten oder nächst kleineren Tabellenwert.
-- Krümmerendstück 1 berücksichtigt zusätzlich das exakte Seitenverhältnis `a/b`; Krümmerendstück 2 verwendet `wA/w`.
-- Abzweig- und Endstückverluste beziehen sich auf den dynamischen Druck bei `wA`; Durchgangsverluste auf den dynamischen Druck bei `wD`.
-- Zusammenflussvarianten dürfen negative ζ- und Druckverlustwerte liefern; diese Tabellenwerte werden unverändert übernommen.
-- Die drei Anschluss-Teilstrecken eines Krümmerabzweigs und die zwei Anschlüsse eines Krümmerendstücks werden automatisch synchronisiert und bleiben manuell umstellbar.
-- Unzulässige Geometriekombinationen werden nicht interpoliert, sondern mit einer klaren Prüfmeldung gestoppt.
-- 65 automatisierte Phase-51.10-Prüfungen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen sowie 179 Formteil-Synchronisationsprüfungen bestanden.
-
-## Neu in Phase 51.00
-
-- Logo, Werkzeugleiste und Projektstatus sind in einer kompakten, einzeiligen Plattformleiste zusammengeführt.
-- Die bisherigen Gruppenbezeichnungen erzeugen auf dem Desktop keine zweite sichtbare Ribbon-Zeile mehr; Überlaufnavigation und Tastaturbedienung bleiben erhalten.
-- Neue Symbol- und Statuslegende erklärt Teilstrecke, Formteil, Sonderbauteil, Berechnung, Bericht sowie die Statusfarben.
-- Sofortige Infotexte erscheinen bei Mausberührung oder Tastaturfokus für Ribbon-, Sidebar- und Arbeitsbereichssymbole.
-- Sidebar, Projektbaum und Arbeitsbereich sind gegen horizontales Überragen und abgeschnittene Auswahlmarkierungen abgesichert.
-- Tablet- und Smartphone-Darstellung der Werkzeugleiste und Legende wurden ergänzt.
-- 48 automatisierte Phase-51-Prüfungen ergänzt.
-
-## Phase 50.00
-
-- Neue Formteile werden aus dem aktuellen Teilstrecken-Kontext angelegt; die Ziel-Teilstrecke kann in der Bibliothek vorab geändert werden.
-- Einbauposition und Reihenfolge sind im Formteilarbeitsplatz sofort sichtbar.
-- Vorherige und nächste Teilstrecke können direkt aus dem Formteil angesteuert werden.
-- Manuelle Anschlusswerte bleiben bei einer Umzuordnung geschützt; automatische Übernahme erfolgt nur noch bewusst.
-- Zusatzanschlüsse von Übergängen und Abzweigen erhalten prüfbare Vorschläge aus den folgenden Teilstrecken.
-- Fehlende, gelöschte oder widersprüchliche Zuordnungen werden klar gemeldet.
-- Sortierpfeile verändern nur die Reihenfolge innerhalb derselben Teilstrecke.
-- 37 automatisierte Phase-50-Prüfungen ergänzt.
-
-## Phase 49.00
-
-- Neuer herstellerneutraler **Dimensionierungsassistent** direkt in jeder Teilstrecke.
-- Zielgeschwindigkeit über 2,0 / 3,0 / 4,0 m/s oder einen eigenen Wert von 0,5 bis 12,0 m/s wählbar.
-- Bis zu vier passende Standardabmessungen für Rechteckkanäle beziehungsweise Rundrohre.
-- Bestehende Abmessungen werden erst nach ausdrücklicher Auswahl eines Vorschlags verändert.
-- Aktuelle Geschwindigkeit und Abweichung zum Ziel werden verständlich angezeigt.
-- Breite, Höhe und Durchmesser werden in Editor und Schnellerfassung in **Millimeter** dargestellt; das Rechenmodell bleibt unverändert in Meter.
-- Neue Schnellfunktion **„+ nächste TS mit gleicher Grösse“** übernimmt Luftmenge, Querschnitt, Abmessungen und Rauigkeit, setzt die Länge jedoch bewusst auf 0 m.
-- Alte Projekte mit in Millimeter gespeicherten Abmessungen werden im Assistenten kontrolliert erkannt.
-- 54 automatisierte Phase-49-Prüfungen ergänzt.
-
-## Phase 48.00
-
-- Teilstreckenfelder fachlich neu geordnet.
-- Neue Formteile werden automatisch der zuletzt erstellten Teilstrecke zugeordnet.
-- Die Zuordnung bleibt im Formteileditor manuell änderbar.
+```bash
+npm run test:phase57
+npm run test:phase57:browser
+npm test
+```
 
 ## Bewusst ausgeschlossen
 

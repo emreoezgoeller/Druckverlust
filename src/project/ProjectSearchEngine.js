@@ -1,7 +1,7 @@
 // Druckverlust Pro – Phase 38.00
 // Globale Projektsuche, Projektindex, Querverweise und Sprungmarken.
 
-import ProjectTaskCenterEngine from './ProjectTaskCenterEngine.js?v=38.00&release=46.00';
+import ProjectTaskCenterEngine from './ProjectTaskCenterEngine.js?v=57.00';
 
 const MAX_RECENT_QUERIES = 8;
 const MAX_PINS = 24;

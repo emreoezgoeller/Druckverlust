@@ -1,7 +1,7 @@
 // Druckverlust Pro – KeyboardShortcuts
 // Zentrale Tastaturbedienung für schnelle Projektarbeit.
 
-import RibbonActions from './RibbonActions.js?v=42.00&release=46.00';
+import RibbonActions from './RibbonActions.js?v=57.00';
 
 export default class KeyboardShortcuts {
   constructor(state, options = {}) {

@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.8.0 · Phase 53.00 · PDF- und Berichtsabschluss mit sicherer Mehrseitenaufteilung und automatischer Layoutprüfung.
+**Aktueller Stand:** Version 2.12.0 · Phase 57.00 · interner Release Candidate mit anlagenweiter Schlussprüfung, verlustfreiem `.dvp`-Roundtrip, einheitlicher Cachekennung und vollständiger Regressionstestkette.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -36,8 +36,11 @@ python -m http.server 8000
 - neue Formteile werden automatisch der zuletzt erstellten Teilstrecke zugeordnet und bleiben manuell umstellbar,
 - mehrere Anlagen pro Projekt, Excel-/CSV-/TSV-Schnellerfassung, Projekt-QS und Professional Report,
 - drucksicherer A4-Bericht mit weissem Deckblatt, dezentem Logo-Wasserzeichen, dynamischem Inhaltsverzeichnis und kontrollierten Fortsetzungsseiten,
+- mehrseitiges Anlagenschema mit Vektorsymbolen, F-/S-Referenzen, Bauteil-Zuordnung und automatischer Kollisionsprüfung,
 - automatische Layoutprüfung vor dem Drucken erkennt vertikale oder horizontale Überfüllungen,
 - `.dvp`, `.dvpa` und `.dvph` mit Importprüfung und Prüfsumme,
+- ältere `.dvp`-Dateien werden auf Schema 1.3.0 migriert; vor der Migration wird eine unveränderte `Original-vor-Migration`-Sicherung erstellt,
+- gültige Formteil- und Sonderbauteilzuordnungen bleiben beim Öffnen älterer Projekte erhalten,
 - einzeilige Plattformleiste mit sofortigen Infotexten, Symbol-/Statuslegende und überlaufsicherer Sidebar,
 - Hilfe-Center, Projektverlauf, Revisionen, Aufgaben, Simulation und Übergabeprüfung.
 
@@ -62,9 +65,23 @@ Druckverlust/
 npm test
 ```
 
-Gezielte Prüfung des PDF- und Berichtsabschlusses:
+Gezielter Büro- und Praxistest sowie A4-/Browserausgabe:
 
 ```bash
+npm run test:phase56
+npm run test:phase56:browser
+```
+
+Gezielte Prüfung der Projektdateien und Rückwärtskompatibilität:
+
+```bash
+npm run test:phase55
+```
+
+Gezielte Prüfung des Anlagenschemas und des PDF-Abschlusses:
+
+```bash
+npm run test:phase54
 npm run test:phase53
 ```
 
@@ -87,7 +104,7 @@ Release-Kurzlauf:
 npm run test:release
 ```
 
-Der Release prüft unter anderem die Phase-53-Berichtstests, 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
+Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 Anlagen, 230 Teilstrecken, 360 Formteilen und 58 Sonderbauteilen, die Phase-55-Migrationstests, die Phase-54-Schematests, die Phase-53-Berichtstests, 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
 
 ## Bewusst ausgeschlossen
 

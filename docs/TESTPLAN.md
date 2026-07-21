@@ -1,4 +1,4 @@
-# Testplan – Druckverlust Pro 2.8
+# Testplan – Druckverlust Pro 2.10
 
 ## Automatischer Gesamtlauf
 
@@ -85,3 +85,91 @@ Geprüft werden:
 - Versions-, Cache-, Dokumentations- und Releaseintegration.
 
 Zusätzlich wird ein 43-seitiger Stressbericht in PDF gerendert und anhand repräsentativer Seiten sowie des vollständigen PDF-Texts kontrolliert.
+
+
+## Phase 54.00
+
+Automatischer Lauf:
+
+```bash
+npm run test:phase54
+```
+
+Geprüft werden:
+
+- fortlaufende F-/S-Referenzen für Formteile und Sonderbauteile,
+- einheitliche SVG-Symbole und dynamische Symbollegende,
+- eindeutige Bauteil-Zuordnung je Teilstrecke,
+- adaptive Mehrseitenaufteilung bei langen oder bauteilreichen Anlagen,
+- lückenlose Fortsetzungsbereiche und Abschnittsfortschritt,
+- kontrollierter `+n`-Überlauf bei dichten Symbolgruppen,
+- automatische Kollisionsprüfung für Karten, Symbolbahnen und Randbereiche,
+- Einbindung in Seitenplan, Inhaltsverzeichnis, Standalone-Bericht und Release-Daten.
+
+
+## Phase 55.00
+
+Automatischer Lauf:
+
+```bash
+npm run test:phase55
+```
+
+Geprüft werden:
+
+- aktuelles Schema 1.3.0 und stabiler Roundtrip ohne unnötige Migration,
+- ältere 1.0-/1.1-/1.2-Projektdateien, rohe Projektobjekte und historische Wrapper,
+- deutsche Alt-Feldnamen und Einzelanlagen auf Projektebene,
+- Original-vor-Migration-Sicherung mit unverändertem Quelldateiinhalt,
+- Ergänzung fehlender Rauigkeiten mit 0,15 mm,
+- sichere Behandlung fehlender oder ungültiger SIA-Angaben,
+- Umrechnung historischer Millimeter-Geometrien,
+- Erhalt von Haupt-, Durchgangs-, Abzweig- und Sonderbauteilzuordnungen,
+- kontrolliertes Lösen ungültiger Zuordnungen und Korrigieren doppelter IDs,
+- verständliche Fehler bei leeren, beschädigten, fremden, unvollständigen und zu neuen Dateien,
+- Datei-QS, Versions-, Cache-, Dokumentations- und Releaseintegration.
+
+
+## Phase 56.00
+
+Automatischer Büro- und Praxistest:
+
+```bash
+npm run test:phase56
+```
+
+Geprüft werden:
+
+- kleine, mittlere und grosse Mehranlagenprojekte,
+- insgesamt 7 Anlagen, 230 Teilstrecken, 360 Formteile und 58 Sonderbauteile,
+- gemischte Rechteck-/Rundnetze und unterschiedliche Rauigkeiten,
+- vollständige SIA-Konfiguration und Bewertung jeder Teilstrecke,
+- Grossstrang mit mindestens 100 Teilstrecken und umfangreicher Bauteilkette,
+- unabhängige Handrechnung für Reibung, ζ, Sonderbauteile und Gesamtsumme,
+- Rauigkeitssensitivität, Summenaudit und NaN-/Infinity-Schutz,
+- `.dvp`-Roundtrip mit erneuter Berechnung ohne Abweichung,
+- Berichtmodell, Seitenplan, HTML- und CSV-Vollständigkeit,
+- Performancebudgets für Berechnung, Bericht und Speichern/Öffnen.
+
+A4-/Browserausgabe:
+
+```bash
+npm run test:phase56:browser
+```
+
+Der Test nutzt einen installierten Chrome-, Chromium- oder Edge-Browser. Ist in der Laufzeitumgebung kein headless Browser startfähig, wird die A4-PDF-Ausgabe mit dem verfügbaren Fallback-Renderer erzeugt und die Seitenzahl gegen den Berichtseitenplan geprüft. Für die finale Freigabe bleibt zusätzlich ein manueller Windows-Test in Chrome und Edge vorgesehen.
+
+## Phase 57.00
+
+- zentrale Versions- und Releasekonsistenz 2.12.0 / 57.00,
+- einheitliche Cachekennung aller App-Assets und statisch versionierten Modulimporte,
+- sichtbare und aktive RC-Prüfung im Ribbon,
+- Neuberechnung sämtlicher Anlagen,
+- anlagenweiter Projektcheck und Rechen-QS,
+- Berichtmodell und Seitenplan für alle Anlagen,
+- verlustfreier `.dvp`-Roundtrip mit Ergebnisvergleich,
+- deterministischer Büro-Praxis-Smoketest,
+- RC-Laufzeitbudget für Berechnung, Bericht und Datei,
+- vollständiges RC-Protokoll,
+- vollständige Regressionstestkette,
+- A4-PDF-Prüfung sowie dokumentierter manueller Windows-Chrome-/Edge-Final-Gate.

@@ -219,8 +219,8 @@ check(workspace.includes('data-sia-velocity-field="operationMode"'), 'Betriebsar
 check(workspace.includes('data-system-sia-field="roomUsageCode"'), 'Anlagenmanager enthält die Raumnutzung.');
 check(css.includes('.dp-sia-velocity-panel'), 'SIA-Anlagenpanel ist gestaltet.');
 check(css.includes('.dp-section-sia-card'), 'SIA-Teilstreckenkarten sind gestaltet.');
-check(appHtml.includes('phase51_20.css?v=51.20'), 'Phase-51.20-Stylesheet wird geladen.');
-check(storage.includes('system.siaVelocity = {'), 'Speichermigration normalisiert die SIA-Vorgaben.');
+check(appHtml.includes('phase51_20.css?v=57.00'), 'Phase-51.20-Stylesheet wird geladen.');
+check(storage.includes('system.siaVelocity = normalizeSiaConfig'), 'Speichermigration normalisiert die SIA-Vorgaben.');
 check(reportSource.includes('SIA-Geschwindigkeitsstatus'), 'Bericht weist den SIA-Prüfstatus aus.');
 check(reportSource.includes('report-sia-inline'), 'Teilstreckentabelle zeigt den SIA-Grenzwert direkt bei der Geschwindigkeit.');
 check(reportSource.includes('SIA max v m/s') && reportSource.includes('SIA Faktor'), 'CSV-Export enthält SIA-Grenzwert und Reduktionsfaktor.');

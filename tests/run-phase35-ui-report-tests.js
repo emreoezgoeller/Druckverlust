@@ -4,7 +4,7 @@ import ApplicationState from '../src/app/ApplicationState.js';
 import ProjectCommands from '../src/app/ProjectCommands.js';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ReportEngine from '../src/report/ReportEngine.js?v=38.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
 
 const root = new URL('..', import.meta.url);
 const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
@@ -20,8 +20,8 @@ const version = read('src/core/appVersion.js');
 const report = read('src/report/ReportEngine.js');
 const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
 
-assert.match(appHtml, /phase35_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=53\.00/); checks += 1;
+assert.match(appHtml, /phase35_00\.css\?v=57\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
 assert.match(ribbon, /showProjectCockpit/); checks += 1;
 assert.match(ribbon, /label: 'Cockpit'/); checks += 1;
 assert.match(sidebar, /type: 'projectCockpit'/); checks += 1;
@@ -35,8 +35,8 @@ assert.match(report, /renderProjectCockpitPage/); checks += 1;
 assert.match(report, /Projektweite QS-Matrix/); checks += 1;
 assert.match(deployment, /ProjectPortfolioQualityEngine/); checks += 1;
 assert.match(deployment, /phase35_00\.css/); checks += 1;
-assert.match(version, /APP_RELEASE = '53\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.8\.0'/); checks += 1;
+assert.match(version, /APP_RELEASE = '57\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '2\.12\.0'/); checks += 1;
 
 const project = createDemoProject();
 project.projectNumber = 'P-35';

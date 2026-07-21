@@ -94,7 +94,7 @@ const oldRawProject = {
   }],
 };
 const migrated = StorageEngine.parse(JSON.stringify(oldRawProject), { fileName: 'legacy.dvp' });
-equal(PROJECT_FILE_SCHEMA_VERSION, '1.2.0', 'Projektschema ist 1.2.0.');
+equal(PROJECT_FILE_SCHEMA_VERSION, '1.3.0', 'Projektschema ist 1.3.0.');
 close(migrated.systems[0].sections[0].roughnessMm, 0.15, 1e-12, 'Altprojekt erhält k = 0,15 mm je Teilstrecke.');
 check(!('lambda' in migrated.settings), 'Alter globaler λ-Wert wird nicht mehr als aktive Einstellung geführt.');
 check(!('legacyLambda' in migrated.settings), 'Alter globaler λ-Wert wird auch nicht als versteckte Projekteinstellung gespeichert.');

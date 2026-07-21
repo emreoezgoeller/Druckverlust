@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import EngineeringQualityEngine from '../src/quality/EngineeringQualityEngine.js?v=37.00';
-import ProjectStandardizationEngine from '../src/project/ProjectStandardizationEngine.js?v=37.00';
+import EngineeringQualityEngine from '../src/quality/EngineeringQualityEngine.js?v=57.00';
+import ProjectStandardizationEngine from '../src/project/ProjectStandardizationEngine.js?v=57.00';
 import StorageEngine from '../src/storage/StorageEngine.js';
-import ReportEngine from '../src/report/ReportEngine.js?v=37.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
 
 let checks = 0;
 const project = createDemoProject();

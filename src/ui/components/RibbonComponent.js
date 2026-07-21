@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 51.00: einzeilige Plattformleiste mit Sofort-Infotexten und Symbollegende.
 
-import RibbonActions from '../core/RibbonActions.js?v=51.20&release=53.00';
+import RibbonActions from '../core/RibbonActions.js?v=57.00';
 
 const RIBBON_GROUPS = [
   {
@@ -53,6 +53,7 @@ const RIBBON_GROUPS = [
       { action: 'showReport', label: 'Bericht', icon: 'report', title: 'Bericht und Druckansicht öffnen (Strg+B)', emphasis: 'report' },
       { action: 'showProjectCompletion', label: 'Abschluss', icon: 'clipboardCheck', title: 'Varianten, Revision und Projektabschluss prüfen' },
       { action: 'showProjectHandover', label: 'Übergabe', icon: 'package', title: 'Importkontrolle, Freigabestatus und Übergabepaket öffnen' },
+      { action: 'releaseCandidateCheck', label: 'RC-Prüfung', icon: 'shieldCheck', title: 'Technische Schlussprüfung für den Release Candidate ausführen' },
     ],
   },
   {
@@ -323,6 +324,7 @@ export default class RibbonComponent {
     const completionButton = this.root.querySelector('[data-action="showProjectCompletion"]');
     const safetyButton = this.root.querySelector('[data-action="showProjectSafety"]');
     const handoverButton = this.root.querySelector('[data-action="showProjectHandover"]');
+    const releaseCandidateButton = this.root.querySelector('[data-action="releaseCandidateCheck"]');
     const contextText = this.root.querySelector('[data-ribbon-context-text]');
 
     const hasUnsavedChanges = Boolean(this.state.isProjectDirty);
@@ -384,6 +386,9 @@ export default class RibbonComponent {
     } else if (selectionType === 'projectHandover') {
       handoverButton?.classList.add('is-current');
       handoverButton?.setAttribute('aria-current', 'page');
+    } else if (selectionType === 'releaseCandidateCheck') {
+      releaseCandidateButton?.classList.add('is-current');
+      releaseCandidateButton?.setAttribute('aria-current', 'page');
     } else if (selectionType === 'projectSafety') {
       safetyButton?.classList.add('is-current');
       safetyButton?.setAttribute('aria-current', 'page');

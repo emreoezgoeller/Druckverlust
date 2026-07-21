@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import ApplicationState from '../src/app/ApplicationState.js';
 import ProjectCommands from '../src/app/ProjectCommands.js';
 import createDemoProject from '../src/project/demoProject.js';
-import ProjectPortfolioQualityEngine from '../src/project/ProjectPortfolioQualityEngine.js?v=37.00';
+import ProjectPortfolioQualityEngine from '../src/project/ProjectPortfolioQualityEngine.js?v=57.00';
 import StorageEngine from '../src/storage/StorageEngine.js';
 
 let checks = 0;

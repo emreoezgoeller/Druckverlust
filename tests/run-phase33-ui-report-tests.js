@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ProjectCompletionEngine from '../src/closing/ProjectCompletionEngine.js?v=34.00';
-import ProjectHandoverEngine from '../src/handover/ProjectHandoverEngine.js?v=34.00';
-import ReportEngine from '../src/report/ReportEngine.js?v=34.00';
+import ProjectCompletionEngine from '../src/closing/ProjectCompletionEngine.js?v=57.00';
+import ProjectHandoverEngine from '../src/handover/ProjectHandoverEngine.js?v=57.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
 
 const root = new URL('..', import.meta.url);
 const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
@@ -16,8 +16,8 @@ const workspaceSource = read('src/ui/components/WorkspaceComponent.js');
 const css = read('src/ui/phase33_00.css');
 const deploymentSource = read('src/diagnostics/DeploymentDiagnostics.js');
 
-assert.match(appHtml, /phase33_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=53\.00/); checks += 1;
+assert.match(appHtml, /phase33_00\.css\?v=57\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
 assert.match(ribbonSource, /showProjectHandover/); checks += 1;
 assert.match(ribbonSource, /label: 'Übergabe'/); checks += 1;
 assert.match(workspaceSource, /renderProjectHandover/); checks += 1;

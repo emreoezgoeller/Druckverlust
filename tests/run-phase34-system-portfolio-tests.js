@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import ApplicationState from '../src/app/ApplicationState.js';
 import ProjectCommands from '../src/app/ProjectCommands.js';
 import createDemoProject from '../src/project/demoProject.js';
-import SystemPortfolioEngine from '../src/project/SystemPortfolioEngine.js?v=34.00';
+import SystemPortfolioEngine from '../src/project/SystemPortfolioEngine.js?v=57.00';
 import StorageEngine from '../src/storage/StorageEngine.js';
 import WorkspaceComponent from '../src/ui/components/WorkspaceComponent.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ProjectHandoverEngine from '../src/handover/ProjectHandoverEngine.js?v=34.00';
+import ProjectHandoverEngine from '../src/handover/ProjectHandoverEngine.js?v=57.00';
 
 let checks = 0;
 const project = createDemoProject();

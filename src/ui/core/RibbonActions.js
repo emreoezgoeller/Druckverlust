@@ -1,21 +1,21 @@
 // Druckverlust Pro – RibbonActions
 // Zentrale Befehle für die Ribbon-Oberfläche.
 
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=53.00';
-import StorageEngine from '../../storage/StorageEngine.js';
+import ProjectCommands from '../../app/ProjectCommands.js?v=57.00';
+import StorageEngine from '../../storage/StorageEngine.js?v=57.00';
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=42.00&release=46.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=57.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
-import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=46.00';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=51.20&release=53.00';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=57.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=57.00';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=57.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=42.00&release=46.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=46.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=42.00&release=46.00';
+import UiDialogService from './UiDialogService.js?v=57.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=57.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=57.00';
 
 export default class RibbonActions {
   constructor(state) {
@@ -109,8 +109,13 @@ export default class RibbonActions {
       }
 
       try {
-        const project = await StorageEngine.openFile(file);
-        const importWarnings = project?._importInfo?.normalizedWarnings || project?._importInfo?.warnings || [];
+        const project = await StorageEngine.openFile(file, {
+          onBeforeMigration: backup => {
+            StorageEngine.downloadText(backup.text, backup.fileName);
+          },
+        });
+        const importInfo = project?._importInfo || {};
+        const importWarnings = importInfo.normalizedWarnings || importInfo.warnings || [];
 
         this.createSafetyBackup('Vor Öffnen einer Projektdatei', 'before-open-project');
         this.state.setProject(project);
@@ -119,20 +124,36 @@ export default class RibbonActions {
         this.state.markProjectClean();
         AutoSaveEngine.clear();
 
-        if (importWarnings.length) {
+        if (importInfo.migrationRequired || importWarnings.length) {
+          const stats = importInfo.migrationStats || {};
           UiDialogService.alert([
-            'Projekt wurde geöffnet und automatisch bereinigt.',
+            importInfo.migrationRequired
+              ? 'Ältere Projektdatei wurde kontrolliert migriert.'
+              : 'Projekt wurde geöffnet und automatisch geprüft.',
             '',
-            ...importWarnings.slice(0, 6).map(item => `• ${item}`),
-            importWarnings.length > 6 ? `• … ${importWarnings.length - 6} weitere Hinweise` : '',
+            importInfo.migrationRequired
+              ? `Schema: ${importInfo.sourceSchemaVersion || 'älter'} → ${importInfo.targetSchemaVersion || importInfo.schemaVersion || '-'}`
+              : '',
+            importInfo.backupCreated && importInfo.backupFileName
+              ? `Original-vor-Migration-Sicherung: ${importInfo.backupFileName}`
+              : '',
+            Number(stats.preservedAssignments || 0) > 0
+              ? `Erhaltene Bauteilzuordnungen: ${stats.preservedAssignments}`
+              : '',
+            Number(stats.clearedAssignments || 0) > 0
+              ? `Zu prüfende gelöste Zuordnungen: ${stats.clearedAssignments}`
+              : '',
+            importWarnings.length ? '' : '',
+            ...importWarnings.slice(0, 8).map(item => `• ${item}`),
+            importWarnings.length > 8 ? `• … ${importWarnings.length - 8} weitere Hinweise` : '',
             '',
-            'Tipp: Einmal speichern, damit die Datei im neuen stabilen Format abgelegt wird.',
+            'Bitte Projekt kontrollieren und einmal speichern, damit es im aktuellen stabilen Format abgelegt wird.',
           ].filter(Boolean).join('\n'));
         }
 
         console.info('RibbonAction: Projekt geöffnet', project);
       } catch (error) {
-        UiDialogService.alert(`Projekt konnte nicht geöffnet werden: ${error.message}`);
+        UiDialogService.alert(`Projekt konnte nicht geöffnet werden:\n\n${typeof error?.toUserMessage === 'function' ? error.toUserMessage() : error.message}`);
       }
     });
 

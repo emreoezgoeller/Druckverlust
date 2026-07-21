@@ -1,11 +1,11 @@
 // Druckverlust Pro – ProjectCommands
 // Zentrale Projektbefehle für UI, Ribbon und spätere Dialoge.
 
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.20&release=53.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=57.00';
 import {
   moveFormPartWithinSection as moveFormPartWithinSectionInCollection,
   resolveFormPartContextSection,
-} from '../formteile/FormPartWorkflowEngine.js?v=50.00&release=53.00';
+} from '../formteile/FormPartWorkflowEngine.js?v=57.00';
 import createDefaultProject from '../project/defaultProject.js';
 
 

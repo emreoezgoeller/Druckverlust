@@ -1,22 +1,22 @@
 # Datenmodell – Druckverlust Pro
 
-Stand: `.dvp`-Schema 1.2.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · Anwendung 2.1.0 · Phase 46.00
+Stand: `.dvp`-Schema 1.3.0 · `.dvpa`-Schema 1.0.0 · `.dvph`-Schema 1.0.0 · Anwendung 2.12.0 · Phase 57.00
 
 ## 1. Dateihülle
 
 ```json
 {
   "fileType": "DruckverlustPro",
-  "schemaVersion": "1.2.0",
-  "appVersion": "2.1.0",
-  "appRelease": "46.00",
+  "schemaVersion": "1.3.0",
+  "appVersion": "2.12.0",
+  "appRelease": "57.00",
   "exportedAt": "2026-07-15T08:00:00.000Z",
   "summary": {},
   "project": {}
 }
 ```
 
-`StorageEngine` akzeptiert zusätzlich ältere rohe Projektobjekte und normalisiert sie beim Öffnen.
+`StorageEngine` akzeptiert zusätzlich ältere rohe Projektobjekte und Hüllen. Vor einer notwendigen Migration wird eine unveränderte Originalsicherung erzeugt; anschliessend normalisiert `ProjectMigrationEngine` das Projekt auf Schema 1.3.0.
 
 ## 2. Projekt
 
@@ -226,8 +226,8 @@ Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erz
 {
   "fileType": "DruckverlustProArchive",
   "schemaVersion": "1.0.0",
-  "appVersion": "2.1.0",
-  "appRelease": "46.00",
+  "appVersion": "2.12.0",
+  "appRelease": "57.00",
   "createdAt": "2026-07-16T10:30:00.000Z",
   "label": "Projektpaket für Übergabe",
   "note": "Optionaler Hinweis",
@@ -238,7 +238,7 @@ Sie sind flüchtig und werden nach dem Öffnen neu berechnet beziehungsweise erz
   "checksum": "a1b2c3d4",
   "projectFile": {
     "fileType": "DruckverlustPro",
-    "schemaVersion": "1.2.0",
+    "schemaVersion": "1.3.0",
     "project": {}
   },
   "diagnostics": {
@@ -316,8 +316,8 @@ Zulässige Statuswerte sind `draft`, `prepared`, `checked` und `released`. Die f
 {
   "fileType": "DruckverlustProHandover",
   "schemaVersion": "1.0.0",
-  "appVersion": "2.1.0",
-  "appRelease": "46.00",
+  "appVersion": "2.12.0",
+  "appRelease": "57.00",
   "status": "released",
   "projectName": "2026-001",
   "systemId": "system-1",

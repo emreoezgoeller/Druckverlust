@@ -1,16 +1,16 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=53.00&release=53.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=57.00';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00&release=46.00';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00&release=46.00';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=37.00&release=46.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=37.00&release=46.00';
-import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=37.00&release=46.00';
-import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=37.00&release=46.00';
-import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=37.00&release=46.00';
-import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00&release=46.00';
-import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00&release=46.00';
-import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
-import { analyzeSystemVelocityCompliance } from '../standards/SiaVelocityCompliance.js?v=51.20';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=57.00';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=57.00';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=57.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=57.00';
+import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=57.00';
+import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=57.00';
+import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=57.00';
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=57.00';
+import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=57.00';
+import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=57.00';
+import { analyzeSystemVelocityCompliance } from '../standards/SiaVelocityCompliance.js?v=57.00';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -1315,7 +1315,8 @@ export class ReportEngine {
       ? paginateItems(qualityIssues, { firstPageSize: QUALITY_FIRST_PAGE_ROWS, pageSize: QUALITY_CONTINUATION_ROWS }).length
       : 0;
     const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
-    const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / ReportSchematicRenderer.nodesPerPage)) : 0;
+    const schematicPages = ReportSchematicRenderer.paginate(model.networkSchematic || {});
+    const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, schematicPages.length) : 0;
     const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
     const revisionPageCount = reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy ? 1 : 0;
     const variantPageCount = reportOptions.includeVariantComparison && model.variantComparison ? 1 : 0;
@@ -1782,16 +1783,19 @@ export class ReportEngine {
 
   static renderNetworkSchematicPages(model, nextPage, totalPages) {
     const nodes = model.networkSchematic?.nodes || [];
-    const chunks = ReportSchematicRenderer.chunk(nodes);
+    const pages = ReportSchematicRenderer.paginate(model.networkSchematic || {});
+    const attachmentIndex = ReportSchematicRenderer.createAttachmentIndex(model.networkSchematic || {});
 
-    return chunks.map((chunk, chunkIndex) => {
-      const startPosition = chunkIndex * ReportSchematicRenderer.nodesPerPage;
+    return pages.map((pageData, chunkIndex) => {
+      const chunk = pageData.nodes;
+      const startPosition = pageData.startPosition;
       const summary = model.networkSchematic?.summary || {};
       const content = `
         ${ReportSchematicRenderer.render(model.networkSchematic, chunk, {
           chunkIndex,
-          chunkCount: chunks.length,
+          chunkCount: pages.length,
           startPosition,
+          attachmentIndex,
         })}
         <div class="report-schematic-summary is-five-columns">
           <div><span>Gesamtdruckverlust</span><strong>${formatNumber(model.totals.total, 1)} Pa</strong></div>
@@ -1800,23 +1804,24 @@ export class ReportEngine {
           <div><span>Formteile</span><strong>${model.counts.formParts}</strong></div>
           <div><span>Sonderbauteile</span><strong>${model.counts.specialComponents}</strong></div>
         </div>
-        <p class="report-schematic-disclaimer">Automatisch erzeugtes, herstellerneutrales Funktionsschema auf Basis der Teilstreckenreihenfolge. Kanalhöhen und Übergänge werden schematisch dargestellt; die Ausgabe ist keine massstäbliche CAD- oder Montagezeichnung.</p>
+        <p class="report-schematic-disclaimer">Automatisch erzeugtes, herstellerneutrales Funktionsschema auf Basis der Teilstreckenreihenfolge. Kanalhöhen und Übergänge werden schematisch dargestellt; F- und S-Referenzen verbinden die Symbole eindeutig mit der Bauteil-Zuordnung und Querschnittswechsel sind mit Ü markiert. Die Ausgabe ist keine massstäbliche CAD- oder Montagezeichnung.</p>
       `;
       const title = chunkIndex ? 'Anlagenschema - Fortsetzung' : 'Anlagenschema';
       const rangeStart = startPosition + 1;
       const rangeEnd = startPosition + chunk.length;
-      const subtitle = chunks.length > 1
-        ? `Anlagenabschnitt ${chunkIndex + 1} von ${chunks.length} · Teilstrecken ${rangeStart}-${rangeEnd} von ${nodes.length}`
-        : 'Herstellerneutrale Funktionsdarstellung mit Kanalzügen, Übergängen und Bauteilzuordnung';
+      const subtitle = pages.length > 1
+        ? `Anlagenabschnitt ${chunkIndex + 1} von ${pages.length} · Teilstrecken ${rangeStart}-${rangeEnd} von ${nodes.length}`
+        : 'Herstellerneutrale Funktionsdarstellung mit eindeutiger Teilstrecken- und Bauteilzuordnung';
       return this.renderPage(model, nextPage(), title, subtitle, content, totalPages);
     });
   }
 
-  static renderReportSchematicSvg(model, nodes = [], chunkIndex = 0, chunkCount = 1) {
+  static renderReportSchematicSvg(model, nodes = [], chunkIndex = 0, chunkCount = 1, startPosition = null) {
     return ReportSchematicRenderer.render(model.networkSchematic || {}, nodes, {
       chunkIndex,
       chunkCount,
-      startPosition: chunkIndex * ReportSchematicRenderer.nodesPerPage,
+      startPosition: startPosition ?? chunkIndex * ReportSchematicRenderer.nodesPerPage,
+      attachmentIndex: ReportSchematicRenderer.createAttachmentIndex(model.networkSchematic || {}),
     });
   }
 
@@ -2901,7 +2906,7 @@ export class ReportEngine {
       .report-executive-kpis span{font-size:8px;color:var(--report-muted);font-weight:900;text-transform:uppercase}.report-executive-kpis strong{font-size:17px;color:var(--report-blue);line-height:1.08}.report-executive-kpis small{font-size:8px;color:#536a83;line-height:1.25}
       .report-executive-score.ok{background:#f2fbf5;border-color:#bde5ce}.report-executive-score.warn{background:#fff8ed;border-color:#f2c282}.report-executive-score.error{background:#fff4f4;border-color:#efb7b7}
       .report-executive-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.report-executive-grid .report-info-box{margin-top:0;min-height:82mm}.report-executive-priority ol{margin:0;padding-left:18px}.report-executive-priority li{margin:0 0 9px}.report-executive-priority li strong,.report-executive-priority li span{display:block}.report-executive-priority li strong{color:#123b64;font-size:9.2px}.report-executive-priority li span{color:#52677e;font-size:8.4px;line-height:1.35;margin-top:2px}.report-top-loss-table td{font-size:8px}.report-executive-note{margin-top:10px;padding:9px 12px}
-      .report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node rect{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-title{font-size:8.6px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.7px;fill:#425b74}.report-schematic-node-line.strong{font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2}.report-schematic-formpart{fill:#e28a0c}.report-schematic-special{fill:#6e55ad}.report-schematic-count{font-size:6.3px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6.2px;fill:#536a83}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:7px 9px}.report-schematic-summary span{display:block;font-size:7px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:11px;color:var(--report-blue);margin-top:3px;white-space:nowrap}.report-schematic-disclaimer{font-size:7.7px;color:#5c6f87;margin:8px 0 0;line-height:1.35}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
+      .report-schematic-page-block{display:flex;flex-direction:column;gap:6px}.report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-grid-pattern{stroke:none}.report-schematic-grid-pattern+*{}.report-schematic-svg defs pattern path{fill:none;stroke:#edf3f8;stroke-width:1}.report-schematic-svg marker path{fill:#315b7d}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node>rect:first-child{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-position{font-size:5.4px;font-weight:900;fill:#698198;letter-spacing:.05em}.report-schematic-node-title{font-size:7.8px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.4px;fill:#425b74}.report-schematic-node-line.strong{font-size:6.8px;font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-progress rect{fill:#dfe8f0}.report-schematic-progress rect.is-active{fill:#0b6cae}.report-schematic-transition-marker path{fill:#fff;stroke:#0b6cae;stroke-width:1}.report-schematic-transition-marker text{font-size:5.8px;font-weight:900;fill:#0b6cae}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2;fill:none}.report-schematic-attachment-line.is-formpart{stroke:#d58a18}.report-schematic-attachment-line.is-special{stroke:#765eb0}.report-schematic-attachment-symbol circle{stroke-width:1.2}.report-schematic-attachment-symbol.is-formpart circle{fill:#fff8e8;stroke:#d8870c}.report-schematic-attachment-symbol.is-special circle{fill:#f6f1ff;stroke:#6e55ad}.report-schematic-symbol{fill:none;stroke:#294b69;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.report-schematic-attachment-symbol text{font-size:5.1px;font-weight:900;fill:#425b74}.report-schematic-attachment-overflow circle{stroke-width:1}.report-schematic-attachment-overflow.is-formpart circle{fill:#e28a0c;stroke:#c97700}.report-schematic-attachment-overflow.is-special circle{fill:#6e55ad;stroke:#584091}.report-schematic-attachment-overflow text{font-size:5.2px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6px;fill:#536a83}.report-schematic-assignment-block{border:1px solid var(--report-line);border-radius:7px;overflow:hidden;background:#fff}.report-schematic-assignment-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 7px;background:#f2f7fb;border-bottom:1px solid var(--report-line)}.report-schematic-assignment-heading strong{font-size:7.2px;color:var(--report-blue);text-transform:uppercase;letter-spacing:.04em}.report-schematic-assignment-heading span{font-size:6.2px;color:var(--report-muted)}.report-schematic-assignment-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6px}.report-schematic-assignment-table th{padding:3px 5px;background:#f8fbfd;color:#496078;text-align:left;border-bottom:1px solid var(--report-line);font-size:5.8px;text-transform:uppercase}.report-schematic-assignment-table th:first-child{width:22%}.report-schematic-assignment-table th:nth-child(2),.report-schematic-assignment-table th:nth-child(3){width:39%}.report-schematic-assignment-table td{padding:3px 5px;vertical-align:top;border-bottom:1px solid #e8eef4}.report-schematic-assignment-table tr:last-child td{border-bottom:none}.report-schematic-assignment-table td:first-child strong,.report-schematic-assignment-table td:first-child span,.report-schematic-assignment-table td:first-child small{display:block}.report-schematic-assignment-table td:first-child strong{font-size:6.5px;color:#073f7a}.report-schematic-assignment-table td:first-child span{font-weight:800;color:#334f69}.report-schematic-assignment-table td:first-child small{color:#71859a}.report-schematic-assignment-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:baseline;gap:3px;margin-bottom:1px}.report-schematic-assignment-item:last-child{margin-bottom:0}.report-schematic-assignment-item b{padding:1px 2px;border-radius:3px;text-align:center;font-size:5.5px}.report-schematic-assignment-item.is-formpart b{background:#fff0d6;color:#9b5900}.report-schematic-assignment-item.is-special b{background:#eee8fb;color:#584091}.report-schematic-assignment-item em{font-style:normal;font-weight:750;color:#314b64;overflow-wrap:anywhere}.report-schematic-assignment-item small{color:#71859a;white-space:nowrap}.report-schematic-assignment-more,.report-schematic-empty-assignment{font-size:5.7px;color:#71859a;font-weight:800}.report-schematic-symbol-legend{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;border:1px solid var(--report-line);border-radius:6px;padding:4px 7px;background:#f9fbfd}.report-schematic-symbol-legend>strong{font-size:6.5px;color:#334f69;text-transform:uppercase}.report-schematic-symbol-legend>div{display:flex;flex-wrap:wrap;gap:4px 10px}.report-schematic-symbol-legend>div span{display:inline-flex;align-items:center;gap:3px;font-size:5.6px;color:#536a83}.report-schematic-symbol-legend svg{width:15px;height:15px}.report-schematic-symbol-legend small{display:flex;align-items:center;gap:4px;font-size:5.6px;color:#536a83;white-space:nowrap}.report-schematic-symbol-legend small i{width:7px;height:7px;border-radius:2px;display:inline-block}.report-schematic-symbol-legend small i.is-formpart{background:#e28a0c}.report-schematic-symbol-legend small i.is-special{background:#6e55ad}.report-schematic-layout-warning{margin:0;padding:4px 7px;border:1px solid #f2c979;border-radius:5px;background:#fff8e6;color:#845800;font-size:6.2px;font-weight:800}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:6px 8px}.report-schematic-summary span{display:block;font-size:6.5px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:10px;color:var(--report-blue);margin-top:2px;white-space:nowrap}.report-schematic-disclaimer{font-size:6.8px;color:#5c6f87;margin:4px 0 0;line-height:1.3}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
       .report-loss-analysis-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.report-loss-analysis-grid .report-info-box{margin-top:0;min-height:56mm}.report-chart-row{margin:0 0 10px}.report-chart-row>div{display:flex;justify-content:space-between;gap:10px;font-size:8.5px}.report-chart-row>div span{color:#536a83}.report-chart-row i{display:block;height:8px;background:#e8eff7;border-radius:999px;overflow:hidden;margin-top:4px}.report-chart-row i b{display:block;height:100%;background:linear-gradient(90deg,#0b559c,#45a2d8);border-radius:999px}.report-section-ranking{margin-top:12px}.report-ranking-row{display:grid;grid-template-columns:18px 38mm 1fr 20mm;align-items:center;gap:7px;margin:7px 0;font-size:8.6px}.report-ranking-row>span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf2fb;color:#073f7a;font-weight:900}.report-ranking-row>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-ranking-row i{height:7px;background:#e8eff7;border-radius:999px;overflow:hidden}.report-ranking-row i b{display:block;height:100%;background:#0b6cae;border-radius:999px}.report-ranking-row em{font-style:normal;text-align:right;font-weight:900;color:#073f7a}
       .report-engineering-overview{display:grid;grid-template-columns:38mm 1fr;gap:14px;margin-bottom:12px}.report-engineering-score{border:1px solid #b9d8ee;border-radius:9px;background:linear-gradient(135deg,#edf7ff,#f8fbff);padding:10px;display:flex;flex-direction:column;justify-content:center}.report-engineering-score span{font-size:7.8px;text-transform:uppercase;color:#536a83;font-weight:900}.report-engineering-score strong{font-size:34px;line-height:1;color:#073f7a}.report-engineering-score small{font-size:8px;color:#536a83;margin-top:3px}.report-engineering-overview>div:last-child{border:1px solid var(--report-line);border-radius:9px;padding:10px;background:#fbfdff}.report-engineering-table th:nth-child(1){width:18mm}.report-engineering-table th:nth-child(2){width:25mm}.report-engineering-table th:nth-child(3){width:66mm}.report-engineering-table td{font-size:7.6px;line-height:1.25}.report-engineering-table td span{color:#536a83}.report-engineering-table .engineering-critical td:first-child{color:#a52828;font-weight:900}.report-engineering-table .engineering-warning td:first-child{color:#9a5a00;font-weight:900}.report-engineering-disclaimer{font-size:8px;color:#5c6f87;margin:10px 0 0;font-style:italic}
       @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary,.report-revision-compare-head,.report-revision-summary-grid,.report-review-checks{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}

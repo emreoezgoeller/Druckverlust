@@ -113,7 +113,7 @@ check(workspace.includes('Ohne Klick auf einen Abmessungsvorschlag werden keine 
 check(workspace.includes('+ nächste TS mit gleicher Grösse'), 'Schnellfunktion für die folgende Teilstrecke ist vorhanden.');
 check(workspace.includes('data-field-unit="mm"') && workspace.includes("numericValue / 1000"), 'Geometriefelder zeigen Millimeter und speichern weiterhin Meter.');
 check(workspace.includes('<th>Breite<br>[mm]</th>') && workspace.includes('<th>Ø<br>[mm]</th>'), 'Schnellerfassung verwendet ebenfalls Millimeter.');
-check(appHtml.includes('phase49_00.css?v=49.00&release=53.00'), 'Phase-49-Stylesheet wird cache-sicher geladen.');
+check(appHtml.includes('phase49_00.css?v=57.00'), 'Phase-49-Stylesheet wird cache-sicher geladen.');
 check(css.includes('@media (max-width: 820px)') && css.includes('grid-template-columns: 1fr'), 'Assistent besitzt eine robuste mobile Darstellung.');
 
 console.log(`Phase 49.00 vereinfachte Teilstreckenerfassung: ${checks} Prüfungen bestanden.`);

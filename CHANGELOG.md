@@ -1,4 +1,61 @@
-# Changelog – Druckverlust Pro
+# Changelog
+
+## 2.12.0 – Phase 57.00 – 21.07.2026
+
+- Sichtbare Ribbon-Aktion **RC-Prüfung** ergänzt und aktive RC-Seite im Ribbon markiert.
+- Release-Candidate-Diagnostik vollständig auf Phase 57 überarbeitet.
+- Alle Anlagen werden neu berechnet; Projektcheck und Rechen-QS werden anlagenweise zusammengeführt.
+- Berichtmodell und Seitenplan werden für jede Anlage geprüft.
+- Echter `.dvp`-Roundtrip mit Speichern, Öffnen und Ergebnisvergleich ergänzt.
+- Deterministischer Büro-Praxis-Smoketest und konservatives RC-Zeitbudget ergänzt.
+- Vollständigkeit der SIA-Raumnutzung und Betriebsart wird projektweit geprüft.
+- RC-Protokoll um Version, Dateischema, Projektumfang, Berichtseiten und Laufzeiten erweitert.
+- Statische Modulimporte und App-Assets auf die einheitliche Cachekennung `57.00` gebracht.
+- Widersprüchliche parallele `release`-Querystrings aus Runtime-Quellen und App-Einstieg entfernt.
+- Version auf 2.12.0 und Release auf Phase 57.00 aktualisiert.
+- Vollständige Phase-57-, Syntax-, PDF-, Patch- und Regressionstests ergänzt.
+
+## 2.11.0 – Phase 56.00 – 21.07.2026
+
+- Drei deterministische Büro- und Praxisprojekte für kleine, mittlere und grosse Lüftungsnetze ergänzt.
+- Insgesamt 7 Anlagen, 230 Teilstrecken, 360 Formteile und 58 Sonderbauteile automatisiert geprüft.
+- Grossprojekt mit 108 Teilstrecken im kritischen Strang sowie umfangreicher Bauteilkette getestet.
+- Gemischte Rechteck-/Rundnetze, unterschiedliche Rauigkeiten und vollständige SIA-Geschwindigkeitskonfigurationen geprüft.
+- Unabhängige Handreferenz für Reibungs-, ζ-, Sonderbauteil- und Gesamtdruckverlust ergänzt.
+- Rauigkeitssensitivität zwischen k = 0,09 mm und k = 0,30 mm abgesichert.
+- Speicher-Roundtrip aller Praxisprojekte inklusive erneuter Berechnung ohne Ergebnisabweichung geprüft.
+- Berichtmodell, CSV-Ausgabe, Seitenplan und letzte Datensätze für 123 geplante Berichtseiten validiert.
+- 30-seitige A4-PDF-Ausgabe erzeugt, gerendert und visuell geprüft.
+- Optionalen Headless-Test für Chrome, Chromium und Microsoft Edge mit A4-PDF-Seitenvergleich ergänzt.
+- Version auf 2.11.0 und Release auf Phase 56.00 aktualisiert.
+
+## 2.10.0 – Phase 55.00 – 21.07.2026
+
+- Projektdateischema auf `1.3.0` angehoben und zentrale Migrationslogik ergänzt.
+- Ältere umhüllte `.dvp`-Dateien, rohe Projektobjekte, historische Wrapper sowie deutsche Feldbezeichnungen werden kontrolliert erkannt.
+- Vor jeder notwendigen Migration wird der unveränderte Originalinhalt als `*_Original-vor-Migration.dvp` gesichert.
+- Fehlende Rauigkeit wird je Teilstrecke mit 0,15 mm ergänzt; historische Millimeter-Geometrien werden sicher in das interne Meter-Modell überführt.
+- Fehlende SIA-Raumnutzung und Betriebsart werden nicht geraten; die Geschwindigkeitsprüfung bleibt bis zur bewussten Auswahl nicht konfiguriert.
+- Gültige Formteil-, Durchgangs-, Abzweig- und Sonderbauteilzuordnungen bleiben anhand ihrer IDs erhalten.
+- Ungültige Zuordnungen, doppelte IDs und unbekannte SIA-Werte werden kontrolliert korrigiert und im Öffnungsprotokoll ausgewiesen.
+- Strukturierte, verständliche Fehler für leere, beschädigte, fremde, unvollständige und mit einem neueren Schema erstellte Dateien ergänzt.
+- Datei-QS zeigt Quell-/Zielschema, Originalsicherung und Migrationsstatistik.
+- Verlustfreien Speichern-/Öffnen-Roundtrip migrierter Projekte und eigene Phase-55-Regressionstests ergänzt.
+- Version auf 2.10.0 und Release auf Phase 55.00 aktualisiert.
+
+## 2.9.0 – Phase 54.00 – 21.07.2026
+
+- Anlagenschema im Professional Report vollständig überarbeitet.
+- Einheitliche Vektorsymbole für Bogen, Übergang, Abzweig, Versatz, Sattel, Filter, Schalldämpfer, Klappe, Register, Auslass und neutrale Komponenten ergänzt.
+- Formteile erhalten fortlaufende Referenzen `F01`, `F02` usw.; Sonderbauteile `S01`, `S02` usw.
+- Jede Schemaseite enthält eine eindeutige Bauteil-Zuordnung je Teilstrecke mit Referenz, Bezeichnung und ζ- beziehungsweise Druckverlustwert.
+- Lange oder bauteilreiche Anlagen werden adaptiv in lesbare Anlagenabschnitte aufgeteilt; maximal fünf Teilstrecken je Seite bleiben die harte Obergrenze.
+- Fortsetzungsseiten besitzen Abschnittsfortschritt, eindeutige Start-/Endhinweise und lückenlose Teilstreckenbereiche.
+- Querschnitts- und Geometriewechsel werden direkt im Kanalzug mit `Ü` gekennzeichnet.
+- Symbolgruppen werden ober- und unterhalb der Teilstreckenkarten kollisionsgeschützt angeordnet; weitere Bauteile erscheinen als kontrollierter `+n`-Hinweis.
+- Lange Teilstreckenbezeichnungen werden im Schema gekürzt und in der Zuordnungstabelle nachvollziehbar fortgeführt.
+- Automatische Layoutprüfung für Karten, Symbolgruppen, Fortsetzungen und Zeichenflächen ergänzt.
+- Version auf 2.9.0 und Release auf Phase 54.00 aktualisiert.
 
 ## 2.8.0 – Phase 53.00
 

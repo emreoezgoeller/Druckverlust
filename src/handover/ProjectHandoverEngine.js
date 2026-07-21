@@ -3,9 +3,9 @@
 
 import StorageEngine, { PROJECT_FILE_TYPE } from '../storage/StorageEngine.js';
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
-import ProjectSafetyEngine, { PROJECT_ARCHIVE_FILE_TYPE } from '../safety/ProjectSafetyEngine.js?v=33.00&release=46.00';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=33.00&release=46.00';
-import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=40.00&release=46.00';
+import ProjectSafetyEngine, { PROJECT_ARCHIVE_FILE_TYPE } from '../safety/ProjectSafetyEngine.js?v=57.00';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=57.00';
+import { APP_NAME, APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=57.00';
 
 export const HANDOVER_FILE_TYPE = 'DruckverlustProHandover';
 export const HANDOVER_SCHEMA_VERSION = '1.0.0';
@@ -487,7 +487,19 @@ export default class ProjectHandoverEngine {
     const system = getSystem(project, options.systemId || sourceMeta.systemId);
     const calculationResult = ProjectCalculationService.calculate(project, system?.id || null);
     project.calculationResult = calculationResult;
-    const analysis = this.analyze(project, system?.id, { isProjectDirty: false, storage: options.storage });
+    const liveAnalysis = this.analyze(project, system?.id, { isProjectDirty: false, storage: options.storage });
+    const preservedReleasedPackage = sourceType === 'handover'
+      && sourceMeta.status === 'released'
+      && sourceMeta.approval?.status === 'released';
+    const analysis = preservedReleasedPackage
+      ? {
+        ...liveAnalysis,
+        status: 'released',
+        label: 'Freigegeben',
+        packageStatusPreserved: true,
+        packageStatusMessage: 'Der geprüfte Freigabestatus stammt aus dem unveränderten Übergabepaket.',
+      }
+      : liveAnalysis;
     const incomingCounts = countObjects(project);
     const currentProject = options.currentProject || null;
     const currentCounts = currentProject ? countObjects(currentProject) : null;

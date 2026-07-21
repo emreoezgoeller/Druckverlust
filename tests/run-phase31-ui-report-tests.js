@@ -68,10 +68,10 @@ match(csv, /Manuelles Pruefprotokoll/, 'Gesamt-CSV enthält das manuelle Prüfpr
 const appHtml = readFileSync(new URL('../app.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/ui/phase31_00.css', import.meta.url), 'utf8');
 const version = readFileSync(new URL('../src/core/appVersion.js', import.meta.url), 'utf8');
-match(appHtml, /phase31_00\.css\?v=38\.00/, 'Phase-31-CSS wird geladen.');
+match(appHtml, /phase31_00\.css\?v=57\.00/, 'Phase-31-CSS wird geladen.');
 match(css, /dp-revision-comparison-table/, 'Phase-31-CSS enthält die Vergleichstabelle.');
 match(css, /dp-review-checklist/, 'Phase-31-CSS enthält die Prüfcheckliste.');
-match(version, /APP_VERSION = '2\.8\.0'/, 'App-Version wurde auf 1.16.0 fortgeschrieben.');
-match(version, /APP_RELEASE = '53\.00'/, 'Aktueller Release ist Phase 39.00.');
+match(version, /APP_VERSION = '2\.12\.0'/, 'App-Version wurde auf 1.16.0 fortgeschrieben.');
+match(version, /APP_RELEASE = '57\.00'/, 'Aktueller Release ist Phase 39.00.');
 
 console.log(`Phase 31.00 UI und Bericht: ${checks} Prüfungen bestanden.`);

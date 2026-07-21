@@ -1,27 +1,32 @@
-DRUCKVERLUST PRO 2.8.0 – RELEASE 53.00
+DRUCKVERLUST PRO 2.12.0 – RELEASE CANDIDATE 57.00
 ============================================================
 Datum: 21.07.2026
 
-PHASE 53.00 – PDF- UND BERICHTSABSCHLUSS
-- weisses Deckblatt mit regulärem Logo und dezentem Symbol-Wasserzeichen
-- technischer Dokumentblock mit SIA- und QS-Angaben
-- dynamisches Inhaltsverzeichnis und lückenlose Seitennummerierung
-- drucksichere Fortsetzungsseiten für grosse Tabellen und Formteilgruppen
-- automatische Prüfung auf vertikale und horizontale Seitenüberfüllung
-- verständlicher Layoutstatus vor dem Browserdruck
+PHASE 57.00 – RELEASE CANDIDATE UND FEHLERBEREINIGUNG
+- sichtbare RC-Prüfung im Ribbon
+- anlagenweite Neuberechnung und QS
+- Berichtprüfung für alle Anlagen
+- echter .dvp-Speicher-/Öffnungs-Roundtrip
+- deterministischer Büro-Praxis-Smoketest
+- RC-Laufzeitbudget
+- projektweite SIA-Konfigurationsprüfung
+- einheitliche Cachekennung 57.00
 
-STRESSPRÜFUNG
-- 67 Teilstrecken
-- 210 zugeordnete Formteile
-- 45 Sonderbauteile
-- 31 Engineering-Feststellungen
-- 40 QS-Hinweise
-- 15 Formteiltypen im Katalog
-- 43 vollständig geplante und gerenderte Berichtsseiten
+AUTOMATISCHE PRÜFUNGEN
+- Phase-57-RC-QS: 53/53 bestanden
+- Büro-/Praxistest: 95/95 bestanden
+- Release-Integration: 1'588 Prüfungen bestanden
+- JavaScript-Syntax: 162/162 Dateien ohne Fehler
+- A4-PDF-Ausgabe: 7/7 Prüfungen bestanden
+- PDF-Stresstest: 30 geplante Seiten = 30 erzeugte Seiten
+- vollständige bestehende Regressionstestkette bestanden
+- Patch-Installation und ZIP-Struktur geprüft
 
-QUALITÄT
-- 74 automatisierte Phase-53-Prüfungen
-- vollständige bestehende Testsuite
-- JavaScript-Syntaxprüfung
-- visueller A4-PDF-Test mit gerenderten Kontrollseiten
-- Patch- und ZIP-Strukturprüfung
+HINWEIS ZUR BROWSERPRÜFUNG
+- Chromium wurde in der isolierten Prüfungsumgebung gefunden, konnte dort jedoch nicht headless gestartet werden.
+- Die A4-Ausgabe wurde deshalb zusätzlich mit dem WeasyPrint-PDF-Renderer erfolgreich geprüft.
+
+MANUELLER FINAL-GATE FÜR PHASE 58
+- Windows Chrome: Bericht öffnen, Seitenvorschau und PDF-Druck prüfen
+- Windows Microsoft Edge: Bericht öffnen, Seitenvorschau und PDF-Druck prüfen
+- Ergebnis im RC-Protokoll dokumentieren

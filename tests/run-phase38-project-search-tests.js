@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ProjectTaskCenterEngine from '../src/project/ProjectTaskCenterEngine.js?v=38.00';
-import ProjectSearchEngine from '../src/project/ProjectSearchEngine.js?v=38.00';
+import ProjectTaskCenterEngine from '../src/project/ProjectTaskCenterEngine.js?v=57.00';
+import ProjectSearchEngine from '../src/project/ProjectSearchEngine.js?v=57.00';
 import StorageEngine from '../src/storage/StorageEngine.js';
 
 let checks = 0;
