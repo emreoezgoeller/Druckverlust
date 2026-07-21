@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonActions
 // Zentrale Befehle für die Ribbon-Oberfläche.
 
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.20';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=52.00';
 import StorageEngine from '../../storage/StorageEngine.js';
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
@@ -11,7 +11,7 @@ import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
 import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=46.00';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=51.20&release=51.20';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=51.20&release=52.00';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
 import UiDialogService from './UiDialogService.js?v=42.00&release=46.00';
 import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=42.00&release=46.00';

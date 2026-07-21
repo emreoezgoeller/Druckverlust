@@ -1,6 +1,6 @@
 import { calculateProject } from "../core/CalculationEngine.js";
 import ValidationEngine from "../validation/ValidationEngine.js";
-import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=51.20&release=51.20";
+import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=51.20&release=52.00";
 import { analyzeSystemVelocityCompliance } from "../standards/SiaVelocityCompliance.js?v=51.20";
 
 function uniqueMessages(messages = []) {

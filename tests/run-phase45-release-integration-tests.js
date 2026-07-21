@@ -55,21 +55,21 @@ const readme = read('README.md');
 const roadmap = read('ROADMAP.md');
 const changelog = read('CHANGELOG.md');
 
-check(packageJson.version === '2.6.2', 'package.json verwendet nicht Version 2.6.2.');
-check(release.version === '2.6.2' && release.phase === '51.20', 'release.json ist nicht auf 2.6.2 / 51.20.');
-check(appVersion.includes("APP_VERSION = '2.6.2'"), 'appVersion.js enthält nicht Version 2.6.2.');
-check(appVersion.includes("APP_RELEASE = '51.20'"), 'appVersion.js enthält nicht Phase 51.00.');
-check(appVersion.includes("APP_ASSET_VERSION = '51.20'"), 'Asset-Version ist nicht 51.00.');
-check(indexHtml.includes('Release 2.6.2 · Phase 51.20'), 'Produktseite zeigt nicht den aktuellen Release.');
-check(indexHtml.includes('product.css?v=51.20') && indexHtml.includes('product.js?v=51.20'), 'Produktseite lädt nicht die stabilen Release-Assets.');
-check(appHtml.includes('src/main.js?v=51.20'), 'App lädt main.js nicht mit Release-Kennung 51.00.');
-check((appHtml.match(/release=51\.20/g) || []).length >= 36, 'App-Stylesheets besitzen nicht durchgängig die finale Cache-Kennung.');
-check(feedbackHtml.includes('feedback.css?v=51.20') && feedbackHtml.includes('feedback-page.js?v=51.20'), 'Feedbackseite verwendet nicht die stabilen Assets.');
-check(qualityHtml.includes('Version 2.6.2') && !qualityHtml.includes('Phase 21.12'), 'Qualitätsseite ist veraltet.');
+check(packageJson.version === '2.7.0', 'package.json verwendet nicht Version 2.7.0.');
+check(release.version === '2.7.0' && release.phase === '52.00', 'release.json ist nicht auf 2.7.0 / 51.20.');
+check(appVersion.includes("APP_VERSION = '2.7.0'"), 'appVersion.js enthält nicht Version 2.7.0.');
+check(appVersion.includes("APP_RELEASE = '52.00'"), 'appVersion.js enthält nicht Phase 51.00.');
+check(appVersion.includes("APP_ASSET_VERSION = '52.00'"), 'Asset-Version ist nicht 51.00.');
+check(indexHtml.includes('Release 2.7.0 · Phase 52.00'), 'Produktseite zeigt nicht den aktuellen Release.');
+check(indexHtml.includes('product.css?v=52.00') && indexHtml.includes('product.js?v=52.00'), 'Produktseite lädt nicht die stabilen Release-Assets.');
+check(appHtml.includes('src/main.js?v=52.00'), 'App lädt main.js nicht mit Release-Kennung 51.00.');
+check((appHtml.match(/release=52\.00/g) || []).length >= 36, 'App-Stylesheets besitzen nicht durchgängig die finale Cache-Kennung.');
+check(feedbackHtml.includes('feedback.css?v=52.00') && feedbackHtml.includes('feedback-page.js?v=52.00'), 'Feedbackseite verwendet nicht die stabilen Assets.');
+check(qualityHtml.includes('Version 2.7.0') && !qualityHtml.includes('Phase 21.12'), 'Qualitätsseite ist veraltet.');
 check(manifest.shortcuts.some(item => item.short_name === 'Qualität'), 'Webmanifest enthält keinen Qualitätszugang.');
-check(readme.includes('Version 2.6.2') && readme.includes('npm run test:release'), 'README ist nicht auf dem aktuellen Release-Stand.');
-check(roadmap.includes('Version 2.6.2 · Phase 51.20'), 'Roadmap beschreibt den aktuellen Entwicklungsstand nicht.');
-check(changelog.includes('## 2.6.2 – Phase 51.20'), 'Changelog enthält keinen Release-2.6.2-Eintrag.');
+check(readme.includes('Version 2.7.0') && readme.includes('npm run test:release'), 'README ist nicht auf dem aktuellen Release-Stand.');
+check(roadmap.includes('Version 2.7.0 · Phase 52.00'), 'Roadmap beschreibt den aktuellen Entwicklungsstand nicht.');
+check(changelog.includes('## 2.7.0 – Phase 52.00'), 'Changelog enthält keinen Release-2.7.0-Eintrag.');
 check(existsSync(join(root, 'Druckverlust_starten.bat')) && existsSync(join(root, 'tools/start-local-server.ps1')), 'Windows-Lokalstarter ist unvollständig.');
 check(existsSync(join(root, 'docs/MIGRATION.md')) && existsSync(join(root, 'docs/RELEASE_CHECKLIST.md')), 'Release-Dokumentation ist unvollständig.');
 check(existsSync(join(root, 'src/sections/SectionSizingAssistant.js')), 'Dimensionierungsassistent fehlt.');
@@ -88,6 +88,10 @@ check(existsSync(join(root, 'src/standards/SiaVelocityCompliance.js')), 'SIA-Ges
 check(existsSync(join(root, 'src/ui/phase51_20.css')), 'Phase-51.20-Stylesheet fehlt.');
 check(existsSync(join(root, 'tests/run-phase51-20-sia-velocity-tests.js')), 'Phase-51.20-Testpaket fehlt.');
 check(release.quality?.siaVelocityChecks === 252, 'Release-Manifest dokumentiert die 252 Phase-51.20-Prüfungen nicht.');
+check(existsSync(join(root, 'src/results/ResultPresentationEngine.js')), 'Phase-52-Ergebnisengine fehlt.');
+check(existsSync(join(root, 'src/ui/phase52_00.css')), 'Phase-52-Stylesheet fehlt.');
+check(existsSync(join(root, 'tests/run-phase52-result-presentation-tests.js')), 'Phase-52-Testpaket fehlt.');
+check(release.quality?.resultPresentationChecks === 83, 'Release-Manifest dokumentiert die 83 Phase-52-Prüfungen nicht.');
 check(release.quality?.formPartTypes === 21 && release.quality?.excelReferenceChecks === 81, 'Release-Manifest enthält nicht die erweiterte Formteil-QS.');
 check(existsSync(join(root, 'tests/run-phase50-formpart-workflow-tests.js')), 'Phase-50-Testpaket fehlt.');
 check(release.quality?.formPartWorkflowChecks === 37, 'Release-Manifest dokumentiert die 37 Phase-50-Prüfungen nicht.');
@@ -143,8 +147,8 @@ check(!read('src/diagnostics/DeploymentDiagnostics.js').includes('phase21-formpa
 check(release.excludedModules.includes('Ventilatorauslegung') && release.excludedModules.includes('Hersteller-Bauteildatenbank'), 'Bewusst ausgeschlossene Module sind im Release-Manifest nicht dokumentiert.');
 
 if (failures.length) {
-  console.error(`Phase 51.20 Release-Integration fehlgeschlagen: ${failures.length} von ${checks} Prüfungen.`);
+  console.error(`Phase 52.00 Release-Integration fehlgeschlagen: ${failures.length} von ${checks} Prüfungen.`);
   failures.forEach(item => console.error(`- ${item}`));
   process.exit(1);
 }
-console.log(`Phase 51.20 Release-Integration: ${checks} Prüfungen bestanden.`);
+console.log(`Phase 52.00 Release-Integration: ${checks} Prüfungen bestanden.`);

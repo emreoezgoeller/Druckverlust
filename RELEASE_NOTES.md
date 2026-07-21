@@ -1,7 +1,20 @@
 # Release Notes
 
-**Release:** 2.6.2 · Phase 51.20  
+**Release:** 2.7.0 · Phase 52.00  
 **Datum:** 21.07.2026
+
+## Neu in Phase 52.00
+
+- Neue Anlagenübersicht **„Ergebnis auf einen Blick“** direkt am Seitenanfang.
+- Gesamtdruckverlust, Reibungsverlust, Formteilverlust und Sonderbauteilverlust sind klar getrennt und mit Anteilen dargestellt.
+- Die Teilstrecke mit dem höchsten Druckverlust wird als **kritische Teilstrecke** hervorgehoben und kann direkt geöffnet werden.
+- Umschaltbare **Standardansicht** für den schnellen Büroalltag und **Profi-Ansicht** mit den fünf druckverluststärksten Teilstrecken.
+- Die gewählte Ansicht wird lokal gespeichert und beim nächsten Öffnen wieder verwendet.
+- Technische Anlagen- und Teilstreckendetails sind in der Standardansicht eingeklappt; in der Profi-Ansicht werden sie automatisch geöffnet.
+- Teilstreckenergebnis zeigt Gesamt-, Reibungs- und Formteilverlust sowie Geschwindigkeit und SIA-Status auf einen Blick.
+- Neues verständliches Glossar für Δp, λ, ζ, Rauigkeit k und dynamischen Druck p_dyn.
+- Vollständige Ergebnistabelle bereinigt und in den technischen Detailbereich verschoben.
+- 83 automatisierte Phase-52-Prüfungen für Rechenmodell, kritische Teilstrecke, Ansichtsschalter, UI, CSS und Release-Integration ergänzt.
 
 ## Neu in Phase 51.20
 

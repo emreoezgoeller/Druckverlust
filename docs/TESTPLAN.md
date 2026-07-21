@@ -52,3 +52,13 @@ Browser-Testwrapper aus Phase 21 wurden im finalen Release entfernt. Die fachlic
 - Rundrohr- und Rechteckkanalbewertung in Anlage und Teilstrecke prüfen,
 - `.dvp`-Roundtrip, Bericht und bestehende Projekte ohne Auswahl prüfen.
 
+
+
+## Phase 52.00
+
+- Ergebnis-Cockpit trennt Reibungs-, Formteil-, Sonderbauteil- und Gesamtverlust.
+- Kritische Teilstrecke wird aus dem höchsten Teilstreckenverlust bestimmt.
+- Standard-/Profi-Ansicht bleibt über Browserspeicher erhalten.
+- Technische Kennwerte sind in der Standardansicht einklappbar.
+- Glossar erklärt Δp, λ, ζ, k und p_dyn.
+- Responsive Darstellung und Tabellenstruktur werden statisch geprüft.

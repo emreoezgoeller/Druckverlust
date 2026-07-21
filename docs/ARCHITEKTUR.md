@@ -1,6 +1,6 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 2.6.2 · Phase 51.20
+Stand: Version 2.7.0 · Phase 52.00
 
 ## 1. Ausführung
 

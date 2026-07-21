@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 51.20
+# Druckverlust Pro – Roadmap ab Phase 52.00
 
-Aktueller Entwicklungsstand: **Version 2.6.2 · Phase 51.20**. Vor Phase 52 wurde die automatische SIA-Geschwindigkeitsprüfung je Anlage und Teilstrecke ergänzt.
+Aktueller Entwicklungsstand: **Version 2.7.0 · Phase 52.00**. Die Anlagen- und Teilstreckenergebnisse sind jetzt für den schnellen Büroalltag verdichtet; technische Kennwerte bleiben über die Profi-Ansicht erreichbar.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -35,11 +35,14 @@ Aktueller Entwicklungsstand: **Version 2.6.2 · Phase 51.20**. Vor Phase 52 wurd
 - Rechteckkanäle mit Reduktionsfaktor nach Tabelle 50 prüfen,
 - Überschreitungen und nicht empfohlene Seitenverhältnisse in Anlage, Teilstrecke, QS und Bericht anzeigen.
 
-## Phase 52.00 – Vereinfachte Ergebnisdarstellung
+## Phase 52.00 – Vereinfachte Ergebnisdarstellung – abgeschlossen
 
-- Reibungs-, Formteil- und Gesamtverlust klarer trennen,
-- kritische Teilstrecke hervorheben,
-- Standardansicht vereinfachen und technische Details einklappbar machen.
+- Anlagen-Ergebnis direkt am Seitenanfang sichtbar,
+- Reibungs-, Formteil-, Sonderbauteil- und Gesamtverlust klar getrennt,
+- kritische Teilstrecke automatisch hervorgehoben,
+- Standard- und Profi-Ansicht dauerhaft umschaltbar,
+- technische Anlagen- und Teilstreckenwerte einklappbar,
+- Glossar für Δp, λ, ζ, k und p_dyn ergänzt.
 
 ## Phase 53.00 bis 58.00 – Bericht, Schema und Finalisierung
 

@@ -10,16 +10,16 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.20';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=51.20';
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=52.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=52.00';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.20';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.20';
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=52.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=52.00';
 import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
@@ -133,6 +133,13 @@ import {
   evaluateSectionVelocityCompliance,
   normalizeSiaVelocityConfig,
 } from '../../standards/SiaVelocityCompliance.js?v=51.20';
+import {
+  RESULT_GLOSSARY,
+  RESULT_VIEW_MODES,
+  createSectionResultPresentation,
+  createSystemResultPresentation,
+  normalizeResultViewMode,
+} from '../../results/ResultPresentationEngine.js?v=52.00&release=52.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -188,6 +195,7 @@ export default class WorkspaceComponent {
     this.dependencyHintKey = '';
     this.projectHistoryFilter = 'all';
     this.sectionSizingTargets = new Map();
+    this.resultViewMode = this.loadResultViewMode();
 
     if (typeof window !== 'undefined') {
       window.addEventListener('druckverlust:history-change', () => {
@@ -1323,16 +1331,21 @@ export default class WorkspaceComponent {
     const libraryItems = this.registry.all();
     const activeCalculators = libraryItems.filter(item => typeof item.calculate === 'function').length;
 
-    const calculation = this.state.project?.calculationResult?.calculation || null;
+    const calculationResult = this.state.project?.calculationResult || null;
+    const calculation = calculationResult?.calculation || null;
     const total = calculation?.totals?.totalRounded ?? calculation?.totals?.total ?? null;
     const velocityCompliance = analyzeSystemVelocityCompliance(system || {}, calculation || {});
+    const resultPresentation = createSystemResultPresentation(system || {}, calculation || {}, {
+      velocityCompliance,
+      quality: calculationResult?.quality || {},
+    });
 
     this.root.innerHTML = `
       <div class="workspace-header dp-page-header">
         <div class="dp-page-heading">
           <span class="dp-overline">Anlagenübersicht</span>
           <h1>${this.escapeHtml(system?.name ?? 'Anlage')}</h1>
-          <p>Projektübersicht, Bearbeitung und aktueller Berechnungsstand der gewählten Anlage.</p>
+          <p>Die wichtigsten Ergebnisse zuerst; Eingaben, Prüfpunkte und technische Details bleiben direkt erreichbar.</p>
         </div>
         <div class="dp-page-summary dp-page-summary-result" aria-label="Aktueller Anlagendruckverlust">
           <span>Gesamtdruckverlust</span>
@@ -1341,6 +1354,7 @@ export default class WorkspaceComponent {
         </div>
       </div>
 
+      ${this.renderSystemResultCockpit(system, resultPresentation)}
       ${this.renderUiGuidancePanel(this.state.project, system, 'system')}
       ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
       ${this.renderProjectCheckPanel(this.state.project, system)}
@@ -1373,15 +1387,11 @@ export default class WorkspaceComponent {
       ${this.renderSectionQuickEditPanel(system)}
       ${this.renderFormPartManagement(system)}
       ${this.renderSpecialComponentManagement(system)}
-      ${this.renderCalculationSummary(total)}
-      ${this.renderCalculationBreakdown(calculation)}
-      ${this.renderSectionResultDetailPanel(calculation)}
-      ${this.renderCalculationAudit(calculation)}
-      ${this.renderCalculationDiagnosticsPanel(calculation, system)}
       ${this.renderProjectValidationOverview(system)}
-      ${this.renderCalculationTable(calculation)}
+      ${this.renderTechnicalResultDetails(calculation, system)}
     `;
 
+    this.bindSystemResultCockpit(system);
     this.bindUiGuidancePanel(this.state.project, system);
     this.bindWorkflowDashboard(this.state.project, system);
     this.bindProjectCheckPanel(this.state.project, system);
@@ -1391,6 +1401,246 @@ export default class WorkspaceComponent {
     this.bindSectionQuickEdit();
     this.bindFormPartManagement();
     this.bindSpecialComponentManagement();
+  }
+
+  loadResultViewMode() {
+    if (typeof localStorage === 'undefined') return 'standard';
+    try {
+      return normalizeResultViewMode(localStorage.getItem('druckverlust-pro-result-view-mode'));
+    } catch {
+      return 'standard';
+    }
+  }
+
+  saveResultViewMode(mode = 'standard') {
+    this.resultViewMode = normalizeResultViewMode(mode);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('druckverlust-pro-result-view-mode', this.resultViewMode);
+      } catch {
+        // Die Anzeige bleibt auch ohne verfügbaren Browserspeicher funktionsfähig.
+      }
+    }
+    return this.resultViewMode;
+  }
+
+  renderResultViewSwitch() {
+    return `
+      <div class="dp-result-view-switch" role="group" aria-label="Ergebnisansicht wählen">
+        ${RESULT_VIEW_MODES.map(mode => `
+          <button
+            type="button"
+            data-result-view-mode="${this.escapeAttribute(mode.id)}"
+            class="${this.resultViewMode === mode.id ? 'active' : ''}"
+            aria-pressed="${this.resultViewMode === mode.id}"
+            title="${this.escapeAttribute(mode.description)}"
+          >${this.escapeHtml(mode.label)}</button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  renderSystemResultCockpit(system = {}, presentation = null) {
+    const model = presentation || createSystemResultPresentation(
+      system,
+      this.state.project?.calculationResult?.calculation || {},
+      {
+        velocityCompliance: analyzeSystemVelocityCompliance(system, this.state.project?.calculationResult?.calculation || {}),
+        quality: this.state.project?.calculationResult?.quality || {},
+      },
+    );
+    const totals = model.totals || {};
+    const critical = model.criticalSection || null;
+    const velocityStatus = this.getSiaVelocityStatusMeta(model.velocity?.status);
+    const isProfessional = this.resultViewMode === 'professional';
+
+    if (!model.hasCalculation) {
+      return `
+        <section class="dp-result-cockpit dp-result-cockpit-empty">
+          <div class="dp-result-cockpit-head">
+            <div>
+              <span class="dp-overline">Ergebnis auf einen Blick</span>
+              <h2>Noch keine gültige Berechnung</h2>
+              <p>Ergänze Luftmenge, Geometrie und Länge der Teilstrecken. Danach erscheint hier die kompakte Anlagenbewertung.</p>
+            </div>
+            ${this.renderResultViewSwitch()}
+          </div>
+        </section>
+      `;
+    }
+
+    return `
+      <section class="dp-result-cockpit is-${this.escapeAttribute(this.resultViewMode)}">
+        <div class="dp-result-cockpit-head">
+          <div>
+            <span class="dp-overline">Ergebnis auf einen Blick</span>
+            <h2>Anlagen-Ergebnis</h2>
+            <p>Gesamtverlust, Verlustarten, kritische Teilstrecke und Geschwindigkeitsprüfung in einer Ansicht.</p>
+          </div>
+          ${this.renderResultViewSwitch()}
+        </div>
+
+        <div class="dp-result-hero-grid">
+          <article class="dp-result-hero-total">
+            <span>Gesamtdruckverlust Δp</span>
+            <strong>${this.formatNumber(totals.totalRoundedPa, 1)} <small>Pa</small></strong>
+            <em>gerundeter Berechnungswert der Anlage</em>
+          </article>
+
+          <article class="dp-result-hero-critical ${critical ? '' : 'is-empty'}">
+            <span>Kritische Teilstrecke</span>
+            <strong>${this.escapeHtml(critical?.name || '–')}</strong>
+            <em>${critical ? `${this.formatNumber(critical.totalLossPa, 1)} Pa · ${this.formatNumber(critical.systemSharePercent, 1)} % vom System` : 'Noch keine Teilstrecke berechnet'}</em>
+            ${critical ? `<button type="button" data-result-action="open-critical" data-section-id="${this.escapeAttribute(critical.id)}">Teilstrecke öffnen</button>` : ''}
+          </article>
+
+          <article class="dp-result-hero-status is-${this.escapeAttribute(velocityStatus.tone)}">
+            <span>SIA-Geschwindigkeit</span>
+            <strong>${this.escapeHtml(velocityStatus.label)}</strong>
+            <em>${model.velocity?.checked || 0}/${model.velocity?.total || 0} TS geprüft · ${model.velocity?.exceeded || 0} überschritten</em>
+            <button type="button" data-result-action="open-sia">Prüfung ansehen</button>
+          </article>
+        </div>
+
+        <div class="dp-result-breakdown-grid" aria-label="Aufteilung des Druckverlusts">
+          ${this.renderResultBreakdownCard('Reibungsverlust', 'Gerade Kanäle und Rohre', totals.frictionLossPa, totals.shares?.friction, 'friction')}
+          ${this.renderResultBreakdownCard('Formteilverlust', 'ζ- und direkte Formteilwerte', totals.formPartLossPa, totals.shares?.formParts, 'formparts')}
+          ${this.renderResultBreakdownCard('Sonderbauteile', 'Filter, Schalldämpfer und freie Bauteile', totals.specialLossPa, totals.shares?.special, 'special')}
+          ${this.renderResultBreakdownCard('Gesamt', 'Gerundeter Anlagenwert', totals.totalRoundedPa, 100, 'total')}
+        </div>
+
+        ${isProfessional ? this.renderProfessionalResultPreview(model) : `
+          <div class="dp-result-standard-hint">
+            <div>
+              <strong>Standardansicht aktiv</strong>
+              <span>Technische Kennwerte und vollständige Tabellen sind weiter unten eingeklappt.</span>
+            </div>
+            <button type="button" data-result-view-mode="professional">Profi-Ansicht öffnen</button>
+          </div>
+        `}
+
+        ${this.renderResultGlossary()}
+      </section>
+    `;
+  }
+
+  renderResultBreakdownCard(label = '', description = '', value = 0, share = 0, tone = 'neutral') {
+    const width = Math.max(0, Math.min(100, Number(share || 0)));
+    return `
+      <article class="dp-result-breakdown-card is-${this.escapeAttribute(tone)}">
+        <div>
+          <span>${this.escapeHtml(label)}</span>
+          <strong>${this.formatNumber(value, 1)} Pa</strong>
+        </div>
+        <p>${this.escapeHtml(description)}</p>
+        <div class="dp-result-breakdown-meter"><span style="width:${width}%"></span></div>
+        <small>${this.formatNumber(share, 1)} % vom Systemtotal</small>
+      </article>
+    `;
+  }
+
+  renderProfessionalResultPreview(model = {}) {
+    const rows = model?.topSections || [];
+    return `
+      <section class="dp-result-professional-preview">
+        <div class="dp-result-professional-head">
+          <div>
+            <span class="dp-overline">Profi-Schnellkontrolle</span>
+            <h3>Teilstrecken mit dem höchsten Druckverlust</h3>
+          </div>
+          <button type="button" data-result-action="technical">Alle technischen Details</button>
+        </div>
+        <div class="dp-table-scroll">
+          <table class="dp-table dp-result-top-table">
+            <thead>
+              <tr><th>Teilstrecke</th><th>q</th><th>v</th><th>Reibung</th><th>Formteile</th><th>Gesamt</th></tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, index) => `
+                <tr class="${index === 0 ? 'dp-critical-row' : ''}">
+                  <td><button type="button" class="dp-result-row-link" data-result-action="open-section" data-section-id="${this.escapeAttribute(row.id)}">${this.escapeHtml(row.name)}</button></td>
+                  <td>${this.formatAirflow(row.airflowM3h)} m³/h</td>
+                  <td>${this.formatNumber(row.velocityMs, 2)} m/s</td>
+                  <td>${this.formatNumber(row.frictionLossPa, 1)} Pa</td>
+                  <td class="${row.formPartLossPa < 0 ? 'dp-negative-value' : ''}">${this.formatNumber(row.formPartLossPa, 1)} Pa</td>
+                  <td><strong>${this.formatNumber(row.totalLossPa, 1)} Pa</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
+  renderResultGlossary() {
+    return `
+      <details class="dp-result-glossary">
+        <summary>Was bedeuten Δp, λ, ζ, k und p<sub>dyn</sub>?</summary>
+        <div class="dp-result-glossary-grid">
+          ${RESULT_GLOSSARY.map(item => `
+            <article>
+              <strong>${item.symbol === 'p_dyn' ? 'p<sub>dyn</sub>' : this.escapeHtml(item.symbol)}</strong>
+              <span>${this.escapeHtml(item.term)}</span>
+              <p>${this.escapeHtml(item.explanation)}</p>
+            </article>
+          `).join('')}
+        </div>
+      </details>
+    `;
+  }
+
+  renderTechnicalResultDetails(calculation = null, system = null) {
+    const hasResults = Boolean(calculation?.results?.length || calculation?.specialComponentResults?.length);
+    if (!hasResults) return '';
+    const open = this.resultViewMode === 'professional' ? 'open' : '';
+
+    return `
+      <details class="dp-technical-results" data-technical-results ${open}>
+        <summary>
+          <span>
+            <strong>Technische Ergebnisdetails</strong>
+            <small>Teilstreckenaufteilung, Rechenprüfung, Diagnostik und vollständige Ergebnistabelle</small>
+          </span>
+          <em>${this.resultViewMode === 'professional' ? 'Profi-Ansicht' : 'eingeklappt'}</em>
+        </summary>
+        <div class="dp-technical-results-body">
+          ${this.renderSectionResultDetailPanel(calculation)}
+          ${this.renderCalculationAudit(calculation)}
+          ${this.renderCalculationDiagnosticsPanel(calculation, system)}
+          ${this.renderCalculationTable(calculation)}
+        </div>
+      </details>
+    `;
+  }
+
+  bindSystemResultCockpit(system = {}) {
+    this.root.querySelectorAll('[data-result-view-mode]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.saveResultViewMode(button.dataset.resultViewMode);
+        this.renderSystem(system);
+      });
+    });
+
+    const openSection = sectionId => {
+      const section = (system?.sections || []).find(item => String(item?.id || '') === String(sectionId || ''));
+      if (section) this.state.selectSection?.(section);
+    };
+
+    this.root.querySelectorAll('[data-result-action="open-critical"], [data-result-action="open-section"]').forEach(button => {
+      button.addEventListener('click', () => openSection(button.dataset.sectionId));
+    });
+
+    this.root.querySelector('[data-result-action="open-sia"]')?.addEventListener('click', () => {
+      this.root.querySelector('.dp-sia-velocity-panel')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    });
+
+    this.root.querySelector('[data-result-action="technical"]')?.addEventListener('click', () => {
+      const details = this.root.querySelector('[data-technical-results]');
+      if (!details) return;
+      details.open = true;
+      details.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   getSiaVelocityStatusMeta(status = 'not-configured') {
@@ -1654,11 +1904,12 @@ export default class WorkspaceComponent {
         <p class="dp-auto-calc-note"><strong>Live-Berechnung:</strong> Änderungen werden automatisch übernommen; zugeordnete Formteile werden nachgeführt.</p>
       </section>
 
-      ${this.renderSectionResult(result, calculationItem, section)}
+      ${this.renderSectionResult(result, calculationItem, section, siaVelocityCheck)}
       ${this.renderSectionFormParts(section)}
     `;
 
     this.bindSectionSiaVelocityCard(system);
+    this.bindSectionResultActions(section, system);
     this.bindSectionSizingAssistant(section);
     this.bindSectionEditor(section);
     this.bindSectionFormPartActions(section);
@@ -9623,111 +9874,114 @@ export default class WorkspaceComponent {
     return Number.isFinite(millimetres) ? Math.round(millimetres * 10) / 10 : 0;
   }
 
-  renderSectionResult(result, item, section = null) {
+  renderSectionResult(result, item, section = null, velocityCheck = null) {
     if (!result) {
       return `
-        <section class="dp-result-panel">
-          <h2>Berechnung</h2>
+        <section class="dp-result-panel dp-section-result-panel">
+          <div class="dp-panel-header">
+            <div>
+              <span class="dp-overline">Live-Ergebnis</span>
+              <h2>Noch keine gültige Berechnung</h2>
+              <p>Bitte Luftmenge, Geometrie und Länge der Teilstrecke kontrollieren.</p>
+            </div>
+            ${this.renderResultViewSwitch()}
+          </div>
           ${this.renderCalculationTimestamp()}
-          <p>Noch keine Berechnung für diese Teilstrecke vorhanden.</p>
         </section>
       `;
     }
 
-    const breakdown = this.getSectionLossBreakdown(section?.id, result);
     const total = Number(this.state.project?.calculationResult?.calculation?.totals?.totalRounded ?? this.state.project?.calculationResult?.calculation?.totals?.total ?? 0);
-    const share = total > 0 ? (breakdown.totalLoss / total) * 100 : 0;
+    const model = createSectionResultPresentation(section || {}, { ...(item || {}), result }, {
+      systemTotalPa: total,
+      formPartCount: this.getAssignedFormParts(section?.id).length,
+      velocityCheck: velocityCheck || {},
+    });
+    const velocityStatus = this.getSiaVelocityStatusMeta(model.velocityStatus);
+    const open = this.resultViewMode === 'professional' ? 'open' : '';
 
     return `
-      <section class="dp-result-panel dp-section-result-panel">
-        <div class="dp-panel-header">
+      <section class="dp-result-panel dp-section-result-panel is-${this.escapeAttribute(this.resultViewMode)}">
+        <div class="dp-panel-header dp-section-result-head">
           <div>
             <span class="dp-overline">Live-Ergebnis</span>
-            <h2>Berechnungsergebnis</h2>
-            <p>Reibung, Formteilverluste und Systemanteil der aktuellen Teilstrecke.</p>
+            <h2>Ergebnis der Teilstrecke</h2>
+            <p>Gesamtverlust und seine Bestandteile – technische Kennwerte bleiben einklappbar.</p>
           </div>
-          <span class="dp-result-detail-badge">${this.formatNumber(share, 1)} % Systemanteil</span>
+          ${this.renderResultViewSwitch()}
         </div>
 
-        <div class="dp-result-cards dp-section-result-cards">
-          <div class="dp-result-card">
-            <span>Kanal/Rohr</span>
-            <strong>${this.formatNumber(breakdown.frictionLoss, 1)} Pa</strong>
-            <em>nur Reibung</em>
-          </div>
-          <div class="dp-result-card ${breakdown.formPartLoss < 0 ? 'dp-result-card-negative' : ''}">
-            <span>Formteile</span>
-            <strong>${this.formatNumber(breakdown.formPartLoss, 1)} Pa</strong>
-            <em>ζ ${this.formatNumber(breakdown.zetaLoss, 1)} Pa · Direkt ${this.formatNumber(breakdown.directLoss, 1)} Pa</em>
-          </div>
-          <div class="dp-result-card dp-result-card-total">
-            <span>Summe TS</span>
-            <strong>${this.formatNumber(breakdown.totalLoss, 1)} Pa</strong>
-            <em>${this.formatNumber(share, 1)} % vom Systemtotal</em>
-          </div>
+        <div class="dp-section-result-hero">
+          <article class="dp-section-result-total">
+            <span>Summe Teilstrecke Δp</span>
+            <strong>${this.formatNumber(model.totalLossPa, 1)} <small>Pa</small></strong>
+            <em>${this.formatNumber(model.systemSharePercent, 1)} % vom Anlagenwert</em>
+          </article>
+
+          <article>
+            <span>Reibungsverlust</span>
+            <strong>${this.formatNumber(model.frictionLossPa, 1)} Pa</strong>
+            <em>gerader Kanal-/Rohrabschnitt</em>
+          </article>
+
+          <article class="${model.formPartLossPa < 0 ? 'is-negative' : ''}">
+            <span>Formteilverlust</span>
+            <strong>${this.formatNumber(model.formPartLossPa, 1)} Pa</strong>
+            <em>${model.formPartCount} Formteil${model.formPartCount === 1 ? '' : 'e'} · ζ ${this.formatNumber(model.zetaLossPa, 1)} Pa · direkt ${this.formatNumber(model.directLossPa, 1)} Pa</em>
+          </article>
+
+          <article class="is-${this.escapeAttribute(velocityStatus.tone)}">
+            <span>Geschwindigkeit</span>
+            <strong>${this.formatNumber(model.velocityMs, 2)} m/s</strong>
+            <em>${model.maximumVelocityMs !== null ? `SIA max. ${this.formatNumber(model.maximumVelocityMs, 2)} m/s · ${this.escapeHtml(velocityStatus.label)}` : this.escapeHtml(velocityStatus.label)}</em>
+          </article>
         </div>
 
         <div class="dp-share-meter" aria-label="Anteil der Teilstrecke am Systemtotal">
-          <div><span>Systemanteil</span><strong>${this.formatNumber(share, 1)} %</strong></div>
-          <div class="dp-share-meter-track"><span style="width:${Math.max(0, Math.min(100, share))}%"></span></div>
+          <div><span>Systemanteil</span><strong>${this.formatNumber(model.systemSharePercent, 1)} %</strong></div>
+          <div class="dp-share-meter-track"><span style="width:${Math.max(0, Math.min(100, model.systemSharePercent))}%"></span></div>
         </div>
 
-        <div class="dp-table-scroll">
-          <table class="dp-table dp-key-value-table">
-            <tbody>
-              <tr>
-                <th>Geschwindigkeit</th>
-                <td>${this.formatNumber(result.velocity)} m/s</td>
-              </tr>
-              <tr>
-                <th>Dynamischer Druck</th>
-                <td>${this.formatNumber(result.dynamicPressure)} Pa</td>
-              </tr>
-              <tr>
-                <th>Rauigkeit k</th>
-                <td>${this.formatNumber(result.roughnessMm, 2)} mm</td>
-              </tr>
-              <tr>
-                <th>Reynolds-Zahl Re</th>
-                <td>${this.formatNumber(result.reynoldsNumber, 0)}</td>
-              </tr>
-              <tr>
-                <th>Reibungszahl λ</th>
-                <td>${this.formatNumber(result.frictionFactor ?? result.lambda, 4)}</td>
-              </tr>
-              <tr>
-                <th>Reibungsgefälle R</th>
-                <td>${this.formatNumber(result.frictionRate, 3)} Pa/m</td>
-              </tr>
-              <tr>
-                <th>Reibungsverlust</th>
-                <td>${this.formatNumber(result.frictionLoss)} Pa</td>
-              </tr>
-              <tr>
-                <th>ζ Formteile</th>
-                <td>${this.formatNumber(item?.zetaFromParts)}</td>
-              </tr>
-              <tr>
-                <th>ζ-Verlust</th>
-                <td>${this.formatNumber(result.zetaLoss)} Pa</td>
-              </tr>
-              ${result.directFormPartLoss ? `
-                <tr>
-                  <th>Formteil-Direktverlust</th>
-                  <td>${this.formatNumber(result.directFormPartLoss)} Pa</td>
-                </tr>
-              ` : ''}
-              <tr class="dp-total-row">
-                <th>Gesamt</th>
-                <td><strong>${this.formatNumber(result.roundedTotalLoss ?? result.totalLoss)} Pa</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <details class="dp-section-technical-details" ${open}>
+          <summary>
+            <span>
+              <strong>Technische Kennwerte</strong>
+              <small>p<sub>dyn</sub>, k, Re, λ, R und vollständige Verlustaufteilung</small>
+            </span>
+            <em>${this.resultViewMode === 'professional' ? 'Profi-Ansicht' : 'anzeigen'}</em>
+          </summary>
+          <div class="dp-table-scroll">
+            <table class="dp-table dp-key-value-table">
+              <tbody>
+                <tr><th>Luftmenge</th><td>${this.formatAirflow(model.airflowM3h)} m³/h</td></tr>
+                <tr><th>Geschwindigkeit</th><td>${this.formatNumber(model.velocityMs, 2)} m/s</td></tr>
+                <tr><th>Dynamischer Druck p<sub>dyn</sub></th><td>${this.formatNumber(model.dynamicPressurePa, 2)} Pa</td></tr>
+                <tr><th>Rauigkeit k</th><td>${this.formatNumber(model.roughnessMm, 2)} mm</td></tr>
+                <tr><th>Reynolds-Zahl Re</th><td>${this.formatNumber(model.reynoldsNumber, 0)}</td></tr>
+                <tr><th>Reibungszahl λ</th><td>${this.formatNumber(model.frictionFactor, 4)}</td></tr>
+                <tr><th>Reibungsgefälle R</th><td>${this.formatNumber(model.frictionRatePaM, 3)} Pa/m</td></tr>
+                <tr><th>Reibungsverlust</th><td>${this.formatNumber(model.frictionLossPa, 2)} Pa</td></tr>
+                <tr><th>ζ-Verlust Formteile</th><td>${this.formatNumber(model.zetaLossPa, 2)} Pa</td></tr>
+                <tr><th>Direktverlust Formteile</th><td class="${model.directLossPa < 0 ? 'dp-negative-value' : ''}">${this.formatNumber(model.directLossPa, 2)} Pa</td></tr>
+                <tr class="dp-total-row"><th>Gesamt Teilstrecke</th><td><strong>${this.formatNumber(model.totalLossPa, 1)} Pa</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          ${this.renderResultGlossary()}
+        </details>
 
-        ${this.renderValidationMessages(result?.warnings || [])}
+        ${this.renderValidationMessages(model.warnings)}
       </section>
     `;
+  }
+
+  bindSectionResultActions(section = {}, system = null) {
+    this.root.querySelectorAll('[data-result-view-mode]').forEach(button => {
+      button.addEventListener('click', () => {
+        this.saveResultViewMode(button.dataset.resultViewMode);
+        this.renderSection(section);
+      });
+    });
   }
 
   renderValidationMessages(warnings = []) {

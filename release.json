@@ -1,8 +1,8 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.6.2",
-  "phase": "51.20",
+  "version": "2.7.0",
+  "phase": "52.00",
   "releaseDate": "2026-07-21",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
@@ -29,11 +29,12 @@
     "interfaceCompletionChecks": 48,
     "sixNewFormPartChecks": 65,
     "formPartSyncChecks": 179,
-    "siaVelocityChecks": 252
+    "siaVelocityChecks": 252,
+    "resultPresentationChecks": 83
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "SIA-Geschwindigkeitsprüfung je Anlage und Teilstrecke mit Raumnutzung nach SIA 2024:2021, Betriebsart, Elektro-Vollaststunden, interpolierten Richtwerten nach SIA 382/1:2025 Tabelle 49 und Reduktionsfaktoren für Rechteckkanäle nach Tabelle 50."
+  "notes": "Vereinfachte Ergebnisdarstellung mit Anlagen-Cockpit, klarer Trennung von Reibungs-, Formteil- und Sonderbauteilverlusten, hervorgehobener kritischer Teilstrecke, Standard-/Profi-Ansicht und einklappbaren technischen Kennwerten."
 }

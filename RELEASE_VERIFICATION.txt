@@ -1,54 +1,17 @@
-DRUCKVERLUST PRO 2.6.2 – RELEASE 51.20
-Prüfung SIA-Geschwindigkeitsgrenzen und bestehender Release-Stand
+DRUCKVERLUST PRO 2.7.0 – RELEASE 52.00
+============================================================
 Datum: 21.07.2026
 
-PHASE 51.20 – SIA-GESCHWINDIGKEITSPRÜFUNG
-- 45 Raumnutzungen aus SIA 2024:2021 Tabelle 13 mit Elektro-Vollaststunden für 1-stufig, 2-stufig und stufenlos
-- automatische Ermittlung der Elektro-Vollaststunden je Anlage
-- Richtwerte für Rundrohre nach SIA 382/1:2025 Tabelle 49
-- lineare Interpolation zwischen 2’000, 4’000 und 8’000 h/a
-- Reduktionsfaktoren für Rechteckkanäle nach Tabelle 50 mit Zwischenwertinterpolation
-- Warnbereich ab Seitenverhältnis 1:6 und kontrollierte Begrenzung oberhalb 1:10
-- Anlagen- und Teilstreckenanzeige, Qualitätsmeldung, Speicher-Roundtrip und Berichtsintegration
-- Hinweis auf kritischen Strang sowie zusätzliche Druckniveau- und Schallprüfung
-- 252 automatisierte Phase-51.20-Prüfungen bestanden
+PHASE 52.00 – VEREINFACHTE ERGEBNISDARSTELLUNG
+- Anlagen-Cockpit direkt am Seitenanfang
+- klare Trennung von Reibungs-, Formteil-, Sonderbauteil- und Gesamtverlust
+- kritische Teilstrecke mit Direktnavigation
+- Standard- und Profi-Ansicht
+- einklappbare technische Detailwerte
+- Glossar für Δp, λ, ζ, k und p_dyn
 
-ZUSÄTZLICH GEPRÜFT
-- Zielgeschwindigkeiten 2,0 / 3,0 / 4,0 m/s und freier Zielwert
-- neutrale Standardabmessungen für Rechteckkanäle und Rundrohre
-- korrekte Flächen- und Geschwindigkeitsberechnung
-- keine Veränderung der Teilstrecke vor ausdrücklicher Übernahme
-- sichere Umrechnung zwischen Millimeter-Oberfläche und Meter-Rechenmodell
-- Erkennung historischer Millimeterwerte
-- Folge-Teilstrecke mit gleicher Geometrie und Länge 0 m
-- kontrollierte Hinweise bei fehlender Luftmenge und aussergewöhnlich grossen Werten
-- responsive Darstellung des Assistenten
-- 54 automatisierte Phase-49-Einzelprüfungen
-
-WEITERHIN GEPRÜFT
-- vollständige bestehende Testsuite aus den Phasen 21 bis 48
-- Berechnung, Formteile, Speicherung, Berichte und Rückwärtskompatibilität
-- lokale Datei- und Importpfade
-- Praxis- und Lastfälle bis 200 Teilstrecken
-
-BEWUSST NICHT ENTHALTEN
-- keine Ventilatorauslegung
-- keine SFP-, Motorleistungs- oder Energiekostenberechnung
-- keine Hersteller-Bauteildatenbank
-
-HINWEIS ZUR BROWSERPRÜFUNG
-Ein automatisierter Chromium-Screenshot konnte in der isolierten Prüfungsumgebung wegen
-Systemrichtlinien und Laufzeitbeschränkungen nicht stabil abgeschlossen werden. Die Anwendung
-wurde deshalb über automatisierte Funktions-, DOM-, Import-, HTTP-, Syntax- und Strukturprüfungen
-abgesichert. Die reale Sichtkontrolle im lokalen Edge/Chrome-Browser bleibt Teil der Anwenderabnahme.
-
-Phase 50.00: 37 Prüfungen für Formteil-Kontext, lokale Reihenfolge, Anschlussvorschläge, Warnungen und UI-Integration bestanden.
-
-Phase 51.00: 48 Prüfungen für einzeiliges Ribbon, Symbollegende, Sofort-Infotexte, Responsive-Verhalten und Breitenführung bestanden.
-
-
-Phase 51.10: 65 Prüfungen für sechs neue Formteile, Registry-/Asset-Integration, Excel-Tabellenwerte, Bodensuche, negative ζ-Werte, Geometriefehler und Teilstrecken-Synchronisation bestanden.
-
-Formteil-Referenzprüfung: 21/21 Formteiltypen, 25/25 Excel-Referenzfälle und 81/81 Einzelprüfungen bestanden.
-
-Formteil-Synchronisation: 21/21 Formteiltypen und 179/179 Einzelprüfungen bestanden.
+QUALITÄT
+- 83 automatisierte Phase-52-Prüfungen
+- vollständige bestehende Testsuite
+- JavaScript-Syntaxprüfung
+- Patch- und ZIP-Strukturprüfung

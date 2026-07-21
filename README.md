@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.6.2 · Phase 51.20 · SIA-Geschwindigkeitsprüfung je Anlage und Teilstrecke.
+**Aktueller Stand:** Version 2.7.0 · Phase 52.00 · vereinfachte Ergebnisdarstellung mit Standard- und Profi-Ansicht.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -64,6 +64,7 @@ Gezielte Prüfung der SIA-Geschwindigkeitsprüfung:
 
 ```bash
 npm run test:phase51.20
+npm run test:phase52
 ```
 
 Gezielte Prüfung der sechs neuen Formteile:

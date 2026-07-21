@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.7.0 – Phase 52.00 – 21.07.2026
+
+- Neues Ergebnis-Cockpit am Anfang der Anlagenübersicht ergänzt.
+- Reibungs-, Formteil-, Sonderbauteil- und Gesamtdruckverlust klar getrennt dargestellt.
+- Kritische Teilstrecke automatisch bestimmt, hervorgehoben und direkt verlinkt.
+- Standard- und Profi-Ansicht mit dauerhaft gespeicherter Auswahl ergänzt.
+- Technische Anlagen- und Teilstreckendetails einklappbar gemacht.
+- Teilstreckenergebnis auf Gesamtverlust, Verlustarten, Geschwindigkeit und SIA-Status verdichtet.
+- Glossar für Δp, λ, ζ, k und p_dyn integriert.
+- Vollständige Ergebnistabelle in den Profi-Detailbereich verschoben und Tabellenkopf bereinigt.
+- 83 zusätzliche Phase-52-Prüfungen ergänzt.
+
 ## 2.6.2 – Phase 51.20 – 21.07.2026
 
 - Anlagenweite Auswahl der Raumnutzung nach SIA 2024:2021 Tabelle 13 und der Betriebsart 1-stufig, 2-stufig oder stufenlos ergänzt.

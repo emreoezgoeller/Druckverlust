@@ -49,7 +49,7 @@ check(css.includes('.dp-ribbon-status-legend i.is-check'), 'Prüfstatus ist nich
 
 // Sofort-Infotexte
 check(fs.existsSync(new URL('../src/ui/core/UiTooltipController.js', import.meta.url)), 'Zentraler Tooltip-Controller fehlt.');
-check(main.includes("UiTooltipController from './ui/core/UiTooltipController.js?v=51.20&release=51.20'"), 'Tooltip-Controller wird nicht cache-sicher geladen.');
+check(main.includes("UiTooltipController from './ui/core/UiTooltipController.js?v=51.20&release=52.00'"), 'Tooltip-Controller wird nicht cache-sicher geladen.');
 check(main.includes('new UiTooltipController(document).install()'), 'Tooltip-Controller wird beim Start nicht installiert.');
 check(ribbon.includes('data-ui-tooltip="${this.escapeAttribute(config.title)}"'), 'Ribbon-Aktionen besitzen keine sofortigen Infotexte.');
 check(tooltip.includes("'.dp-sidebar button[title]'"), 'Sidebar-Symbole sind nicht in die Infotexte einbezogen.');
@@ -71,11 +71,11 @@ check(css.includes('@media (max-width: 560px)'), 'Smartphone-Darstellung fehlt.'
 check(sidebar.includes('dp-tree-item-copy'), 'Sidebar verwendet nicht die abgesicherte Textstruktur.');
 
 // Release-Integration
-check(appHtml.includes('phase51_00.css?v=51.00&release=51.20'), 'Phase-51-Stylesheet wird nicht geladen.');
-check(appHtml.includes('src/main.js?v=51.20'), 'Anwendung lädt nicht den Phase-51-Cache-Stand.');
-check(version.includes("APP_VERSION = '2.6.2'") && version.includes("APP_RELEASE = '51.20'"), 'Versionsdaten stehen nicht auf 2.6.2 / Phase 51.20.');
-check(packageJson.version === '2.6.2', 'package.json steht nicht auf Version 2.6.2.');
-check(release.version === '2.6.2' && release.phase === '51.20', 'release.json steht nicht auf Version 2.6.2 / Phase 51.20.');
+check(appHtml.includes('phase51_00.css?v=51.00&release=52.00'), 'Phase-51-Stylesheet wird nicht geladen.');
+check(appHtml.includes('src/main.js?v=52.00'), 'Anwendung lädt nicht den Phase-51-Cache-Stand.');
+check(version.includes("APP_VERSION = '2.7.0'") && version.includes("APP_RELEASE = '52.00'"), 'Versionsdaten stehen nicht auf 2.7.0 / Phase 51.20.');
+check(packageJson.version === '2.7.0', 'package.json steht nicht auf Version 2.7.0.');
+check(release.version === '2.7.0' && release.phase === '52.00', 'release.json steht nicht auf Version 2.7.0 / Phase 51.20.');
 check(release.quality?.interfaceCompletionChecks === 48, 'Release-Manifest dokumentiert die Phase-51-Prüfungen nicht.');
 
 console.log(`Phase 51.00 Oberflächen- und Ribbon-Abschluss: ${checks} Prüfungen bestanden.`);
