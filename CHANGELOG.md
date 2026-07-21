@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0 – Phase 58.00 – 21.07.2026
+
+- Druckverlust Pro als stabilen Finalstand **3.0.0** abgeschlossen.
+- Sichtbare Ribbon-Aktion von RC-Prüfung auf **Finalprüfung** umgestellt.
+- Finalprüfung um SHA-256-Dateiintegrität und dokumentierte Windows-Druckabnahme ergänzt.
+- Lokale Bestätigung der Druckausgabe in Google Chrome und Microsoft Edge mit offenem Freigabestatus umgesetzt.
+- `release-integrity.json` mit Prüfsummen, Dateigrössen und Kennzeichnung kritischer Runtime-Dateien ergänzt.
+- Sauberen Final-Paket-Builder ergänzt; Tests, interne Entwicklungsdokumente und GitHub-Vorlagen werden aus dem Laufzeitpaket ausgeschlossen.
+- Startseite, Statusbar, Release-Metadaten, Rechtstexte und Hilfsdokumente auf 3.0.0 / 58.00 vereinheitlicht.
+- Vollständige Phase-58-, Syntax-, Integritäts-, Paket-, Patch- und Regressionstests ergänzt.
+- Manuelle Windows-Abnahme wird ausdrücklich nicht automatisch als bestanden markiert.
+
 ## 2.12.0 – Phase 57.00 – 21.07.2026
 
 - Sichtbare Ribbon-Aktion **RC-Prüfung** ergänzt und aktive RC-Seite im Ribbon markiert.

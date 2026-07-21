@@ -159,17 +159,17 @@ npm run test:phase56:browser
 
 Der Test nutzt einen installierten Chrome-, Chromium- oder Edge-Browser. Ist in der Laufzeitumgebung kein headless Browser startfähig, wird die A4-PDF-Ausgabe mit dem verfügbaren Fallback-Renderer erzeugt und die Seitenzahl gegen den Berichtseitenplan geprüft. Für die finale Freigabe bleibt zusätzlich ein manueller Windows-Test in Chrome und Edge vorgesehen.
 
-## Phase 57.00
+## Phase 58.00
 
-- zentrale Versions- und Releasekonsistenz 2.12.0 / 57.00,
+- zentrale Versions- und Releasekonsistenz 3.0.0 / 58.00,
 - einheitliche Cachekennung aller App-Assets und statisch versionierten Modulimporte,
-- sichtbare und aktive RC-Prüfung im Ribbon,
+- sichtbare und aktive Finalprüfung im Ribbon,
 - Neuberechnung sämtlicher Anlagen,
 - anlagenweiter Projektcheck und Rechen-QS,
 - Berichtmodell und Seitenplan für alle Anlagen,
 - verlustfreier `.dvp`-Roundtrip mit Ergebnisvergleich,
 - deterministischer Büro-Praxis-Smoketest,
-- RC-Laufzeitbudget für Berechnung, Bericht und Datei,
-- vollständiges RC-Protokoll,
+- Final-Laufzeitbudget für Berechnung, Bericht und Datei,
+- vollständiges Finalprotokoll,
 - vollständige Regressionstestkette,
 - A4-PDF-Prüfung sowie dokumentierter manueller Windows-Chrome-/Edge-Final-Gate.

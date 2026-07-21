@@ -1,32 +1,31 @@
-DRUCKVERLUST PRO 2.12.0 – RELEASE CANDIDATE 57.00
+DRUCKVERLUST PRO 3.0.0 – FINAL RELEASE 58.00
 ============================================================
 Datum: 21.07.2026
 
-PHASE 57.00 – RELEASE CANDIDATE UND FEHLERBEREINIGUNG
-- sichtbare RC-Prüfung im Ribbon
-- anlagenweite Neuberechnung und QS
-- Berichtprüfung für alle Anlagen
+PHASE 58.00 – FINALISIERUNG
+- sichtbare Finalprüfung im Ribbon
+- anlagenweite Neuberechnung und Qualitätsprüfung
 - echter .dvp-Speicher-/Öffnungs-Roundtrip
-- deterministischer Büro-Praxis-Smoketest
-- RC-Laufzeitbudget
-- projektweite SIA-Konfigurationsprüfung
-- einheitliche Cachekennung 57.00
+- Bericht- und Seitenplanprüfung für alle Anlagen
+- SHA-256-Integritätsmanifest für das Finalpaket
+- dokumentierbare Windows-Druckabnahme in Chrome und Edge
+- sauberes Laufzeitpaket ohne Test- und Entwicklungsaltlasten
+- einheitliche Cachekennung 58.00
 
 AUTOMATISCHE PRÜFUNGEN
-- Phase-57-RC-QS: 53/53 bestanden
+- Phase-58-Finalprüfung: 453/453 bestanden
+- Phase-57-RC-Regression: bestanden
 - Büro-/Praxistest: 95/95 bestanden
-- Release-Integration: 1'588 Prüfungen bestanden
-- JavaScript-Syntax: 162/162 Dateien ohne Fehler
-- A4-PDF-Ausgabe: 7/7 Prüfungen bestanden
-- PDF-Stresstest: 30 geplante Seiten = 30 erzeugte Seiten
-- vollständige bestehende Regressionstestkette bestanden
-- Patch-Installation und ZIP-Struktur geprüft
+- Release-Integration: 1’607/1’607 bestanden
+- JavaScript-Syntax: alle Runtime-, Test- und Builddateien ohne Syntaxfehler geprüft
+- A4-PDF-Ausgabe: 30-seitiger Stressbericht weiterhin reproduzierbar
+- Integritätsmanifest: 208 Laufzeitdateien erfasst, davon 17 als kritisch markiert
+- Patch-Installation und sauberes Finalpaket geprüft
 
-HINWEIS ZUR BROWSERPRÜFUNG
-- Chromium wurde in der isolierten Prüfungsumgebung gefunden, konnte dort jedoch nicht headless gestartet werden.
-- Die A4-Ausgabe wurde deshalb zusätzlich mit dem WeasyPrint-PDF-Renderer erfolgreich geprüft.
+MANUELLER WINDOWS-FINAL-GATE
+- Google Chrome: Berichtsvorschau und PDF-Ausgabe prüfen und in der Finalprüfung bestätigen
+- Microsoft Edge: Berichtsvorschau und PDF-Ausgabe prüfen und in der Finalprüfung bestätigen
+- Die Anwendung weist offene Browserabnahmen sichtbar als Hinweis aus
 
-MANUELLER FINAL-GATE FÜR PHASE 58
-- Windows Chrome: Bericht öffnen, Seitenvorschau und PDF-Druck prüfen
-- Windows Microsoft Edge: Bericht öffnen, Seitenvorschau und PDF-Druck prüfen
-- Ergebnis im RC-Protokoll dokumentieren
+WICHTIG
+Die manuelle Windows-Druckabnahme wird nicht erfunden oder automatisch als bestanden markiert. Sie muss im jeweiligen Browser nach einer echten Sichtprüfung bestätigt werden.

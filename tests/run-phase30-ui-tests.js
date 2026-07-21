@@ -67,7 +67,7 @@ const css = readFileSync(new URL('../src/ui/phase30_00.css', import.meta.url), '
 match(ribbonSource, /action: 'showProjectCompletion'/, 'Ribbon enthält Projektabschluss.');
 match(ribbonSource, /selectionType === 'projectCompletion'/, 'Aktiver Projektabschluss wird markiert.');
 match(actionSource, /showProjectCompletion\(\)/, 'Ribbon-Aktion öffnet den Projektabschluss.');
-match(appHtml, /phase30_00\.css\?v=57\.00/, 'Phase-30-CSS wird mit aktueller Cache-Version geladen.');
+match(appHtml, /phase30_00\.css\?v=58\.00/, 'Phase-30-CSS wird mit aktueller Cache-Version geladen.');
 match(css, /dp-completion-checks/, 'Abschluss-CSS enthält die Prüfkarte.');
 match(css, /dp-variant-archive/, 'Abschluss-CSS enthält das Variantenarchiv.');
 ok(html.length > 1000, 'Projektabschluss erzeugt eine vollständige Oberfläche.');

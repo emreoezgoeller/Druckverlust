@@ -10,33 +10,33 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=57.00';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=57.00';
+} from '../../sections/SectionSizingAssistant.js?v=58.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=58.00';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=57.00';
-import ProjectCommands from '../../app/ProjectCommands.js?v=57.00';
-import ReportEngine from '../../report/ReportEngine.js?v=57.00';
+} from '../../formteile/FormPartWorkflowEngine.js?v=58.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=58.00';
+import ReportEngine from '../../report/ReportEngine.js?v=58.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=57.00';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=57.00';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=58.00';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=57.00';
+} from '../../testing/ExpertTestProtocol.js?v=58.00';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -46,7 +46,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=57.00';
+} from '../../testing/ExpertFeedbackRound.js?v=58.00';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -60,7 +60,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=57.00';
+} from '../../testing/ReleaseDecisionPlan.js?v=58.00';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -69,7 +69,7 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=57.00';
+} from '../../testing/BetaReleaseReadiness.js?v=58.00';
 import {
   BETA_FEEDBACK_CATEGORIES,
   BETA_FEEDBACK_SEVERITIES,
@@ -82,7 +82,7 @@ import {
   getBetaFeedbackCategoryLabel,
   getBetaFeedbackSeverityLabel,
   summarizeBetaFeedback,
-} from '../../testing/BetaFeedbackReport.js?v=57.00';
+} from '../../testing/BetaFeedbackReport.js?v=58.00';
 import {
   BETA_FEEDBACK_INBOX_STORAGE_KEY,
   BETA_FEEDBACK_TRIAGE_STATUSES,
@@ -100,30 +100,30 @@ import {
   removeBetaFeedbackInboxItem,
   serializeBetaFeedbackInbox,
   updateBetaFeedbackInboxItem,
-} from '../../testing/BetaFeedbackInbox.js?v=57.00';
+} from '../../testing/BetaFeedbackInbox.js?v=58.00';
 import createPracticeProject from '../../project/practiceProject.js';
-import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=57.00';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=57.00';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=57.00';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=58.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=58.00';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=58.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=57.00';
-import RibbonActions from '../core/RibbonActions.js?v=57.00';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=57.00';
-import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=57.00';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=57.00';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=57.00';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=57.00';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=57.00';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=57.00';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=57.00';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=57.00';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=57.00';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=57.00';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=57.00';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=57.00';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=57.00';
-import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=57.00';
+import UiDialogService from '../core/UiDialogService.js?v=58.00';
+import RibbonActions from '../core/RibbonActions.js?v=58.00';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=58.00';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=58.00';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=58.00';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=58.00';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=58.00';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=58.00';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=58.00';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=58.00';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=58.00';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=58.00';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=58.00';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=58.00';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=58.00';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=58.00';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=58.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import {
   SIA_OPERATION_MODES,
@@ -132,14 +132,14 @@ import {
   analyzeSystemVelocityCompliance,
   evaluateSectionVelocityCompliance,
   normalizeSiaVelocityConfig,
-} from '../../standards/SiaVelocityCompliance.js?v=57.00';
+} from '../../standards/SiaVelocityCompliance.js?v=58.00';
 import {
   RESULT_GLOSSARY,
   RESULT_VIEW_MODES,
   createSectionResultPresentation,
   createSystemResultPresentation,
   normalizeResultViewMode,
-} from '../../results/ResultPresentationEngine.js?v=57.00';
+} from '../../results/ResultPresentationEngine.js?v=58.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -5200,17 +5200,27 @@ export default class WorkspaceComponent {
     const finishedLabel = finishedAt && !Number.isNaN(finishedAt.getTime())
       ? finishedAt.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'medium' })
       : '-';
+    const browser = ReleaseCandidateDiagnostics.getCurrentBrowser();
+    const browserAcceptance = result?.browserAcceptance || ReleaseCandidateDiagnostics.getBrowserAcceptance();
+    const formatAcceptance = entry => {
+      if (!entry?.acceptedAt) return 'Noch offen';
+      const date = new Date(entry.acceptedAt);
+      return Number.isNaN(date.getTime()) ? String(entry.acceptedAt) : date.toLocaleString('de-CH', { dateStyle: 'short', timeStyle: 'short' });
+    };
+    const chromeAcceptance = formatAcceptance(browserAcceptance.chrome);
+    const edgeAcceptance = formatAcceptance(browserAcceptance.edge);
+    const canConfirmBrowser = browser.id === 'chrome' || browser.id === 'edge';
 
     this.root.innerHTML = `
       <div class="workspace-header">
         <div>
-          <span class="dp-overline">Release Candidate / Schlussprüfung</span>
-          <h1>Phase ${this.escapeHtml(APP_RELEASE)} – RC-Check</h1>
-          <p>${this.escapeHtml(result?.summary || 'Führt Projektcheck, Rechen-QS, Datei-QS, Bericht, Demo-Projekt und Deployment-QS zusammen.')}</p>
+          <span class="dp-overline">Druckverlust Pro 3.0 / Finalabnahme</span>
+          <h1>Phase ${this.escapeHtml(APP_RELEASE)} – Finalprüfung</h1>
+          <p>${this.escapeHtml(result?.summary || 'Führt Berechnung, Projektdatei, Bericht, Integrität, Deployment und dokumentierte Windows-Druckabnahme zusammen.')}</p>
         </div>
         <div class="workspace-actions">
           <button type="button" data-rc-action="run">Neu prüfen</button>
-          <button type="button" data-rc-action="copy" ${hasResult ? '' : 'disabled'}>RC-Protokoll kopieren</button>
+          <button type="button" data-rc-action="copy" ${hasResult ? '' : 'disabled'}>Finalprotokoll kopieren</button>
           <button type="button" data-rc-action="project">Zurück zum Projekt</button>
         </div>
       </div>
@@ -5219,7 +5229,7 @@ export default class WorkspaceComponent {
         <div class="dp-panel-header">
           <div>
             <h2>${this.escapeHtml(result?.label || 'Noch nicht geprüft')}</h2>
-            <p>${this.escapeHtml(result?.nextRecommendation || 'Klicke auf „Neu prüfen“, um den aktuellen Stand als Release Candidate zu bewerten.')}</p>
+            <p>${this.escapeHtml(result?.nextRecommendation || 'Klicke auf „Neu prüfen“, um den aktuellen Stand für die Finalfreigabe zu bewerten.')}</p>
           </div>
           <span class="dp-project-check-badge ${this.escapeAttribute(status)}">${this.escapeHtml(result?.label || 'offen')}</span>
         </div>
@@ -5249,6 +5259,33 @@ export default class WorkspaceComponent {
           </div>
         </div>
 
+        <div class="dp-final-browser-acceptance">
+          <div class="dp-final-browser-head">
+            <div>
+              <strong>Manuelle Windows-Druckabnahme</strong>
+              <span>Bericht öffnen, Druckvorschau kontrollieren und eine PDF speichern. Danach im jeweiligen Browser bestätigen.</span>
+            </div>
+            <span class="dp-final-current-browser">Aktuell: ${this.escapeHtml(browser.label)}</span>
+          </div>
+          <div class="dp-final-browser-grid">
+            <div class="${browserAcceptance.chrome?.acceptedAt ? 'ok' : 'warning'}">
+              <span>Google Chrome</span>
+              <strong>${this.escapeHtml(chromeAcceptance)}</strong>
+            </div>
+            <div class="${browserAcceptance.edge?.acceptedAt ? 'ok' : 'warning'}">
+              <span>Microsoft Edge</span>
+              <strong>${this.escapeHtml(edgeAcceptance)}</strong>
+            </div>
+          </div>
+          <div class="dp-final-browser-actions">
+            <button type="button" data-rc-action="confirm-browser" ${canConfirmBrowser ? '' : 'disabled'}>
+              Druck in ${this.escapeHtml(browser.label)} bestätigen
+            </button>
+            <button type="button" data-rc-action="reset-browser">Bestätigungen zurücksetzen</button>
+          </div>
+          ${canConfirmBrowser ? '' : '<p class="dp-final-browser-note">Diese Bestätigung ist nur in Google Chrome oder Microsoft Edge möglich.</p>'}
+        </div>
+
         ${hasResult ? `
           <div class="dp-project-check-list dp-rc-list">
             ${(result.items || []).map(item => `
@@ -5261,7 +5298,7 @@ export default class WorkspaceComponent {
           </div>
         ` : `
           <div class="dp-empty-state">
-            Noch keine Schlussprüfung vorhanden. Der RC-Check ist die technische Schlussprüfung von Phase 57 vor dem finalen Release 3.0.
+            Noch keine Finalprüfung vorhanden. Die Prüfung bewertet den vollständigen Version-3.0-Stand und hält die Chrome-/Edge-Druckabnahme nachvollziehbar fest.
           </div>
         `}
       </section>
@@ -5294,6 +5331,49 @@ export default class WorkspaceComponent {
           return;
         }
 
+        if (action === 'confirm-browser') {
+          const browser = ReleaseCandidateDiagnostics.getCurrentBrowser();
+          const confirmed = await UiDialogService.confirm({
+            title: `${browser.label} – Druckabnahme bestätigen`,
+            message: 'Bestätige erst, nachdem du den Bericht geöffnet, die Seitenvorschau geprüft und eine PDF-Datei gespeichert hast.',
+            details: ['Keine abgeschnittenen Tabellen', 'Deckblatt und Seitenzahlen korrekt', 'Schema und Fortsetzungsseiten vollständig'],
+            confirmLabel: 'Druckausgabe ist geprüft',
+            tone: 'warning',
+          });
+          if (!confirmed) return;
+
+          try {
+            ReleaseCandidateDiagnostics.confirmCurrentBrowser();
+            const check = await ReleaseCandidateDiagnostics.run({
+              state: this.state,
+              project: this.state.project,
+              system: this.state.selectedSystem || this.state.project?.systems?.[0],
+              registry: this.registry,
+            });
+            this.state.releaseCandidateCheck = check;
+            this.state.setSelection?.('releaseCandidateCheck', check);
+            this.state.notify?.();
+          } catch (error) {
+            UiDialogService.alert(error.message);
+          }
+          return;
+        }
+
+        if (action === 'reset-browser') {
+          const confirmed = await UiDialogService.confirm({
+            title: 'Browserabnahmen zurücksetzen',
+            message: 'Die gespeicherten Bestätigungen für Chrome und Edge werden gelöscht.',
+            confirmLabel: 'Zurücksetzen',
+            tone: 'warning',
+          });
+          if (!confirmed) return;
+          ReleaseCandidateDiagnostics.clearBrowserAcceptance();
+          this.state.releaseCandidateCheck = null;
+          this.state.setSelection?.('releaseCandidateCheck', null);
+          this.state.notify?.();
+          return;
+        }
+
         if (action === 'run') {
           const originalText = button.textContent;
           button.disabled = true;
@@ -5310,7 +5390,7 @@ export default class WorkspaceComponent {
             this.state.setSelection?.('releaseCandidateCheck', check);
             this.state.notify?.();
           } catch (error) {
-            UiDialogService.alert(`RC-Check konnte nicht ausgeführt werden: ${error.message}`);
+            UiDialogService.alert(`Finalprüfung konnte nicht ausgeführt werden: ${error.message}`);
           } finally {
             button.disabled = false;
             button.textContent = originalText;

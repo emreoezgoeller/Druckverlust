@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 57.00
+# Druckverlust Pro – Roadmap nach Version 3.0
 
-Aktueller Entwicklungsstand: **Version 2.12.0 · Phase 57.00**. Der interne Release Candidate verbindet die Praxisprüfung aus Phase 56 mit anlagenweiter Schlussprüfung, echtem `.dvp`-Roundtrip, einheitlicher Cachekennung und vollständiger Regressionstestkette.
+Aktueller Entwicklungsstand: **Version 3.0.0 · Phase 58.00**. Der fachliche und technische Finalstand ist abgeschlossen. Die Anwendung enthält eine dokumentierte Windows-Druckabnahme für Chrome und Edge; offene Bestätigungen werden transparent angezeigt und nicht automatisch als bestanden markiert.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -98,12 +98,15 @@ Aktueller Entwicklungsstand: **Version 2.12.0 · Phase 57.00**. Der interne Rele
 - Versionen, Dokumentation und vollständige Regressionstestkette vereinheitlicht,
 - manuelle Windows-Chrome-/Edge-Druckabnahme als letzter Final-Gate dokumentiert.
 
-## Phase 58.00 – Druckverlust Pro 3.0 Final
+## Phase 58.00 – Druckverlust Pro 3.0 Final – abgeschlossen
 
-- finalen freigegebenen Gesamtstand erstellen,
-- Altlasten und nicht benötigte Entwicklungsdateien entfernen,
-- Release Notes, Startseite, Berechnung, Bericht und Projektformate final abnehmen,
-- anschliessend nur noch Wartungs- und Fehlerkorrekturen durchführen.
+- Version, Cachekennung und Release-Metadaten auf **3.0.0 / 58.00** vereinheitlicht,
+- bisherige RC-Prüfung zur Finalprüfung mit Integritäts-, Deployment- und Browserabnahme erweitert,
+- SHA-256-Manifest für sämtliche Dateien des sauberen Laufzeitpakets ergänzt,
+- manuelle Windows-Druckabnahme für Google Chrome und Microsoft Edge nachvollziehbar dokumentiert,
+- sauberes Laufzeitpaket ohne Tests, GitHub-Vorlagen, interne Entwicklungsdokumente und temporäre Prüfdateien erstellt,
+- Startseite, Berechnung, Bericht, Projektformate, Rechtstexte, Release Notes und Regressionstestkette final geprüft,
+- weitere Arbeiten ab jetzt als Wartungs-, Fehlerkorrektur- oder klar getrennte Plattformphase führen.
 
 ## Spätere Plattformintegration
 

@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ProjectStandardizationEngine from '../src/project/ProjectStandardizationEngine.js?v=57.00';
-import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
+import ProjectStandardizationEngine from '../src/project/ProjectStandardizationEngine.js?v=58.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=58.00';
 
 const root = new URL('..', import.meta.url);
 const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
@@ -22,8 +22,8 @@ const deployment = read('src/diagnostics/DeploymentDiagnostics.js');
 const quality = read('src/quality/EngineeringQualityEngine.js');
 const report = read('src/report/ReportEngine.js');
 
-assert.match(appHtml, /phase36_00\.css\?v=57\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
+assert.match(appHtml, /phase36_00\.css\?v=58\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=58\.00/); checks += 1;
 assert.match(ribbon, /showProjectStandardization/); checks += 1;
 assert.match(ribbon, /label: 'Workflow'/); checks += 1;
 assert.match(actions, /showProjectStandardization/); checks += 1;
@@ -43,8 +43,8 @@ assert.match(quality, /resolveProfile/); checks += 1;
 assert.match(quality, /profile\.name/); checks += 1;
 assert.match(report, /projectWorkflow/); checks += 1;
 assert.match(report, /Engineering Pruefprofil/); checks += 1;
-assert.match(version, /APP_RELEASE = '57\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.12\.0'/); checks += 1;
+assert.match(version, /APP_RELEASE = '58\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '3\.0\.0'/); checks += 1;
 
 const project = createDemoProject();
 project.name = 'Phase 36 Bericht';

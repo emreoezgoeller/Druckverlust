@@ -20,12 +20,12 @@ const report = read('src/report/ReportEngine.js');
 const engine = read('src/project/ProjectTaskCenterEngine.js');
 const packageJson = JSON.parse(read('package.json'));
 
-assert.match(appHtml, /phase37_00\.css\?v=57\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
-assert.match(main, /Phase 57\.00/); checks += 1;
-assert.match(main, /WorkspaceComponent\.js\?v=57\.00/); checks += 1;
-assert.match(version, /APP_RELEASE = '57\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.12\.0'/); checks += 1;
+assert.match(appHtml, /phase37_00\.css\?v=58\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=58\.00/); checks += 1;
+assert.match(main, /Phase 58\.00/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=58\.00/); checks += 1;
+assert.match(version, /APP_RELEASE = '58\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '3\.0\.0'/); checks += 1;
 assert.match(ribbon, /showProjectTaskCenter/); checks += 1;
 assert.match(ribbon, /label: 'Aufgaben'/); checks += 1;
 assert.match(actions, /showProjectTaskCenter/); checks += 1;
@@ -48,7 +48,7 @@ assert.match(report, /Projektaufgaben/); checks += 1;
 assert.match(engine, /addManualTask/); checks += 1;
 assert.match(engine, /addFavorite/); checks += 1;
 assert.match(engine, /createGeneratedTasks/); checks += 1;
-assert.equal(packageJson.version, '2.12.0'); checks += 1;
+assert.equal(packageJson.version, '3.0.0'); checks += 1;
 assert.match(packageJson.scripts.test, /run-phase37-task-center-tests/); checks += 1;
 assert.match(packageJson.scripts['test:phase37'], /run-phase37-ui-report-tests/); checks += 1;
 

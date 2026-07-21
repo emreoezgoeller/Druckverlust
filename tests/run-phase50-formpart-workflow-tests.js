@@ -119,8 +119,8 @@ check(workspace.includes('Vorschlag übernehmen') && workspace.includes('getSugg
 check(workspace.includes('moveFormPartWithinSection') && commandsSource.includes('moveFormPartWithinSectionInCollection'), 'Sortierung arbeitet teilsteckenbezogen statt global.');
 check(workspace.includes('Ungültige Altzuordnungen werden bewusst nicht still auf TS 1 umgebogen.'), 'Ungültige Altzuordnungen bleiben sichtbar und werden nicht still verfälscht.');
 check(stateSource.includes('formPartPickerSectionId') && stateSource.includes('setFormPartPickerSection'), 'Anwendungszustand führt den Picker-Kontext zentral.');
-check(appHtml.includes('phase50_00.css?v=57.00'), 'Phase-50-Stylesheet wird cache-sicher geladen.');
+check(appHtml.includes('phase50_00.css?v=58.00'), 'Phase-50-Stylesheet wird cache-sicher geladen.');
 check(css.includes('@media (max-width: 850px)') && css.includes('.dp-formpart-workflow-panel'), 'Neuer Formteil-Workflow ist responsiv ausgelegt.');
-check(version.includes("APP_VERSION = '2.12.0'") && version.includes("APP_RELEASE = '57.00'"), 'Versionsdaten stehen auf dem aktuellen Release 2.7.0 / Phase 51.20.');
+check(version.includes("APP_VERSION = '3.0.0'") && version.includes("APP_RELEASE = '58.00'"), 'Versionsdaten stehen auf dem aktuellen Release 2.7.0 / Phase 51.20.');
 
 console.log(`Phase 50.00 intelligenter Formteil-Workflow: ${checks} Prüfungen bestanden.`);

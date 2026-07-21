@@ -4143,7 +4143,7 @@ canvas,
   }
 }
 
-/* Phase 18.35 – Release Candidate / Schlussprüfung */
+/* Phase 58.00 – Finalprüfung / Schlussabnahme */
 .dp-rc-panel {
   border: 1px solid rgba(37, 99, 235, 0.16);
 }
@@ -4433,4 +4433,123 @@ canvas,
 
 @media (max-width: 720px) {
   .dp-help-example-grid { grid-template-columns: 1fr; }
+}
+
+/* Phase 58.00 – Finalprüfung und dokumentierte Windows-Druckabnahme */
+.dp-final-browser-acceptance {
+  margin: 18px 0;
+  padding: 18px;
+  border: 1px solid rgba(14, 90, 156, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.dp-final-browser-head,
+.dp-final-browser-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.dp-final-browser-head > div {
+  display: grid;
+  gap: 4px;
+}
+
+.dp-final-browser-head strong {
+  color: var(--dp-blue-900);
+  font-size: 1rem;
+}
+
+.dp-final-browser-head span,
+.dp-final-browser-note {
+  color: var(--dp-muted);
+  line-height: 1.45;
+}
+
+.dp-final-current-browser {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: #eef7ff;
+  color: var(--dp-blue-900) !important;
+  font-weight: 800;
+}
+
+.dp-final-browser-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.dp-final-browser-grid > div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid var(--dp-border);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.dp-final-browser-grid > div.ok {
+  border-color: rgba(22, 163, 74, 0.3);
+  background: #f0fdf4;
+}
+
+.dp-final-browser-grid > div.warning {
+  border-color: rgba(245, 158, 11, 0.34);
+  background: #fffbeb;
+}
+
+.dp-final-browser-grid span {
+  color: var(--dp-muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.dp-final-browser-grid strong {
+  color: var(--dp-blue-900);
+}
+
+.dp-final-browser-actions {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.dp-final-browser-actions button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--dp-blue-800);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-final-browser-actions button:last-child {
+  background: #e8eef5;
+  color: var(--dp-blue-900);
+}
+
+.dp-final-browser-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dp-final-browser-note {
+  margin: 12px 0 0;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 760px) {
+  .dp-final-browser-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dp-final-browser-grid {
+    grid-template-columns: 1fr;
+  }
 }

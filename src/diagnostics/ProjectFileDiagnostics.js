@@ -1,8 +1,8 @@
 // Druckverlust Pro – ProjectFileDiagnostics
 // Prüft, ob das aktuelle Projekt sauber als .dvp-Datei gespeichert/geöffnet werden kann.
 
-import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=57.00';
-import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=57.00';
+import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=58.00';
+import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=58.00';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };

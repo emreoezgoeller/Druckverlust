@@ -18,12 +18,12 @@ const css = read('src/ui/phase38_00.css');
 const engine = read('src/project/ProjectSearchEngine.js');
 const packageJson = JSON.parse(read('package.json'));
 
-assert.match(appHtml, /phase38_00\.css\?v=57\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
-assert.match(main, /Phase 57\.00/); checks += 1;
-assert.match(main, /WorkspaceComponent\.js\?v=57\.00/); checks += 1;
-assert.match(version, /APP_RELEASE = '57\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.12\.0'/); checks += 1;
+assert.match(appHtml, /phase38_00\.css\?v=58\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=58\.00/); checks += 1;
+assert.match(main, /Phase 58\.00/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=58\.00/); checks += 1;
+assert.match(version, /APP_RELEASE = '58\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '3\.0\.0'/); checks += 1;
 assert.match(ribbon, /showProjectSearch/); checks += 1;
 assert.match(ribbon, /label: 'Suche'/); checks += 1;
 assert.match(ribbon, /icon: 'search'/); checks += 1;
@@ -43,7 +43,7 @@ assert.match(css, /@media \(max-width: 560px\)/); checks += 1;
 assert.match(engine, /buildIndex/); checks += 1;
 assert.match(engine, /togglePin/); checks += 1;
 assert.match(engine, /createIndexCsv/); checks += 1;
-assert.equal(packageJson.version, '2.12.0'); checks += 1;
+assert.equal(packageJson.version, '3.0.0'); checks += 1;
 assert.match(packageJson.scripts.test, /run-phase38-project-search-tests/); checks += 1;
 assert.match(packageJson.scripts['test:phase38'], /run-phase38-ui-tests/); checks += 1;
 

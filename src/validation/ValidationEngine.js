@@ -1,5 +1,5 @@
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=57.00';
-import { normalizeSiaVelocityConfig } from '../standards/SiaVelocityCompliance.js?v=57.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=58.00';
+import { normalizeSiaVelocityConfig } from '../standards/SiaVelocityCompliance.js?v=58.00';
 
 // Druckverlust Pro – ValidationEngine
 // Prüft Eingaben, Berechnungsergebnisse und Projektstruktur.

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import createDemoProject from '../src/project/demoProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ProjectTaskCenterEngine from '../src/project/ProjectTaskCenterEngine.js?v=57.00';
+import ProjectTaskCenterEngine from '../src/project/ProjectTaskCenterEngine.js?v=58.00';
 import StorageEngine from '../src/storage/StorageEngine.js';
-import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=58.00';
 
 let checks = 0;
 const project = createDemoProject();

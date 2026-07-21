@@ -1,6 +1,6 @@
 # Projektdateien und Rückwärtskompatibilität – Schema 1.3.0
 
-Druckverlust Pro 2.12.0 öffnet aktuelle Projektdateien mit Schema **1.3.0** sowie ältere `.dvp`-Stände. Unterstützt werden unter anderem frühere Druckverlust-Pro-Hüllen, rohe Projektobjekte mit `systems`, historische Wrapper wie `projectData` und ältere deutsche Feldnamen wie `anlagen`, `teilstrecken`, `formteile` und `sonderbauteile`.
+Druckverlust Pro 3.0.0 öffnet aktuelle Projektdateien mit Schema **1.3.0** sowie ältere `.dvp`-Stände. Unterstützt werden unter anderem frühere Druckverlust-Pro-Hüllen, rohe Projektobjekte mit `systems`, historische Wrapper wie `projectData` und ältere deutsche Feldnamen wie `anlagen`, `teilstrecken`, `formteile` und `sonderbauteile`.
 
 ## Sicherer Ablauf beim Öffnen
 

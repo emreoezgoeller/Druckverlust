@@ -54,23 +54,23 @@ const roadmap = read('ROADMAP.md');
 const changelog = read('CHANGELOG.md');
 
 // Zentrale Versions- und Releasekonsistenz.
-equal(APP_VERSION, '2.12.0', 'App-Version steht auf 2.12.0');
-equal(APP_RELEASE, '57.00', 'App-Release steht auf Phase 57.00');
-equal(APP_ASSET_VERSION, '57.00', 'Asset-Version steht auf Phase 57.00');
+equal(APP_VERSION, '3.0.0', 'App-Version steht auf 3.0.0');
+equal(APP_RELEASE, '58.00', 'App-Release steht auf Phase 58.00');
+equal(APP_ASSET_VERSION, '58.00', 'Asset-Version steht auf Phase 58.00');
 equal(packageJson.version, APP_VERSION, 'package.json entspricht der zentralen App-Version');
 equal(release.version, APP_VERSION, 'release.json entspricht der zentralen App-Version');
 equal(release.phase, APP_RELEASE, 'release.json entspricht dem zentralen Release');
 equal(release.projectFileSchema, PROJECT_FILE_SCHEMA_VERSION, 'Release-Metadaten nennen das aktuelle Projektschema');
 includes(appVersionSource, "APP_BUILD_LABEL", 'Zentrale Build-Bezeichnung bleibt vorhanden');
-includes(mainSource, 'Phase 57.00', 'Hauptmodul nennt die aktuelle Phase');
-includes(releaseNotes, 'Version 2.12.0 · Phase 57.00', 'Release Notes nennen den RC-Stand');
-includes(roadmap, 'Phase 57.00 – Release Candidate und Fehlerbereinigung – abgeschlossen', 'Roadmap markiert Phase 57 als abgeschlossen');
-includes(changelog, '2.12.0 – Phase 57.00', 'Changelog enthält Phase 57');
+includes(mainSource, 'Phase 58.00', 'Hauptmodul nennt die aktuelle Phase');
+includes(releaseNotes, 'Version 3.0.0 · Phase 58.00', 'Release Notes nennen den Final-Stand');
+includes(roadmap, 'Phase 57.00 – Release Candidate und Fehlerbereinigung – abgeschlossen', 'Roadmap bewahrt Phase 57 als abgeschlossenen RC');
+includes(changelog, '3.0.0 – Phase 58.00', 'Changelog enthält den Final-Release');
 
 // Einheitliche Cachekennungen im Einstieg und in allen bereits versionierten Modulimporten.
 const appAssets = [...appHtml.matchAll(/(?:href|src)="(src\/[^"]+)"/g)].map(match => match[1]);
 pass(appAssets.length >= 40, 'App bindet den vollständigen lokalen Asset-Satz ein', appAssets.length, '>= 40');
-pass(appAssets.every(asset => /\?v=57\.00$/.test(asset)), 'Alle App-Assets verwenden genau die Cachekennung 57.00');
+pass(appAssets.every(asset => /\?v=58\.00$/.test(asset)), 'Alle App-Assets verwenden genau die Cachekennung 58.00');
 pass(!appHtml.includes('&release='), 'App-Einstieg enthält keine zweite widersprüchliche Releasekennung');
 
 const sourceFiles = walk(path.join(ROOT, 'src'));
@@ -80,23 +80,23 @@ sourceFiles.forEach(filePath => {
   const source = fs.readFileSync(filePath, 'utf8');
   for (const match of source.matchAll(/(?:from\s+|import\s+)["']([^"']+\.js\?v=([^"']+))["']/g)) {
     staticVersionedImports.push({ filePath, specifier: match[1], version: match[2] });
-    if (match[2] !== '57.00') staleImports.push({ filePath, specifier: match[1] });
+    if (match[2] !== '58.00') staleImports.push({ filePath, specifier: match[1] });
   }
 });
 pass(staticVersionedImports.length >= 90, 'Statisch versionierte Modulimporte werden vollständig geprüft', staticVersionedImports.length, '>= 90');
 equal(staleImports.length, 0, 'Keine alte oder gemischte Import-Cachekennung ist mehr vorhanden');
 pass(!sourceFiles.some(filePath => fs.readFileSync(filePath, 'utf8').includes('&release=')), 'Runtime-Quellen enthalten keine parallelen release-Querystrings');
 
-// RC-Prüfung ist sichtbar erreichbar und nicht mehr als historische Phase 18 beschriftet.
+// Die ehemalige RC-Prüfung bleibt als Finalprüfung sichtbar erreichbar.
 includes(ribbonSource, "action: 'releaseCandidateCheck'", 'Ribbon enthält die sichtbare RC-Prüfung');
-includes(ribbonSource, "label: 'RC-Prüfung'", 'Ribbon beschriftet die Schlussprüfung verständlich');
+includes(ribbonSource, "label: 'Finalprüfung'", 'Ribbon beschriftet die Schlussprüfung als Finalprüfung');
 includes(ribbonSource, "selectionType === 'releaseCandidateCheck'", 'Aktive RC-Seite wird im Ribbon markiert');
-includes(workspaceSource, 'technische Schlussprüfung von Phase 57', 'Leerseite erklärt den aktuellen RC-Zweck');
+includes(workspaceSource, 'Noch keine Finalprüfung vorhanden', 'Leerseite erklärt den aktuellen Finalzweck');
 pass(!rcSource.includes('Phase 18'), 'RC-Diagnostik enthält keine veraltete Phase-18-Beschriftung');
 includes(rcSource, 'calculateAllSystems', 'RC-Diagnostik berechnet alle Anlagen');
 includes(rcSource, '.dvp-Roundtrip', 'RC-Diagnostik enthält den echten Projektdatei-Roundtrip');
 includes(rcSource, 'Büro-Referenz', 'RC-Diagnostik enthält einen deterministischen Praxis-Smoketest');
-includes(rcSource, 'RC-Zeitbudget', 'RC-Diagnostik bewertet die Laufzeiten');
+includes(rcSource, 'Final-Zeitbudget', 'Finaldiagnostik bewertet die Laufzeiten');
 
 // Funktionaler RC-Sammeltest an einem reproduzierbaren Mehrkomponentenprojekt.
 const project = createSmallOfficePracticeProject();
@@ -115,6 +115,11 @@ const result = await ReleaseCandidateDiagnostics.run({
   system: activeSystem,
   registry: ProjectCalculationService.getFormPartRegistry(),
   includeDeployment: false,
+  includeIntegrity: false,
+  browserAcceptance: {
+    chrome: { acceptedAt: '2026-07-21T18:00:00.000Z' },
+    edge: { acceptedAt: '2026-07-21T18:05:00.000Z' },
+  },
 });
 
 pass(result.status !== 'error', 'RC-Sammeltest ist nicht blockiert', result.status, 'ok oder warning');
@@ -130,11 +135,11 @@ pass(result.metrics.reportPages > 0, 'RC-Ergebnis enthält geplante Berichtseite
 pass(result.items.some(item => item.label === 'Alle Anlagen' && item.area === 'Berechnung' && item.status === 'ok'), 'Alle Anlagen werden im RC-Check erfolgreich berechnet');
 pass(result.items.some(item => item.label === '.dvp-Roundtrip' && item.status === 'ok'), 'Projektdatei-Roundtrip besteht den RC-Check');
 pass(result.items.some(item => item.label === 'Büro-Referenz' && item.status === 'ok'), 'Praxis-Smoketest besteht den RC-Check');
-pass(result.items.some(item => item.label === 'RC-Zeitbudget'), 'Performancebewertung ist im RC-Ergebnis vorhanden');
+pass(result.items.some(item => item.label === 'Final-Zeitbudget'), 'Performancebewertung ist im Final-Ergebnis vorhanden');
 pass(state.isCalculationDirty === false && state.lastAutoCalculationError === null, 'RC-Lauf aktualisiert den Berechnungsstatus ohne Fehler');
 
 const protocol = ReleaseCandidateDiagnostics.toText(result);
-includes(protocol, `Release Candidate Phase ${APP_RELEASE}`, 'RC-Protokoll nennt die aktuelle Phase');
+includes(protocol, `Finalprüfung Phase ${APP_RELEASE}`, 'Finalprotokoll nennt die aktuelle Phase');
 includes(protocol, 'Umfang:', 'RC-Protokoll enthält den Projektumfang');
 includes(protocol, 'Laufzeiten:', 'RC-Protokoll enthält die gemessenen Laufzeiten');
 includes(protocol, 'Prüfpunkte:', 'RC-Protokoll enthält die Einzelprüfungen');
@@ -148,8 +153,8 @@ equal(envelope.schemaVersion, PROJECT_FILE_SCHEMA_VERSION, '.dvp-Hülle enthält
 pass(StorageEngine.parse(serialized, { fileName: 'Phase57-RC.dvp' }).systems.length === project.systems.length, 'RC-Projekt lässt sich erneut öffnen');
 
 // Testkette und Browser-/PDF-Abnahme bleiben explizit erreichbar.
-pass(packageJson.scripts.test.startsWith('node tests/run-phase57-release-candidate-tests.js'), 'Gesamttest startet mit der aktuellen Phase 57');
-includes(packageJson.scripts['test:phase57'], 'run-phase57-release-candidate-tests.js', 'Eigener Phase-57-Testbefehl ist vorhanden');
+pass(packageJson.scripts.test.startsWith('node tests/run-phase58-final-release-tests.js'), 'Gesamttest startet mit der aktuellen Phase 58');
+includes(packageJson.scripts['test:phase57'], 'run-phase57-release-candidate-tests.js', 'Historischer Phase-57-Regressionsbefehl bleibt vorhanden');
 includes(packageJson.scripts['test:phase57:browser'], 'run-phase57-browser-print-tests.js', 'Browser-/PDF-Abnahmetest ist im RC-Release weiterhin vorhanden');
 
 console.log(`Phase 57 Release-Candidate-QS: ${checks}/${checks} Prüfungen bestanden.`);

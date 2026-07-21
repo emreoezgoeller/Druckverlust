@@ -1,0 +1,14 @@
+DRUCKVERLUST PRO 3.0.0 – PHASE 58.00 FINAL
+============================================================
+
+Dieser Patch enthält nur die gegenüber Phase 57.00 geänderten oder neuen Dateien.
+
+Installation:
+1. Eine Sicherung des bestehenden Phase-57-Projektordners erstellen.
+2. Den Inhalt dieser ZIP in den Projektordner kopieren.
+3. Vorhandene Dateien ersetzen.
+4. Druckverlust_starten.bat starten.
+5. Im Ribbon die Finalprüfung ausführen.
+6. Die PDF-Ausgabe unter Windows einmal in Google Chrome und einmal in Microsoft Edge visuell prüfen und danach im Final-Gate bestätigen.
+
+Es müssen keine Dateien manuell gelöscht werden.

@@ -4,7 +4,7 @@ import createDemoProject from '../src/project/demoProject.js';
 import ProjectCommands from '../src/app/ProjectCommands.js';
 import ApplicationState from '../src/app/ApplicationState.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=58.00';
 
 const root = new URL('..', import.meta.url);
 const read = relative => fs.readFileSync(new URL(relative, root), 'utf8');
@@ -20,8 +20,8 @@ const handoverEngine = read('src/handover/ProjectHandoverEngine.js');
 const css = read('src/ui/phase34_00.css');
 const version = read('src/core/appVersion.js');
 
-assert.match(appHtml, /phase34_00\.css\?v=57\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=57\.00/); checks += 1;
+assert.match(appHtml, /phase34_00\.css\?v=58\.00/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=58\.00/); checks += 1;
 assert.match(ribbon, /showSystemManager/); checks += 1;
 assert.match(ribbon, /label: 'Anlagen'/); checks += 1;
 assert.match(sidebar, /type: 'systemManager'/); checks += 1;
@@ -37,8 +37,8 @@ assert.match(workspace, /data-system-action="duplicate"/); checks += 1;
 assert.match(workspace, /data-system-field="bkpNumber"/); checks += 1;
 assert.match(css, /dp-system-manager-summary/); checks += 1;
 assert.match(css, /@media \(max-width: 470px\)/); checks += 1;
-assert.match(version, /APP_RELEASE = '57\.00'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.12\.0'/); checks += 1;
+assert.match(version, /APP_RELEASE = '58\.00'/); checks += 1;
+assert.match(version, /APP_VERSION = '3\.0\.0'/); checks += 1;
 
 const project = createDemoProject();
 const state = new ApplicationState();

@@ -56,7 +56,7 @@ currentProject.systems[0].formParts.push({
 const currentText = StorageEngine.serialize(currentProject);
 const currentPayload = JSON.parse(currentText);
 equal(currentPayload.schemaVersion, '1.3.0', 'Neue Dateien werden mit Schema 1.3.0 gespeichert.');
-equal(currentPayload.appVersion, '2.12.0', 'Neue Dateien enthalten Version 2.12.0.');
+equal(currentPayload.appVersion, '3.0.0', 'Neue Dateien enthalten Version 3.0.0.');
 let currentBackupCalls = 0;
 const currentReopened = StorageEngine.parse(currentText, {
   fileName: 'P55-001.dvp',
@@ -285,21 +285,21 @@ includes(ribbonActions, 'Original-vor-Migration', 'Öffnungsworkflow informiert 
 includes(ribbonActions, 'onBeforeMigration', 'Öffnungsworkflow erstellt die Originalsicherung vor der Übernahme.');
 includes(workspace, 'Migriert von', 'Datei-QS zeigt das Quellschema in der Oberfläche.');
 includes(diagnostics, 'Rückwärtskompatibilität', 'Datei-QS bewertet die Rückwärtskompatibilität.');
-includes(versionSource, "APP_VERSION = '2.12.0'", 'App-Version steht auf 2.12.0.');
-includes(versionSource, "APP_RELEASE = '57.00'", 'App-Release steht auf Phase 56.00.');
-equal(packageJson.version, '2.12.0', 'package.json steht auf Version 2.12.0.');
+includes(versionSource, "APP_VERSION = '3.0.0'", 'App-Version steht auf 3.0.0.');
+includes(versionSource, "APP_RELEASE = '58.00'", 'App-Release steht auf Phase 56.00.');
+equal(packageJson.version, '3.0.0', 'package.json steht auf Version 3.0.0.');
 includes(packageJson.scripts['test:phase55'], 'run-phase55-project-migration-tests.js', 'package.json enthält die Phase-55-Testsuite.');
-equal(releaseJson.version, '2.12.0', 'release.json steht auf Version 2.12.0.');
-equal(releaseJson.phase, '57.00', 'release.json steht auf Phase 56.00.');
+equal(releaseJson.version, '3.0.0', 'release.json steht auf Version 3.0.0.');
+equal(releaseJson.phase, '58.00', 'release.json steht auf Phase 56.00.');
 equal(releaseJson.projectFileSchema, '1.3.0', 'release.json nennt Schema 1.3.0.');
 check(Number(releaseJson.quality?.projectMigrationChecks) >= 0, 'release.json enthält das Phase-55-Qualitätsfeld.');
-includes(appHtml, 'src/main.js?v=57.00', 'Anwendung lädt Main cache-sicher für Phase 55.');
-includes(mainSource, 'WorkspaceComponent.js?v=57.00', 'Main lädt den Phase-55-Workspace cache-sicher.');
+includes(appHtml, 'src/main.js?v=58.00', 'Anwendung lädt Main cache-sicher für Phase 55.');
+includes(mainSource, 'WorkspaceComponent.js?v=58.00', 'Main lädt den Phase-55-Workspace cache-sicher.');
 includes(roadmap, 'Phase 55.00 – Projektdateien und Rückwärtskompatibilität – abgeschlossen', 'Roadmap markiert Phase 55 als abgeschlossen.');
 includes(roadmap, 'Phase 57.00 – Release Candidate und Fehlerbereinigung – abgeschlossen', 'Roadmap markiert Phase 56 als abgeschlossen.');
 includes(changelog, '## 2.10.0 – Phase 55.00', 'Changelog enthält Phase 55.');
-includes(releaseNotes, 'Version 2.12.0', 'Release Notes nennen Version 2.12.0.');
-includes(releaseNotes, 'Phase 57.00', 'Release Notes nennen den aktuellen Stand Phase 56.');
+includes(releaseNotes, 'Version 3.0.0', 'Release Notes nennen Version 3.0.0.');
+includes(releaseNotes, 'Phase 58.00', 'Release Notes nennen den aktuellen Stand Phase 56.');
 includes(migrationDocs, 'Schema 1.3.0', 'Migrationsdokumentation erklärt das neue Schema.');
 includes(migrationDocs, 'Original-vor-Migration', 'Migrationsdokumentation erklärt die Originalsicherung.');
 includes(testPlan, 'npm run test:phase55', 'Testplan dokumentiert die Phase-55-Testsuite.');

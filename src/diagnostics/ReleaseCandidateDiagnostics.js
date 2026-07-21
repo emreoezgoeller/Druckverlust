@@ -1,21 +1,22 @@
 // Druckverlust Pro – ReleaseCandidateDiagnostics
-// Phase 57.00: technische Schlussprüfung für den internen Release Candidate.
+// Phase 58.00: technische Finalprüfung für Druckverlust Pro 3.0.
 
-import ProjectCalculationService from '../project/ProjectCalculationService.js?v=57.00';
-import ProjectDiagnostics from './ProjectDiagnostics.js?v=57.00';
-import CalculationDiagnostics from './CalculationDiagnostics.js?v=57.00';
-import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=57.00';
-import ProjectFileDiagnostics from './ProjectFileDiagnostics.js?v=57.00';
-import ReportEngine from '../report/ReportEngine.js?v=57.00';
-import createDemoProject from '../project/demoProject.js?v=57.00';
-import { createSmallOfficePracticeProject } from '../project/officePracticeProjects.js?v=57.00';
-import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=57.00';
+import ProjectCalculationService from '../project/ProjectCalculationService.js?v=58.00';
+import ProjectDiagnostics from './ProjectDiagnostics.js?v=58.00';
+import CalculationDiagnostics from './CalculationDiagnostics.js?v=58.00';
+import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=58.00';
+import ProjectFileDiagnostics from './ProjectFileDiagnostics.js?v=58.00';
+import ReleaseIntegrityDiagnostics from './ReleaseIntegrityDiagnostics.js?v=58.00';
+import ReportEngine from '../report/ReportEngine.js?v=58.00';
+import createDemoProject from '../project/demoProject.js?v=58.00';
+import { createSmallOfficePracticeProject } from '../project/officePracticeProjects.js?v=58.00';
+import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=58.00';
 import {
   APP_ASSET_VERSION,
   APP_RELEASE,
   APP_VERSION,
   APP_BUILD_LABEL,
-} from '../core/appVersion.js?v=57.00';
+} from '../core/appVersion.js?v=58.00';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };
@@ -37,10 +38,38 @@ function statusFromItems(items = []) {
 }
 
 function labelFromStatus(status = 'ok') {
-  if (status === 'error') return 'RC blockiert';
-  if (status === 'warning') return 'RC mit Hinweisen';
-  return 'RC bereit';
+  if (status === 'error') return 'Finalfreigabe blockiert';
+  if (status === 'warning') return 'Finalfreigabe mit offenen Punkten';
+  return 'Finalfreigabe bereit';
 }
+
+export const FINAL_BROWSER_ACCEPTANCE_KEY = 'druckverlust-pro-final-browser-acceptance-v3';
+
+function normalizeBrowserAcceptance(value = null) {
+  const source = value && typeof value === 'object' ? value : {};
+  return {
+    chrome: source.chrome && typeof source.chrome === 'object' ? source.chrome : null,
+    edge: source.edge && typeof source.edge === 'object' ? source.edge : null,
+  };
+}
+
+function readBrowserAcceptance(storageRef = null) {
+  const storage = storageRef || (typeof window !== 'undefined' ? window.localStorage : null);
+  if (!storage?.getItem) return normalizeBrowserAcceptance();
+  try {
+    return normalizeBrowserAcceptance(JSON.parse(storage.getItem(FINAL_BROWSER_ACCEPTANCE_KEY) || '{}'));
+  } catch {
+    return normalizeBrowserAcceptance();
+  }
+}
+
+function detectBrowser(userAgent = '') {
+  const value = String(userAgent || '');
+  if (/Edg\//i.test(value)) return { id: 'edge', label: 'Microsoft Edge' };
+  if (/Chrome\//i.test(value) && !/OPR\//i.test(value)) return { id: 'chrome', label: 'Google Chrome' };
+  return { id: 'other', label: 'Anderer Browser' };
+}
+
 
 function safeArray(value) {
   return Array.isArray(value) ? value : [];
@@ -274,7 +303,7 @@ function createStorageRoundtripItem(project = null, calculationRun = null) {
     const sourceCounts = getProjectCounts(project);
     const serialized = StorageEngine.serialize(project);
     const envelope = JSON.parse(serialized);
-    const reopened = StorageEngine.parse(serialized, { fileName: `${project?.name || 'RC-Projekt'}.dvp` });
+    const reopened = StorageEngine.parse(serialized, { fileName: `${project?.name || 'Final-Projekt'}.dvp` });
     const reopenedCounts = getProjectCounts(reopened);
     const reopenedResults = safeArray(reopened.systems).map(system => ProjectCalculationService.calculate(reopened, system?.id || null));
     const sourceTotals = safeArray(calculationRun?.entries).map(entry => entry.total);
@@ -354,7 +383,7 @@ function createPracticeRegressionItem(registry = null) {
     const model = ReportEngine.createReportModel(project, { system, registry });
     const pages = safeNumber(ReportEngine.createPagePlan(model)?.totalPages, 0);
     const serialized = StorageEngine.serialize(project);
-    const reopened = StorageEngine.parse(serialized, { fileName: 'Phase57-RC-Regression.dvp' });
+    const reopened = StorageEngine.parse(serialized, { fileName: 'Phase58-Final-Regression.dvp' });
     const durationMs = nowMs() - startedAt;
     const valid = Number.isFinite(total)
       && total > 0
@@ -385,8 +414,8 @@ function createPerformanceItem(metrics = {}, projectCounts = {}) {
     return createItem(
       'warning',
       'Performance',
-      'RC-Zeitbudget',
-      'Mindestens ein Arbeitsschritt liegt über dem konservativen RC-Zeitbudget.',
+      'Final-Zeitbudget',
+      'Mindestens ein Arbeitsschritt liegt über dem konservativen Final-Zeitbudget.',
       `${slow.join(' · ')} · Objektumfang ${objectCount}`,
     );
   }
@@ -394,8 +423,8 @@ function createPerformanceItem(metrics = {}, projectCounts = {}) {
   return createItem(
     'ok',
     'Performance',
-    'RC-Zeitbudget',
-    'Berechnung, Bericht und Datei-Roundtrip liegen im RC-Zeitbudget.',
+    'Final-Zeitbudget',
+    'Berechnung, Bericht und Datei-Roundtrip liegen im Final-Zeitbudget.',
     `Berechnung ${round(metrics.calculationMs, 1)} ms · Bericht ${round(metrics.reportMs, 1)} ms · Datei ${round(metrics.storageMs, 1)} ms`,
   );
 }
@@ -416,6 +445,44 @@ function createBrowserReadinessItem() {
     : createItem('ok', 'Browser', 'Druckumgebung', 'Drucken, Dateiimport und Dateidownload sind im aktuellen Browser verfügbar.');
 }
 
+function createBrowserAcceptanceItem(acceptance = null) {
+  const normalized = normalizeBrowserAcceptance(acceptance);
+  const missing = [];
+  if (!normalized.chrome?.acceptedAt) missing.push('Google Chrome');
+  if (!normalized.edge?.acceptedAt) missing.push('Microsoft Edge');
+
+  if (missing.length) {
+    return createItem(
+      'warning',
+      'Finalabnahme',
+      'Windows-Browserdruck',
+      `${missing.length} manuelle Browserabnahme(n) sind noch offen.`,
+      `Offen: ${missing.join(' · ')}`,
+    );
+  }
+
+  return createItem(
+    'ok',
+    'Finalabnahme',
+    'Windows-Browserdruck',
+    'Druckvorschau und PDF-Ausgabe wurden in Google Chrome und Microsoft Edge bestätigt.',
+    `Chrome ${normalized.chrome.acceptedAt} · Edge ${normalized.edge.acceptedAt}`,
+  );
+}
+
+function createIntegrityItem(integrityCheck = null) {
+  if (!integrityCheck) {
+    return createItem('warning', 'Integrität', 'Final-Dateien', 'Release-Integrität wurde in dieser Laufzeit nicht geprüft.');
+  }
+  if (integrityCheck.status === 'error') {
+    return createItem('error', 'Integrität', 'Final-Dateien', integrityCheck.summary || 'Integritätsfehler gefunden.');
+  }
+  if (integrityCheck.status === 'warning') {
+    return createItem('warning', 'Integrität', 'Final-Dateien', integrityCheck.summary || 'Integritätsprüfung unvollständig.');
+  }
+  return createItem('ok', 'Integrität', 'Final-Dateien', integrityCheck.summary || 'Final-Dateien stimmen mit dem Manifest überein.', `${integrityCheck.checkedFiles || 0} Datei(en)`);
+}
+
 function createDirtyItem(isProjectDirty = false) {
   return isProjectDirty
     ? createItem('warning', 'Status', 'Ungespeicherte Änderungen', 'Projekt enthält ungespeicherte Änderungen. Vor Weitergabe speichern.')
@@ -431,12 +498,14 @@ function createDeploymentItem(deploymentCheck = null) {
 }
 
 export default class ReleaseCandidateDiagnostics {
-  static async run({ state = null, project = null, system = null, registry = null, includeDeployment = true } = {}) {
+  static async run({ state = null, project = null, system = null, registry = null, includeDeployment = true, includeIntegrity = true, browserAcceptance = null } = {}) {
     const startedAt = new Date().toISOString();
     const activeProject = project || state?.project || null;
     const activeSystem = system || state?.selectedSystem || activeProject?.systems?.[0] || null;
     const items = [];
     let deploymentCheck = state?.deploymentCheck || null;
+    let integrityCheck = state?.releaseIntegrityCheck || null;
+    const resolvedBrowserAcceptance = normalizeBrowserAcceptance(browserAcceptance || readBrowserAcceptance());
 
     if (!activeProject) {
       items.push(createItem('error', 'Projekt', 'Projekt vorhanden', 'Kein Projekt geladen.'));
@@ -489,8 +558,20 @@ export default class ReleaseCandidateDiagnostics {
     items.push(createDemoItem());
     items.push(createPracticeRegressionItem(registry));
     items.push(createBrowserReadinessItem());
+    items.push(createBrowserAcceptanceItem(resolvedBrowserAcceptance));
     items.push(createPerformanceItem(metrics, projectCounts));
     items.push(createDirtyItem(Boolean(state?.isProjectDirty)));
+
+    if (includeIntegrity) {
+      try {
+        integrityCheck = await ReleaseIntegrityDiagnostics.run();
+        if (state) state.releaseIntegrityCheck = integrityCheck;
+      } catch (error) {
+        integrityCheck = null;
+        items.push(createItem('warning', 'Integrität', 'Final-Dateien', 'Release-Integrität konnte nicht automatisch ausgeführt werden.', error.message));
+      }
+      items.push(createIntegrityItem(integrityCheck));
+    }
 
     if (includeDeployment) {
       try {
@@ -498,7 +579,7 @@ export default class ReleaseCandidateDiagnostics {
         if (state) state.deploymentCheck = deploymentCheck;
       } catch (error) {
         deploymentCheck = null;
-        items.push(createItem('warning', 'Deployment', 'Deploy-QS', 'Deployment-QS konnte im RC-Check nicht automatisch ausgeführt werden.', error.message));
+        items.push(createItem('warning', 'Deployment', 'Deploy-QS', 'Deployment-QS konnte in der Finalprüfung nicht automatisch ausgeführt werden.', error.message));
       }
       items.push(createDeploymentItem(deploymentCheck));
     }
@@ -508,6 +589,7 @@ export default class ReleaseCandidateDiagnostics {
       calculationChecks: portfolioDiagnostics?.calculationChecks || [],
       fileCheck,
       deploymentCheck,
+      integrityCheck,
     };
 
     return this.finish(items, {
@@ -517,6 +599,8 @@ export default class ReleaseCandidateDiagnostics {
       checks,
       metrics,
       projectCounts,
+      browserAcceptance: resolvedBrowserAcceptance,
+      integrityCheck,
     });
   }
 
@@ -545,33 +629,67 @@ export default class ReleaseCandidateDiagnostics {
       checks: context.checks || {},
       metrics: context.metrics || {},
       projectCounts: context.projectCounts || getProjectCounts(project),
+      browserAcceptance: normalizeBrowserAcceptance(context.browserAcceptance),
+      integrityCheck: context.integrityCheck || null,
       nextRecommendation: this.createRecommendation(status, itemCounts),
     };
   }
 
   static createSummary(status, itemCounts = {}) {
     if (status === 'error') {
-      return `Release Candidate noch blockiert: ${itemCounts.error} Fehler und ${itemCounts.warning} Hinweis${itemCounts.warning === 1 ? '' : 'e'} gefunden.`;
+      return `Finalfreigabe blockiert: ${itemCounts.error} Fehler und ${itemCounts.warning} Hinweis${itemCounts.warning === 1 ? '' : 'e'} gefunden.`;
     }
 
     if (status === 'warning') {
-      return `Release Candidate grundsätzlich nutzbar, aber ${itemCounts.warning} Hinweis${itemCounts.warning === 1 ? '' : 'e'} vor externer Weitergabe prüfen.`;
+      return `Druckverlust Pro 3.0 ist technisch final, aber ${itemCounts.warning} Abnahmepunkt${itemCounts.warning === 1 ? '' : 'e'} bleibt dokumentiert.`;
     }
 
-    return `Release Candidate bereit: ${itemCounts.ok} Prüfpunkte ohne Fehler abgeschlossen.`;
+    return `Druckverlust Pro 3.0 final freigabebereit: ${itemCounts.ok} Prüfpunkte ohne Fehler abgeschlossen.`;
   }
 
   static createRecommendation(status) {
-    if (status === 'error') return 'Rote Punkte zuerst beheben, danach RC-Check erneut ausführen.';
-    if (status === 'warning') return 'Gelbe Punkte fachlich prüfen und die Windows-Chrome-/Edge-Druckabnahme dokumentieren.';
-    return 'Version kann als interner Release Candidate weitergegeben werden; vor Final 3.0 folgt die manuelle Windows-Browserabnahme.';
+    if (status === 'error') return 'Rote Punkte zuerst beheben und danach die Finalprüfung erneut ausführen.';
+    if (status === 'warning') return 'Offene gelbe Punkte prüfen; für die endgültige Browserfreigabe Bericht in Windows Chrome und Edge drucken und jeweils bestätigen.';
+    return 'Finalprüfung bestanden. Das Projekt kann mit Druckverlust Pro 3.0 gespeichert, berichtet und weitergegeben werden.';
+  }
+
+  static getBrowserAcceptance(storageRef = null) {
+    return readBrowserAcceptance(storageRef);
+  }
+
+  static getCurrentBrowser(userAgent = null) {
+    const resolved = userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '');
+    return detectBrowser(resolved);
+  }
+
+  static confirmCurrentBrowser({ storageRef = null, userAgent = null, acceptedAt = new Date().toISOString() } = {}) {
+    const storage = storageRef || (typeof window !== 'undefined' ? window.localStorage : null);
+    if (!storage?.setItem) throw new Error('Lokaler Browserspeicher ist nicht verfügbar.');
+    const browser = this.getCurrentBrowser(userAgent);
+    if (!['chrome', 'edge'].includes(browser.id)) {
+      throw new Error('Die Finalabnahme kann nur in Google Chrome oder Microsoft Edge bestätigt werden.');
+    }
+    const acceptance = readBrowserAcceptance(storage);
+    acceptance[browser.id] = {
+      acceptedAt,
+      label: browser.label,
+      userAgent: String(userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '')),
+    };
+    storage.setItem(FINAL_BROWSER_ACCEPTANCE_KEY, JSON.stringify(acceptance));
+    return acceptance;
+  }
+
+  static clearBrowserAcceptance(storageRef = null) {
+    const storage = storageRef || (typeof window !== 'undefined' ? window.localStorage : null);
+    storage?.removeItem?.(FINAL_BROWSER_ACCEPTANCE_KEY);
+    return normalizeBrowserAcceptance();
   }
 
   static toText(result = {}) {
     const metrics = result.metrics || {};
     const projectCounts = result.projectCounts || {};
     const lines = [
-      `Druckverlust Pro ${result.version || APP_VERSION} – Release Candidate Phase ${result.release || APP_RELEASE}`,
+      `Druckverlust Pro ${result.version || APP_VERSION} – Finalprüfung Phase ${result.release || APP_RELEASE}`,
       `Status: ${result.label || '-'}`,
       result.summary || '',
       `Empfehlung: ${result.nextRecommendation || '-'}`,
@@ -580,6 +698,7 @@ export default class ReleaseCandidateDiagnostics {
       `Aktive Anlage: ${result.systemName || '-'}`,
       `Dateischema: ${result.schemaVersion || PROJECT_FILE_SCHEMA_VERSION}`,
       `Geprüft: ${result.finishedAt || '-'}`,
+      `Windows-Druckabnahme: Chrome ${result.browserAcceptance?.chrome?.acceptedAt || 'offen'} · Edge ${result.browserAcceptance?.edge?.acceptedAt || 'offen'}`, 
       `OK: ${result.counts?.ok ?? 0} · Hinweise: ${result.counts?.warning ?? 0} · Fehler: ${result.counts?.error ?? 0}`,
       `Umfang: ${projectCounts.systems ?? 0} Anlagen · ${projectCounts.sections ?? 0} TS · ${projectCounts.formParts ?? 0} Formteile · ${projectCounts.specialComponents ?? 0} Sonderbauteile`,
       `Laufzeiten: Berechnung ${round(metrics.calculationMs, 1)} ms · Bericht ${round(metrics.reportMs, 1)} ms · Datei ${round(metrics.storageMs, 1)} ms · Bericht ${metrics.reportPages ?? 0} Seite(n)`,

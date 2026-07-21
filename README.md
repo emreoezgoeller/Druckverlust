@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.12.0 · Phase 57.00 · interner Release Candidate mit anlagenweiter Schlussprüfung, verlustfreiem `.dvp`-Roundtrip, einheitlicher Cachekennung und vollständiger Regressionstestkette.
+**Aktueller Stand:** Version 3.0.0 · Phase 58.00 · Final Release mit anlagenweiter Schlussprüfung, SHA-256-Integritätsmanifest, verlustfreiem `.dvp`-Roundtrip und dokumentierter Windows-Druckabnahme.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -98,10 +98,12 @@ Gezielte Prüfung der sechs neuen Formteile:
 npm run test:phase51.10
 ```
 
-Release-Kurzlauf:
+Finalprüfung und Release-Kurzlauf:
 
 ```bash
+npm run test:phase58
 npm run test:release
+npm run build:final
 ```
 
 Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 Anlagen, 230 Teilstrecken, 360 Formteilen und 58 Sonderbauteilen, die Phase-55-Migrationstests, die Phase-54-Schematests, die Phase-53-Berichtstests, 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
@@ -111,4 +113,4 @@ Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 A
 - keine Ventilatorauslegung, Motorleistung, SFP-, Energie- oder Betriebskostenberechnung,
 - keine Hersteller-, Produkt- oder Artikelnummerndatenbank.
 
-Weitere Angaben: `RELEASE_NOTES.md`, `docs/MIGRATION.md` und `docs/RELEASE_CHECKLIST.md`.
+Weitere Angaben: `RELEASE_NOTES.md`, `FINAL_ABNAHME_WINDOWS.md`, `release-integrity.json`, `docs/MIGRATION.md` und `docs/RELEASE_CHECKLIST.md`.

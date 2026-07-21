@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 51.00: einzeilige Plattformleiste mit Sofort-Infotexten und Symbollegende.
 
-import RibbonActions from '../core/RibbonActions.js?v=57.00';
+import RibbonActions from '../core/RibbonActions.js?v=58.00';
 
 const RIBBON_GROUPS = [
   {
@@ -53,7 +53,7 @@ const RIBBON_GROUPS = [
       { action: 'showReport', label: 'Bericht', icon: 'report', title: 'Bericht und Druckansicht öffnen (Strg+B)', emphasis: 'report' },
       { action: 'showProjectCompletion', label: 'Abschluss', icon: 'clipboardCheck', title: 'Varianten, Revision und Projektabschluss prüfen' },
       { action: 'showProjectHandover', label: 'Übergabe', icon: 'package', title: 'Importkontrolle, Freigabestatus und Übergabepaket öffnen' },
-      { action: 'releaseCandidateCheck', label: 'RC-Prüfung', icon: 'shieldCheck', title: 'Technische Schlussprüfung für den Release Candidate ausführen' },
+      { action: 'releaseCandidateCheck', label: 'Finalprüfung', icon: 'shieldCheck', title: 'Technische Finalprüfung inklusive Integrität und Windows-Druckabnahme ausführen' },
     ],
   },
   {

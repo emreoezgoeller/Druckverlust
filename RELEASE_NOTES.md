@@ -1,40 +1,48 @@
 # Release Notes
 
-**Release:** Version 2.12.0 · Phase 57.00  
+**Release:** Version 3.0.0 · Phase 58.00  
 **Datum:** 21.07.2026
 
-## Neu in Phase 57.00
+## Druckverlust Pro 3.0 Final
 
-- Die technische **RC-Prüfung** ist wieder direkt über das Ribbon erreichbar.
-- Der RC-Check berechnet nicht nur die aktive Anlage, sondern **alle Anlagen des Projekts** neu.
-- Projektcheck und Rechen-QS werden anlagenweise zusammengeführt; blockierende Fehler bleiben eindeutig sichtbar.
-- Der Professional Report wird für jede Anlage auf Modell, Titel, Inhalt und Seitenplan geprüft.
-- Ein echter `.dvp`-Roundtrip kontrolliert Speichern, erneutes Öffnen und unveränderte Druckverlustresultate.
-- Ein deterministisches Büro-Praxisprojekt dient als zusätzlicher Rechen-, Bericht- und Datei-Smoketest.
-- Berechnung, Bericht und Projektdatei werden mit konservativen RC-Zeitbudgets bewertet.
-- SIA-Raumnutzung und Betriebsart werden für sämtliche Anlagen auf Vollständigkeit geprüft.
-- Das RC-Protokoll enthält Projektumfang, Dateischema, Berichtseiten und gemessene Laufzeiten.
-- Sämtliche bestehenden statischen Modul- und App-Asset-Kennungen wurden auf den einheitlichen Cache-Stand `57.00` bereinigt; widersprüchliche parallele `release`-Querystrings wurden entfernt.
-- Versionsangaben, Startseite, Qualitätsseite, Rechtstexte, Datenmodell und Release-Metadaten wurden auf Version 2.12.0 vereinheitlicht.
+Phase 58 schliesst die bisherige Entwicklungsreihe als stabilen, herstellerneutralen Finalstand ab. Berechnung, Teilstrecken, Formteile, SIA-Geschwindigkeitsprüfung, Projektdateien, Berichte und Anlagenübersichten bleiben vollständig kompatibel mit dem Release Candidate aus Phase 57.
 
-## Qualitätsstatus
+## Neu in Phase 58.00
 
-- vollständige Phase-57-RC- und Cachekonsistenzprüfung,
-- vollständige bestehende Regressionstestkette,
-- JavaScript-Syntaxprüfung aller Runtime- und Testdateien,
-- reproduzierbare A4-PDF-Prüfung mit 30 Seiten,
-- Patch-Installation und ZIP-Strukturprüfung.
+- Die bisherige **RC-Prüfung** wurde zur sichtbaren **Finalprüfung** weiterentwickelt.
+- Die Finalprüfung verbindet anlagenweite Neuberechnung, Projekt-QS, Rechen-QS, Datei-QS, Bericht, Speicher-Roundtrip, Praxisreferenz, Performance und Deployment.
+- Neue SHA-256-Integritätsprüfung für die kritischen Finaldateien.
+- Maschinenlesbares `release-integrity.json` mit Dateigrösse und Prüfsumme aller Dateien des sauberen Laufzeitpakets.
+- Dokumentierte Windows-Druckabnahme für Google Chrome und Microsoft Edge direkt in der Anwendung.
+- Browserbestätigungen werden lokal gespeichert und im Finalprotokoll ausgewiesen.
+- Sauberes Laufzeitpaket ohne Tests, GitHub-Vorlagen, interne Entwicklungsdokumentation und temporäre Prüfdateien.
+- Versions-, Cache-, Startseiten-, Rechtstext-, Manifest- und Projekthüllenangaben auf **3.0.0 / 58.00** vereinheitlicht.
+- Vollständige Phase-58- und Regressionstestkette sowie erneute Patch- und Paketprüfung.
 
-## Browser-Abnahme
+## Fachlicher Umfang
 
-Der automatisierte Chromium-Prozess kann in der isolierten Prüfcontainer-Laufzeit weiterhin nicht zuverlässig starten. Die 30-seitige A4-Ausgabe wird deshalb reproduzierbar mit dem vorhandenen PDF-Renderer geprüft. Die abschliessende manuelle Druckabnahme unter **Windows mit Chrome und Microsoft Edge** bleibt ein ausdrücklich dokumentierter Freigabepunkt für Phase 58.00.
+- teil­streckenbezogene Rauigkeit und automatische Darcy-Reibungszahl,
+- Rechteckkanäle und Rundrohre,
+- 21 herstellerneutrale Formteiltypen,
+- sechs zusätzliche Krümmerabzweige beziehungsweise Krümmerendstücke,
+- freier ζ-Wert,
+- SIA-Geschwindigkeitsprüfung nach Raumnutzung und Betriebsart,
+- Standard- und Professional-Ergebnisdarstellung,
+- drucksicherer A4-Bericht und mehrseitiges Anlagenschema,
+- `.dvp`, `.dvpa` und `.dvph` mit Rückwärtskompatibilität und Migration.
+
+## Windows-Finalabnahme
+
+Die isolierte Linux-Prüfumgebung kann keine echte Windows-Installation von Chrome und Edge simulieren. Deshalb enthält Phase 58 einen nachvollziehbaren manuellen Final-Gate. Die Anwendung zeigt offen an, welcher Browser noch nicht bestätigt wurde. Die genaue Durchführung steht in `FINAL_ABNAHME_WINDOWS.md`.
 
 ## Testbefehle
 
 ```bash
+npm run test:phase58
 npm run test:phase57
 npm run test:phase57:browser
 npm test
+npm run build:final
 ```
 
 ## Bewusst ausgeschlossen

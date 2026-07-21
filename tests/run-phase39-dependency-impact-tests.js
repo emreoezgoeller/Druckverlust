@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import createDemoProject from '../src/project/demoProject.js';
-import ProjectDependencyEngine from '../src/project/ProjectDependencyEngine.js?v=57.00';
+import ProjectDependencyEngine from '../src/project/ProjectDependencyEngine.js?v=58.00';
 
 let checks = 0;
 const project = createDemoProject();

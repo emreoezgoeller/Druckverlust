@@ -156,19 +156,19 @@ includes(rendererSource, '// Druckverlust Pro – Phase 54.00', 'Der Schema-Rend
 includes(rendererSource, 'createAttachmentIndex', 'Der Renderer enthält die zentrale Referenzbildung.');
 includes(rendererSource, 'auditLayout', 'Der Renderer enthält die automatische Kollisionsprüfung.');
 includes(reportSource, 'ReportSchematicRenderer.paginate', 'Seitenplan und Bericht verwenden die adaptive Schemaseitenteilung.');
-includes(versionSource, "APP_VERSION = '2.12.0'", 'App-Version steht auf dem aktuellen Stand 2.12.0.');
-includes(versionSource, "APP_RELEASE = '57.00'", 'App-Release steht auf dem aktuellen Stand Phase 56.00.');
-equal(packageJson.version, '2.12.0', 'package.json steht auf Version 2.12.0.');
-equal(release.version, '2.12.0', 'release.json steht auf Version 2.12.0.');
-equal(release.phase, '57.00', 'release.json steht auf Phase 56.00.');
+includes(versionSource, "APP_VERSION = '3.0.0'", 'App-Version steht auf dem aktuellen Stand 3.0.0.');
+includes(versionSource, "APP_RELEASE = '58.00'", 'App-Release steht auf dem aktuellen Stand Phase 56.00.');
+equal(packageJson.version, '3.0.0', 'package.json steht auf Version 3.0.0.');
+equal(release.version, '3.0.0', 'release.json steht auf Version 3.0.0.');
+equal(release.phase, '58.00', 'release.json steht auf Phase 56.00.');
 check(Number(release.quality?.reportSchematicChecks) >= 0, 'release.json besitzt das Qualitätsfeld der Phase 54.');
-includes(appHtml, 'src/main.js?v=57.00', 'Das Main-Modul wird mit Phase-54-Kennung geladen.');
-includes(mainSource, 'WorkspaceComponent.js?v=57.00', 'Der Workspace wird cache-sicher mit Phase 54 geladen.');
+includes(appHtml, 'src/main.js?v=58.00', 'Das Main-Modul wird mit Phase-54-Kennung geladen.');
+includes(mainSource, 'WorkspaceComponent.js?v=58.00', 'Der Workspace wird cache-sicher mit Phase 54 geladen.');
 includes(roadmap, 'Phase 54.00 – Anlagenschema im Bericht – abgeschlossen', 'Die Roadmap markiert Phase 54 als abgeschlossen.');
 includes(roadmap, 'Phase 55.00 – Projektdateien und Rückwärtskompatibilität – abgeschlossen', 'Die Roadmap markiert Phase 55 als abgeschlossen.');
 includes(changelog, '## 2.9.0 – Phase 54.00', 'Der Changelog enthält den Phase-54-Eintrag.');
-includes(releaseNotes, 'Version 2.12.0', 'Die Release Notes nennen Version 2.12.0.');
-includes(releaseNotes, 'Phase 57.00', 'Die Release Notes nennen den aktuellen Stand Phase 56.00.');
+includes(releaseNotes, 'Version 3.0.0', 'Die Release Notes nennen Version 3.0.0.');
+includes(releaseNotes, 'Phase 58.00', 'Die Release Notes nennen den aktuellen Stand Phase 56.00.');
 includes(testPlan, 'npm run test:phase54', 'Der Testplan dokumentiert die Phase-54-Testsuite.');
 
 console.log(`Phase 54.00 Anlagenschema im Bericht: ${checks} Prüfungen bestanden.`);

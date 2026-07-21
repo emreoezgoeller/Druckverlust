@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { createDefaultProject } from '../src/project/defaultProject.js';
 import ProjectCalculationService from '../src/project/ProjectCalculationService.js';
-import ReportEngine from '../src/report/ReportEngine.js?v=57.00';
+import ReportEngine from '../src/report/ReportEngine.js?v=58.00';
 import StorageEngine, { normalizeProjectForStorage } from '../src/storage/StorageEngine.js';
 
 let checks = 0;

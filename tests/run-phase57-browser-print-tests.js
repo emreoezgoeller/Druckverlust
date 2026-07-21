@@ -213,7 +213,7 @@ if (browserRequired) {
 
 const failed = checks.filter(item => !item.passed);
 const report = {
-  phase: '57.00',
+  phase: '58.00',
   browser,
   browserLabel,
   browserOperational,

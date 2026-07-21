@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=57.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=58.00';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -166,7 +166,9 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
         { area: 'Beta', label: 'Beta-Feedback-Auswertung', path: `src/testing/BetaFeedbackInbox.js?v=${version}` },
     { area: 'Feedback', label: 'Feedback-Auswertungs-Oberfläche', path: `src/ui/phase21_11.css?v=${version}` },
         { area: 'QS', label: 'Datei-QS', path: `src/diagnostics/ProjectFileDiagnostics.js?v=${version}` },
-    { area: 'QS', label: 'Release-Candidate-QS', path: `src/diagnostics/ReleaseCandidateDiagnostics.js?v=${version}` },
+    { area: 'QS', label: 'Finalprüfung', path: `src/diagnostics/ReleaseCandidateDiagnostics.js?v=${version}` },
+    { area: 'QS', label: 'Release-Integrität', path: `src/diagnostics/ReleaseIntegrityDiagnostics.js?v=${version}` },
+    { area: 'Release', label: 'Integritätsmanifest', path: 'release-integrity.json' },
     { area: 'Version', label: 'Versionszentrale', path: `src/core/appVersion.js?v=${version}` },
     { area: 'Lizenz', label: 'Lizenz-Konfiguration', path: `src/licensing/licenseConfig.js?v=${version}` },
     { area: 'Lizenz', label: 'License-Gate', path: `src/licensing/LicenseGate.js?v=${version}` },
