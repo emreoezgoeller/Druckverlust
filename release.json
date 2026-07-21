@@ -1,8 +1,8 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.7.0",
-  "phase": "52.00",
+  "version": "2.8.0",
+  "phase": "53.00",
   "releaseDate": "2026-07-21",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
@@ -30,11 +30,12 @@
     "sixNewFormPartChecks": 65,
     "formPartSyncChecks": 179,
     "siaVelocityChecks": 252,
-    "resultPresentationChecks": 83
+    "resultPresentationChecks": 83,
+    "reportCompletionChecks": 74
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Vereinfachte Ergebnisdarstellung mit Anlagen-Cockpit, klarer Trennung von Reibungs-, Formteil- und Sonderbauteilverlusten, hervorgehobener kritischer Teilstrecke, Standard-/Profi-Ansicht und einklappbaren technischen Kennwerten."
+  "notes": "PDF- und Berichtsabschluss mit weissem Deckblatt, grossem dezentem Logo-Wasserzeichen, sicherer Mehrseitenaufteilung, vollständigen Fortsetzungsseiten, dynamischem Inhaltsverzeichnis und automatischer Layoutprüfung vor dem Druck."
 }

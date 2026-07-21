@@ -73,16 +73,16 @@ check(css.includes('@media (max-width: 820px)'), 'Schnellerfassung besitzt respo
 check(css.includes('@media (prefers-reduced-motion: reduce)'), 'Reduzierte Animationen werden berücksichtigt.');
 
 check(html.includes('phase42_00.css?v=42.00'), 'App lädt das Phase-42-Stylesheet.');
-check(html.includes('src/main.js?v=52.00'), 'App lädt Main mit Phase-42-Cache-Stand.');
-check(main.includes('WorkspaceComponent.js?v=52.00'), 'Main lädt Workspace cache-sicher.');
+check(html.includes('src/main.js?v=53.00'), 'App lädt Main mit Phase-42-Cache-Stand.');
+check(main.includes('WorkspaceComponent.js?v=53.00'), 'Main lädt Workspace cache-sicher.');
 check(diagnostics.includes("ProjectTableImportEngine.js?v=${version}"), 'Deployment-QS kontrolliert die Import-Engine.');
 check(diagnostics.includes("phase42_00.css?v=${version}"), 'Deployment-QS kontrolliert das Import-Stylesheet.');
-check(version.includes("APP_RELEASE = '52.00'"), 'Release ist Phase 42.00.');
-check(version.includes("APP_VERSION = '2.7.0'"), 'App-Version ist 1.19.0.');
-check(packageJson.version === '2.7.0', 'Paketversion ist 1.19.0.');
+check(version.includes("APP_RELEASE = '53.00'"), 'Release ist Phase 42.00.');
+check(version.includes("APP_VERSION = '2.8.0'"), 'App-Version ist 1.19.0.');
+check(packageJson.version === '2.8.0', 'Paketversion ist 1.19.0.');
 check(packageJson.scripts['test:phase42']?.includes('run-phase42-table-import-tests.js'), 'Phase-42-Testskript ist registriert.');
-check(packageJson.scripts.test.startsWith('node tests/run-phase52-result-presentation-tests.js'), 'Gesamttest startet mit Phase 42.');
-check(landing.includes('Release 2.7.0 · Phase 52.00'), 'Index-Hauptseite nennt den aktuellen Stand.');
+check(packageJson.scripts.test.startsWith('node tests/run-phase53-report-completion-tests.js'), 'Gesamttest startet mit Phase 42.');
+check(landing.includes('Release 2.8.0 · Phase 53.00'), 'Index-Hauptseite nennt den aktuellen Stand.');
 check(landing.includes('Excel') && landing.includes('CSV'), 'Index-Hauptseite erklärt die Schnellerfassung.');
 
 console.log(`Phase 42.00 Schnellerfassung UI/Integration: ${checks} Prüfungen bestanden.`);

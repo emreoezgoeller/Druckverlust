@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 52.00
+# Druckverlust Pro – Roadmap ab Phase 53.00
 
-Aktueller Entwicklungsstand: **Version 2.7.0 · Phase 52.00**. Die Anlagen- und Teilstreckenergebnisse sind jetzt für den schnellen Büroalltag verdichtet; technische Kennwerte bleiben über die Profi-Ansicht erreichbar.
+Aktueller Entwicklungsstand: **Version 2.8.0 · Phase 53.00**. Der Professional Report ist jetzt für grosse Projekte drucksicher aufgebaut und prüft sein Seitenlayout vor dem PDF-Druck automatisch.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -44,13 +44,28 @@ Aktueller Entwicklungsstand: **Version 2.7.0 · Phase 52.00**. Die Anlagen- und 
 - technische Anlagen- und Teilstreckenwerte einklappbar,
 - Glossar für Δp, λ, ζ, k und p_dyn ergänzt.
 
-## Phase 53.00 bis 58.00 – Bericht, Schema und Finalisierung
+## Phase 53.00 – PDF- und Berichtsabschluss – abgeschlossen
 
-- PDF-Deckblatt und Seitenumbrüche abschliessen,
-- Anlagenschema und Symbollegende überarbeiten,
+- weisses Deckblatt mit Logo, grossem dezentem Symbol-Wasserzeichen und technischem Dokumentblock,
+- dynamisches Inhaltsverzeichnis und durchgängige Seitennummerierung,
+- drucksichere Seitenaufteilung für Teilstrecken, Formteile, Sonderbauteile, Engineering-QS, QS-Protokoll und Formteilkatalog,
+- reduzierte Tabellenbelegung auf Seiten mit zusätzlichen Übersichten,
+- automatische vertikale und horizontale Layoutprüfung vor dem Browserdruck,
+- verständlicher Hinweis im Druckdialog, falls eine Seite überfüllt ist.
+
+## Phase 54.00 – Anlagenschema im Bericht – nächster Schritt
+
+- Symbolsprache und Legende des Anlagenschemas vereinheitlichen,
+- lange Anlagen auf mehrere Schemaabschnitte verteilen,
+- Teilstrecken- und Formteilzuordnung nachvollziehbarer darstellen,
+- Überschneidungen von Symbolen, Verbindungen und Beschriftungen verhindern.
+
+## Phase 55.00 bis 58.00 – Kompatibilität und Finalisierung
+
 - Rückwärtskompatibilität älterer `.dvp`-Dateien absichern,
 - reale Büroprojekte in Edge und Chrome prüfen,
-- Release Candidate bereinigen und Druckverlust Pro 3.0 finalisieren.
+- Release Candidate bereinigen,
+- Druckverlust Pro 3.0 finalisieren.
 
 ## Spätere Plattformintegration
 

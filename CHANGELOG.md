@@ -1,4 +1,19 @@
-# Changelog
+# Changelog – Druckverlust Pro
+
+## 2.8.0 – Phase 53.00
+
+- Professional Report für grosse Projekte drucksicher abgeschlossen.
+- Deckblatt auf weissen Hintergrund umgestellt und mit regulärem Logo sowie grossem dezentem Symbol-Wasserzeichen ergänzt.
+- Technischer Dokumentblock mit Anlage, SIA-Raumnutzung, Betriebsart, Elektro-Vollaststunden, QS-Status und Seitenumfang ergänzt.
+- Gemeinsamen Seitenplan für Inhaltsverzeichnis, Kapitelstart, Seitenanzahl und Fusszeilen gehärtet.
+- Hauptnetz auf 15 Teilstrecken je Seite begrenzt, damit Tabellenzeilen, Legende und Summen nicht abgeschnitten werden.
+- Formteilgruppen in höchstens vier Boxen je Seite und fünf Formteilzeilen je Box aufgeteilt.
+- Eigene Seitengrenzen für Sonderbauteile, Engineering-QS, QS-Prüfprotokoll und Formteilkatalog ergänzt.
+- Erste Engineering- und QS-Seiten wegen zusätzlicher Übersichtsblöcke mit reduzierter Tabellenbelegung versehen.
+- Automatische Prüfung auf vertikale und horizontale Seitenüberfüllung vor dem Drucken ergänzt.
+- Druckdialog zeigt einen klaren Layoutstatus und warnt bei überfüllten Seiten.
+- 43-seitige Stressprüfung mit 67 Teilstrecken, 210 Formteilen, 45 Sonderbauteilen, 31 Engineering-Feststellungen und 40 QS-Hinweisen ergänzt.
+- Version auf 2.8.0 und Release auf Phase 53.00 aktualisiert.
 
 ## 2.7.0 – Phase 52.00 – 21.07.2026
 

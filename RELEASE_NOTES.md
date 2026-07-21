@@ -1,7 +1,21 @@
 # Release Notes
 
-**Release:** 2.7.0 · Phase 52.00  
+**Release:** Version 2.8.0 · Phase 53.00  
 **Datum:** 21.07.2026
+
+## Neu in Phase 53.00
+
+- Das PDF-Deckblatt besitzt einen weissen Hintergrund, das reguläre Logo oben links und ein grosses, dezentes Symbol-Wasserzeichen auf der rechten Seite.
+- Der bisherige Bildbereich wurde durch einen technischen Dokumentblock mit Anlage, SIA-Raumnutzung, Betriebsart, Elektro-Vollaststunden, QS-Status und dynamischem Berichtsumfang ersetzt.
+- Inhaltsverzeichnis und Seitennummerierung werden aus einem gemeinsamen Seitenplan erzeugt und bleiben auch bei grossen Projekten konsistent.
+- Die Hauptberechnung verwendet maximal 15 Teilstrecken je Seite, damit Tabellenzeilen, Legende und Summen nicht abgeschnitten werden.
+- Zugeordnete Formteile werden mit höchstens vier Teilstreckenboxen je Seite und maximal fünf Formteilzeilen je Box auf Fortsetzungsseiten verteilt.
+- Sonderbauteile, Engineering-QS, QS-Prüfprotokoll und Formteilkatalog besitzen eigene drucksichere Seitengrenzen.
+- Seiten mit Engineering- oder QS-Übersicht erhalten bewusst weniger Tabellenzeilen als reine Fortsetzungsseiten.
+- Vor dem Drucken prüft der Bericht jede A4-Seite auf vertikale und horizontale Überfüllung.
+- Der Druckdialog meldet verständlich, ob das Layout geprüft ist oder ob eine überfüllte Seite vor dem PDF-Export kontrolliert werden muss.
+- Eine grosse Stressprüfung mit 67 Teilstrecken, 210 Formteilen, 45 Sonderbauteilen, 31 Engineering-Feststellungen und 40 QS-Hinweisen wurde als 43-seitiger Bericht geprüft.
+- 74 automatisierte Phase-53-Prüfungen kontrollieren Seitenplan, Deckblatt, Fortsetzungsseiten, Layoutaudit, A4-CSS und Releaseintegration.
 
 ## Neu in Phase 52.00
 

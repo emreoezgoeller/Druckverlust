@@ -1,4 +1,4 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=40.00&release=46.00';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=53.00&release=53.00';
 import LicenseGate from '../licensing/LicenseGate.js';
 import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=37.00&release=46.00';
 import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=37.00&release=46.00';
@@ -74,12 +74,15 @@ function createCsvFileName(fileBaseName = 'Druckverlustbericht') {
 }
 
 
-const MAIN_NETWORK_ROWS_PER_PAGE = 30;
-const SPECIAL_ROWS_PER_PAGE = 24;
+const MAIN_NETWORK_ROWS_PER_PAGE = 15;
+const SPECIAL_ROWS_PER_PAGE = 20;
 const FORMPART_BOXES_PER_PAGE = 4;
 const FORMPART_ROWS_PER_BOX = 5;
-const FORMPART_CATALOG_ROWS_PER_PAGE = 8;
-const QUALITY_ROWS_PER_PAGE = 16;
+const FORMPART_CATALOG_ROWS_PER_PAGE = 6;
+const QUALITY_FIRST_PAGE_ROWS = 8;
+const QUALITY_CONTINUATION_ROWS = 14;
+const ENGINEERING_FIRST_PAGE_ROWS = 8;
+const ENGINEERING_CONTINUATION_ROWS = 12;
 
 const DEFAULT_REPORT_OPTIONS = Object.freeze({
   includeToc: true,
@@ -118,6 +121,29 @@ function chunkArray(items = [], size = 1) {
   }
 
   return chunks.length ? chunks : [[]];
+}
+
+function paginateItems(items = [], options = {}) {
+  const source = Array.isArray(items) ? items : [];
+  const firstPageSize = Math.max(1, Number(options.firstPageSize ?? options.pageSize) || 1);
+  const pageSize = Math.max(1, Number(options.pageSize ?? firstPageSize) || firstPageSize);
+
+  if (!source.length) return [{ items: [], startIndex: 0 }];
+
+  const pages = [];
+  let startIndex = 0;
+  let currentSize = firstPageSize;
+
+  while (startIndex < source.length) {
+    pages.push({
+      items: source.slice(startIndex, startIndex + currentSize),
+      startIndex,
+    });
+    startIndex += currentSize;
+    currentSize = pageSize;
+  }
+
+  return pages;
 }
 
 function rangeLabel(startIndex, count, total) {
@@ -204,9 +230,45 @@ function createPrintWaitScript() {
           }));
         }
 
+        function auditPageLayout(){
+          var pages = Array.prototype.slice.call(document.querySelectorAll('.report-page'));
+          var findings = [];
+
+          pages.forEach(function(page, index){
+            var content = page.querySelector('.report-page-content');
+            if (!content) return;
+            var verticalOverflow = content.scrollHeight > content.clientHeight + 3;
+            var horizontalOverflow = content.scrollWidth > content.clientWidth + 3;
+            var status = verticalOverflow || horizontalOverflow ? 'overflow' : 'ok';
+            page.setAttribute('data-layout-status', status);
+            if (status === 'overflow') {
+              findings.push({
+                page: Number(page.getAttribute('data-report-page') || index + 1),
+                title: page.getAttribute('data-report-title') || '',
+                verticalOverflow: verticalOverflow,
+                horizontalOverflow: horizontalOverflow
+              });
+            }
+          });
+
+          document.documentElement.setAttribute('data-report-layout', findings.length ? 'warning' : 'ok');
+          var statusNode = document.getElementById('report-layout-status');
+          if (statusNode) {
+            statusNode.textContent = findings.length
+              ? 'Layout prüfen: ' + findings.length + ' Seite(n) mit Überlauf erkannt.'
+              : 'Layout geprüft: alle ' + pages.length + ' Seite(n) druckbereit.';
+            statusNode.classList.toggle('is-warning', findings.length > 0);
+          }
+
+          return findings;
+        }
+
+        window.__druckverlustLayoutAudit = auditPageLayout;
         window.__druckverlustPrintReady = function(){
           return waitForImages().then(function(){
-            return new Promise(function(resolve){ setTimeout(resolve, 250); });
+            return new Promise(function(resolve){ setTimeout(resolve, 300); });
+          }).then(function(){
+            auditPageLayout();
           });
         };
 
@@ -220,11 +282,16 @@ function createPrintWaitScript() {
           });
         }
 
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function(){ protectImages(); bindPrintHelper(); }, { once:true });
-        } else {
+        function initializeReport(){
           protectImages();
           bindPrintHelper();
+          window.__druckverlustPrintReady();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initializeReport, { once:true });
+        } else {
+          initializeReport();
         }
       })();
     <\/script>
@@ -1218,6 +1285,7 @@ export class ReportEngine {
         <div>
           <strong>PDF-Ausgabe vorbereitet</strong>
           <span>${escapeHtml(guidance.totalPages)} Seite(n) · Dateiname: ${escapeHtml(guidance.fileName)}</span>
+          <span id="report-layout-status" class="report-layout-status">Layout und Bilder werden geprüft …</span>
         </div>
         <div class="report-print-helper-actions">
           <button type="button" data-print-action="print">Drucken / PDF</button>
@@ -1244,14 +1312,16 @@ export class ReportEngine {
       : 0;
     const qualityIssues = normalizeQualityIssues(model);
     const qualityPageCount = reportOptions.includeQualityProtocol
-      ? chunkArray(qualityIssues, QUALITY_ROWS_PER_PAGE).length
+      ? paginateItems(qualityIssues, { firstPageSize: QUALITY_FIRST_PAGE_ROWS, pageSize: QUALITY_CONTINUATION_ROWS }).length
       : 0;
     const schematicNodeCount = model.networkSchematic?.nodes?.length || 0;
     const schematicPageCount = reportOptions.includeNetworkSchematic ? Math.max(1, Math.ceil(schematicNodeCount / ReportSchematicRenderer.nodesPerPage)) : 0;
     const engineeringFindingCount = model.engineeringQuality?.findings?.length || 0;
     const revisionPageCount = reportOptions.includeRevisionComparison && model.revisionComparison && !model.revisionComparison.legacy ? 1 : 0;
     const variantPageCount = reportOptions.includeVariantComparison && model.variantComparison ? 1 : 0;
-    const engineeringPageCount = reportOptions.includeEngineeringQuality ? Math.max(1, Math.ceil(engineeringFindingCount / 12)) : 0;
+    const engineeringPageCount = reportOptions.includeEngineeringQuality
+      ? paginateItems(model.engineeringQuality?.findings || [], { firstPageSize: ENGINEERING_FIRST_PAGE_ROWS, pageSize: ENGINEERING_CONTINUATION_ROWS }).length
+      : 0;
     const systemsOverviewPageCount = reportOptions.includeSystemsOverview && (model.systemsOverview?.rows?.length || 0) > 1 ? 1 : 0;
     const projectCockpitPageCount = reportOptions.includeSystemsOverview && (model.projectCockpit?.rows?.length || 0) > 1 ? 1 : 0;
     const projectTaskPageCount = reportOptions.includeQualityProtocol && (model.projectTasks?.openTasks?.length || 0) > 0 ? 1 : 0;
@@ -1414,7 +1484,7 @@ export class ReportEngine {
 
   static renderPage(model, page, title, subtitle, content, totalPages = 6) {
     return `
-      <section class="report-page">
+      <section class="report-page" data-report-page="${page}" data-report-title="${escapeHtml(title)}">
         <header class="report-page-head">
           <div class="report-logo-wrap">
             ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
@@ -1451,7 +1521,8 @@ export class ReportEngine {
 
   static renderCoverPage(model, generatedLabel, page = 1, totalPages = 6) {
     return `
-      <section class="report-page report-cover-page">
+      <section class="report-page report-cover-page" data-report-page="${page}" data-report-title="Deckblatt">
+        ${model.assets.logo ? `<div class="report-cover-watermark" aria-hidden="true"><img src="${escapeHtml(model.assets.logo)}" alt="" draggable="false"></div>` : ''}
         <header class="report-cover-topbar">
           <div class="report-logo-wrap large">
             ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
@@ -1483,7 +1554,18 @@ export class ReportEngine {
               ['Revision', model.project.revision],
             ])}
           </div>
-          <div class="report-illustration-card">${model.assets.reportHero ? `<img class="report-hero-image" src="${escapeHtml(model.assets.reportHero)}" alt="Technische Lüftungskanal-Grafik" draggable="false" loading="lazy" decoding="async">` : makeDuctIllustration()}</div>
+          <div class="report-cover-document-card">
+            <span class="report-cover-eyebrow">Technischer Berechnungsnachweis</span>
+            <strong>${escapeHtml(model.system.name || 'Lüftungsanlage')}</strong>
+            <p>Berechnungsstand mit Teilstrecken, Formteilen, Sonderbauteilen und automatischer Qualitätsprüfung.</p>
+            ${this.renderDefinitionList([
+              ['Raumnutzung', model.system.roomUsage || '-'],
+              ['Betriebsart', model.system.operationMode || '-'],
+              ['Elektro-Vollaststunden', Number.isFinite(Number(model.system.electricalFullLoadHours)) ? `${formatNumber(model.system.electricalFullLoadHours, 0)} h/a` : '-'],
+              ['QS-Status', qualityStatusLabel(model.quality.status)],
+              ['Berichtsumfang', `${totalPages} Seiten`],
+            ])}
+          </div>
         </div>
 
         <div class="report-cover-divider slim"></div>
@@ -1902,14 +1984,15 @@ export class ReportEngine {
   static renderEngineeringQualityPages(model, nextPage, totalPages) {
     const engineering = model.engineeringQuality || {};
     const findings = engineering.findings || [];
-    const chunks = findings.length ? chunkArray(findings, 12) : [[]];
+    const pages = paginateItems(findings, { firstPageSize: ENGINEERING_FIRST_PAGE_ROWS, pageSize: ENGINEERING_CONTINUATION_ROWS });
     const statusLabel = engineering.status === 'critical' ? 'Kritisch' : engineering.status === 'warning' ? 'Prüfen' : engineering.status === 'info' ? 'Hinweise' : 'Plausibel';
 
-    return chunks.map((chunk, chunkIndex) => {
+    return pages.map((pageData, chunkIndex) => {
+      const chunk = pageData.items;
       const content = `
         ${chunkIndex === 0 ? `<div class="report-engineering-overview"><div class="report-engineering-score"><span>Engineering-Score</span><strong>${Math.round(toNumber(engineering.score, 100))}</strong><small>${escapeHtml(statusLabel)}</small></div><div>${this.renderDefinitionList([['Prüfprofil', engineering.profile?.name || model.projectWorkflow?.profile?.name || 'Allgemeine Planung'], ['Kritisch', engineering.counts?.critical || 0], ['Prüfen', engineering.counts?.warning || 0], ['Hinweise', engineering.counts?.info || 0], ['Analysierte Teilstrecken', engineering.analyzedSectionCount || 0]])}</div></div>` : ''}
         ${chunk.length ? `<table class="report-table report-engineering-table"><thead><tr><th>Stufe</th><th>Code</th><th>Feststellung</th><th>Empfehlung</th></tr></thead><tbody>${chunk.map(finding => `<tr class="engineering-${escapeHtml(finding.severity)}"><td>${escapeHtml(finding.severity === 'critical' ? 'Kritisch' : finding.severity === 'warning' ? 'Prüfen' : 'Hinweis')}</td><td>${escapeHtml(finding.code)}</td><td class="left"><strong>${escapeHtml(finding.title)}</strong><br><span>${escapeHtml(finding.message)}</span></td><td class="left">${escapeHtml(finding.recommendation || '-')}</td></tr>`).join('')}</tbody></table>` : '<div class="report-info-box ok"><h3>Prüfergebnis</h3><p>Keine priorisierten Engineering-Feststellungen vorhanden.</p></div>'}
-        ${chunkIndex === chunks.length - 1 ? `<p class="report-engineering-disclaimer">${escapeHtml(engineering.disclaimer || '')}</p>` : '<p class="report-continuation-note">Fortsetzung der Engineering-QS auf der nächsten Seite.</p>'}
+        ${chunkIndex === pages.length - 1 ? `<p class="report-engineering-disclaimer">${escapeHtml(engineering.disclaimer || '')}</p>` : '<p class="report-continuation-note">Fortsetzung der Engineering-QS auf der nächsten Seite.</p>'}
       `;
       return this.renderPage(model, nextPage(), chunkIndex ? 'Engineering-QS Fortsetzung' : 'Engineering-QS', `Priorisierte herstellerneutrale Plausibilitätsprüfung${findings.length ? ` · ${findings.length} Feststellungen` : ''}`, content, totalPages);
     });
@@ -2189,12 +2272,13 @@ export class ReportEngine {
 
   static renderQualityProtocolPages(model, nextPage, totalPages) {
     const issues = normalizeQualityIssues(model);
-    const chunks = chunkArray(issues, QUALITY_ROWS_PER_PAGE);
+    const pages = paginateItems(issues, { firstPageSize: QUALITY_FIRST_PAGE_ROWS, pageSize: QUALITY_CONTINUATION_ROWS });
     const totalCount = issues.length;
 
-    return chunks.map((chunk, chunkIndex) => {
-      const startIndex = chunkIndex * QUALITY_ROWS_PER_PAGE;
-      const subtitle = totalCount > QUALITY_ROWS_PER_PAGE
+    return pages.map((pageData, chunkIndex) => {
+      const chunk = pageData.items;
+      const startIndex = pageData.startIndex;
+      const subtitle = totalCount > QUALITY_FIRST_PAGE_ROWS
         ? `Plausibilitätsprüfung und Berechnungsabgleich (${rangeLabel(startIndex, chunk.length, totalCount)})`
         : 'Plausibilitätsprüfung und Berechnungsabgleich';
 
@@ -2202,7 +2286,7 @@ export class ReportEngine {
         ${chunkIndex === 0 ? this.renderQualityOverview(model) : ''}
         ${chunkIndex === 0 ? this.renderCalculationAuditBlock(model) : ''}
         ${this.renderQualityIssueTable(chunk)}
-        ${chunkIndex < chunks.length - 1 ? '<p class="report-continuation-note">Fortsetzung des QS-Prüfprotokolls auf der nächsten Seite.</p>' : ''}
+        ${chunkIndex < pages.length - 1 ? '<p class="report-continuation-note">Fortsetzung des QS-Prüfprotokolls auf der nächsten Seite.</p>' : ''}
       `;
 
       return this.renderPage(model, nextPage(), chunkIndex ? 'QS-Prüfprotokoll Fortsetzung' : 'QS-Prüfprotokoll', subtitle, content, totalPages);
@@ -2626,34 +2710,36 @@ export class ReportEngine {
         overflow:hidden;
         page-break-after:always;
       }
-      .report-page:last-child{page-break-after:auto}
+      .report-page:last-child{page-break-after:auto}.report-page[data-layout-status="overflow"]{outline:2px solid #c63b3b;outline-offset:-2px}
       .report-page-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
       .report-logo-wrap{width:22mm;height:22mm;display:grid;place-items:center;flex:0 0 auto}
       .report-logo-wrap.large{width:27mm;height:27mm}
       .report-logo{max-width:100%;max-height:100%;object-fit:contain}
       .report-logo-placeholder{font-weight:900;color:var(--report-blue);font-size:20px;border:2px solid var(--report-blue);padding:8px}
-      .report-page-head h2{margin:3px 0 3px;color:var(--report-blue);text-transform:uppercase;font-size:20px;line-height:1.1}
+      .report-page-head h2{margin:3px 0 3px;color:var(--report-blue);text-transform:uppercase;font-size:17px;line-height:1.12;letter-spacing:.02em}
       .report-page-head p{margin:0;color:#24364c;font-size:11px}
-      .report-page-content{height:calc(297mm - 12mm - 15mm - 36mm);overflow:hidden}
+      .report-page-content{height:calc(297mm - 12mm - 15mm - 36mm);min-height:0;overflow:hidden}
       .report-formpart-box,.report-summary-card,.report-result-box,.report-info-box,.report-table tr{break-inside:avoid;page-break-inside:avoid}
 
-      .report-cover-page{display:flex;flex-direction:column;gap:0;padding:12mm 13mm 15mm}
-      .report-cover-topbar{display:flex;justify-content:space-between;align-items:flex-start;min-height:30mm}
+      .report-cover-page{display:flex;flex-direction:column;gap:0;padding:12mm 13mm 15mm;background:#fff;isolation:isolate}
+      .report-cover-topbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;min-height:30mm}
       .report-generated{font-size:9px;color:var(--report-muted);white-space:nowrap;margin-top:4mm}
-      .report-cover-title-block{margin-top:0}
+      .report-cover-title-block{position:relative;z-index:2;margin-top:0}
       .report-cover-title-block h1{margin:0 0 5px;color:var(--report-blue);font-size:24px;line-height:1;font-weight:900;letter-spacing:.2px}
       .report-cover-title-block h2{margin:0 0 6px;color:var(--report-blue);font-size:12.5px;text-transform:uppercase;font-weight:900;letter-spacing:.15px}
       .report-lead{margin:0;color:#20354f;font-size:10.5px;line-height:1.45;max-width:105mm}
       .report-cover-divider{height:1.5px;background:var(--report-blue);opacity:.75;margin:11mm 0 9mm}
       .report-cover-divider.slim{margin:8mm 0 6mm;opacity:.5}
-      .report-cover-main{display:grid;grid-template-columns:68mm 1fr;gap:8mm;align-items:start;min-height:74mm}
+      .report-cover-main{position:relative;z-index:2;display:grid;grid-template-columns:78mm 1fr;gap:9mm;align-items:start;min-height:74mm}
+      .report-cover-watermark{position:absolute;z-index:0;right:-15mm;top:31mm;width:128mm;height:156mm;overflow:hidden;opacity:.055;pointer-events:none}.report-cover-watermark img{display:block;width:128mm;height:auto;max-width:none;clip-path:inset(0 0 35% 0);filter:saturate(.65)}
+      .report-project-card,.report-cover-document-card{position:relative;z-index:2}.report-cover-document-card{border:1px solid #d7e2ee;border-radius:8px;background:rgba(255,255,255,.88);padding:12px 14px;min-height:68mm}.report-cover-eyebrow{display:block;color:var(--report-blue-2);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.report-cover-document-card>strong{display:block;color:var(--report-blue);font-size:16px;line-height:1.15;margin-bottom:7px}.report-cover-document-card>p{margin:0 0 10px;color:#435a72;font-size:8.8px;line-height:1.4}
       .report-project-card h3,.report-section-title,.report-info-box h3,.report-two-col h3{color:var(--report-blue);font-size:11px;text-transform:uppercase;margin:0 0 8px;font-weight:900;letter-spacing:.1px}
       .report-definition-list{display:grid;grid-template-columns:27mm 1fr;gap:5px 8px;margin:0;font-size:9.2px;line-height:1.35}
       .report-definition-list dt{font-weight:900;color:#06172b}.report-definition-list dd{margin:0;color:#06172b}
       .report-illustration-card{min-height:62mm;display:flex;align-items:flex-start;justify-content:flex-end;padding:0;margin-top:-7mm}
       .report-hero-image{width:100%;max-width:98mm;max-height:64mm;object-fit:contain;object-position:right top;display:block;margin-left:auto}
       .report-duct-illustration{width:100%;max-width:115mm;height:auto;display:block}
-      .report-cover-summary{margin-top:3mm;padding-bottom:2mm}
+      .report-cover-summary{position:relative;z-index:2;margin-top:3mm;padding-bottom:2mm}
       .report-summary-cards{display:grid;gap:7px}
       .report-summary-cards.cover{grid-template-columns:repeat(4,1fr)}
       .report-summary-card{border:1px solid var(--report-line);border-radius:6px;padding:6px 8px;min-height:20mm;background:#fbfdff;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;text-align:left}
@@ -2809,7 +2895,7 @@ export class ReportEngine {
       .report-footer{position:absolute;left:13mm;right:13mm;bottom:7mm;border-top:1px solid #d6deea;padding-top:5px;display:flex;justify-content:space-between;font-size:8.8px;color:#223950;gap:10px}
       .report-footer span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145mm}
       .report-print-helper{position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:210mm;margin:0 auto 12px;padding:10px 14px;border:1px solid #cfdbea;border-radius:10px;background:#ffffff;box-shadow:0 8px 28px rgba(20,45,75,.12);font-family:Segoe UI,Arial,sans-serif;color:#06172b}
-      .report-print-helper strong{display:block;color:#073f7a;font-size:13px}.report-print-helper span{display:block;color:#5c6f87;font-size:10px;margin-top:2px}.report-print-helper-actions{display:flex;gap:8px}.report-print-helper button{border:1px solid #0b559c;background:#073f7a;color:white;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}.report-print-helper button:last-child{background:white;color:#073f7a}
+      .report-print-helper strong{display:block;color:#073f7a;font-size:13px}.report-print-helper span{display:block;color:#5c6f87;font-size:10px;margin-top:2px}.report-layout-status{font-weight:800;color:#176c46!important}.report-layout-status.is-warning{color:#a52828!important}.report-print-helper-actions{display:flex;gap:8px}.report-print-helper button{border:1px solid #0b559c;background:#073f7a;color:white;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}.report-print-helper button:last-child{background:white;color:#073f7a}
       .report-executive-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
       .report-executive-kpis>div{border:1px solid var(--report-line);border-radius:8px;background:#fbfdff;padding:10px;min-height:27mm;display:flex;flex-direction:column;justify-content:space-between}
       .report-executive-kpis span{font-size:8px;color:var(--report-muted);font-weight:900;text-transform:uppercase}.report-executive-kpis strong{font-size:17px;color:var(--report-blue);line-height:1.08}.report-executive-kpis small{font-size:8px;color:#536a83;line-height:1.25}
@@ -2824,6 +2910,7 @@ export class ReportEngine {
         .dp-professional-report{display:block;padding:0;background:white;gap:0}
         .report-page{box-shadow:none;border:0;margin:0!important;width:210mm;height:297mm;min-height:297mm;page-break-after:always;break-after:page}
         .report-page:last-child{page-break-after:auto;break-after:auto}
+        .report-page[data-layout-status="overflow"]{outline:0}
         .no-print{display:none!important}
       }
       @page{size:A4 portrait;margin:0}

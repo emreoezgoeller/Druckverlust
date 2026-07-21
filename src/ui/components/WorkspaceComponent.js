@@ -10,17 +10,17 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=52.00';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=52.00';
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=53.00';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=53.00';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=52.00';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=52.00';
-import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=53.00';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=53.00';
+import ReportEngine from '../../report/ReportEngine.js?v=53.00&release=53.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
@@ -103,7 +103,7 @@ import {
 } from '../../testing/BetaFeedbackInbox.js?v=21.12&release=46.00';
 import createPracticeProject from '../../project/practiceProject.js';
 import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=42.00&release=46.00';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=53.00&release=53.00';
 import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=42.00&release=46.00';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
@@ -139,7 +139,7 @@ import {
   createSectionResultPresentation,
   createSystemResultPresentation,
   normalizeResultViewMode,
-} from '../../results/ResultPresentationEngine.js?v=52.00&release=52.00';
+} from '../../results/ResultPresentationEngine.js?v=52.00&release=53.00';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {

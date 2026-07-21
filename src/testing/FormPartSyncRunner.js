@@ -2,7 +2,7 @@
 // DOM-unabhängiger Test-Runner für automatische Grössenübernahme, Anschluss-Sync und manuelle Overrides.
 
 import WorkspaceComponent from '../ui/components/WorkspaceComponent.js';
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.20&release=52.00';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.20&release=53.00';
 
 function clone(value) {
   if (typeof structuredClone === 'function') return structuredClone(value);

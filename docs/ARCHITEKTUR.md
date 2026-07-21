@@ -1,6 +1,6 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 2.7.0 · Phase 52.00
+Stand: Version 2.8.0 · Phase 53.00
 
 ## 1. Ausführung
 
@@ -53,14 +53,14 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
 - `src/ui/core/RibbonActions.js` – zentrale Aktionen
 - `src/ui/core/UiTooltipController.js` – sofortige, zugängliche Infotexte für Symbolschaltflächen
-- `src/ui/phase22_00.css` bis `src/ui/phase51_20.css` – additive, releasebezogene UI-Schichten
+- `src/ui/phase22_00.css` bis `src/ui/phase52_00.css` – additive, releasebezogene UI-Schichten
 
 ### Speicherung und Bericht
 
 - `src/storage/StorageEngine.js` – `.dvp`-Serialisierung, Normalisierung und Migration
 - `src/storage/AutoSaveEngine.js` – kurzfristige lokale Autosicherung
 - `src/safety/ProjectSafetyEngine.js` – versionierte Sicherungsstände und portable Übergabepakete
-- `src/report/ReportEngine.js` – einzig aktive HTML-/CSV-/PDF-Berichtengine
+- `src/report/ReportEngine.js` – einzig aktive HTML-/CSV-/PDF-Berichtengine mit zentralem Seitenplan, kontrollierter Mehrseitenaufteilung und automatischer Layoutprüfung vor dem Drucken
 
 ### Diagnose und Tests
 
@@ -194,3 +194,15 @@ Bewusst nicht vorhanden sind Ventilatorauslegung, SFP/Energieauswertung sowie He
 ## Phase 50.00 – Formteil-Workflow
 
 `FormPartWorkflowEngine` kapselt die reine Kontextauflösung, lokale Reihenfolge, Strangnavigation und Anschlussvorschläge. Der `ApplicationState` hält die Ziel-Teilstrecke des Pickers, während `ProjectCommands` Erstellung und Sortierung kontrolliert ausführt. Manuelle Formteilwerte werden im Workspace bei einer Umzuordnung nicht still überschrieben.
+
+## 9. Bericht und PDF-Druck
+
+Der Professional Report wird vollständig in `ReportEngine` erzeugt. Ein gemeinsamer Seitenplan bestimmt Inhaltsverzeichnis, Kapitelstart, Seitenanzahl und Fusszeilen. Lange Datenbereiche werden vor dem Rendern in drucksichere Einheiten zerlegt:
+
+- Hauptnetz: höchstens 15 Teilstrecken je Seite,
+- Formteile: höchstens vier Teilstreckenboxen je Seite und fünf Zeilen je Box,
+- Sonderbauteile: höchstens 20 Zeilen je Seite,
+- Formteilkatalog: höchstens sechs Karten je Seite,
+- Engineering- und QS-Seiten: reduzierte erste Seite wegen zusätzlicher Übersichtsblöcke.
+
+Nach dem Laden der Bilder kontrolliert ein clientseitiger Layout-Audit jede `.report-page-content` auf vertikalen und horizontalen Überlauf. Das Ergebnis steht über `window.__druckverlustLayoutAudit` und `window.__druckverlustPrintReady()` für den Druckdialog und automatisierte Prüfungen bereit.

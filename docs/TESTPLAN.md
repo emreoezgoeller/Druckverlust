@@ -1,4 +1,4 @@
-# Testplan – Druckverlust Pro 2.1
+# Testplan – Druckverlust Pro 2.8
 
 ## Automatischer Gesamtlauf
 
@@ -21,7 +21,7 @@ npm run test:release
 3. Demo laden, ändern, speichern und erneut öffnen.
 4. Excel-/CSV-Schnellerfassung mit gültigen und fehlerhaften Zeilen prüfen.
 5. Anlagenschema, Simulation und Engineering-QS bedienen.
-6. Bericht für 5, 20 und mindestens 48 Teilstrecken prüfen.
+6. Bericht für 5, 20, 48 und mindestens 67 Teilstrecken prüfen; Inhaltsverzeichnis, Fortsetzungsseiten und Layoutstatus kontrollieren.
 7. Alte `.dvp`-Datei öffnen, Hinweise kontrollieren und neu speichern.
 8. `.dvpa`- und `.dvph`-Pakete exportieren und wieder importieren.
 
@@ -62,3 +62,26 @@ Browser-Testwrapper aus Phase 21 wurden im finalen Release entfernt. Die fachlic
 - Technische Kennwerte sind in der Standardansicht einklappbar.
 - Glossar erklärt Δp, λ, ζ, k und p_dyn.
 - Responsive Darstellung und Tabellenstruktur werden statisch geprüft.
+
+
+## Phase 53.00
+
+Automatischer Lauf:
+
+```bash
+npm run test:phase53
+```
+
+Geprüft werden:
+
+- weisses Deckblatt, Logo-Wasserzeichen und technischer Dokumentblock,
+- gemeinsamer Seitenplan für Inhaltsverzeichnis, Kapitel und Fusszeilen,
+- 67 Teilstrecken auf fünf lückenlosen Hauptnetzseiten,
+- 210 Formteile auf kontrollierten Teilstreckenboxen,
+- Fortsetzungsseiten für 45 Sonderbauteile, 31 Engineering-Feststellungen, 40 QS-Hinweise und 15 Katalogeinträge,
+- vollständige letzte Datensätze ohne abgeschnittene Tabellenbereiche,
+- automatische Prüfung auf vertikale und horizontale Überfüllung,
+- A4-Druckregeln, Seitenumbrüche und Schutz kritischer Elemente gegen innere Umbrüche,
+- Versions-, Cache-, Dokumentations- und Releaseintegration.
+
+Zusätzlich wird ein 43-seitiger Stressbericht in PDF gerendert und anhand repräsentativer Seiten sowie des vollständigen PDF-Texts kontrolliert.

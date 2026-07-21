@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 2.7.0 · Phase 52.00 · vereinfachte Ergebnisdarstellung mit Standard- und Profi-Ansicht.
+**Aktueller Stand:** Version 2.8.0 · Phase 53.00 · PDF- und Berichtsabschluss mit sicherer Mehrseitenaufteilung und automatischer Layoutprüfung.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -35,6 +35,8 @@ python -m http.server 8000
 - SIA-Geschwindigkeitsprüfung mit Raumnutzung, Betriebsart, Elektro-Vollaststunden, interpolierten Rundrohr-Richtwerten und Reduktionsfaktor für Rechteckkanäle,
 - neue Formteile werden automatisch der zuletzt erstellten Teilstrecke zugeordnet und bleiben manuell umstellbar,
 - mehrere Anlagen pro Projekt, Excel-/CSV-/TSV-Schnellerfassung, Projekt-QS und Professional Report,
+- drucksicherer A4-Bericht mit weissem Deckblatt, dezentem Logo-Wasserzeichen, dynamischem Inhaltsverzeichnis und kontrollierten Fortsetzungsseiten,
+- automatische Layoutprüfung vor dem Drucken erkennt vertikale oder horizontale Überfüllungen,
 - `.dvp`, `.dvpa` und `.dvph` mit Importprüfung und Prüfsumme,
 - einzeilige Plattformleiste mit sofortigen Infotexten, Symbol-/Statuslegende und überlaufsicherer Sidebar,
 - Hilfe-Center, Projektverlauf, Revisionen, Aufgaben, Simulation und Übergabeprüfung.
@@ -60,7 +62,13 @@ Druckverlust/
 npm test
 ```
 
-Gezielte Prüfung der SIA-Geschwindigkeitsprüfung:
+Gezielte Prüfung des PDF- und Berichtsabschlusses:
+
+```bash
+npm run test:phase53
+```
+
+Gezielte Prüfung der SIA- und Ergebnisfunktionen:
 
 ```bash
 npm run test:phase51.20
@@ -79,7 +87,7 @@ Release-Kurzlauf:
 npm run test:release
 ```
 
-Der Release prüft unter anderem 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
+Der Release prüft unter anderem die Phase-53-Berichtstests, 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
 
 ## Bewusst ausgeschlossen
 
