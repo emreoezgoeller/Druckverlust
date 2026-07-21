@@ -1,4 +1,5 @@
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.10&release=51.10';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.20&release=51.20';
+import { normalizeSiaVelocityConfig } from '../standards/SiaVelocityCompliance.js?v=51.20';
 
 // Druckverlust Pro – ValidationEngine
 // Prüft Eingaben, Berechnungsergebnisse und Projektstruktur.
@@ -132,6 +133,17 @@ export class ValidationEngine {
 
       if (!sections.length) {
         warnings.push(`Anlage "${systemName}" enthält keine Teilstrecken.`);
+      }
+
+      const siaConfig = normalizeSiaVelocityConfig(system);
+      if (!siaConfig.roomUsage) {
+        warnings.push(`Anlage "${systemName}": Raumnutzung nach SIA 2024 ist noch nicht ausgewählt.`);
+      }
+      if (!siaConfig.mode) {
+        warnings.push(`Anlage "${systemName}": Betriebsart für die SIA-Geschwindigkeitsprüfung ist noch nicht ausgewählt.`);
+      }
+      if (siaConfig.complete && siaConfig.electricalFullLoadHours === 0) {
+        warnings.push(`Anlage "${systemName}": Für die gewählte Raumnutzung sind 0 Elektro-Vollaststunden hinterlegt; die automatische Geschwindigkeitsprüfung ist nicht anwendbar.`);
       }
 
       sections.forEach(section => {

@@ -1,6 +1,7 @@
 import { calculateProject } from "../core/CalculationEngine.js";
 import ValidationEngine from "../validation/ValidationEngine.js";
-import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=51.10&release=51.10";
+import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=51.20&release=51.20";
+import { analyzeSystemVelocityCompliance } from "../standards/SiaVelocityCompliance.js?v=51.20";
 
 function uniqueMessages(messages = []) {
   return [...new Set(messages.map(message => String(message || '').trim()).filter(Boolean))];
@@ -107,15 +108,18 @@ export default class ProjectCalculationService {
     };
   }
 
-  static createQualitySummary(validation = {}, calculation = {}, formPartUpdate = {}) {
+  static createQualitySummary(validation = {}, calculation = {}, formPartUpdate = {}, velocityCompliance = null) {
     const calculationWarnings = (calculation?.totals?.warnings || [])
       .map(item => item?.message || item)
       .filter(Boolean);
+
+    const complianceWarnings = velocityCompliance?.messages || [];
 
     const warnings = uniqueMessages([
       ...(validation.warnings || []),
       ...(formPartUpdate.warnings || []),
       ...calculationWarnings,
+      ...complianceWarnings,
     ]);
 
     const errors = uniqueMessages([
@@ -152,7 +156,8 @@ export default class ProjectCalculationService {
     };
 
     const calculation = calculateProject(calculationInput);
-    const quality = ProjectCalculationService.createQualitySummary(validation, calculation, formPartUpdate);
+    const velocityCompliance = analyzeSystemVelocityCompliance(system || {}, calculation);
+    const quality = ProjectCalculationService.createQualitySummary(validation, calculation, formPartUpdate, velocityCompliance);
 
     return {
       project: {
@@ -162,6 +167,7 @@ export default class ProjectCalculationService {
       system,
       validation,
       calculation,
+      velocityCompliance,
       quality,
       timestamp: new Date().toISOString(),
     };

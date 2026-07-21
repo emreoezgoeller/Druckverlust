@@ -1,9 +1,9 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "2.6.1",
-  "phase": "51.10",
-  "releaseDate": "2026-07-20",
+  "version": "2.6.2",
+  "phase": "51.20",
+  "releaseDate": "2026-07-21",
   "projectFileSchema": "1.2.0",
   "entryPoints": {
     "product": "index.html",
@@ -28,11 +28,12 @@
     "formPartWorkflowChecks": 37,
     "interfaceCompletionChecks": 48,
     "sixNewFormPartChecks": 65,
-    "formPartSyncChecks": 179
+    "formPartSyncChecks": 179,
+    "siaVelocityChecks": 252
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Sechs neue rechteckige Krümmerformteile mit Excel-getreuer Tabellenlogik, automatischer Teilstrecken-Synchronisation, direktem Druckbezug und kontrollierter Behandlung negativer ζ-Werte."
+  "notes": "SIA-Geschwindigkeitsprüfung je Anlage und Teilstrecke mit Raumnutzung nach SIA 2024:2021, Betriebsart, Elektro-Vollaststunden, interpolierten Richtwerten nach SIA 382/1:2025 Tabelle 49 und Reduktionsfaktoren für Rechteckkanäle nach Tabelle 50."
 }

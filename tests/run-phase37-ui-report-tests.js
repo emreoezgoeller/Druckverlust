@@ -21,11 +21,11 @@ const engine = read('src/project/ProjectTaskCenterEngine.js');
 const packageJson = JSON.parse(read('package.json'));
 
 assert.match(appHtml, /phase37_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=51\.10/); checks += 1;
-assert.match(main, /Phase 51\.10/); checks += 1;
-assert.match(main, /WorkspaceComponent\.js\?v=51\.10/); checks += 1;
-assert.match(version, /APP_RELEASE = '51\.10'/); checks += 1;
-assert.match(version, /APP_VERSION = '2\.6\.1'/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=51\.20/); checks += 1;
+assert.match(main, /Phase 51\.20/); checks += 1;
+assert.match(main, /WorkspaceComponent\.js\?v=51\.20/); checks += 1;
+assert.match(version, /APP_RELEASE = '51\.20'/); checks += 1;
+assert.match(version, /APP_VERSION = '2\.6\.2'/); checks += 1;
 assert.match(ribbon, /showProjectTaskCenter/); checks += 1;
 assert.match(ribbon, /label: 'Aufgaben'/); checks += 1;
 assert.match(actions, /showProjectTaskCenter/); checks += 1;
@@ -48,7 +48,7 @@ assert.match(report, /Projektaufgaben/); checks += 1;
 assert.match(engine, /addManualTask/); checks += 1;
 assert.match(engine, /addFavorite/); checks += 1;
 assert.match(engine, /createGeneratedTasks/); checks += 1;
-assert.equal(packageJson.version, '2.6.1'); checks += 1;
+assert.equal(packageJson.version, '2.6.2'); checks += 1;
 assert.match(packageJson.scripts.test, /run-phase37-task-center-tests/); checks += 1;
 assert.match(packageJson.scripts['test:phase37'], /run-phase37-ui-report-tests/); checks += 1;
 

@@ -1,11 +1,11 @@
 // Druckverlust Pro – ProjectCommands
 // Zentrale Projektbefehle für UI, Ribbon und spätere Dialoge.
 
-import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.10&release=51.10';
+import { createDefaultFormPartRegistry } from '../formteile/FormPartRegistry.js?v=51.20&release=51.20';
 import {
   moveFormPartWithinSection as moveFormPartWithinSectionInCollection,
   resolveFormPartContextSection,
-} from '../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.10';
+} from '../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.20';
 import createDefaultProject from '../project/defaultProject.js';
 
 
@@ -712,6 +712,10 @@ export default class ProjectCommands {
           type: 'Zuluft',
           bkpNumber: '',
           description: '',
+          siaVelocity: {
+            roomUsageCode: '',
+            operationMode: '',
+          },
           sections: [],
           formParts: [],
           specialComponents: [],

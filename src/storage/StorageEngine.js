@@ -117,6 +117,13 @@ export function normalizeProjectForStorage(projectInput = {}, context = {}) {
     system.id = systemId;
     system.name = String(system.name ?? system.anlage ?? project.meta?.anlage ?? project.report?.anlage ?? `Anlage ${systemIndex + 1}`).trim() || `Anlage ${systemIndex + 1}`;
     system.type = system.type || 'Zuluft';
+    const siaVelocitySource = isPlainObject(system.siaVelocity) ? system.siaVelocity : {};
+    system.siaVelocity = {
+      roomUsageCode: String(siaVelocitySource.roomUsageCode ?? system.siaRoomUsageCode ?? '').trim(),
+      operationMode: String(siaVelocitySource.operationMode ?? system.siaOperationMode ?? '').trim(),
+    };
+    delete system.siaRoomUsageCode;
+    delete system.siaOperationMode;
 
     if (!Array.isArray(system.sections)) {
       warnings.push(`Anlage „${system.name}“ hatte keine Teilstreckenliste. Eine leere Liste wurde ergänzt.`);

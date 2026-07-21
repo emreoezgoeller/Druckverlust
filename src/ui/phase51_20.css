@@ -1,0 +1,305 @@
+/* Druckverlust Pro – Phase 51.20
+   SIA-Geschwindigkeitsprüfung nach Raumnutzung, Betriebsart und Querschnitt. */
+
+.dp-sia-velocity-panel {
+  overflow: hidden;
+  border-color: #b7d5ea;
+  background: linear-gradient(145deg, #ffffff 0%, #f2f8fc 100%);
+}
+
+.dp-sia-velocity-panel.is-critical {
+  border-color: #e1a8a8;
+  background: linear-gradient(145deg, #ffffff 0%, #fff3f3 100%);
+}
+
+.dp-sia-velocity-panel.is-warning {
+  border-color: #e5c178;
+  background: linear-gradient(145deg, #ffffff 0%, #fff9ec 100%);
+}
+
+.dp-sia-status,
+.dp-sia-row-status {
+  display: inline-flex;
+  min-height: 29px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 11px;
+  border: 1px solid #c7d7e4;
+  border-radius: 999px;
+  color: #53697c;
+  background: #f3f7fa;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.dp-sia-status.is-ok,
+.dp-sia-row-status.is-ok {
+  border-color: #a8d4b8;
+  color: #23633d;
+  background: #edf8f1;
+}
+
+.dp-sia-status.is-warning,
+.dp-sia-row-status.is-warning {
+  border-color: #e2c07c;
+  color: #7a5718;
+  background: #fff7e6;
+}
+
+.dp-sia-status.is-critical,
+.dp-sia-row-status.is-critical {
+  border-color: #dda6a6;
+  color: #8c2f2f;
+  background: #fff0f0;
+}
+
+.dp-sia-config-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.25fr) minmax(220px, 1fr) minmax(180px, .72fr) minmax(180px, .72fr);
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.dp-sia-metric {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 15px;
+  border: 1px solid #c8d9e7;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 7px 18px rgba(13, 56, 94, .055);
+}
+
+.dp-sia-metric > span {
+  color: #587084;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.dp-sia-metric > strong {
+  margin-top: 6px;
+  color: #0b4f86;
+  font-size: clamp(21px, 1.8vw, 29px);
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-sia-metric > small {
+  margin-top: 5px;
+  overflow: hidden;
+  color: #657a8d;
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dp-sia-metric.is-critical > strong { color: #9d3535; }
+.dp-sia-metric.is-warning > strong { color: #8a631d; }
+.dp-sia-metric.is-ok > strong { color: #2b7147; }
+
+.dp-sia-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+  border: 1px solid #c8d8e5;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.dp-sia-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.dp-sia-table th,
+.dp-sia-table td {
+  padding: 10px 11px;
+  border-bottom: 1px solid #e1e9ef;
+  text-align: center;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-sia-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: #425c72;
+  background: #edf4f8;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.dp-sia-table td.left,
+.dp-sia-table th:first-child {
+  text-align: left;
+}
+
+.dp-sia-table tr.is-critical:not(.dp-sia-warning-row) {
+  background: #fff7f7;
+}
+
+.dp-sia-table tr.is-warning:not(.dp-sia-warning-row) {
+  background: #fffbf2;
+}
+
+.dp-sia-warning-row td {
+  padding-top: 6px;
+  color: #6a4a1b;
+  background: #fffaf0;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.dp-sia-empty-state,
+.dp-sia-note {
+  display: flex;
+  gap: 7px;
+  margin-top: 15px;
+  padding: 13px 15px;
+  border: 1px solid #c8d9e7;
+  border-radius: 12px;
+  color: #536b7f;
+  background: rgba(255, 255, 255, .82);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dp-sia-empty-state {
+  flex-direction: column;
+}
+
+.dp-sia-empty-state strong,
+.dp-sia-note strong {
+  color: #173f61;
+}
+
+.dp-section-sia-card {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.2fr) minmax(300px, .9fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border: 1px solid #bfd5e5;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #fff 0%, #f2f8fc 100%);
+  box-shadow: 0 7px 20px rgba(12, 54, 88, .05);
+}
+
+.dp-section-sia-card.is-critical {
+  border-color: #dfa7a7;
+  background: linear-gradient(135deg, #fff 0%, #fff2f2 100%);
+}
+
+.dp-section-sia-card.is-warning {
+  border-color: #e2c07b;
+  background: linear-gradient(135deg, #fff 0%, #fff9eb 100%);
+}
+
+.dp-section-sia-card h2 {
+  margin: 4px 0 3px;
+  color: #17486e;
+  font-size: 20px;
+}
+
+.dp-section-sia-card.is-critical h2 { color: #9b3535; }
+.dp-section-sia-card.is-warning h2 { color: #805b18; }
+.dp-section-sia-card p { margin: 0; color: #607589; font-size: 12px; line-height: 1.45; }
+
+.dp-section-sia-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.dp-section-sia-values > div {
+  padding: 10px 12px;
+  border: 1px solid #d2e0ea;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .82);
+}
+
+.dp-section-sia-values span,
+.dp-section-sia-values strong {
+  display: block;
+}
+
+.dp-section-sia-values span {
+  color: #667b8d;
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.dp-section-sia-values strong {
+  margin-top: 3px;
+  color: #174b73;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-section-sia-card > button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #9ebed4;
+  border-radius: 10px;
+  color: #154d75;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dp-section-sia-warning {
+  grid-column: 1 / -1;
+  padding-top: 9px;
+  border-top: 1px solid rgba(145, 111, 48, .22);
+  color: #765421;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1320px) {
+  .dp-sia-config-grid {
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+  }
+
+  .dp-section-sia-card {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dp-section-sia-values {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .dp-sia-config-grid,
+  .dp-section-sia-card,
+  .dp-section-sia-values {
+    grid-template-columns: 1fr;
+  }
+
+  .dp-section-sia-values,
+  .dp-section-sia-card > button,
+  .dp-section-sia-warning {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .dp-sia-note {
+    flex-direction: column;
+  }
+}

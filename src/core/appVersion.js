@@ -3,9 +3,9 @@
 
 export const APP_NAME = 'Druckverlust Pro';
 export const APP_EDITION = 'Professional';
-export const APP_RELEASE = '51.10';
-export const APP_VERSION = '2.6.1';
-export const APP_ASSET_VERSION = '51.10';
+export const APP_RELEASE = '51.20';
+export const APP_VERSION = '2.6.2';
+export const APP_ASSET_VERSION = '51.20';
 export const APP_BUILD_LABEL = `${APP_NAME} v${APP_VERSION} · Phase ${APP_RELEASE}`;
 
 export function createAppInfo(locationRef = null) {

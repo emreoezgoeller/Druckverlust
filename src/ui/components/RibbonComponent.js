@@ -1,7 +1,7 @@
 // Druckverlust Pro – RibbonComponent
 // Phase 51.00: einzeilige Plattformleiste mit Sofort-Infotexten und Symbollegende.
 
-import RibbonActions from '../core/RibbonActions.js?v=51.10&release=51.10';
+import RibbonActions from '../core/RibbonActions.js?v=51.20&release=51.20';
 
 const RIBBON_GROUPS = [
   {

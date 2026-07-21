@@ -137,6 +137,10 @@ export function createDefaultProject(options = {}) {
         id: systemId,
         name: anlage,
         type: options.systemType || 'Zuluft',
+        siaVelocity: {
+          roomUsageCode: String(options.siaRoomUsageCode || '').trim(),
+          operationMode: String(options.siaOperationMode || '').trim(),
+        },
         sections: createDefaultSections(systemId),
         formParts: [],
         specialComponents: [],

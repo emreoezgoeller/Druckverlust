@@ -1,6 +1,6 @@
 # Architektur – Druckverlust Pro
 
-Stand: Version 2.6.1 · Phase 51.10
+Stand: Version 2.6.2 · Phase 51.20
 
 ## 1. Ausführung
 
@@ -31,7 +31,8 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/core/CalculationEngine.js` – Kanal-/Rohrberechnung, Verluste und Rundung
 - `src/core/LookupEngine.js`, `InterpolationEngine.js` – Tabellenwerte
 - `src/validation/ValidationEngine.js` – Eingabe- und Projektvalidierung
-- `src/formteile/FormPartRegistry.js` und `src/formteile/calculators/` – 14 Formteiltypen
+- `src/standards/SiaVelocityCompliance.js` – Raumnutzungen, Elektro-Vollaststunden sowie Geschwindigkeitsrichtwerte nach den bereitgestellten SIA-Auszügen
+- `src/formteile/FormPartRegistry.js` und `src/formteile/calculators/` – 21 Formteiltypen
 
 ### Analyse, Simulation und Abschluss
 
@@ -52,7 +53,7 @@ Der Anwendungseinstieg ist `src/main.js`.
 - `src/ui/components/StatusBarComponent.js` – Projekt- und Versionsstatus
 - `src/ui/core/RibbonActions.js` – zentrale Aktionen
 - `src/ui/core/UiTooltipController.js` – sofortige, zugängliche Infotexte für Symbolschaltflächen
-- `src/ui/phase22_00.css` bis `src/ui/phase51_00.css` – additive, releasebezogene UI-Schichten
+- `src/ui/phase22_00.css` bis `src/ui/phase51_20.css` – additive, releasebezogene UI-Schichten
 
 ### Speicherung und Bericht
 

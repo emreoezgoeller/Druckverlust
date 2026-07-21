@@ -71,7 +71,7 @@ const version = readFileSync(new URL('../src/core/appVersion.js', import.meta.ur
 match(appHtml, /phase31_00\.css\?v=38\.00/, 'Phase-31-CSS wird geladen.');
 match(css, /dp-revision-comparison-table/, 'Phase-31-CSS enthält die Vergleichstabelle.');
 match(css, /dp-review-checklist/, 'Phase-31-CSS enthält die Prüfcheckliste.');
-match(version, /APP_VERSION = '2\.6\.1'/, 'App-Version wurde auf 1.16.0 fortgeschrieben.');
-match(version, /APP_RELEASE = '51\.10'/, 'Aktueller Release ist Phase 39.00.');
+match(version, /APP_VERSION = '2\.6\.2'/, 'App-Version wurde auf 1.16.0 fortgeschrieben.');
+match(version, /APP_RELEASE = '51\.20'/, 'Aktueller Release ist Phase 39.00.');
 
 console.log(`Phase 31.00 UI und Bericht: ${checks} Prüfungen bestanden.`);

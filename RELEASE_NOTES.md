@@ -1,7 +1,20 @@
 # Release Notes
 
-**Release:** 2.6.1 · Phase 51.10  
-**Datum:** 20.07.2026
+**Release:** 2.6.2 · Phase 51.20  
+**Datum:** 21.07.2026
+
+## Neu in Phase 51.20
+
+- Jede Anlage erhält eine verbindliche Auswahl der **Raumnutzung nach SIA 2024:2021, Tabelle 13** und der Betriebsart **1-stufig**, **2-stufig** oder **stufenlos**.
+- Aus diesen Angaben werden die jährlichen **Elektro-Vollaststunden** automatisch ermittelt.
+- Für jede Teilstrecke wird der maximale Richtwert für runde Luftleitungen nach **SIA 382/1:2025, Tabelle 49** aus Luftmenge und Elektro-Vollaststunden bestimmt. Zwischen 2’000, 4’000 und 8’000 h/a wird linear interpoliert.
+- Rechteckkanäle erhalten zusätzlich den Reduktionsfaktor aus **Tabelle 50** anhand des Seitenverhältnisses. Zwischenwerte werden interpoliert.
+- Seitenverhältnisse ab 1:6 werden als nicht empfohlen gekennzeichnet; Werte über 1:10 werden nicht extrapoliert, sondern vorsichtig mit dem Tabellenrand 1:10 bewertet.
+- Die Anlagenübersicht zeigt Ist-Geschwindigkeit, Rundrohr-Richtwert, Reduktionsfaktor, maximalen Kanalrichtwert und Status für alle Teilstrecken.
+- Im Teilstreckeneditor erscheint eine kompakte Einzelprüfung mit Istwert, Grenzwert und Auslastung.
+- Auswahl, Prüfergebnis und Normgrundlagen werden in Projektdatei, Validierung, Qualitätsübersicht und Professional Report übernommen.
+- Hinweis zum Normkontext: Bei verzweigten Netzen ist der kritische Strang massgebend; untergeordnete Stränge sind zusätzlich bezüglich Druckniveau und Schall zu beurteilen.
+- 252 automatisierte Phase-51.20-Prüfungen für Raumdaten, Interpolation, Rechteckfaktoren, Speicherung, Bericht und UI-Integration bestanden.
 
 ## Neu in Phase 51.10
 

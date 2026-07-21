@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.6.2 – Phase 51.20 – 21.07.2026
+
+- Anlagenweite Auswahl der Raumnutzung nach SIA 2024:2021 Tabelle 13 und der Betriebsart 1-stufig, 2-stufig oder stufenlos ergänzt.
+- Jährliche Elektro-Vollaststunden werden aus der gewählten Kombination automatisch ermittelt.
+- Maximale Geschwindigkeitsrichtwerte für Rundrohre nach SIA 382/1:2025 Tabelle 49 je Teilstrecke berechnet.
+- Zwischenwerte der Elektro-Vollaststunden zwischen 2’000, 4’000 und 8’000 h/a werden linear interpoliert.
+- Rechteckkanäle werden mit dem Reduktionsfaktor aus Tabelle 50 bewertet; Zwischenwerte der Seitenverhältnisse werden interpoliert.
+- Seitenverhältnisse ab 1:6 erhalten einen Normhinweis; Werte über 1:10 werden kontrolliert am Tabellenrand 1:10 begrenzt.
+- Neue Anlagenübersicht mit Istwert, Rundrohr-Richtwert, Reduktionsfaktor, maximaler Geschwindigkeit und Status aller Teilstrecken.
+- Kompakte Einzelprüfung im Teilstreckeneditor sowie Integration in Validierung, Qualitätsübersicht, Speicherung und Professional Report.
+- Kritischer-Strang- und Schallhinweis aus dem bereitgestellten Normauszug sichtbar dokumentiert.
+- 252 zusätzliche Phase-51.20-Prüfungen für Raumdaten, Tabellenlogik, Interpolation, Speicherung, Bericht und UI ergänzt.
+
 ## 2.6.1 – Phase 51.10 – 20.07.2026
 
 - Sechs neue rechteckige Formteile ergänzt: Krümmerabzweig 1/2 jeweils als Abzweig und Durchgang sowie Krümmerendstück 1/2.
@@ -853,6 +866,19 @@
 
 # Changelog
 
+## 2.6.2 – Phase 51.20 – 21.07.2026
+
+- Anlagenweite Auswahl der Raumnutzung nach SIA 2024:2021 Tabelle 13 und der Betriebsart 1-stufig, 2-stufig oder stufenlos ergänzt.
+- Jährliche Elektro-Vollaststunden werden aus der gewählten Kombination automatisch ermittelt.
+- Maximale Geschwindigkeitsrichtwerte für Rundrohre nach SIA 382/1:2025 Tabelle 49 je Teilstrecke berechnet.
+- Zwischenwerte der Elektro-Vollaststunden zwischen 2’000, 4’000 und 8’000 h/a werden linear interpoliert.
+- Rechteckkanäle werden mit dem Reduktionsfaktor aus Tabelle 50 bewertet; Zwischenwerte der Seitenverhältnisse werden interpoliert.
+- Seitenverhältnisse ab 1:6 erhalten einen Normhinweis; Werte über 1:10 werden kontrolliert am Tabellenrand 1:10 begrenzt.
+- Neue Anlagenübersicht mit Istwert, Rundrohr-Richtwert, Reduktionsfaktor, maximaler Geschwindigkeit und Status aller Teilstrecken.
+- Kompakte Einzelprüfung im Teilstreckeneditor sowie Integration in Validierung, Qualitätsübersicht, Speicherung und Professional Report.
+- Kritischer-Strang- und Schallhinweis aus dem bereitgestellten Normauszug sichtbar dokumentiert.
+- 252 zusätzliche Phase-51.20-Prüfungen für Raumdaten, Tabellenlogik, Interpolation, Speicherung, Bericht und UI ergänzt.
+
 ## 18.24 – PDF-/Berichts-QS und Export-Feinschliff
 
 - Exportprüfung im Bericht erweitert: Dokumenttitel, geplanter PDF-Seitenumfang und aktive Inhaltsbereiche werden sichtbar angezeigt.
@@ -1004,6 +1030,19 @@
 - Fehler behoben: `report.js` konnte `calculateRow` nicht importieren.
 
 # Changelog
+
+## 2.6.2 – Phase 51.20 – 21.07.2026
+
+- Anlagenweite Auswahl der Raumnutzung nach SIA 2024:2021 Tabelle 13 und der Betriebsart 1-stufig, 2-stufig oder stufenlos ergänzt.
+- Jährliche Elektro-Vollaststunden werden aus der gewählten Kombination automatisch ermittelt.
+- Maximale Geschwindigkeitsrichtwerte für Rundrohre nach SIA 382/1:2025 Tabelle 49 je Teilstrecke berechnet.
+- Zwischenwerte der Elektro-Vollaststunden zwischen 2’000, 4’000 und 8’000 h/a werden linear interpoliert.
+- Rechteckkanäle werden mit dem Reduktionsfaktor aus Tabelle 50 bewertet; Zwischenwerte der Seitenverhältnisse werden interpoliert.
+- Seitenverhältnisse ab 1:6 erhalten einen Normhinweis; Werte über 1:10 werden kontrolliert am Tabellenrand 1:10 begrenzt.
+- Neue Anlagenübersicht mit Istwert, Rundrohr-Richtwert, Reduktionsfaktor, maximaler Geschwindigkeit und Status aller Teilstrecken.
+- Kompakte Einzelprüfung im Teilstreckeneditor sowie Integration in Validierung, Qualitätsübersicht, Speicherung und Professional Report.
+- Kritischer-Strang- und Schallhinweis aus dem bereitgestellten Normauszug sichtbar dokumentiert.
+- 252 zusätzliche Phase-51.20-Prüfungen für Raumdaten, Tabellenlogik, Interpolation, Speicherung, Bericht und UI ergänzt.
 
 
 ## 18.12 – Professionelle Startseite aktiv

@@ -42,3 +42,13 @@ Browser-Testwrapper aus Phase 21 wurden im finalen Release entfernt. Die fachlic
 - Δp = ζ × p_dyn wird automatisch berechnet.
 - Änderungen von Luftmenge, Dimension und ζ aktualisieren den Pa-Wert.
 - Bericht, Formteilbibliothek, Excel-Referenz und Speicher-Roundtrip prüfen.
+## Phase 51.20
+
+- alle 45 Raumnutzungen und drei Betriebsarten prüfen,
+- Elektro-Vollaststunden anhand ausgewählter Referenzzeilen kontrollieren,
+- Tabelle-49-Grenzwerte bei 2’000, 4’000 und 8’000 h/a sowie Zwischenwerte prüfen,
+- Tabelle-50-Faktoren 1:1 bis 1:10 und Zwischenwerte prüfen,
+- Warnung ab 1:6 und Begrenzung oberhalb 1:10 prüfen,
+- Rundrohr- und Rechteckkanalbewertung in Anlage und Teilstrecke prüfen,
+- `.dvp`-Roundtrip, Bericht und bestehende Projekte ohne Auswahl prüfen.
+

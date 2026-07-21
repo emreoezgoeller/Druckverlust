@@ -17,7 +17,7 @@ const css = read('src/ui/phase33_00.css');
 const deploymentSource = read('src/diagnostics/DeploymentDiagnostics.js');
 
 assert.match(appHtml, /phase33_00\.css\?v=38\.00/); checks += 1;
-assert.match(appHtml, /src\/main\.js\?v=51\.10/); checks += 1;
+assert.match(appHtml, /src\/main\.js\?v=51\.20/); checks += 1;
 assert.match(ribbonSource, /showProjectHandover/); checks += 1;
 assert.match(ribbonSource, /label: 'Übergabe'/); checks += 1;
 assert.match(workspaceSource, /renderProjectHandover/); checks += 1;

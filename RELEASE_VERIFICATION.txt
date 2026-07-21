@@ -1,6 +1,17 @@
-DRUCKVERLUST PRO 2.6.1 – RELEASE 51.10
-Prüfung sechs neue Krümmerformteile und bestehender Release-Stand
-Datum: 20.07.2026
+DRUCKVERLUST PRO 2.6.2 – RELEASE 51.20
+Prüfung SIA-Geschwindigkeitsgrenzen und bestehender Release-Stand
+Datum: 21.07.2026
+
+PHASE 51.20 – SIA-GESCHWINDIGKEITSPRÜFUNG
+- 45 Raumnutzungen aus SIA 2024:2021 Tabelle 13 mit Elektro-Vollaststunden für 1-stufig, 2-stufig und stufenlos
+- automatische Ermittlung der Elektro-Vollaststunden je Anlage
+- Richtwerte für Rundrohre nach SIA 382/1:2025 Tabelle 49
+- lineare Interpolation zwischen 2’000, 4’000 und 8’000 h/a
+- Reduktionsfaktoren für Rechteckkanäle nach Tabelle 50 mit Zwischenwertinterpolation
+- Warnbereich ab Seitenverhältnis 1:6 und kontrollierte Begrenzung oberhalb 1:10
+- Anlagen- und Teilstreckenanzeige, Qualitätsmeldung, Speicher-Roundtrip und Berichtsintegration
+- Hinweis auf kritischen Strang sowie zusätzliche Druckniveau- und Schallprüfung
+- 252 automatisierte Phase-51.20-Prüfungen bestanden
 
 ZUSÄTZLICH GEPRÜFT
 - Zielgeschwindigkeiten 2,0 / 3,0 / 4,0 m/s und freier Zielwert

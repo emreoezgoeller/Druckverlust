@@ -10,16 +10,16 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.10';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.10&release=51.10';
+} from '../../sections/SectionSizingAssistant.js?v=49.00&release=51.20';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=51.20&release=51.20';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.10';
-import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.10';
+} from '../../formteile/FormPartWorkflowEngine.js?v=50.00&release=51.20';
+import ProjectCommands from '../../app/ProjectCommands.js?v=50.00&release=51.20';
 import ReportEngine from '../../report/ReportEngine.js?v=42.00&release=46.00';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=39.00&release=46.00';
@@ -125,6 +125,14 @@ import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=
 import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=39.00&release=46.00';
 import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
+import {
+  SIA_OPERATION_MODES,
+  SIA_ROOM_USAGES,
+  SIA_VELOCITY_DISCLAIMER,
+  analyzeSystemVelocityCompliance,
+  evaluateSectionVelocityCompliance,
+  normalizeSiaVelocityConfig,
+} from '../../standards/SiaVelocityCompliance.js?v=51.20';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -1317,6 +1325,7 @@ export default class WorkspaceComponent {
 
     const calculation = this.state.project?.calculationResult?.calculation || null;
     const total = calculation?.totals?.totalRounded ?? calculation?.totals?.total ?? null;
+    const velocityCompliance = analyzeSystemVelocityCompliance(system || {}, calculation || {});
 
     this.root.innerHTML = `
       <div class="workspace-header dp-page-header">
@@ -1336,6 +1345,7 @@ export default class WorkspaceComponent {
       ${this.renderWorkflowDashboard(this.state.project, system, 'system')}
       ${this.renderProjectCheckPanel(this.state.project, system)}
       ${this.renderProjectFilePanel(this.state.project)}
+      ${this.renderSiaVelocityCompliancePanel(system, velocityCompliance)}
 
       <div class="dp-cards">
         <div class="dp-card">
@@ -1376,10 +1386,173 @@ export default class WorkspaceComponent {
     this.bindWorkflowDashboard(this.state.project, system);
     this.bindProjectCheckPanel(this.state.project, system);
     this.bindCalculationDiagnosticsPanel(system);
+    this.bindSiaVelocityCompliancePanel(system);
     this.bindSectionManagement();
     this.bindSectionQuickEdit();
     this.bindFormPartManagement();
     this.bindSpecialComponentManagement();
+  }
+
+  getSiaVelocityStatusMeta(status = 'not-configured') {
+    const map = {
+      critical: { label: 'Überschritten', tone: 'critical' },
+      exceeded: { label: 'Überschritten', tone: 'critical' },
+      warning: { label: 'Prüfen', tone: 'warning' },
+      ok: { label: 'Eingehalten', tone: 'ok' },
+      'not-applicable': { label: 'Nicht anwendbar', tone: 'neutral' },
+      'not-configured': { label: 'Auswahl fehlt', tone: 'neutral' },
+    };
+    return map[status] || map['not-configured'];
+  }
+
+  renderSiaVelocityCompliancePanel(system = {}, compliance = null) {
+    const analysis = compliance || analyzeSystemVelocityCompliance(system, this.state.project?.calculationResult?.calculation || {});
+    const config = analysis.config || normalizeSiaVelocityConfig(system);
+    const status = this.getSiaVelocityStatusMeta(analysis.summary?.status);
+    const hours = config.electricalFullLoadHours;
+    const rows = analysis.rows || [];
+
+    return `
+      <section class="dp-editor-panel dp-sia-velocity-panel is-${this.escapeAttribute(status.tone)}">
+        <div class="dp-panel-header">
+          <div>
+            <span class="dp-overline">SIA-Geschwindigkeitsprüfung</span>
+            <h2>Raumnutzung und Betriebsart</h2>
+            <p>Aus der Raumnutzung und der Regelungsart werden die Elektro-Vollaststunden ermittelt. Daraus folgt der Richtwert für jede Teilstrecke.</p>
+          </div>
+          <span class="dp-sia-status is-${this.escapeAttribute(status.tone)}">${this.escapeHtml(status.label)}</span>
+        </div>
+
+        <div class="dp-sia-config-grid">
+          <label class="dp-field-card">
+            <span>Raumnutzung nach SIA 2024</span>
+            <select data-sia-velocity-field="roomUsageCode">
+              <option value="">Bitte Raumnutzung wählen</option>
+              ${SIA_ROOM_USAGES.map(item => `<option value="${this.escapeAttribute(item.code)}" ${config.roomUsageCode === item.code ? 'selected' : ''}>${this.escapeHtml(`${item.code} ${item.label}`)}</option>`).join('')}
+            </select>
+            <small class="dp-field-meta">Grundlage für die jährlichen Elektro-Vollaststunden</small>
+          </label>
+
+          <label class="dp-field-card">
+            <span>Betriebsart / Regelung</span>
+            <select data-sia-velocity-field="operationMode">
+              <option value="">Bitte Betriebsart wählen</option>
+              ${SIA_OPERATION_MODES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${config.operationMode === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`).join('')}
+            </select>
+            <small class="dp-field-meta">1-stufig, 2-stufig oder stufenlos</small>
+          </label>
+
+          <article class="dp-sia-metric">
+            <span>Elektro-Vollaststunden</span>
+            <strong>${hours === null ? '–' : `${this.formatNumber(hours, 0)} h/a`}</strong>
+            <small>${config.roomUsage && config.mode ? `${this.escapeHtml(config.roomUsage.code)} · ${this.escapeHtml(config.mode.label)}` : 'Auswahl noch nicht vollständig'}</small>
+          </article>
+
+          <article class="dp-sia-metric is-${this.escapeAttribute(status.tone)}">
+            <span>Netzprüfung</span>
+            <strong>${analysis.summary?.checked || 0}/${analysis.summary?.total || 0} TS</strong>
+            <small>${analysis.summary?.exceeded || 0} überschritten · ${analysis.summary?.warnings || 0} prüfen</small>
+          </article>
+        </div>
+
+        ${config.complete ? `
+          <div class="dp-sia-table-wrap">
+            <table class="dp-sia-table">
+              <thead>
+                <tr>
+                  <th>Teilstrecke</th>
+                  <th>Querschnitt</th>
+                  <th>Luftmenge</th>
+                  <th>Ist</th>
+                  <th>Rund-Richtwert</th>
+                  <th>Faktor</th>
+                  <th>Maximal</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.length ? rows.map(row => {
+                  const rowStatus = this.getSiaVelocityStatusMeta(row.status);
+                  return `
+                    <tr class="is-${this.escapeAttribute(rowStatus.tone)}">
+                      <td class="left"><strong>${this.escapeHtml(row.name)}</strong></td>
+                      <td>${this.escapeHtml(row.typeLabel)}${row.aspectRatioLabel && row.aspectRatioLabel !== '-' ? ` · ${this.escapeHtml(row.aspectRatioLabel)}` : ''}</td>
+                      <td>${this.formatNumber(row.airflowM3h, 0)} m³/h</td>
+                      <td>${row.actualVelocityMs > 0 ? `${this.formatNumber(row.actualVelocityMs, 2)} m/s` : '–'}</td>
+                      <td>${row.roundReferenceVelocityMs ? `${this.formatNumber(row.roundReferenceVelocityMs, 2)} m/s` : '–'}</td>
+                      <td>${row.reductionFactor ? this.formatNumber(row.reductionFactor, 3) : '–'}</td>
+                      <td>${row.maximumVelocityMs ? `${this.formatNumber(row.maximumVelocityMs, 2)} m/s` : '–'}</td>
+                      <td><span class="dp-sia-row-status is-${this.escapeAttribute(rowStatus.tone)}">${this.escapeHtml(rowStatus.label)}</span></td>
+                    </tr>
+                    ${row.warnings?.length ? `<tr class="dp-sia-warning-row"><td colspan="8">${row.warnings.map(message => this.escapeHtml(message)).join(' · ')}</td></tr>` : ''}
+                  `;
+                }).join('') : '<tr><td colspan="8">Noch keine Teilstrecken vorhanden.</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        ` : `
+          <div class="dp-sia-empty-state">
+            <strong>Für die Prüfung fehlen noch zwei Angaben.</strong>
+            <span>Raumnutzung und Betriebsart auswählen; die Grenzwerte werden danach automatisch für alle Teilstrecken berechnet.</span>
+          </div>
+        `}
+
+        <div class="dp-sia-note">
+          <strong>Normhinweis:</strong>
+          <span>${this.escapeHtml(SIA_VELOCITY_DISCLAIMER)}</span>
+        </div>
+      </section>
+    `;
+  }
+
+  bindSiaVelocityCompliancePanel(system = {}) {
+    this.root.querySelectorAll('[data-sia-velocity-field]').forEach(field => {
+      field.addEventListener('change', () => {
+        system.siaVelocity = system.siaVelocity && typeof system.siaVelocity === 'object'
+          ? system.siaVelocity
+          : { roomUsageCode: '', operationMode: '' };
+        system.siaVelocity[field.dataset.siaVelocityField] = String(field.value || '').trim();
+        this.autoCalculateProject();
+      });
+    });
+  }
+
+  renderSectionSiaVelocityCard(check = {}) {
+    const status = this.getSiaVelocityStatusMeta(check.status);
+    const actual = check.actualVelocityMs > 0 ? `${this.formatNumber(check.actualVelocityMs, 2)} m/s` : '–';
+    const maximum = check.maximumVelocityMs ? `${this.formatNumber(check.maximumVelocityMs, 2)} m/s` : '–';
+    const usage = check.utilizationPercent !== null && check.utilizationPercent !== undefined
+      ? `${this.formatNumber(check.utilizationPercent, 0)} %`
+      : '–';
+
+    return `
+      <section class="dp-section-sia-card is-${this.escapeAttribute(status.tone)}">
+        <div>
+          <span class="dp-overline">SIA-Richtwert der Teilstrecke</span>
+          <h2>${this.escapeHtml(status.label)}</h2>
+          <p>${check.status === 'not-configured'
+            ? 'Raumnutzung und Betriebsart zuerst in der Anlagenübersicht auswählen.'
+            : check.status === 'not-applicable'
+              ? this.escapeHtml(check.warnings?.[0] || 'Für diese Teilstrecke ist keine automatische Prüfung möglich.')
+              : `${this.escapeHtml(check.typeLabel || 'Teilstrecke')} · ${this.formatNumber(check.airflowM3h, 0)} m³/h${check.aspectRatioLabel && check.aspectRatioLabel !== '-' ? ` · Seitenverhältnis ${this.escapeHtml(check.aspectRatioLabel)}` : ''}`}
+          </p>
+        </div>
+        <div class="dp-section-sia-values">
+          <div><span>Ist</span><strong>${actual}</strong></div>
+          <div><span>Maximal</span><strong>${maximum}</strong></div>
+          <div><span>Auslastung</span><strong>${usage}</strong></div>
+        </div>
+        ${check.warnings?.length ? `<div class="dp-section-sia-warning">${check.warnings.map(message => this.escapeHtml(message)).join(' · ')}</div>` : ''}
+        <button type="button" data-section-sia-action="system">Anlagenvorgaben öffnen</button>
+      </section>
+    `;
+  }
+
+  bindSectionSiaVelocityCard(system = null) {
+    this.root.querySelector('[data-section-sia-action="system"]')?.addEventListener('click', () => {
+      const target = system || this.state.selectedSystem || this.state.project?.systems?.[0] || null;
+      if (target) this.state.selectSystem(target);
+    });
   }
 
   renderSection(section) {
@@ -1387,6 +1560,7 @@ export default class WorkspaceComponent {
     const result = calculationItem?.result || null;
     const system = this.state.selectedSystem || this.state.project?.systems?.[0];
     const sections = system?.sections || [];
+    const siaVelocityCheck = evaluateSectionVelocityCompliance(section || {}, result || {}, system || {});
     const index = sections.findIndex(item => item.id === section?.id);
 
     this.root.innerHTML = `
@@ -1412,6 +1586,7 @@ export default class WorkspaceComponent {
       ${this.renderDirtyHint()}
       ${this.renderValidationMessages(this.getSectionValidationWarnings(section))}
       ${this.renderSectionInputQuality(section)}
+      ${this.renderSectionSiaVelocityCard(siaVelocityCheck)}
       ${this.renderSectionSizingAssistant(section)}
 
       <section class="dp-editor-panel dp-section-editor-panel">
@@ -1483,6 +1658,7 @@ export default class WorkspaceComponent {
       ${this.renderSectionFormParts(section)}
     `;
 
+    this.bindSectionSiaVelocityCard(system);
     this.bindSectionSizingAssistant(section);
     this.bindSectionEditor(section);
     this.bindSectionFormPartActions(section);
@@ -11118,6 +11294,7 @@ formatNumber(value, digits = 2) {
       <section class="dp-system-manager-list" aria-label="Anlagenliste">
         ${rows.length ? rows.map(row => {
           const source = project.systems.find(item => item.id === row.id) || {};
+          const siaConfig = normalizeSiaVelocityConfig(source);
           const duplicated = analysis.duplicateNames.includes(row.id);
           const qualityLabel = row.calculationStatus === 'error'
             ? 'Berechnungsfehler'
@@ -11146,6 +11323,18 @@ formatNumber(value, digits = 2) {
                 <label><span>Luftart / Typ</span>
                   <select data-system-field="type" data-system-id="${this.escapeAttribute(row.id)}">
                     ${['Zuluft', 'Abluft', 'Aussenluft', 'Fortluft', 'Umluft', 'Lüftungsanlage'].map(type => `<option value="${type}" ${String(source.type || row.type) === type ? 'selected' : ''}>${type}</option>`).join('')}
+                  </select>
+                </label>
+                <label><span>SIA-Raumnutzung</span>
+                  <select data-system-sia-field="roomUsageCode" data-system-id="${this.escapeAttribute(row.id)}">
+                    <option value="">Bitte wählen</option>
+                    ${SIA_ROOM_USAGES.map(item => `<option value="${this.escapeAttribute(item.code)}" ${siaConfig.roomUsageCode === item.code ? 'selected' : ''}>${this.escapeHtml(`${item.code} ${item.label}`)}</option>`).join('')}
+                  </select>
+                </label>
+                <label><span>Betriebsart</span>
+                  <select data-system-sia-field="operationMode" data-system-id="${this.escapeAttribute(row.id)}">
+                    <option value="">Bitte wählen</option>
+                    ${SIA_OPERATION_MODES.map(item => `<option value="${this.escapeAttribute(item.id)}" ${siaConfig.operationMode === item.id ? 'selected' : ''}>${this.escapeHtml(item.label)}</option>`).join('')}
                   </select>
                 </label>
                 <label class="is-wide"><span>Beschreibung</span><input data-system-field="description" data-system-id="${this.escapeAttribute(row.id)}" value="${this.escapeAttribute(source.description || '')}" placeholder="Optionaler Anlagenhinweis"></label>
@@ -11205,6 +11394,18 @@ formatNumber(value, digits = 2) {
       const key = field.dataset.systemField;
       system[key] = String(field.value || '').trim();
       if (key === 'bkpNumber') system.anlageNumber = system.bkpNumber;
+      this.state.markProjectDirty();
+      this.state.setSelection('systemManager', project);
+      this.state.notify();
+    }));
+
+    this.root.querySelectorAll('[data-system-sia-field]').forEach(field => field.addEventListener('change', () => {
+      const system = project.systems?.find(item => item.id === field.dataset.systemId);
+      if (!system) return;
+      system.siaVelocity = system.siaVelocity && typeof system.siaVelocity === 'object'
+        ? system.siaVelocity
+        : { roomUsageCode: '', operationMode: '' };
+      system.siaVelocity[field.dataset.systemSiaField] = String(field.value || '').trim();
       this.state.markProjectDirty();
       this.state.setSelection('systemManager', project);
       this.state.notify();

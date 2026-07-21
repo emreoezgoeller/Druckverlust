@@ -10,6 +10,7 @@ import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEng
 import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=37.00&release=46.00';
 import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=37.00&release=46.00';
 import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=39.00&release=46.00';
+import { analyzeSystemVelocityCompliance } from '../standards/SiaVelocityCompliance.js?v=51.20';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.
@@ -531,6 +532,8 @@ export class ReportEngine {
     };
     const projectTasks = ProjectTaskCenterEngine.analyze(project, { selectedSystemId: system?.id || null, cockpit: projectCockpit });
     const projectDependencies = ProjectDependencyEngine.analyze(project, { target: { type: 'project' } });
+    const velocityCompliance = analyzeSystemVelocityCompliance(system || {}, calculation || {});
+    const velocityComplianceBySectionId = new Map((velocityCompliance.rows || []).map(row => [row.sectionId, row]));
 
     const resultBySectionId = new Map();
     results.forEach(item => {
@@ -578,6 +581,7 @@ export class ReportEngine {
         totalLoss: toNumber(result.roundedTotalLoss ?? result.totalLoss ?? result.totalPressureLoss),
         rawTotalLoss: toNumber(result.totalLoss),
         zetaSum: result.zetaSum ?? calculationItem?.zetaFromParts ?? 0,
+        siaVelocity: velocityComplianceBySectionId.get(section.id) || null,
         formParts: assignedFormParts,
       };
     });
@@ -647,6 +651,9 @@ export class ReportEngine {
       system: {
         id: system?.id ?? '-',
         name: meta.plant || system?.name || 'Anlage',
+        roomUsage: velocityCompliance.config?.roomUsage ? `${velocityCompliance.config.roomUsage.code} ${velocityCompliance.config.roomUsage.label}` : '-',
+        operationMode: velocityCompliance.config?.mode?.label || '-',
+        electricalFullLoadHours: velocityCompliance.config?.electricalFullLoadHours,
       },
       settings: {
         rho: toNumber(settings.rho, 1.21),
@@ -702,6 +709,7 @@ export class ReportEngine {
       projectWorkflow,
       projectTasks,
       projectDependencies,
+      velocityCompliance,
       lossAnalytics,
       license: LicenseGate.getStatus(),
       exportNotice: LicenseGate.createExportNotice(),
@@ -1939,6 +1947,19 @@ export class ReportEngine {
   }
 
   static renderMainNetworkRow(section) {
+    const sia = section.siaVelocity || {};
+    const siaLabel = sia.status === 'exceeded'
+      ? 'überschritten'
+      : sia.status === 'warning'
+        ? 'prüfen'
+        : sia.status === 'ok'
+          ? 'eingehalten'
+          : '';
+    const siaClass = sia.status === 'exceeded' ? 'error' : sia.status === 'warning' ? 'warn' : 'ok';
+    const siaInline = toNumber(sia.maximumVelocityMs) > 0
+      ? `<small class="report-sia-inline ${siaClass}">SIA ≤ ${formatNumber(sia.maximumVelocityMs, 2)} · ${escapeHtml(siaLabel)}</small>`
+      : '';
+
     return `
       <tr>
         <td>${section.position}</td>
@@ -1952,7 +1973,7 @@ export class ReportEngine {
         <td>${formatSmart(section.length, 2)}</td>
         <td>${formatNumber(section.roughnessMm, 2)}</td>
         <td>${formatNumber(section.frictionFactor, 4)}</td>
-        <td>${formatNumber(section.velocity, 2)}</td>
+        <td>${formatNumber(section.velocity, 2)}${siaInline}</td>
         <td>${formatNumber(section.frictionRate, 3)}</td>
         <td>${formatNumber(section.frictionLoss, 3)}</td>
       </tr>
@@ -1964,6 +1985,7 @@ export class ReportEngine {
       <div class="report-legend">
         <span><strong>TS</strong> = Teilstrecke</span>
         <span><strong>v</strong> = Luftgeschwindigkeit</span>
+        <span><strong>SIA ≤</strong> = maximaler Richtwert aus SIA-Geschwindigkeitsprüfung</span>
         <span><strong>Δp Kanal/Rohr</strong> = Reibungsdruckverlust der Teilstrecke ohne Formteile</span>
         <span><strong>ζ</strong> = Formbeiwert</span>
         <span><strong>k</strong> = absolute Rauigkeit je Teilstrecke</span>
@@ -2480,6 +2502,10 @@ export class ReportEngine {
             ['Projektname', model.project.object],
             ['BKP-Nummer', model.project.plantNumber || '-'],
             ['Anlage', model.system.name],
+            ['SIA-Raumnutzung', model.system.roomUsage || '-'],
+            ['Betriebsart', model.system.operationMode || '-'],
+            ['Elektro-Vollaststunden', Number.isFinite(Number(model.system.electricalFullLoadHours)) ? `${formatSmart(model.system.electricalFullLoadHours, 0)} h/a` : '-'],
+            ['SIA-Geschwindigkeitsstatus', model.velocityCompliance?.summary?.status === 'critical' ? 'Überschritten' : model.velocityCompliance?.summary?.status === 'warning' ? 'Prüfen' : model.velocityCompliance?.summary?.status === 'ok' ? 'Eingehalten' : 'Auswahl / Prüfung offen'],
             ['Bearbeiter', model.project.author],
             ['Datum', model.project.date],
             ['Bericht-Nr.', model.project.reportNumber],
@@ -2513,6 +2539,7 @@ export class ReportEngine {
           <li>Die Darcy-Reibungszahl λ wird für jede Teilstrecke aus Rauigkeit, Reynolds-Zahl und hydraulischem Durchmesser berechnet.</li>
           <li>Formbeiwerte nach hinterlegten Tabellen aus der Formteilbibliothek.</li>
           <li>Druckverlustberechnung nach Darcy-Weisbach.</li>
+          <li>Geschwindigkeits-Vorprüfung nach SIA 382/1:2025, Tabellen 49 und 50, mit Elektro-Vollaststunden aus SIA 2024:2021, Tabelle 13.</li>
         </ul>
       </div>
       ${this.renderReportScopeBlock(model)}
@@ -2675,6 +2702,7 @@ export class ReportEngine {
       .report-project-cockpit-findings .report-table th:nth-child(4){width:auto}
       .report-small-note{margin:5px 0 0;color:var(--report-muted);font-size:7.6px;line-height:1.35}
       .report-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:12mm;padding:1mm 2mm;border-radius:99px;font-size:7px;font-weight:900;text-transform:uppercase}.report-status-pill.ok{color:#176c46;background:#eaf8f0}.report-status-pill.warn{color:#8a5a0a;background:#fff1d4}.report-status-pill.error{color:#a52828;background:#ffe6e6}
+      .report-sia-inline{display:block;margin-top:.7mm;font-size:6.3px;font-weight:800;line-height:1.15;white-space:nowrap}.report-sia-inline.ok{color:#176c46}.report-sia-inline.warn{color:#8a5a0a}.report-sia-inline.error{color:#a52828}
 
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
@@ -2837,9 +2865,13 @@ export class ReportEngine {
     rows.push(this.csvRow(['Engineering Status', model.engineeringQuality?.status || 'ok']));
     rows.push(this.csvRow(['Engineering Feststellungen', model.engineeringQuality?.findings?.length || 0]));
     rows.push(this.csvRow(['Engineering Pruefprofil', model.projectWorkflow?.profile?.name || model.engineeringQuality?.profile?.name || 'Allgemeine Planung']));
+    rows.push(this.csvRow(['SIA Raumnutzung', model.system.roomUsage || '-']));
+    rows.push(this.csvRow(['SIA Betriebsart', model.system.operationMode || '-']));
+    rows.push(this.csvRow(['Elektro-Vollaststunden h/a', model.system.electricalFullLoadHours ?? '-']));
+    rows.push(this.csvRow(['SIA Geschwindigkeitsstatus', model.velocityCompliance?.summary?.status || 'not-configured']));
 
     addSection('Teilstrecken');
-    rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Rauigkeit k mm', 'Reynolds Re', 'Reibungszahl Lambda', 'v m/s', 'Reibungsgefaelle Pa/m', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
+    rows.push(this.csvRow(['Pos.', 'Typ', 'Beschreibung', 'TS', 'Luftmenge m3/h', 'Breite mm', 'Hoehe mm', 'Durchmesser mm', 'Laenge m', 'Rauigkeit k mm', 'Reynolds Re', 'Reibungszahl Lambda', 'v m/s', 'SIA max v m/s', 'SIA Faktor', 'SIA Status', 'Reibungsgefaelle Pa/m', 'Reibung Pa', 'Formteile Pa', 'Direkt Pa', 'Gesamt Pa']));
     (model.sections || []).forEach(section => {
       rows.push(this.csvRow([
         section.position,
@@ -2855,6 +2887,9 @@ export class ReportEngine {
         formatNumber(section.reynoldsNumber, 0),
         formatNumber(section.frictionFactor, 5),
         formatNumber(section.velocity, 2),
+        section.siaVelocity?.maximumVelocityMs ? formatNumber(section.siaVelocity.maximumVelocityMs, 2) : '-',
+        section.siaVelocity?.reductionFactor ? formatNumber(section.siaVelocity.reductionFactor, 4) : '-',
+        section.siaVelocity?.status || 'not-configured',
         formatNumber(section.frictionRate, 4),
         formatNumber(section.frictionLoss, 3),
         formatNumber(section.zetaLoss, 3),

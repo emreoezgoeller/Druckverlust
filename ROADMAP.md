@@ -1,6 +1,6 @@
-# Druckverlust Pro – Roadmap ab Phase 51.10
+# Druckverlust Pro – Roadmap ab Phase 51.20
 
-Aktueller Entwicklungsstand: **Version 2.6.1 · Phase 51.10**. Die Plattformoberfläche ist abgeschlossen und die Formteilbibliothek wurde um sechs Excel-geprüfte Krümmerformteile erweitert.
+Aktueller Entwicklungsstand: **Version 2.6.2 · Phase 51.20**. Vor Phase 52 wurde die automatische SIA-Geschwindigkeitsprüfung je Anlage und Teilstrecke ergänzt.
 
 ## Phase 50.00 – Intelligenter Formteil-Workflow – abgeschlossen
 
@@ -25,6 +25,15 @@ Aktueller Entwicklungsstand: **Version 2.6.1 · Phase 51.10**. Die Plattformober
 - Excel-getreue Geometrie- und Geschwindigkeitsverhältnis-Suche,
 - kontrollierte negative ζ-Werte und klare Sperre bei nicht hinterlegten Geometrien,
 - Formteilbibliothek auf 21 Typen erweitert.
+
+## Phase 51.20 – SIA-Geschwindigkeitsprüfung – abgeschlossen
+
+- Raumnutzung nach SIA 2024:2021 Tabelle 13 je Anlage auswählen,
+- Betriebsart 1-stufig, 2-stufig oder stufenlos festlegen,
+- Elektro-Vollaststunden automatisch ableiten,
+- Rundrohr-Richtwert nach SIA 382/1:2025 Tabelle 49 interpolieren,
+- Rechteckkanäle mit Reduktionsfaktor nach Tabelle 50 prüfen,
+- Überschreitungen und nicht empfohlene Seitenverhältnisse in Anlage, Teilstrecke, QS und Bericht anzeigen.
 
 ## Phase 52.00 – Vereinfachte Ergebnisdarstellung
 
