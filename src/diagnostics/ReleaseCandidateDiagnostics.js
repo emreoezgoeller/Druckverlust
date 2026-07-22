@@ -1,22 +1,22 @@
 // Druckverlust Pro – ReleaseCandidateDiagnostics
 // Phase 58.00: technische Finalprüfung für Druckverlust Pro 3.0.
 
-import ProjectCalculationService from '../project/ProjectCalculationService.js?v=58.00';
-import ProjectDiagnostics from './ProjectDiagnostics.js?v=58.00';
-import CalculationDiagnostics from './CalculationDiagnostics.js?v=58.00';
-import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=58.00';
-import ProjectFileDiagnostics from './ProjectFileDiagnostics.js?v=58.00';
-import ReleaseIntegrityDiagnostics from './ReleaseIntegrityDiagnostics.js?v=58.00';
-import ReportEngine from '../report/ReportEngine.js?v=58.00';
-import createDemoProject from '../project/demoProject.js?v=58.00';
-import { createSmallOfficePracticeProject } from '../project/officePracticeProjects.js?v=58.00';
-import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=58.00';
+import ProjectCalculationService from '../project/ProjectCalculationService.js?v=58.10';
+import ProjectDiagnostics from './ProjectDiagnostics.js?v=58.10';
+import CalculationDiagnostics from './CalculationDiagnostics.js?v=58.10';
+import DeploymentDiagnostics from './DeploymentDiagnostics.js?v=58.10';
+import ProjectFileDiagnostics from './ProjectFileDiagnostics.js?v=58.10';
+import ReleaseIntegrityDiagnostics from './ReleaseIntegrityDiagnostics.js?v=58.10';
+import ReportEngine from '../report/ReportEngine.js?v=58.10';
+import createDemoProject from '../project/demoProject.js?v=58.10';
+import { createSmallOfficePracticeProject } from '../project/officePracticeProjects.js?v=58.10';
+import StorageEngine, { PROJECT_FILE_SCHEMA_VERSION } from '../storage/StorageEngine.js?v=58.10';
 import {
   APP_ASSET_VERSION,
   APP_RELEASE,
   APP_VERSION,
   APP_BUILD_LABEL,
-} from '../core/appVersion.js?v=58.00';
+} from '../core/appVersion.js?v=58.10';
 
 function createItem(status, area, label, message, details = '') {
   return { status, area, label, message, details };

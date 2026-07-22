@@ -4,7 +4,7 @@
 import {
   APP_RELEASE,
   APP_VERSION,
-} from '../core/appVersion.js?v=58.00';
+} from '../core/appVersion.js?v=58.10';
 
 export const RELEASE_INTEGRITY_MANIFEST = 'release-integrity.json';
 

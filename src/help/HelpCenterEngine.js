@@ -1,7 +1,7 @@
 // Druckverlust Pro – HelpCenterEngine
-// Phase 42.00: Hilfe-Center mit Schnellerfassung, kontextbezogenen Themen und geführten Ersten Schritten.
+// Phase 58.10: Hilfe-Center mit aktuellem Gesamtworkflow und externer Bedienungsanleitung.
 
-const HELP_PROGRESS_KEY = 'druckverlust-pro.help-center.progress.v1';
+const HELP_PROGRESS_KEY = 'druckverlust-pro.help-center.progress.v2';
 
 const HELP_CATEGORIES = Object.freeze([
   { id: 'all', label: 'Alle Themen' },
@@ -17,13 +17,14 @@ const HELP_TOPICS = Object.freeze([
     id: 'first-steps',
     category: 'start',
     title: 'Sicher starten',
-    summary: 'Projekt anlegen, Anlage wählen, Teilstrecken erfassen und den ersten Bericht erzeugen.',
+    summary: 'Projekt anlegen, SIA-Vorgaben wählen, Teilstrecken erfassen und den ersten Bericht erzeugen.',
     keywords: ['start', 'anfang', 'neu', 'demo', 'ablauf', 'erste schritte'],
     action: 'showDashboard',
     actionLabel: 'Startübersicht öffnen',
     steps: [
       'Projektangaben und BKP-Nummer erfassen.',
-      'Anlage öffnen und Teilstrecken in Strömungsrichtung anlegen.',
+      'Anlage öffnen, SIA-Raumnutzung und Betriebsart festlegen.',
+      'Teilstrecken in Strömungsrichtung anlegen.',
       'Formteile und Sonderbauteile den richtigen Teilstrecken zuordnen.',
       'Berechnen, Engineering-QS prüfen und Bericht öffnen.',
     ],
@@ -33,12 +34,23 @@ const HELP_TOPICS = Object.freeze([
     id: 'project-data',
     category: 'project',
     title: 'Projektangaben und Anlagen',
-    summary: 'Projektnummer, Projektname, BKP-Nummer, Luftart und mehrere Anlagen sauber verwalten.',
+    summary: 'Projektnummer, Projektname, BKP-Nummer, Luftart, SIA-Raumnutzung und mehrere Anlagen sauber verwalten.',
     keywords: ['projekt', 'bkp', 'anlage', 'anlagenmanager', 'luftart', 'projektnummer'],
     action: 'showSystemManager',
     actionLabel: 'Anlagenmanager öffnen',
-    steps: ['Projektstamm vervollständigen.', 'Anlagen neutral nach Luftart benennen.', 'Bei mehreren Anlagen eindeutige BKP-Nummern verwenden.'],
+    steps: ['Projektstamm vervollständigen.', 'Anlagen neutral nach Luftart benennen.', 'SIA-Raumnutzung und Betriebsart je Anlage wählen.', 'Bei mehreren Anlagen eindeutige BKP-Nummern verwenden.'],
     tips: ['Anlagen können sicher dupliziert und danach unabhängig bearbeitet werden.'],
+  },
+  {
+    id: 'sia-velocity',
+    category: 'quality',
+    title: 'SIA-Geschwindigkeitsprüfung konfigurieren',
+    summary: 'Raumnutzung, Betriebsart und Elektro-Vollaststunden für die anlagenbezogene Geschwindigkeitsprüfung festlegen.',
+    keywords: ['sia', '382', '2024', 'raumnutzung', 'schulzimmer', 'betriebsart', 'vollaststunden', 'geschwindigkeit', 'rechteck', 'rundrohr'],
+    action: 'showSystemManager',
+    actionLabel: 'Anlagenvorgaben öffnen',
+    steps: ['Passende Raumnutzung aus den SIA-2024-Raumdatenblättern wählen.', '1-stufig, 2-stufig oder stufenlos festlegen.', 'Automatisch ermittelte Elektro-Vollaststunden kontrollieren.', 'Teilstreckenstatus Eingehalten, Prüfen oder Überschritten auswerten.'],
+    tips: ['Rechteckkanäle werden zusätzlich über das Seitenverhältnis bewertet.', 'Die Prüfung unterstützt die Fachplanung und ersetzt nicht die vollständige Normbeurteilung.'],
   },
   {
     id: 'quick-entry',
@@ -59,8 +71,8 @@ const HELP_TOPICS = Object.freeze([
     keywords: ['teilstrecke', 'kanal', 'rohr', 'luftmenge', 'länge', 'dimension', 'geschwindigkeit'],
     action: 'openFirstSection',
     actionLabel: 'Erste Teilstrecke öffnen',
-    steps: ['Bauform wählen.', 'Luftmenge und Länge eingeben.', 'Breite/Höhe oder Durchmesser erfassen.', 'Ergebnis und Geschwindigkeit kontrollieren.'],
-    tips: ['Die Reihenfolge der Teilstrecken entspricht der Strömungsrichtung und wird im Anlagenschema übernommen.'],
+    steps: ['Name und Luftmenge erfassen.', 'Rauigkeit k kontrollieren.', 'Rechteckkanal oder Rundrohr wählen.', 'Breite/Höhe beziehungsweise Durchmesser in mm und Länge in m eingeben.', 'Ergebnis und SIA-Geschwindigkeit kontrollieren.'],
+    tips: ['Die Reihenfolge der Teilstrecken entspricht der Strömungsrichtung und wird im Anlagenschema übernommen.', 'Der Standardwert der Rauigkeit beträgt 0,15 mm und kann pro Teilstrecke geändert werden.'],
   },
   {
     id: 'form-parts',
@@ -70,8 +82,8 @@ const HELP_TOPICS = Object.freeze([
     keywords: ['formteil', 'bogen', 'übergang', 'abzweig', 'zeta', 'ζ', 'bibliothek'],
     action: 'openFormPartPicker',
     actionLabel: 'Formteilbibliothek öffnen',
-    steps: ['Passende Teilstrecke auswählen.', 'Formteil nach Bauform filtern.', 'Vorgegebene Winkel- oder Verhältniswerte wählen.', 'Zuordnung und Druckverlust prüfen.'],
-    tips: ['Automatisch übernommene Abmessungen können bei Bedarf gezielt überschrieben werden.'],
+    steps: ['Automatisch vorgeschlagene Ziel-Teilstrecke kontrollieren.', 'Formteil nach Bauform filtern.', 'Vorgegebene Winkel- oder Verhältniswerte wählen.', 'Bei Abzweigen Anschluss-Teilstrecken bewusst zuordnen.', 'Zuordnung und Druckverlust prüfen.'],
+    tips: ['Neue Formteile verwenden standardmässig die zuletzt erstellte Teilstrecke.', 'Automatisch übernommene Abmessungen können gezielt überschrieben und später bewusst wieder synchronisiert werden.'],
   },
   {
     id: 'special-components',
@@ -83,6 +95,17 @@ const HELP_TOPICS = Object.freeze([
     actionLabel: 'Aktive Anlage öffnen',
     steps: ['Bauteil neutral benennen.', 'Hersteller- oder Planungswert in Pa eintragen.', 'Bauteil der richtigen Teilstrecke zuordnen.', 'Quelle im Hinweisfeld dokumentieren.'],
     tips: ['Das Tool bleibt herstellerneutral; der Druckverlust wird als fachlich vorgegebener Wert übernommen.'],
+  },
+  {
+    id: 'results',
+    category: 'calculation',
+    title: 'Ergebnisse und Ansichten verstehen',
+    summary: 'Reibungs-, Formteil- und Gesamtverlust sowie Standard- und Professional-Ansicht richtig lesen.',
+    keywords: ['ergebnis', 'standard', 'professional', 'lambda', 'zeta', 'rauhigkeit', 'dynamischer druck', 'kritische teilstrecke'],
+    action: 'openActiveSystem',
+    actionLabel: 'Anlagenergebnisse öffnen',
+    steps: ['Gesamtdruckverlust und Verlustaufteilung prüfen.', 'Kritische Teilstrecke öffnen.', 'SIA-Geschwindigkeitsstatus kontrollieren.', 'Für technische Details die Professional-Ansicht verwenden.'],
+    tips: ['Die Standardansicht bleibt bewusst kompakt.', 'λ, ζ, dynamischer Druck und hydraulischer Durchmesser sind in der Professional-Ansicht verfügbar.'],
   },
   {
     id: 'engineering-quality',
@@ -136,8 +159,8 @@ const HELP_TOPICS = Object.freeze([
     keywords: ['bericht', 'pdf', 'drucken', 'csv', 'export', 'report'],
     action: 'showReport',
     actionLabel: 'Bericht öffnen',
-    steps: ['Berechnung aktualisieren.', 'Export-QS und Berichtumfang prüfen.', 'Druckansicht öffnen.', 'Als PDF mit Hintergrundgrafiken speichern.'],
-    tips: ['Für die PDF-Ausgabe A4, 100 % Skalierung und aktivierte Hintergrundgrafiken verwenden.'],
+    steps: ['Berechnung aktualisieren.', 'Export-QS, Seitenplan und Berichtumfang prüfen.', 'Druckansicht öffnen und Deckblatt sowie Schema kontrollieren.', 'Als PDF mit A4, 100 % Skalierung und aktivierten Hintergrundgrafiken speichern.'],
+    tips: ['Browser-Kopf- und Fusszeilen deaktivieren.', 'Vor der Freigabe die Ausgabe in Chrome oder Edge visuell kontrollieren.'],
   },
   {
     id: 'safety',
@@ -177,14 +200,15 @@ const HELP_TOPICS = Object.freeze([
 const TOUR_STEPS = Object.freeze([
   { id: 'project', number: 1, title: 'Projektstamm prüfen', description: 'Projektnummer, Projektname, BKP-Nummer und Bearbeiter vollständig erfassen.', topicId: 'project-data', action: 'showDashboard' },
   { id: 'systems', number: 2, title: 'Anlage organisieren', description: 'Luftart, Anlagenname und Reihenfolge im Anlagenmanager kontrollieren.', topicId: 'project-data', action: 'showSystemManager' },
-  { id: 'sections', number: 3, title: 'Teilstrecken erfassen', description: 'Luftmenge, Länge und Geometrie in Strömungsrichtung eingeben.', topicId: 'sections', action: 'openFirstSection' },
-  { id: 'formparts', number: 4, title: 'Formteile zuordnen', description: 'Bögen, Übergänge und Abzweige über die neutrale Bibliothek ergänzen.', topicId: 'form-parts', action: 'openFormPartPicker' },
-  { id: 'quality', number: 5, title: 'Engineering-QS prüfen', description: 'Kritische Geschwindigkeiten und Verlustkonzentrationen priorisiert bearbeiten.', topicId: 'engineering-quality', action: 'showEngineeringQuality' },
-  { id: 'schematic', number: 6, title: 'Schema kontrollieren', description: 'Anlagenverlauf, Zuordnungen und Analysefarben visuell prüfen.', topicId: 'schematic', action: 'showNetworkSchematic' },
-  { id: 'simulation', number: 7, title: 'Variante vergleichen', description: 'Eine alternative Luftmenge oder Dimension nicht-destruktiv simulieren.', topicId: 'simulation', action: 'showLiveSimulation' },
-  { id: 'report', number: 8, title: 'Bericht erzeugen', description: 'Berichtumfang, Schema, QS und Exportdaten kontrollieren.', topicId: 'report', action: 'showReport' },
-  { id: 'safety', number: 9, title: 'Projekt sichern', description: 'Projektdatei und optional einen lokalen Sicherungsstand erzeugen.', topicId: 'safety', action: 'showProjectSafety' },
-  { id: 'handover', number: 10, title: 'Abschluss dokumentieren', description: 'Revision, Prüfprotokoll und Übergabestatus nachvollziehbar festhalten.', topicId: 'handover', action: 'showProjectHandover' },
+  { id: 'sia', number: 3, title: 'SIA-Vorgaben festlegen', description: 'Raumnutzung und Betriebsart für die Geschwindigkeitsprüfung auswählen.', topicId: 'sia-velocity', action: 'showSystemManager' },
+  { id: 'sections', number: 4, title: 'Teilstrecken erfassen', description: 'Luftmenge, Rauigkeit, Geometrie und Länge in Strömungsrichtung eingeben.', topicId: 'sections', action: 'openFirstSection' },
+  { id: 'formparts', number: 5, title: 'Formteile zuordnen', description: 'Bögen, Übergänge und Abzweige über die neutrale Bibliothek ergänzen.', topicId: 'form-parts', action: 'openFormPartPicker' },
+  { id: 'results', number: 6, title: 'Ergebnisse prüfen', description: 'Verlustaufteilung, kritische Teilstrecke und SIA-Status kontrollieren.', topicId: 'results', action: 'openActiveSystem' },
+  { id: 'quality', number: 7, title: 'Engineering-QS prüfen', description: 'Kritische Geschwindigkeiten und Verlustkonzentrationen priorisiert bearbeiten.', topicId: 'engineering-quality', action: 'showEngineeringQuality' },
+  { id: 'schematic', number: 8, title: 'Schema kontrollieren', description: 'Anlagenverlauf, Zuordnungen und Analysefarben visuell prüfen.', topicId: 'schematic', action: 'showNetworkSchematic' },
+  { id: 'simulation', number: 9, title: 'Variante vergleichen', description: 'Eine alternative Luftmenge oder Dimension nicht-destruktiv simulieren.', topicId: 'simulation', action: 'showLiveSimulation' },
+  { id: 'report', number: 10, title: 'Bericht erzeugen', description: 'Berichtumfang, Schema, QS und PDF-Einstellungen kontrollieren.', topicId: 'report', action: 'showReport' },
+  { id: 'safety', number: 11, title: 'Projekt sichern', description: 'Projektdatei, Revision und optional ein Übergabepaket erzeugen.', topicId: 'safety', action: 'showProjectSafety' },
 ]);
 
 const SHORTCUTS = Object.freeze([
@@ -216,6 +240,8 @@ const CONTEXT_TOPIC_MAP = Object.freeze({
   formPart: 'form-parts',
   formPartPicker: 'form-parts',
   specialComponent: 'special-components',
+  resultPresentation: 'results',
+  siaVelocity: 'sia-velocity',
   calculationCheck: 'engineering-quality',
   engineeringQuality: 'engineering-quality',
   networkSchematic: 'schematic',

@@ -390,3 +390,34 @@ svg { width: 1.2em; height: 1.2em; fill: none; stroke: currentColor; stroke-widt
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Phase 58.10 – Kurzanleitung und Einstieg in die vollständige Bedienungsanleitung */
+.dp-guide-section { position: relative; overflow: hidden; }
+.dp-guide-section::before { content: ""; position: absolute; right: -16rem; top: 4rem; width: 34rem; height: 34rem; border-radius: 50%; background: radial-gradient(circle, rgba(22,135,217,.11), transparent 68%); pointer-events: none; }
+.dp-guide-layout { position: relative; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(400px, .72fr); align-items: start; gap: clamp(28px, 5vw, 74px); }
+.dp-guide-steps { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.dp-guide-steps li { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 16px; align-items: center; min-height: 94px; padding: 17px 20px; border: 1px solid var(--dp-line); border-radius: 16px; background: rgba(255,255,255,.92); box-shadow: var(--dp-shadow-sm); }
+.dp-guide-steps b { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 14px; color: #fff; background: linear-gradient(135deg, var(--dp-navy-800), var(--dp-brand-600)); font-size: 14px; letter-spacing: .04em; }
+.dp-guide-steps strong, .dp-guide-steps span { display: block; }
+.dp-guide-steps strong { color: var(--dp-ink-strong); font-size: 18px; }
+.dp-guide-steps span { margin-top: 5px; color: var(--dp-muted); font-size: 14px; }
+.dp-guide-manual-card { position: sticky; top: 105px; padding: clamp(28px, 4vw, 42px); border: 1px solid #b8d2e4; border-radius: 23px; background: linear-gradient(145deg, #fff, #edf7fd); box-shadow: var(--dp-shadow-lg); }
+.dp-guide-manual-icon { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 20px; border-radius: 17px; color: #fff; background: linear-gradient(135deg, var(--dp-navy-800), var(--dp-brand-600)); box-shadow: 0 14px 30px rgba(12,95,157,.22); }
+.dp-guide-manual-icon svg { width: 30px; height: 30px; }
+.dp-guide-manual-card h3 { margin: 16px 0 12px; color: var(--dp-ink-strong); font-size: clamp(28px, 3vw, 39px); line-height: 1.08; letter-spacing: -.035em; }
+.dp-guide-manual-card > p { margin: 0; color: var(--dp-muted); }
+.dp-guide-manual-card ul { display: grid; gap: 10px; margin: 24px 0 0; padding: 0; list-style: none; }
+.dp-guide-manual-card li { display: flex; align-items: center; gap: 9px; color: #35536b; font-weight: 760; }
+.dp-guide-manual-card li svg { flex: 0 0 auto; color: var(--dp-success); }
+.dp-guide-manual-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+
+@media (max-width: 1120px) {
+  .dp-guide-layout { grid-template-columns: 1fr; }
+  .dp-guide-manual-card { position: static; }
+}
+
+@media (max-width: 600px) {
+  .dp-guide-steps li { grid-template-columns: 46px minmax(0, 1fr); padding: 15px; }
+  .dp-guide-steps b { width: 42px; height: 42px; border-radius: 12px; }
+  .dp-guide-manual-actions { align-items: stretch; flex-direction: column; }
+}

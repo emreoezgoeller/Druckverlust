@@ -1,7 +1,19 @@
 # Release Notes
 
-**Release:** Version 3.0.0 · Phase 58.00  
-**Datum:** 21.07.2026
+**Release:** Version 3.0.1 · Phase 58.10  
+**Datum:** 22.07.2026
+
+
+## Neu in Phase 58.10
+
+- Startseite um eine klare Kurzanleitung mit sieben Arbeitsschritten erweitert.
+- Neue eigenständige `bedienungsanleitung.html` mit 14 Kapiteln, Suche, Inhaltsverzeichnis und Druckansicht.
+- Bedienungsanleitung erklärt SIA-Raumnutzung, Betriebsart, Teilstrecken, Formteilzuordnung, Ergebnisansichten, Projektdateien, Bericht und Fehlerbehebung.
+- Kontextbezogenes Hilfe-Center auf den aktuellen Workflow mit SIA-Konfiguration, Ergebnisdarstellung und 21 Formteiltypen aktualisiert.
+- Direkter Link zur vollständigen Bedienungsanleitung im Hilfe-Center ergänzt.
+- Startseitenangaben von 14 auf 21 geprüfte Formteiltypen korrigiert.
+- Versions- und Cachekennung auf **3.0.1 / 58.10** aktualisiert.
+- Bedienungsanleitung in Sitemap, Release-Paket und SHA-256-Integritätsmanifest aufgenommen.
 
 ## Druckverlust Pro 3.0 Final
 

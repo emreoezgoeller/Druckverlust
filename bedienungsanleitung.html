@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bedienungsanleitung – Druckverlust Pro</title>
+  <meta name="description" content="Vollständige Bedienungsanleitung für Druckverlust Pro: Projektaufbau, SIA-Geschwindigkeitsprüfung, Teilstrecken, Formteile, QS, Bericht, Speicherung und Fehlerbehebung." />
+  <meta name="application-name" content="Druckverlust Pro" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#061a2f" />
+  <link rel="canonical" href="https://emreoezgoeller.github.io/Druckverlust/bedienungsanleitung.html" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="src/landing/product.css?v=58.10" />
+  <link rel="stylesheet" href="src/landing/manual.css?v=58.10" />
+</head>
+<body class="dp-manual-page">
+  <svg class="dp-symbols" aria-hidden="true">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m16.5 16.5 4 4" /></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 9V4h10v5M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7z" /></symbol>
+    <symbol id="i-project" viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v11H3z" /><path d="M3 7V4h7l2 3" /></symbol>
+    <symbol id="i-network" viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="5" rx="1" /><rect x="15" y="4" width="6" height="5" rx="1" /><rect x="9" y="15" width="6" height="5" rx="1" /><path d="M6 9v3h12V9M12 12v3" /></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" /><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h8" /></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z" /><path d="m9 12 2 2 4-5" /></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5M9 12h6M9 16h6" /></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3 2.5 20h19z" /><path d="M12 9v5M12 17h.01" /></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" /><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M10 14h8" /></symbol>
+  </svg>
+
+  <a class="dp-skip-link" href="#anleitungsinhalt">Zum Inhalt springen</a>
+
+  <header class="dp-site-header" data-site-header>
+    <a class="dp-brand" href="index.html" aria-label="Druckverlust Pro Startseite">
+      <img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" />
+      <span><strong>Druckverlust Pro</strong><em>Bedienungsanleitung</em></span>
+    </a>
+
+    <button class="dp-menu-toggle" type="button" aria-expanded="false" aria-controls="anleitungsnavigation" data-menu-toggle>
+      <svg aria-hidden="true"><use href="#i-menu" /></svg>
+      <span>Menü</span>
+    </button>
+
+    <nav id="anleitungsnavigation" class="dp-site-nav" aria-label="Seitennavigation" data-site-nav>
+      <a href="index.html">Startseite</a>
+      <a href="index.html#anleitung">Kurzanleitung</a>
+      <a href="app.html?help=1">Hilfe im Tool</a>
+      <a href="app.html?demo=1">Demo</a>
+      <a class="dp-nav-cta" href="app.html">Tool starten <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
+    </nav>
+  </header>
+
+  <main id="anleitungsinhalt">
+    <section class="dp-manual-hero">
+      <div class="dp-section-shell dp-manual-hero-grid">
+        <div>
+          <span class="dp-kicker">Version 3.0.1 · Phase 58.10</span>
+          <h1>Bedienungsanleitung für <span>Druckverlust Pro</span></h1>
+          <p>
+            Vom ersten Projekt bis zum geprüften Professional Report: Diese Anleitung erklärt den empfohlenen Arbeitsablauf,
+            die wichtigsten Eingaben und die fachlichen Kontrollen der Anwendung.
+          </p>
+          <div class="dp-hero-actions">
+            <a class="dp-button dp-button-primary" href="app.html">Tool starten <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
+            <a class="dp-button dp-button-secondary" href="app.html?demo=1">Demo-Projekt öffnen</a>
+            <button class="dp-button dp-button-secondary" type="button" data-manual-print><svg aria-hidden="true"><use href="#i-print" /></svg>Anleitung drucken</button>
+          </div>
+        </div>
+        <aside class="dp-manual-hero-card" aria-label="Empfohlener Grundablauf">
+          <span>EMPFOHLENER GRUNDABLAUF</span>
+          <ol>
+            <li><b>1</b>Projekt und Anlage anlegen</li>
+            <li><b>2</b>SIA-Raumnutzung und Betriebsart wählen</li>
+            <li><b>3</b>Teilstrecken in Strömungsrichtung erfassen</li>
+            <li><b>4</b>Formteile und Sonderbauteile zuordnen</li>
+            <li><b>5</b>Berechnung, QS und Bericht prüfen</li>
+          </ol>
+        </aside>
+      </div>
+    </section>
+
+    <section class="dp-manual-tools" aria-label="Anleitung durchsuchen">
+      <div class="dp-section-shell dp-manual-tools-inner">
+        <label class="dp-manual-search">
+          <svg aria-hidden="true"><use href="#i-search" /></svg>
+          <span class="dp-sr-only">Anleitung durchsuchen</span>
+          <input type="search" placeholder="Anleitung durchsuchen, z. B. Formteil, SIA, PDF oder Speichern" data-manual-search autocomplete="off" />
+          <button type="button" data-manual-clear hidden>Leeren</button>
+        </label>
+        <span class="dp-manual-result" data-manual-result>Alle Kapitel werden angezeigt.</span>
+        <button class="dp-manual-toc-toggle" type="button" data-manual-toc-toggle aria-expanded="false" aria-controls="manual-toc">Inhaltsverzeichnis</button>
+      </div>
+    </section>
+
+    <div class="dp-section-shell dp-manual-layout">
+      <aside class="dp-manual-toc" id="manual-toc" data-manual-toc aria-label="Inhaltsverzeichnis">
+        <strong>Inhaltsverzeichnis</strong>
+        <nav>
+          <a href="#starten">1. Anwendung starten</a>
+          <a href="#oberflaeche">2. Oberfläche verstehen</a>
+          <a href="#projekt">3. Projekt und Anlagen</a>
+          <a href="#sia">4. SIA-Geschwindigkeitsprüfung</a>
+          <a href="#teilstrecken">5. Teilstrecken erfassen</a>
+          <a href="#formteile">6. Formteile zuordnen</a>
+          <a href="#sonderbauteile">7. Sonderbauteile</a>
+          <a href="#ergebnisse">8. Ergebnisse verstehen</a>
+          <a href="#qs">9. QS, Schema und Simulation</a>
+          <a href="#speichern">10. Speichern und Revisionen</a>
+          <a href="#bericht">11. Bericht und PDF</a>
+          <a href="#tastatur">12. Tastaturbefehle</a>
+          <a href="#fehler">13. Fehlerbehebung</a>
+          <a href="#grenzen">14. Fachliche Grenzen</a>
+        </nav>
+        <div class="dp-manual-toc-note">
+          <svg aria-hidden="true"><use href="#i-info" /></svg>
+          <p>Die Hilfe im Tool ist kontextbezogen. Diese Seite ist die vollständige, druckbare Bedienungsanleitung.</p>
+        </div>
+      </aside>
+
+      <article class="dp-manual-content">
+        <div class="dp-manual-no-results" data-manual-no-results hidden>
+          <strong>Kein Kapitel gefunden</strong>
+          <p>Suchbegriff vereinfachen oder die Suche leeren.</p>
+        </div>
+
+        <section id="starten" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">01</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Start</span>
+            <h2>Anwendung richtig starten</h2>
+            <p>Druckverlust Pro ist eine browserbasierte Anwendung. Online und lokal wird dieselbe Berechnungsoberfläche verwendet.</p>
+          </div>
+          <div class="dp-manual-grid-2">
+            <div class="dp-manual-card">
+              <h3>Online über GitHub Pages</h3>
+              <ol>
+                <li>Startseite öffnen.</li>
+                <li><strong>Tool starten</strong> oder <strong>Demo-Projekt</strong> wählen.</li>
+                <li>Projektdateien lokal auf dem eigenen Computer speichern.</li>
+              </ol>
+            </div>
+            <div class="dp-manual-card">
+              <h3>Lokal unter Windows</h3>
+              <ol>
+                <li><code>Druckverlust_starten.bat</code> doppelklicken.</li>
+                <li>Das schwarze Serverfenster geöffnet lassen.</li>
+                <li>Im Browser auf der Startseite das Tool öffnen.</li>
+              </ol>
+            </div>
+          </div>
+          <div class="dp-manual-callout is-warning">
+            <svg aria-hidden="true"><use href="#i-warning" /></svg>
+            <div><strong><code>app.html</code> nicht direkt per Doppelklick öffnen.</strong><p>Chrome und Edge blockieren JavaScript-Module über <code>file://</code>. Der Windows-Starter stellt automatisch eine lokale Webadresse bereit.</p></div>
+          </div>
+        </section>
+
+        <section id="oberflaeche" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">02</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Orientierung</span>
+            <h2>Die Oberfläche verstehen</h2>
+            <p>Die Bedienung folgt immer derselben Logik: Werkzeug wählen, Element im Projektbaum öffnen und im Arbeitsbereich bearbeiten.</p>
+          </div>
+          <div class="dp-manual-feature-list">
+            <article><svg aria-hidden="true"><use href="#i-menu" /></svg><div><strong>Ribbon oben</strong><p>Enthält Projekt-, Berechnungs-, Engineering- und Ausgabefunktionen. Tooltips erklären die Symbole.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-project" /></svg><div><strong>Projektstruktur links</strong><p>Zeigt Projekt, Anlagen, Teilstrecken, Formteile und Sonderbauteile. Die Breite kann angepasst oder die Leiste eingeklappt werden.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-calc" /></svg><div><strong>Arbeitsbereich</strong><p>Zeigt die Eingaben und Ergebnisse des aktuell ausgewählten Elements.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-info" /></svg><div><strong>Statusleiste unten</strong><p>Zeigt Version, Speicherstatus, Berechnungsstatus und wichtige Projektinformationen.</p></div></article>
+          </div>
+          <div class="dp-manual-callout">
+            <svg aria-hidden="true"><use href="#i-info" /></svg>
+            <div><strong>Hilfe jederzeit öffnen</strong><p>Mit <kbd>F1</kbd> oder <kbd>Ctrl + /</kbd> öffnet sich die kontextbezogene Hilfe genau zur aktuellen Ansicht.</p></div>
+          </div>
+        </section>
+
+        <section id="projekt" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">03</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Projektaufbau</span>
+            <h2>Projekt und Anlagen sauber anlegen</h2>
+            <p>Ein Projekt kann mehrere unabhängige Lüftungsanlagen enthalten. Jede Anlage erhält ihre eigene Berechnung und ihren eigenen Berichtsteil.</p>
+          </div>
+          <ol class="dp-manual-steps">
+            <li><b>Projektstamm erfassen</b><span>Projektnummer, Projektname, Objekt, Bearbeiter und Revisionsangaben vollständig eintragen.</span></li>
+            <li><b>Anlage anlegen</b><span>BKP-Nummer, Anlagenname und Luftart eindeutig festlegen.</span></li>
+            <li><b>Raumnutzung und Betriebsart wählen</b><span>Diese Angaben steuern die SIA-Geschwindigkeitsprüfung der Anlage.</span></li>
+            <li><b>Aktive Anlage kontrollieren</b><span>Neue Teilstrecken und Bauteile werden immer in der aktuell geöffneten Anlage erstellt.</span></li>
+          </ol>
+          <div class="dp-manual-table-wrap">
+            <table>
+              <thead><tr><th>Feld</th><th>Empfehlung</th><th>Beispiel</th></tr></thead>
+              <tbody>
+                <tr><td>BKP-Nummer</td><td>Vor dem Anlagenname führen</td><td>244.1</td></tr>
+                <tr><td>Anlagenname</td><td>Technisch eindeutig benennen</td><td>Zuluft Schultrakt</td></tr>
+                <tr><td>Luftart</td><td>Zuluft, Abluft, Aussenluft oder Fortluft wählen</td><td>Zuluft</td></tr>
+                <tr><td>Raumnutzung</td><td>Passenden SIA-2024-Raumtyp wählen</td><td>4.01 Schulzimmer</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="sia" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">04</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">SIA 382/1:2025</span>
+            <h2>Geschwindigkeitsprüfung konfigurieren</h2>
+            <p>Die zulässige beziehungsweise empfohlene Netzgeschwindigkeit wird anlagenbezogen aus Raumnutzung, Betriebsart und elektrischen Vollaststunden abgeleitet.</p>
+          </div>
+          <div class="dp-manual-grid-3">
+            <div class="dp-manual-card"><span>1</span><h3>Raumnutzung</h3><p>Den passenden Raumtyp aus den SIA-2024-Raumdatenblättern wählen, zum Beispiel <strong>4.01 Schulzimmer</strong>.</p></div>
+            <div class="dp-manual-card"><span>2</span><h3>Betriebsart</h3><p><strong>1-stufig</strong>, <strong>2-stufig</strong> oder <strong>stufenlos</strong> wählen.</p></div>
+            <div class="dp-manual-card"><span>3</span><h3>Bewertung</h3><p>Das Tool ermittelt die Elektro-Vollaststunden und prüft jede Teilstrecke gegen den passenden Richtwert.</p></div>
+          </div>
+          <div class="dp-manual-callout is-important">
+            <svg aria-hidden="true"><use href="#i-shield" /></svg>
+            <div><strong>Rechteckkanäle werden zusätzlich nach Seitenverhältnis bewertet.</strong><p>Der Rundrohr-Richtwert wird mit dem Reduktionsfaktor für Rechteckkanäle kombiniert. Sehr ungünstige Seitenverhältnisse werden sichtbar gekennzeichnet.</p></div>
+          </div>
+          <ul class="dp-manual-checklist">
+            <li>Status <strong>Eingehalten</strong>: Geschwindigkeit liegt im empfohlenen Bereich.</li>
+            <li>Status <strong>Prüfen</strong>: Wert liegt nahe am Richtwert oder die Geometrie ist auffällig.</li>
+            <li>Status <strong>Überschritten</strong>: Dimension oder Anlagenkonzept fachlich kontrollieren.</li>
+          </ul>
+          <p class="dp-manual-fineprint">Die integrierte Prüfung unterstützt die Planung, ersetzt jedoch nicht die vollständige Normlektüre und die projektbezogene fachliche Beurteilung.</p>
+        </section>
+
+        <section id="teilstrecken" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">05</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Kanalnetz</span>
+            <h2>Teilstrecken in Strömungsrichtung erfassen</h2>
+            <p>Die Reihenfolge im Projektbaum wird im Anlagenschema und im Bericht übernommen. Deshalb immer vom Eintritt bis zum letzten Auslass arbeiten.</p>
+          </div>
+          <div class="dp-manual-field-order">
+            <span>Name / Nummer</span><i></i><span>Luftmenge</span><i></i><span>Rauigkeit</span><i></i><span>Querschnitt</span><i></i><span>Abmessung</span><i></i><span>Länge</span>
+          </div>
+          <div class="dp-manual-grid-2">
+            <div>
+              <h3>Rechteckkanal</h3>
+              <ul>
+                <li>Breite und Höhe in <strong>mm</strong> eingeben.</li>
+                <li>Seitenverhältnis für die SIA-Prüfung beachten.</li>
+                <li>Hydraulischer Durchmesser wird automatisch berechnet.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Rundrohr</h3>
+              <ul>
+                <li>Durchmesser in <strong>mm</strong> eingeben.</li>
+                <li>Der Rundrohr-Richtwert wird direkt verwendet.</li>
+                <li>Die Reibungszahl λ wird automatisch ermittelt.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="dp-manual-table-wrap">
+            <table>
+              <thead><tr><th>Eingabe</th><th>Einheit</th><th>Hinweis</th></tr></thead>
+              <tbody>
+                <tr><td>Luftmenge</td><td>m³/h</td><td>Für jede Teilstrecke separat erfassen.</td></tr>
+                <tr><td>Länge</td><td>m</td><td>Nur die tatsächliche gerade Kanallänge.</td></tr>
+                <tr><td>Breite / Höhe / Ø</td><td>mm</td><td>Oberfläche rechnet intern korrekt in Meter weiter.</td></tr>
+                <tr><td>Rauigkeit k</td><td>mm</td><td>Standard 0,15 mm; pro Teilstrecke anpassbar.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="dp-manual-callout">
+            <svg aria-hidden="true"><use href="#i-calc" /></svg>
+            <div><strong>Dimensionierungsassistent</strong><p>Für 2,0 / 3,0 / 4,0 m/s oder einen eigenen Zielwert werden passende Standardabmessungen vorgeschlagen. Eine Abmessung wird erst nach bewusster Auswahl übernommen.</p></div>
+          </div>
+        </section>
+
+        <section id="formteile" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">06</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">21 geprüfte Typen</span>
+            <h2>Formteile richtig zuordnen</h2>
+            <p>Formteile berechnen ihren Druckverlust aus dem Widerstandsbeiwert ζ und dem dynamischen Druck der zugeordneten Teilstrecke.</p>
+          </div>
+          <ol class="dp-manual-steps">
+            <li><b>Ziel-Teilstrecke prüfen</b><span>Ein neues Formteil wird automatisch der zuletzt erstellten Teilstrecke zugeordnet.</span></li>
+            <li><b>Formteil auswählen</b><span>Bibliothek nach Rund, Rechteck, Übergang, Abzweig oder Spezial filtern.</span></li>
+            <li><b>Geometrie festlegen</b><span>Nur die zulässigen Winkel- und Verhältniswerte der Referenztabelle auswählen.</span></li>
+            <li><b>Zuordnung kontrollieren</b><span>Die Teilstrecke kann im Formteil jederzeit manuell geändert werden.</span></li>
+            <li><b>Anschlusswerte prüfen</b><span>Bei Abzweigen Durchgangs- und Abzweigstrecken bewusst zuweisen.</span></li>
+          </ol>
+          <div class="dp-manual-callout is-important">
+            <svg aria-hidden="true"><use href="#i-network" /></svg>
+            <div><strong>Manuell angepasste Werte bleiben geschützt.</strong><p>Beim Wechsel der Teilstrecke überschreibt das Tool manuelle Formteilabmessungen nicht ungefragt. Mit „Automatik wieder übernehmen“ kann die Synchronisation bewusst aktiviert werden.</p></div>
+          </div>
+          <div class="dp-manual-formula"><span>Formteilverlust</span><strong>Δp = ζ × p<sub>dyn</sub></strong><small>p<sub>dyn</sub> = ρ · v² / 2</small></div>
+        </section>
+
+        <section id="sonderbauteile" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">07</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Herstellerneutral</span>
+            <h2>Sonderbauteile dokumentieren</h2>
+            <p>Filter, Schalldämpfer, Klappen oder andere Komponenten werden mit einem fachlich vorgegebenen Druckverlust erfasst.</p>
+          </div>
+          <ul class="dp-manual-checklist">
+            <li>Bauteil neutral und eindeutig benennen.</li>
+            <li>Druckverlust in Pa aus Planung, Herstellerunterlage oder Messwert übernehmen.</li>
+            <li>Bauteil der richtigen Teilstrecke zuordnen.</li>
+            <li>Quelle oder Planungsannahme im Hinweisfeld dokumentieren.</li>
+          </ul>
+          <div class="dp-manual-callout is-warning">
+            <svg aria-hidden="true"><use href="#i-warning" /></svg>
+            <div><strong>Keine automatische Produktauslegung.</strong><p>Druckverlust Pro besitzt bewusst keine Herstellerdatenbank. Der eingetragene Wert muss fachlich nachvollziehbar sein.</p></div>
+          </div>
+        </section>
+
+        <section id="ergebnisse" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">08</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Auswertung</span>
+            <h2>Ergebnisse richtig lesen</h2>
+            <p>Die Anlagenübersicht trennt Reibungsverluste, Formteilverluste und Sonderbauteile. Die kritische Teilstrecke wird hervorgehoben.</p>
+          </div>
+          <div class="dp-manual-grid-3">
+            <div class="dp-manual-result-card"><span>Reibung</span><strong>Δp<sub>R</sub></strong><p>Gerade Kanal- oder Rohrstrecke mit λ, Länge und hydraulischem Durchmesser.</p></div>
+            <div class="dp-manual-result-card"><span>Formteile</span><strong>Δp<sub>ζ</sub></strong><p>Summe aller ζ-basierten Formteilverluste der Teilstrecke.</p></div>
+            <div class="dp-manual-result-card"><span>Gesamt</span><strong>Σ Δp</strong><p>Summe aus Teilstrecken, Formteilen und Sonderbauteilen der Anlage.</p></div>
+          </div>
+          <div class="dp-manual-grid-2">
+            <div>
+              <h3>Standardansicht</h3>
+              <p>Zeigt die wichtigsten Kennwerte und Bewertungen für die tägliche Bearbeitung.</p>
+            </div>
+            <div>
+              <h3>Professional-Ansicht</h3>
+              <p>Zeigt zusätzlich λ, ζ, Rauigkeit, dynamischen Druck, hydraulischen Durchmesser und technische Ranglisten.</p>
+            </div>
+          </div>
+          <div class="dp-manual-formula"><span>Reibungsverlust</span><strong>Δp<sub>R</sub> = λ · L / d<sub>h</sub> · ρv² / 2</strong><small>Standard-Luftdichte im Projekt: 1,21 kg/m³</small></div>
+        </section>
+
+        <section id="qs" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">09</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Kontrolle</span>
+            <h2>Engineering-QS, Schema und Simulation nutzen</h2>
+            <p>Die Berechnung ist erst abgeschlossen, wenn auffällige Werte geprüft und die Zuordnungen im Schema kontrolliert wurden.</p>
+          </div>
+          <div class="dp-manual-feature-list">
+            <article><svg aria-hidden="true"><use href="#i-shield" /></svg><div><strong>Engineering-QS</strong><p>Prüft Geschwindigkeit, Reibungsgradient, Verlustkonzentration, Zuordnungen und Vollständigkeit.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-network" /></svg><div><strong>Anlagenschema</strong><p>Zeigt Teilstrecken, Dimensionswechsel, Formteile und Sonderbauteile als Funktionsschema.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-calc" /></svg><div><strong>Live-Simulation</strong><p>Vergleicht Luftmengen- oder Dimensionsvarianten, ohne den Projektstand sofort zu verändern.</p></div></article>
+            <article><svg aria-hidden="true"><use href="#i-project" /></svg><div><strong>Projektcockpit</strong><p>Fasst mehrere Anlagen, offene Punkte, Aufgaben und den Projekt-Score zusammen.</p></div></article>
+          </div>
+          <div class="dp-manual-callout">
+            <svg aria-hidden="true"><use href="#i-info" /></svg>
+            <div><strong>Warnung bedeutet nicht automatisch Fehler.</strong><p>Die QS priorisiert Auffälligkeiten. Die endgültige Beurteilung bleibt eine fachliche Planungsentscheidung.</p></div>
+          </div>
+        </section>
+
+        <section id="speichern" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">10</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Datensicherheit</span>
+            <h2>Projekt speichern, sichern und übergeben</h2>
+            <p>Die Projektdateien bleiben lokal und können unabhängig vom Browser archiviert oder weitergegeben werden.</p>
+          </div>
+          <div class="dp-manual-grid-3">
+            <div class="dp-manual-file-card"><strong>.dvp</strong><span>Arbeitsdatei</span><p>Bearbeitbarer täglicher Projektstand.</p></div>
+            <div class="dp-manual-file-card"><strong>.dvpa</strong><span>Archivpaket</span><p>Portables Sicherungspaket mit Diagnose und Integritätsprüfung.</p></div>
+            <div class="dp-manual-file-card"><strong>.dvph</strong><span>Übergabepaket</span><p>Dokumentierter Freigabestand mit Prüfprotokoll.</p></div>
+          </div>
+          <ul class="dp-manual-checklist">
+            <li>Regelmässig mit <kbd>Ctrl + S</kbd> als .dvp speichern.</li>
+            <li>Vor grossen Änderungen einen zusätzlichen Sicherungsstand erzeugen.</li>
+            <li>Ältere Projekte werden kontrolliert auf das aktuelle Projektschema migriert.</li>
+            <li>Vor einer Migration wird eine unveränderte Datei mit „Original-vor-Migration“ gespeichert.</li>
+            <li>Revisionen und Übergabestatus vor der Abgabe dokumentieren.</li>
+          </ul>
+        </section>
+
+        <section id="bericht" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">11</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Professional Report</span>
+            <h2>Bericht und PDF ausgeben</h2>
+            <p>Der Bericht enthält Projektübersicht, Anlagenberechnung, SIA-Prüfung, QS, Anlagenschema, Formteile und Revisionsangaben.</p>
+          </div>
+          <ol class="dp-manual-steps">
+            <li><b>Berechnung aktualisieren</b><span>Alle Anlagen vor der Ausgabe neu berechnen.</span></li>
+            <li><b>Export-QS prüfen</b><span>Fehlende Angaben, ungültige Zuordnungen und Layoutwarnungen beheben.</span></li>
+            <li><b>Bericht öffnen</b><span>Deckblatt, Inhaltsverzeichnis, Tabellen und Schema visuell kontrollieren.</span></li>
+            <li><b>Als PDF speichern</b><span>Im Browserdruckdialog die folgenden Einstellungen verwenden.</span></li>
+          </ol>
+          <div class="dp-manual-print-settings">
+            <span><b>Format</b>A4</span>
+            <span><b>Skalierung</b>100 %</span>
+            <span><b>Ränder</b>Standard</span>
+            <span><b>Hintergrundgrafiken</b>Aktivieren</span>
+            <span><b>Kopf-/Fusszeilen</b>Deaktivieren</span>
+          </div>
+          <div class="dp-manual-callout is-important">
+            <svg aria-hidden="true"><use href="#i-print" /></svg>
+            <div><strong>Vor der Freigabe in Chrome oder Edge kontrollieren.</strong><p>Besonders Deckblatt, Wasserzeichen, Fortsetzungsseiten und das mehrseitige Anlagenschema prüfen.</p></div>
+          </div>
+        </section>
+
+        <section id="tastatur" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">12</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Schnellbedienung</span>
+            <h2>Wichtige Tastaturbefehle</h2>
+          </div>
+          <div class="dp-manual-shortcuts">
+            <div><kbd>F1</kbd><span>Hilfe-Center öffnen</span></div>
+            <div><kbd>Ctrl + /</kbd><span>Hilfe-Center öffnen</span></div>
+            <div><kbd>Ctrl + S</kbd><span>Projekt speichern</span></div>
+            <div><kbd>Ctrl + O</kbd><span>Projekt öffnen</span></div>
+            <div><kbd>Ctrl + N</kbd><span>Neues Projekt</span></div>
+            <div><kbd>Ctrl + Enter</kbd><span>Berechnung aktualisieren</span></div>
+            <div><kbd>Ctrl + K</kbd><span>Projektsuche öffnen</span></div>
+            <div><kbd>Ctrl + B / P</kbd><span>Bericht öffnen</span></div>
+            <div><kbd>Ctrl + Z</kbd><span>Projektänderung rückgängig</span></div>
+            <div><kbd>Ctrl + Y</kbd><span>Änderung wiederholen</span></div>
+            <div><kbd>Delete</kbd><span>Ausgewähltes Element löschen</span></div>
+            <div><kbd>Escape</kbd><span>Zur aktiven Anlage zurück</span></div>
+          </div>
+        </section>
+
+        <section id="fehler" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">13</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Problemlösung</span>
+            <h2>Häufige Probleme beheben</h2>
+          </div>
+          <div class="dp-manual-accordion">
+            <details><summary>Das Tool startet lokal nicht</summary><p>Nicht <code>app.html</code> doppelklicken. Stattdessen <code>Druckverlust_starten.bat</code> verwenden und das Serverfenster geöffnet lassen.</p></details>
+            <details><summary>Ein Formteil ist der falschen Teilstrecke zugeordnet</summary><p>Formteil öffnen und die Bezugs-Teilstrecke manuell ändern. Neue Formteile verwenden standardmässig die zuletzt erstellte Teilstrecke.</p></details>
+            <details><summary>Die Geschwindigkeit wird als überschritten angezeigt</summary><p>SIA-Raumnutzung, Betriebsart, Luftmenge und Abmessung kontrollieren. Danach Dimension oder Netzkonzept fachlich prüfen.</p></details>
+            <details><summary>Der Bericht schneidet Inhalte ab</summary><p>Im Bericht den Layoutstatus prüfen. Im Browser A4, 100 %, Standardränder, deaktivierte Browser-Kopfzeilen und aktivierte Hintergrundgrafiken verwenden.</p></details>
+            <details><summary>Eine alte .dvp-Datei zeigt Migrationshinweise</summary><p>Hinweise lesen und die automatisch erzeugte Original-vor-Migration-Datei aufbewahren. Zuordnungen und SIA-Konfiguration danach kontrollieren.</p></details>
+            <details><summary>Werte erscheinen nicht aktuell</summary><p>Mit <kbd>Ctrl + Enter</kbd> neu berechnen. Bei einer Online-Version zusätzlich die Seite mit <kbd>Ctrl + F5</kbd> vollständig neu laden.</p></details>
+          </div>
+        </section>
+
+        <section id="grenzen" class="dp-manual-section" data-guide-section>
+          <span class="dp-manual-number">14</span>
+          <div class="dp-manual-heading">
+            <span class="dp-kicker">Fachliche Verantwortung</span>
+            <h2>Was das Tool leistet – und was nicht</h2>
+            <p>Druckverlust Pro unterstützt die nachvollziehbare Planung, ersetzt jedoch keine vollständige Fachplanung, Normprüfung oder Freigabe durch die verantwortliche Person.</p>
+          </div>
+          <div class="dp-manual-grid-2">
+            <div class="dp-manual-card is-positive">
+              <h3>Integriert</h3>
+              <ul>
+                <li>Kanal- und Rohrreibungsverluste</li>
+                <li>21 herstellerneutrale Formteiltypen</li>
+                <li>Sonderbauteile mit Vorgabewert</li>
+                <li>SIA-Geschwindigkeitsprüfung</li>
+                <li>Engineering-QS und Professional Report</li>
+              </ul>
+            </div>
+            <div class="dp-manual-card is-negative">
+              <h3>Bewusst ausgeschlossen</h3>
+              <ul>
+                <li>Ventilatorauslegung</li>
+                <li>Motorleistung und Betriebskosten</li>
+                <li>SFP-Gesamtnachweis</li>
+                <li>Hersteller- und Produktdatenbank</li>
+                <li>Massstäbliche CAD- oder Montageplanung</li>
+              </ul>
+            </div>
+          </div>
+          <div class="dp-manual-callout is-warning">
+            <svg aria-hidden="true"><use href="#i-warning" /></svg>
+            <div><strong>Alle Ergebnisse vor der Abgabe plausibilisieren.</strong><p>Insbesondere Luftmengen, Netzstruktur, kritischen Strang, Schall, Druckniveau, Sonderbauteilwerte und projektspezifische Normanforderungen kontrollieren.</p></div>
+          </div>
+        </section>
+
+        <section class="dp-manual-finish">
+          <div>
+            <span class="dp-kicker">Bereit zum Start</span>
+            <h2>Projekt anlegen und Schritt für Schritt arbeiten.</h2>
+            <p>Für den Einstieg eignet sich das Demo-Projekt. Im Tool führt das Hilfe-Center direkt zu jedem Arbeitsbereich.</p>
+          </div>
+          <div>
+            <a class="dp-button dp-button-primary" href="app.html">Tool starten</a>
+            <a class="dp-button dp-button-secondary" href="app.html?demo=1">Demo öffnen</a>
+          </div>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="dp-site-footer">
+    <div class="dp-footer-brand"><img src="assets/logo/eo-logo.png" alt="EO Logo" /><span><strong>Druckverlust Pro</strong><small>Professional · Version 3.0.1</small></span></div>
+    <div class="dp-footer-links"><a href="index.html">Startseite</a><a href="app.html">Tool</a><a href="app.html?help=1">Hilfe im Tool</a><a href="lizenz.html">Lizenz</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
+    <p>© 2026 Emre Özgöller – Druckverlust Pro · Professional</p>
+  </footer>
+
+  <script src="src/landing/product.js?v=58.10" defer></script>
+  <script src="src/landing/manual.js?v=58.10" defer></script>
+</body>
+</html>

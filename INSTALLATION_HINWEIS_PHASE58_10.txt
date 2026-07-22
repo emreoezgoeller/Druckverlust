@@ -1,0 +1,23 @@
+DRUCKVERLUST PRO 3.0.1 – PHASE 58.10
+STARTSEITE UND BEDIENUNGSANLEITUNG
+==============================================================
+
+INSTALLATION
+1. Diese ZIP vollständig entpacken.
+2. Alle enthaltenen Dateien und Ordner über den bestehenden Stand
+   Druckverlust Pro 3.0.0 / Phase 58.00 kopieren.
+3. Vorhandene Dateien ersetzen lassen.
+4. Danach die Startseite index.html über den lokalen Starter oder den Webserver öffnen.
+
+WICHTIG
+- Die ZIP enthält nur geänderte beziehungsweise neue Projektdateien.
+- Rechenlogik und Projektschema 1.3.0 wurden nicht verändert.
+- Neue vollständige Anleitung: bedienungsanleitung.html
+- Neuer Stand: Version 3.0.1 / Phase 58.10
+
+UMFANG
+- 51 geänderte beziehungsweise neue Projektdateien
+- Kurzanleitung auf der Startseite
+- 14 Kapitel in der vollständigen Bedienungsanleitung
+- aktualisiertes Hilfe-Center
+- erneuertes SHA-256-Integritätsmanifest

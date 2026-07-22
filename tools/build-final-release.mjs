@@ -19,6 +19,7 @@ export const FINAL_RELEASE_FILES = [
   'FINAL_ABNAHME_WINDOWS.md',
   'app.html',
   'beta.html',
+  'bedienungsanleitung.html',
   'datenschutz.html',
   'feedback.html',
   'favicon.ico',
@@ -42,6 +43,7 @@ export const FINAL_RELEASE_DIRECTORIES = [
 export const CRITICAL_RELEASE_FILES = new Set([
   'index.html',
   'app.html',
+  'bedienungsanleitung.html',
   'release.json',
   'src/main.js',
   'src/core/appVersion.js',

@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 3.0.0 · Phase 58.00 · Final Release mit anlagenweiter Schlussprüfung, SHA-256-Integritätsmanifest, verlustfreiem `.dvp`-Roundtrip und dokumentierter Windows-Druckabnahme.
+**Aktueller Stand:** Version 3.0.1 · Phase 58.10 · Dokumentations- und Bedienungsupdate mit anlagenweiter Schlussprüfung, SHA-256-Integritätsmanifest, verlustfreiem `.dvp`-Roundtrip und dokumentierter Windows-Druckabnahme.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -21,6 +21,7 @@ python -m http.server 8000
 ```
 
 - Produktseite: `http://localhost:8000/`
+- Bedienungsanleitung: `http://localhost:8000/bedienungsanleitung.html`
 - Tool: `http://localhost:8000/app.html`
 - Demo: `http://localhost:8000/app.html?demo=1`
 
@@ -42,7 +43,7 @@ python -m http.server 8000
 - ältere `.dvp`-Dateien werden auf Schema 1.3.0 migriert; vor der Migration wird eine unveränderte `Original-vor-Migration`-Sicherung erstellt,
 - gültige Formteil- und Sonderbauteilzuordnungen bleiben beim Öffnen älterer Projekte erhalten,
 - einzeilige Plattformleiste mit sofortigen Infotexten, Symbol-/Statuslegende und überlaufsicherer Sidebar,
-- Hilfe-Center, Projektverlauf, Revisionen, Aufgaben, Simulation und Übergabeprüfung.
+- Hilfe-Center, vollständige Bedienungsanleitung, Projektverlauf, Revisionen, Aufgaben, Simulation und Übergabeprüfung.
 
 ## Projektstruktur
 
@@ -50,6 +51,7 @@ python -m http.server 8000
 Druckverlust/
 ├── index.html                 Produkt- und Startseite
 ├── app.html                   Berechnungstool
+├── bedienungsanleitung.html   vollständige, durchsuchbare Bedienungsanleitung
 ├── Druckverlust_starten.bat   Windows-Starter
 ├── release.json               maschinenlesbarer Release-Stand
 ├── assets/                    Logo, Berichtgrafik und Formteilreferenzen
@@ -113,4 +115,4 @@ Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 A
 - keine Ventilatorauslegung, Motorleistung, SFP-, Energie- oder Betriebskostenberechnung,
 - keine Hersteller-, Produkt- oder Artikelnummerndatenbank.
 
-Weitere Angaben: `RELEASE_NOTES.md`, `FINAL_ABNAHME_WINDOWS.md`, `release-integrity.json`, `docs/MIGRATION.md` und `docs/RELEASE_CHECKLIST.md`.
+Weitere Angaben: `bedienungsanleitung.html`, `RELEASE_NOTES.md`, `FINAL_ABNAHME_WINDOWS.md`, `release-integrity.json`, `docs/MIGRATION.md` und `docs/RELEASE_CHECKLIST.md`.

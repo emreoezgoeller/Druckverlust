@@ -1,0 +1,13 @@
+DRUCKVERLUST PRO 3.0.1 – FINAL RELEASE PHASE 58.10
+================================================================
+Erstellt: 2026-07-22T12:24:01.128Z
+Dateien: 212
+SHA-256-Manifest: release-integrity.json
+
+Nicht im sauberen Laufzeitpaket enthalten:
+- automatisierte Tests
+- interne Entwicklungsdokumentation
+- GitHub-Issue-Vorlagen
+- temporäre Prüf- und Renderdateien
+
+Start unter Windows: Druckverlust_starten.bat

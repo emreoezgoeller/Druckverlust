@@ -1,7 +1,7 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=58.00';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=58.10';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 

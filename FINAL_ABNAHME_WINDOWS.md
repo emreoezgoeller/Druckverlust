@@ -1,6 +1,6 @@
 # Druckverlust Pro 3.0 – Windows-Finalabnahme
 
-**Version:** 3.0.0 · Phase 58.00  
+**Version:** 3.0.1 · Phase 58.10  
 **Zweck:** Letzte visuelle Druckkontrolle unter Google Chrome und Microsoft Edge.
 
 ## Vorbereitung

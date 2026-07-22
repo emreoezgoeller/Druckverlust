@@ -1,7 +1,7 @@
 import { calculateProject } from "../core/CalculationEngine.js";
 import ValidationEngine from "../validation/ValidationEngine.js";
-import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=58.00";
-import { analyzeSystemVelocityCompliance } from "../standards/SiaVelocityCompliance.js?v=58.00";
+import { createDefaultFormPartRegistry } from "../formteile/FormPartRegistry.js?v=58.10";
+import { analyzeSystemVelocityCompliance } from "../standards/SiaVelocityCompliance.js?v=58.10";
 
 function uniqueMessages(messages = []) {
   return [...new Set(messages.map(message => String(message || '').trim()).filter(Boolean))];
