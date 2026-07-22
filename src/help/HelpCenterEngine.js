@@ -1,5 +1,5 @@
 // Druckverlust Pro – HelpCenterEngine
-// Phase 58.10: Hilfe-Center mit aktuellem Gesamtworkflow und externer Bedienungsanleitung.
+// Phase 58.20: Hilfe-Center mit Gesamtworkflow, Bedienungsanleitung und Online-Prüfung.
 
 const HELP_PROGRESS_KEY = 'druckverlust-pro.help-center.progress.v2';
 
@@ -183,6 +183,17 @@ const HELP_TOPICS = Object.freeze([
     actionLabel: 'Übergabe öffnen',
     steps: ['Aktuellen Revisionssnapshot erstellen.', 'Änderungen zur Basisrevision prüfen.', 'Prüfprotokoll vervollständigen.', 'Übergabestatus dokumentieren und Paket exportieren.'],
     tips: ['Ein importiertes Paket wird vor der Übernahme geprüft und verändert das offene Projekt nicht sofort.'],
+  },
+  {
+    id: 'online-deployment',
+    category: 'start',
+    title: 'Online-Version und Deployment prüfen',
+    summary: 'GitHub-Pages-Pfad, HTTPS, Cachekennung, Pflichtdateien und Release-Integrität kontrollieren.',
+    keywords: ['online', 'deployment', 'github', 'pages', 'https', 'cache', '404', 'veröffentlichung'],
+    action: null,
+    actionLabel: '',
+    steps: ['Auf der Startseite Online-Status öffnen.', 'Prüfung auf deployment.html starten.', 'Rote Punkte vor der Freigabe beheben.', 'Danach Demo, Speichern und PDF-Ausgabe in Chrome und Edge kontrollieren.'],
+    tips: ['Die Zieladresse lautet https://emreoezgoeller.github.io/Druckverlust/.', 'Projektinhalte werden durch die Deployment-Prüfung nicht übertragen.'],
   },
   {
     id: 'shortcuts',

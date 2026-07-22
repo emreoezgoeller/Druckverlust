@@ -11,10 +11,13 @@ Gewünschter Ablauf:
    Produkt-/Startseite index.html im Browser.
 
 3. Auf der Startseite „Tool starten“, „Demo-Projekt testen“ oder
-   „Bedienungsanleitung“ anklicken.
+   „Bedienungsanleitung“ oder „Online-Status“ anklicken.
 
    Die vollständige Anleitung ist auch direkt unter
    bedienungsanleitung.html verfügbar.
+
+   Die lokale Pfad- und Pflichtdateiprüfung ist unter
+   deployment.html verfügbar.
 
 4. Das schwarze Serverfenster während der Arbeit geöffnet lassen.
 

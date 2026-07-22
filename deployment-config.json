@@ -1,0 +1,22 @@
+{
+  "name": "Druckverlust Pro",
+  "edition": "Professional",
+  "version": "3.0.2",
+  "phase": "58.20",
+  "deploymentTarget": "GitHub Pages project site",
+  "canonicalBaseUrl": "https://emreoezgoeller.github.io/Druckverlust/",
+  "repositoryName": "Druckverlust",
+  "repositoryPath": "/Druckverlust/",
+  "entryPoints": {
+    "product": "index.html",
+    "application": "app.html",
+    "manual": "bedienungsanleitung.html",
+    "deploymentCheck": "deployment.html"
+  },
+  "requirements": {
+    "https": true,
+    "noJekyll": true,
+    "relativeAssets": true,
+    "projectDataStorage": "local browser and exported project files"
+  }
+}

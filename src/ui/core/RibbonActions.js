@@ -1,21 +1,21 @@
 // Druckverlust Pro – RibbonActions
 // Zentrale Befehle für die Ribbon-Oberfläche.
 
-import ProjectCommands from '../../app/ProjectCommands.js?v=58.10';
-import StorageEngine from '../../storage/StorageEngine.js?v=58.10';
+import ProjectCommands from '../../app/ProjectCommands.js?v=58.20';
+import StorageEngine from '../../storage/StorageEngine.js?v=58.20';
 import ProjectCalculationService from '../../project/ProjectCalculationService.js';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import createDemoProject from '../../project/demoProject.js';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.10';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.20';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
-import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=58.10';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=58.10';
-import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=58.10';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=58.20';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=58.20';
+import { APP_ASSET_VERSION, APP_BUILD_LABEL, APP_RELEASE, createAppInfo } from '../../core/appVersion.js?v=58.20';
 import { createLicenseStatus, formatLicenseStatusText } from '../../licensing/licenseConfig.js';
-import UiDialogService from './UiDialogService.js?v=58.10';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=58.10';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=58.10';
+import UiDialogService from './UiDialogService.js?v=58.20';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=58.20';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=58.20';
 
 export default class RibbonActions {
   constructor(state) {

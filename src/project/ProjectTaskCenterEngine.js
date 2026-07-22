@@ -1,7 +1,7 @@
 // Druckverlust Pro – Phase 37.00
 // Projekt-Navigator, Aufgabenliste, Favoriten und Schnellzugriffe.
 
-import ProjectPortfolioQualityEngine from './ProjectPortfolioQualityEngine.js?v=58.10';
+import ProjectPortfolioQualityEngine from './ProjectPortfolioQualityEngine.js?v=58.20';
 
 const MAX_MANUAL_TASKS = 120;
 const MAX_FAVORITES = 16;

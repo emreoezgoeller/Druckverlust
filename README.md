@@ -1,6 +1,6 @@
 # Druckverlust Pro
 
-**Aktueller Stand:** Version 3.0.1 · Phase 58.10 · Dokumentations- und Bedienungsupdate mit anlagenweiter Schlussprüfung, SHA-256-Integritätsmanifest, verlustfreiem `.dvp`-Roundtrip und dokumentierter Windows-Druckabnahme.
+**Aktueller Stand:** Version 3.0.2 · Phase 58.20 · Deployment- und Veröffentlichungsupdate mit GitHub-Pages-Build, öffentlicher Online-Prüfung, robuster 404-Pfadbehandlung und erneuertem SHA-256-Integritätsmanifest.
 
 Druckverlust Pro ist eine browserbasierte, herstellerneutrale Fachanwendung zur Berechnung und Dokumentation von Druckverlusten in Lüftungsanlagen. Die Anwendung verbindet Mehranlagen-Projekte, Teilstrecken, Formteile, neutrale Sonderbauteile, Engineering-QS, Anlagenschema, Simulation und Professional Report in einem gemeinsamen Projektmodell.
 
@@ -24,6 +24,26 @@ python -m http.server 8000
 - Bedienungsanleitung: `http://localhost:8000/bedienungsanleitung.html`
 - Tool: `http://localhost:8000/app.html`
 - Demo: `http://localhost:8000/app.html?demo=1`
+
+
+## GitHub Pages veröffentlichen
+
+Deployment-Paket erzeugen:
+
+```bash
+node tools/build-github-pages.mjs
+```
+
+Statische Deployment-Prüfung ausführen:
+
+```bash
+node tools/verify-deployment.mjs dist/Druckverlust_Pro_3_0_2_GitHub_Pages
+```
+
+- Zieladresse: `https://emreoezgoeller.github.io/Druckverlust/`
+- Online-Prüfung: `deployment.html`
+- vollständige Anleitung: `DEPLOYMENT_GITHUB_PAGES.md`
+- `.nojekyll` muss im Repository-Stamm erhalten bleiben.
 
 ## Kernfunktionen
 
@@ -52,6 +72,9 @@ Druckverlust/
 ├── index.html                 Produkt- und Startseite
 ├── app.html                   Berechnungstool
 ├── bedienungsanleitung.html   vollständige, durchsuchbare Bedienungsanleitung
+├── deployment.html            öffentliche Pfad-, Versions- und Pflichtdateiprüfung
+├── deployment-config.json     GitHub-Pages-Ziel und Repository-Pfad
+├── .nojekyll                  deaktiviert Jekyll-Verarbeitung auf GitHub Pages
 ├── Druckverlust_starten.bat   Windows-Starter
 ├── release.json               maschinenlesbarer Release-Stand
 ├── assets/                    Logo, Berichtgrafik und Formteilreferenzen
@@ -106,6 +129,8 @@ Finalprüfung und Release-Kurzlauf:
 npm run test:phase58
 npm run test:release
 npm run build:final
+node tools/build-github-pages.mjs
+node tools/verify-deployment.mjs
 ```
 
 Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 Anlagen, 230 Teilstrecken, 360 Formteilen und 58 Sonderbauteilen, die Phase-55-Migrationstests, die Phase-54-Schematests, die Phase-53-Berichtstests, 252 Einzelprüfungen für die SIA-Geschwindigkeitsprüfung, 65 Einzelprüfungen für die sechs neuen Krümmerformteile, 48 Prüfungen für den Oberflächen- und Ribbon-Abschluss, 54 Prüfungen für die vereinfachte Teilstreckenerfassung, 39 feste Rechenreferenzen, 21 Formteiltypen, 25 Excel-Referenzfälle mit 81 Einzelprüfungen, 179 Synchronisationsprüfungen, Speicher-Roundtrips, 48 Teilstrecken im Praxisprojekt und einen Lastfall mit insgesamt 200 Teilstrecken.
@@ -115,4 +140,4 @@ Der Release prüft unter anderem 95 Phase-56-Büro- und Praxisprüfungen mit 7 A
 - keine Ventilatorauslegung, Motorleistung, SFP-, Energie- oder Betriebskostenberechnung,
 - keine Hersteller-, Produkt- oder Artikelnummerndatenbank.
 
-Weitere Angaben: `bedienungsanleitung.html`, `RELEASE_NOTES.md`, `FINAL_ABNAHME_WINDOWS.md`, `release-integrity.json`, `docs/MIGRATION.md` und `docs/RELEASE_CHECKLIST.md`.
+Weitere Angaben: `bedienungsanleitung.html`, `deployment.html`, `DEPLOYMENT_GITHUB_PAGES.md`, `RELEASE_NOTES.md`, `FINAL_ABNAHME_WINDOWS.md` und `release-integrity.json`.

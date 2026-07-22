@@ -1,0 +1,24 @@
+DRUCKVERLUST PRO 3.0.2 – PHASE 58.20
+DEPLOYMENT UND VERÖFFENTLICHUNG
+============================================================
+
+VORAUSSETZUNG
+- vorhandener Stand Version 3.0.1 / Phase 58.10
+
+INSTALLATION DES ÄNDERUNGSPAKETS
+1. Druckverlust-Projektordner sichern.
+2. Inhalt dieser ZIP direkt in den Projektordner kopieren.
+3. Vorhandene Dateien ersetzen.
+4. Die leere Datei .nojekyll ebenfalls übernehmen.
+5. Lokal Druckverlust_starten.bat ausführen.
+6. deployment.html öffnen und die Prüfung starten.
+
+GITHUB PAGES
+Für die Online-Veröffentlichung nicht nur den Änderungspatch hochladen.
+Dafür das vollständige Paket Druckverlust_Pro_3_0_2_GitHub_Pages.zip
+verwenden und dessen INHALT direkt in den Repository-Stamm kopieren.
+
+NEUER STAND
+- Version 3.0.2 / Phase 58.20
+- Rechenkern unverändert
+- Projektschema weiterhin 1.3.0

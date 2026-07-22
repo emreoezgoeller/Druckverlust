@@ -8,7 +8,7 @@ import {
   createBetaFeedbackJson,
   formatBetaFeedback,
   summarizeBetaFeedback,
-} from '../testing/BetaFeedbackReport.js?v=58.10';
+} from '../testing/BetaFeedbackReport.js?v=58.20';
 
 const form = document.querySelector('[data-beta-feedback-form]');
 const statusNode = document.querySelector('[data-feedback-status]');

@@ -1,30 +1,35 @@
-DRUCKVERLUST PRO 3.0.1 – PHASE 58.10
-STARTSEITE UND BEDIENUNGSANLEITUNG
+DRUCKVERLUST PRO 3.0.2 – PHASE 58.20
+DEPLOYMENT UND VERÖFFENTLICHUNG
 ============================================================
 Datum: 22.07.2026
 
 UMFANG DES UPDATES
-- Startseite mit sichtbarer Kurzanleitung in sieben Arbeitsschritten
-- eigenständige, vollständige Bedienungsanleitung mit 14 Kapiteln
-- Suche, Inhaltsverzeichnis, Mobilansicht und Druckansicht der Anleitung
-- direkte Verknüpfung zwischen Startseite, Anleitung und Hilfe-Center
-- Hilfe-Center auf SIA-Konfiguration, Ergebnisdarstellung und aktuellen Workflow erweitert
-- Versions- und Cachekennung auf 3.0.1 / Phase 58.10 aktualisiert
+- GitHub-Pages-Paket mit Startseite index.html im Repository-Stamm
+- .nojekyll für unveränderte Auslieferung der Laufzeitordner
+- zentrale Deployment-Konfiguration für /Druckverlust/
+- öffentliche deployment.html mit Live-Prüfung
+- robuste 404-Seite für unbekannte GitHub-Pages-Unterpfade
+- reproduzierbarer Build über tools/build-github-pages.mjs
+- statische Link-, Pfad-, Cache- und Metadatenprüfung
+- Version und Cachekennung auf 3.0.2 / Phase 58.20 aktualisiert
 - Rechenlogik und Projektschema 1.3.0 unverändert
 
-PRÜFUNGEN FÜR PHASE 58.10
-- JavaScript-/Build-Syntax: 95 Dateien ohne Syntaxfehler
-- HTML-Struktur: 10 Seiten ohne Parserfehler oder doppelte IDs
-- lokale Verweise: 203 href-, src- und CSS-Verweise geprüft, 0 fehlend
-- Hilfe-Center: 16 Themen, 11 geführte Arbeitsschritte und Suchfunktion geprüft
-- HTTP-Startprüfung: index.html, bedienungsanleitung.html und app.html mit Status 200 erreichbar
-- Finaler Build und SHA-256-Manifest: 211 Laufzeitdateien, davon 18 kritisch
+PRÜFUNGEN FÜR PHASE 58.20
+- JavaScript-/Build-Syntax: 99 Laufzeit- und Werkzeugdateien
+- HTML-Struktur: 11 Seiten, 58 IDs und lokale href-/src-Verweise
+- JSON- und Webmanifest-Struktur
+- aktuelle Cachekennung 58.20 in HTML und Modulimporten
+- Pflichtdateien und Repository-Pfad /Druckverlust/
+- GitHub-Pages-Build: 210 Laufzeitdateien, davon 23 kritisch
+- SHA-256-Integritätsmanifest: 220 Finaldateien / 210 Webdateien
+- statische Deployment-Prüfung: 440 Prüfpunkte, 0 Fehler, 0 Hinweise
+- lokaler HTTP-Start von Startseite, Anleitung, Online-Prüfung und Tool
 
-MANUELLER WINDOWS-GATE
-- Startseite und Bedienungsanleitung in Google Chrome visuell prüfen
-- Startseite und Bedienungsanleitung in Microsoft Edge visuell prüfen
-- Druckansicht der Bedienungsanleitung als A4-PDF kontrollieren
-- bestehende Berichtsvorschau und PDF-Ausgabe weiterhin in beiden Browsern bestätigen
+MANUELLER ONLINE-GATE
+- GitHub Pages unter https://emreoezgoeller.github.io/Druckverlust/ öffnen
+- deployment.html ausführen und rote Punkte ausschliessen
+- Startseite, Anleitung und Tool in Chrome und Edge prüfen
+- Demo-Projekt speichern, erneut öffnen und PDF-Ausgabe kontrollieren
 
 HINWEIS
-Ein startfähiger Headless-Chromium-Prozess stand in der isolierten Prüfungsumgebung nicht zuverlässig zur Verfügung. Die strukturelle, funktionale und dateibezogene Prüfung wurde vollständig durchgeführt; die abschliessende visuelle Windows-Abnahme bleibt deshalb bewusst manuell.
+Die Dateien sind deploymentbereit vorbereitet. Die tatsächliche Veröffentlichung im GitHub-Repository und die abschliessende Browserabnahme erfolgen bewusst im Benutzerkonto.

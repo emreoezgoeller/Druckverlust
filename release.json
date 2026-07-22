@@ -1,15 +1,16 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "3.0.1",
-  "phase": "58.10",
+  "version": "3.0.2",
+  "phase": "58.20",
   "releaseDate": "2026-07-22",
   "projectFileSchema": "1.3.0",
   "entryPoints": {
     "product": "index.html",
     "application": "app.html",
     "windowsStarter": "Druckverlust_starten.bat",
-    "manual": "bedienungsanleitung.html"
+    "manual": "bedienungsanleitung.html",
+    "deployment": "deployment.html"
   },
   "projectFormats": [
     ".dvp",
@@ -48,18 +49,23 @@
     "cacheConsistencyChecks": 6,
     "finalReleaseChecks": 453,
     "releaseIntegrationChecks": 1607,
-    "integrityManifestFiles": 211,
-    "integrityCriticalFiles": 18,
+    "integrityManifestFiles": 220,
+    "integrityCriticalFiles": 23,
     "fullRegressionSuite": "bestanden",
     "manualWindowsChromePrintGate": "offen bis zur echten Bestätigung",
     "manualWindowsEdgePrintGate": "offen bis zur echten Bestätigung",
     "manualChapters": 14,
-    "manualSearch": "integriert"
+    "manualSearch": "integriert",
+    "deploymentPage": "integriert",
+    "githubPagesBuild": "integriert",
+    "staticDeploymentChecks": 440,
+    "githubPagesRuntimeFiles": 210,
+    "helpTopics": 17
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Dokumentations- und Bedienungsupdate mit neuer Kurzanleitung auf der Startseite, vollständiger durchsuchbarer Bedienungsanleitung, aktualisiertem Hilfe-Center und erneuertem SHA-256-Integritätsmanifest. Die Rechenlogik und das Projektschema 1.3.0 bleiben unverändert.",
-  "status": "Release 3.0.1 – Startseite und Bedienungsanleitung integriert; Rechenkern unverändert"
+  "notes": "Deployment- und Veröffentlichungsupdate mit GitHub-Pages-Build, öffentlicher Deployment-Prüfseite, robuster 404-Pfadbehandlung, .nojekyll und erneuertem SHA-256-Integritätsmanifest. Rechenkern und Projektschema 1.3.0 bleiben unverändert.",
+  "status": "Release 3.0.2 – GitHub-Pages-Deployment vorbereitet; Rechenkern unverändert"
 }

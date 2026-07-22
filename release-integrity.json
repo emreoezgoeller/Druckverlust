@@ -1,13 +1,13 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "3.0.1",
-  "phase": "58.10",
-  "generatedAt": "2026-07-22T12:24:01.128Z",
+  "version": "3.0.2",
+  "phase": "58.20",
+  "generatedAt": "2026-07-22T16:03:12.720Z",
   "algorithm": "SHA-256",
-  "fileCount": 211,
-  "totalBytes": 9073952,
-  "criticalFileCount": 18,
+  "fileCount": 220,
+  "totalBytes": 9120962,
+  "criticalFileCount": 23,
   "exclusions": [
     "tests",
     ".github",
@@ -17,15 +17,21 @@
   ],
   "files": [
     {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "critical": false
+    },
+    {
       "path": "404.html",
-      "bytes": 2382,
-      "sha256": "e4f0e6be8e9e1f74df7f6f4f28eb495f060f4517132fc16e3104050265e85a3a",
+      "bytes": 2914,
+      "sha256": "11975a06284f728c0dd2f39ef9a1c8a0c130b9ba685b1cc41b9134ba73912852",
       "critical": false
     },
     {
       "path": "app.html",
       "bytes": 3661,
-      "sha256": "1038c826cf25ec4174b05653ee8ac2004cad84658d090c7f563408e26063b034",
+      "sha256": "dc4446de7de2d958864c82057e980e3d3fec666280beec9437fef6952623df7f",
       "critical": true
     },
     {
@@ -294,21 +300,39 @@
     },
     {
       "path": "bedienungsanleitung.html",
-      "bytes": 33109,
-      "sha256": "309b7564603cf5fe0d7441ed3763770a5ed780904cd8ab7ba8cfbb35e167155e",
+      "bytes": 33418,
+      "sha256": "2472b395f30626e1e56b4eecd12daad5845aac5b1de85fbec47923374c59fa35",
       "critical": true
     },
     {
       "path": "beta.html",
-      "bytes": 6115,
-      "sha256": "2898169152e2ba78381677c95c17ffaa1e4b47fbf54a502512bede68851dc6bb",
+      "bytes": 6160,
+      "sha256": "0a171a2150cc8bbf17a47d36eeb1e6dab473fbc68ca0d9248da5a780f2614943",
       "critical": false
     },
     {
       "path": "datenschutz.html",
       "bytes": 3208,
-      "sha256": "846faa5a6f684209bb990f5f0b24636c400e0cb24cfc75766a37e13f46c3c153",
+      "sha256": "8cf0114e08c7d1c5440e4961f7f000794ff7145067c3e31f35e9124c1e09eb20",
       "critical": false
+    },
+    {
+      "path": "DEPLOYMENT_GITHUB_PAGES.md",
+      "bytes": 3047,
+      "sha256": "ad835dd47db49bf105e88fa904784f9e934f552c1418994920f5fbc6917ba2c0",
+      "critical": false
+    },
+    {
+      "path": "deployment-config.json",
+      "bytes": 631,
+      "sha256": "0d1a93c165c8b56524dead27e43e390f795dc4a5b234f38cbab80df7ba9a6558",
+      "critical": true
+    },
+    {
+      "path": "deployment.html",
+      "bytes": 6556,
+      "sha256": "e19639664d939e782c5329ae3ca185de074b252b57f1e8cf78cb4ba920f53821",
+      "critical": true
     },
     {
       "path": "Druckverlust_starten.bat",
@@ -325,25 +349,25 @@
     {
       "path": "feedback.html",
       "bytes": 5943,
-      "sha256": "d6e7b7da91ff1d5b8916fd6cec5b412b370e45a681ab92205d36ba639b50ac91",
+      "sha256": "da1fe3dfc165572c3bb6a0dc1cf12fcf5e3cc9c2700ae19bb7d5c52a8425fe65",
       "critical": false
     },
     {
       "path": "FINAL_ABNAHME_WINDOWS.md",
-      "bytes": 1647,
-      "sha256": "f7396da0c5c7ff9b616e3240e8e5adfe6c29c6592d283cd82362c766759a0926",
+      "bytes": 1666,
+      "sha256": "7d8f378d5c5dd382526a7f16448323b60c99bf4c39858efe5f338e7e8fb48172",
       "critical": false
     },
     {
       "path": "impressum.html",
       "bytes": 3267,
-      "sha256": "94047e243986bf5bc42dfd43658549c91179651867d809e220897e3da753726a",
+      "sha256": "ce87afc91e3f308befcc3d3fb10c0253632ac503f2fb9086ffe5f21122103cb4",
       "critical": false
     },
     {
       "path": "index.html",
-      "bytes": 28518,
-      "sha256": "85e8236e47aa9590376114b4b9177938063c4e436f720e5e7cdea4f935be83fe",
+      "bytes": 28633,
+      "sha256": "33833f142469ae1202261fbe00bc7fb6991ee4ed84fde3f6de63d8142cf79f5b",
       "critical": true
     },
     {
@@ -355,13 +379,13 @@
     {
       "path": "lizenz.html",
       "bytes": 6003,
-      "sha256": "7d540a7db3914fb76b917183fe491aeec882dab725c946f800d2f32439110511",
+      "sha256": "72c9368bda4f030f8118f2d2d5120e1b95bb78336383109c3acf9d4791920f72",
       "critical": false
     },
     {
       "path": "LOKAL_STARTEN.txt",
-      "bytes": 1353,
-      "sha256": "ec654a84ea06331f711742eab6ddfc6dfff9dbf0ad742a26a8afbdcf77973041",
+      "bytes": 1465,
+      "sha256": "806a5c03c024c99dd7bbd2be1d13cc57dcf7a60a14661bec36ad3227fc8e7d81",
       "critical": false
     },
     {
@@ -372,26 +396,26 @@
     },
     {
       "path": "README.md",
-      "bytes": 5584,
-      "sha256": "1e42dc49f77f801efb2642ab341b0c0f0ac8c1a5df36c6285522a5588bb20c86",
+      "bytes": 6353,
+      "sha256": "a5b7c3f4e1e673f1cefa84481ba1acb1941fb0308959bc90273ecc567ffeaa46",
       "critical": false
     },
     {
       "path": "RELEASE_NOTES.md",
-      "bytes": 3360,
-      "sha256": "a6386336724507b3eb5576112877299f78da275863b23ad9553fef481abfc484",
+      "bytes": 4243,
+      "sha256": "1fac14ea384cc5be10e72015587862985df30bc5b0a7fa9d5e05693adbd43e23",
       "critical": false
     },
     {
       "path": "RELEASE_VERIFICATION.txt",
-      "bytes": 1753,
-      "sha256": "ee467b11e73dabb48f717b3d395153d4f94ef0789a82c52338b6e7adc8606257",
+      "bytes": 1738,
+      "sha256": "fd2ce97496a58fa79ed1ff130fe6a0b789f382537de544241713f0642fa2152d",
       "critical": false
     },
     {
       "path": "release.json",
-      "bytes": 2224,
-      "sha256": "4c7804dab7c64d6b94568c84ac52d5b4bc828affbd480ce150cd0cc43b0058f3",
+      "bytes": 2390,
+      "sha256": "d12739a24e4e9449c1c092b5b948883e5b3021a00cb7b718c522d91d7d6765c0",
       "critical": true
     },
     {
@@ -402,14 +426,14 @@
     },
     {
       "path": "site.webmanifest",
-      "bytes": 1935,
-      "sha256": "b02ed2ce9613fd5e9a20587ca8939e29354fa3cbe0a53022ad1185b433ebbdbd",
+      "bytes": 2177,
+      "sha256": "794dbcea73f022c0bbcd9ffcf3a715e7f61190d5e3ca206dea25b2df400c548a",
       "critical": false
     },
     {
       "path": "sitemap.xml",
-      "bytes": 1218,
-      "sha256": "2433777ddb461ba054e39205a8912febfdda25288de74bcad92c6c81bb961aad",
+      "bytes": 1450,
+      "sha256": "3b17b2946f9a38ff296389eb23c5e3bdab52f1451cb56c5c6573548cf2c19ab6",
       "critical": false
     },
     {
@@ -421,25 +445,31 @@
     {
       "path": "src/app/ProjectCommands.js",
       "bytes": 26545,
-      "sha256": "8fbfdc1d80262a266e8fe1c3ed3789a6f2291165359c16650c97b930c1c7c269",
+      "sha256": "b1783de20ee1a4611e64586b74b3c0b990ec9b1bf68376abb6ff6e56eee7d6c9",
       "critical": false
     },
     {
       "path": "src/closing/ProjectCompletionEngine.js",
       "bytes": 21601,
-      "sha256": "74333cf0980cdf5385b5f8a473e7b938d7cc53de2584e6b391f7122f76241185",
+      "sha256": "4407aee944756552c865b522c8b0641de6b9dfb7975ef7a8cae84697aff0f1bc",
       "critical": false
     },
     {
       "path": "src/core/appVersion.js",
       "bytes": 854,
-      "sha256": "c7f16bf72b84f15ec78584ffeccb9038a405d4ef828b691729c7304bbd6b4053",
+      "sha256": "70d11a6949c2b5e62a89d2c8238010bfe96f82599c0135b12f3a932855fc262f",
       "critical": true
     },
     {
       "path": "src/core/CalculationEngine.js",
       "bytes": 15540,
       "sha256": "8cc137081ac64ae9c60cec2b099a0645053adeacfdcce5d905584cb916ee7050",
+      "critical": true
+    },
+    {
+      "path": "src/core/deploymentConfig.js",
+      "bytes": 2818,
+      "sha256": "9f60600aa6f53fd1e03685e179e5d5e10e67dbc86d926209ebc1732dd2dfadf8",
       "critical": true
     },
     {
@@ -463,7 +493,7 @@
     {
       "path": "src/diagnostics/BetaFeedbackDiagnostics.js",
       "bytes": 3929,
-      "sha256": "c78729a8510f06002c3d8878ee596ce99b47aa1a7dbc0f7e4f18d4ca28433a1f",
+      "sha256": "ccba1084ca65fc59a02df4db0fc4673185a77f28ffc96c6abfa74fa980cd494f",
       "critical": false
     },
     {
@@ -480,14 +510,14 @@
     },
     {
       "path": "src/diagnostics/DeploymentDiagnostics.js",
-      "bytes": 22557,
-      "sha256": "42541cb0767b9b535ce2dc20f3c4727f68a5da1cc255a8f1391302558fbfc014",
+      "bytes": 23354,
+      "sha256": "a6d9b9ea13935215e65d747d9554c7c6f93e69b3f0bb809369523c5bede62129",
       "critical": false
     },
     {
       "path": "src/diagnostics/ExpertTestDiagnostics.js",
       "bytes": 4891,
-      "sha256": "e18c19a1b66080c90dfbe439dce5b051c0f49dd21ee43d65619715f5a34dcff3",
+      "sha256": "c8990d6d01db2b8a4cb15a8c580407613e4a8b8103df157120fc80d370746708",
       "critical": false
     },
     {
@@ -517,7 +547,7 @@
     {
       "path": "src/diagnostics/ProjectFileDiagnostics.js",
       "bytes": 9478,
-      "sha256": "c798d07b0f25eccc1ad80b9a6987cfbb6911fa2478f052117562b714f84162e5",
+      "sha256": "ba2fd320f4714c45a28d5e38fdd5c5e864f981bbc2370b4447159c77c3c655c1",
       "critical": false
     },
     {
@@ -529,13 +559,13 @@
     {
       "path": "src/diagnostics/ReleaseCandidateDiagnostics.js",
       "bytes": 30105,
-      "sha256": "9d7b0751e5c7e17bd9586ce7d657c3b1e404b83b1da8ee9cd31a7c30905c2bb0",
+      "sha256": "afa2794c880c1cfd1d7cc07f63778bf54ab81a474d80c5a208eabc771850df61",
       "critical": false
     },
     {
       "path": "src/diagnostics/ReleaseIntegrityDiagnostics.js",
       "bytes": 7405,
-      "sha256": "807628474a7f87ee12b35f7e4ae52d16ce6072efb63567d97ddef4b11f2cf88a",
+      "sha256": "ce8bb611ffb7aee5bc0877272b45eedc14d85392ae3137e517c2716bbdbe4c3e",
       "critical": false
     },
     {
@@ -631,13 +661,13 @@
     {
       "path": "src/handover/ProjectHandoverEngine.js",
       "bytes": 26233,
-      "sha256": "09241938a040acaab52a836932f654f30efa5f46e69c23c1c737ba47a9e875f3",
+      "sha256": "194a93d636a3509a4bb6a299e0546bf45e566f412daae85199719b8e97f57763",
       "critical": false
     },
     {
       "path": "src/help/HelpCenterEngine.js",
-      "bytes": 21696,
-      "sha256": "f602a936812dd7704976b727f90be6d3ad2d0e4745539da1d7ec2f9cfd2bbab5",
+      "bytes": 22437,
+      "sha256": "740f667fc6602f64fccda2872986bfdb3ccba0d2262a6b07a20f3a70e20bda12",
       "critical": false
     },
     {
@@ -647,9 +677,21 @@
       "critical": false
     },
     {
+      "path": "src/landing/deployment-page.js",
+      "bytes": 12944,
+      "sha256": "b545750e1c84baa22076064710a58845119c122fbea92041c3ec80f5080753dd",
+      "critical": true
+    },
+    {
+      "path": "src/landing/deployment.css",
+      "bytes": 4709,
+      "sha256": "5e467eb7d25c87285701d2ca5922489fed535c7bf1773b87302203ad5c939ddb",
+      "critical": true
+    },
+    {
       "path": "src/landing/feedback-page.js",
       "bytes": 5325,
-      "sha256": "d270d13e08da7cc737b1512170979f3ab30af30282525fd2abb22dfad7e70789",
+      "sha256": "adb6accfd481d411c0a54aaa611141030b028d29abfa067ca01273e04b225464",
       "critical": false
     },
     {
@@ -703,7 +745,7 @@
     {
       "path": "src/main.js",
       "bytes": 17573,
-      "sha256": "4cc749cb62ac31f83ca862fca5b30bf84d0adb214debd8f81068f6dad47ee628",
+      "sha256": "058576fc080e26174e3fdb72b990ae9d14176dfd13636e1ff795d8d88a54e5e2",
       "critical": true
     },
     {
@@ -733,7 +775,7 @@
     {
       "path": "src/project/ProjectCalculationService.js",
       "bytes": 5687,
-      "sha256": "dee4dda05592f334b9658dd1db860cfdc995ca34e0e3eee512fa2476ac582f3c",
+      "sha256": "29f7ada82a0ad93ff11effe0ea9bb1abc443ebeec40631a83c1e388e591baf96",
       "critical": true
     },
     {
@@ -751,13 +793,13 @@
     {
       "path": "src/project/ProjectPortfolioQualityEngine.js",
       "bytes": 15740,
-      "sha256": "0c83fda735d4630d9a80fc78411ebebac60e6a547118f4ae1080da52b7352e2d",
+      "sha256": "126fa44028de4050c0f2c7454c4f04ed885a18bbce59edf17c34b6dda93781f3",
       "critical": false
     },
     {
       "path": "src/project/ProjectSearchEngine.js",
       "bytes": 19897,
-      "sha256": "45f3050ac30eb5078643db942a47fc824618def18c8b4e406b8cf3ab2525f28e",
+      "sha256": "6d8620876a8932c4da52f04a0ceb78931fda2ae82245fe457496dc45ff6a4463",
       "critical": false
     },
     {
@@ -769,25 +811,25 @@
     {
       "path": "src/project/ProjectTaskCenterEngine.js",
       "bytes": 15044,
-      "sha256": "3f4f6e851f9ae50c144c714a02f1129815879e06902eba723cfce38d92eb729c",
+      "sha256": "400e5430a7e1a471580d7c97c9251d2d71d1c2df8af166176fe37fe7881d1fa6",
       "critical": false
     },
     {
       "path": "src/project/SystemPortfolioEngine.js",
       "bytes": 7883,
-      "sha256": "266326e04671e51e4e333634059505b28083c6c3496df7071b5eda87bbc06286",
+      "sha256": "9d0d72344c86dab336b4c33caa44c60769c7b1f74ff9c4eb77c1de1a750721b1",
       "critical": false
     },
     {
       "path": "src/quality/EngineeringQualityEngine.js",
       "bytes": 9016,
-      "sha256": "178b1ddc6ccb0a3337b4563575358a254dcec62c63e3606e71b0e70e0468959f",
+      "sha256": "ad9da90d67381cad2172ea192657a94463cc801ba66f69197ec0cb2f8ff0961d",
       "critical": false
     },
     {
       "path": "src/report/ReportEngine.js",
       "bytes": 188024,
-      "sha256": "fce70ee15aa18dc4e8a403bf4129c1f1cd3dcac8054466ab8afec654ca990933",
+      "sha256": "ed688d37570878337104428c88ee7ec46d068579c25fa27ca04016663a2d79d7",
       "critical": true
     },
     {
@@ -811,7 +853,7 @@
     {
       "path": "src/safety/ProjectSafetyEngine.js",
       "bytes": 20340,
-      "sha256": "15f813a31dadd5fadf9fb875af7e27ca130e5a544c08a52aa7a5026ac2764f2d",
+      "sha256": "dc221448803f165bd09fd8723a079158b6bf060a68dac5d51dd1452bc3aaf152",
       "critical": false
     },
     {
@@ -907,13 +949,13 @@
     {
       "path": "src/testing/FormPartSyncRunner.js",
       "bytes": 24971,
-      "sha256": "089db3a2f2917df6cc6cdab2c5efce989cbb7058fc368e52653603162327711c",
+      "sha256": "1815a208556f6f578a1a7a2d75a7d6e4e991ea595be68486f184035cc5854f18",
       "critical": false
     },
     {
       "path": "src/testing/FormPartValidationRunner.js",
       "bytes": 8979,
-      "sha256": "2fbe6ab4301b33587750d0a12460772be2dd89d115211862d5676740969ac1bf",
+      "sha256": "a154f460ff403585d50130103f7b9b78075aa1e1d8b2a67e54691ca7fc2a6884",
       "critical": false
     },
     {
@@ -961,7 +1003,7 @@
     {
       "path": "src/ui/components/RibbonComponent.js",
       "bytes": 29600,
-      "sha256": "cc860526d3886872d53f3b3b2f73ada22a3dc5c6b994b3180d1f2d918f36809e",
+      "sha256": "dd839a78d0273e34416eb22b97e5068edce12d7c69844ba113278b6804ec4d3a",
       "critical": true
     },
     {
@@ -973,25 +1015,25 @@
     {
       "path": "src/ui/components/StatusBarComponent.js",
       "bytes": 6953,
-      "sha256": "988a6c5726da3c608c828e44c04b406f12274c43b62d29a2961335dd1ef04fc5",
+      "sha256": "ac0d7fd92da9cc2ba3069e20ec43eac501c4c03fad0074c56117ed7b2b508c82",
       "critical": false
     },
     {
       "path": "src/ui/components/WorkspaceComponent.js",
       "bytes": 679044,
-      "sha256": "ce0681cbf3eecb76a9d201e1ae359a64e873daf97f33ad0135828d83c260538b",
+      "sha256": "e55c999d8cc3c73c01d21def53e77036fd19d597ce62b7adaff4e569998dc856",
       "critical": true
     },
     {
       "path": "src/ui/core/KeyboardShortcuts.js",
       "bytes": 4017,
-      "sha256": "ac52786285331062196ce4ab38b8c9d4d03f9e1cf2571ecd47930d5c9d967566",
+      "sha256": "7699c91fe8bc75acbfa01d5d3308c752eb2449e98df43818708e9c07ec7158db",
       "critical": false
     },
     {
       "path": "src/ui/core/RibbonActions.js",
       "bytes": 25937,
-      "sha256": "77d977c5f68515d3ec953e42421f47f4ab214b35ef65678ff9f844c859814ef6",
+      "sha256": "297d0fbc9fe8947d6dcebea94b27e2c10714f6e4bca85ecba5240b0bcbac1c20",
       "critical": true
     },
     {
@@ -1267,19 +1309,31 @@
     {
       "path": "src/validation/ValidationEngine.js",
       "bytes": 6213,
-      "sha256": "3383aef5f7e0d5f0ae26741c6ce24f8504121f9391d94fa0514a7a35960a079d",
+      "sha256": "a126ebd8c06948e8743a43dd46e98eca3d5c7b030eb6e881a6b84206c9cb2d32",
       "critical": false
     },
     {
       "path": "tools/build-final-release.mjs",
-      "bytes": 5600,
-      "sha256": "9e09b43d1f4571bc39f34107f1b49cf899787a8236ba07515fde4325d698445f",
+      "bytes": 5937,
+      "sha256": "fc18da54c3df709144cd7c3f7c82de20ac918cde28cf0c1f1fc9490e46511501",
+      "critical": false
+    },
+    {
+      "path": "tools/build-github-pages.mjs",
+      "bytes": 5418,
+      "sha256": "665f36c54c1f6d0c901a2c78aa7dbafc4047d71f02e0439c8b4c52c34f8fd021",
       "critical": false
     },
     {
       "path": "tools/start-local-server.ps1",
       "bytes": 7555,
       "sha256": "ffbecdf5548df97903b436fc06ec86c68cdbd4801ca86b51dde90de356f79c7d",
+      "critical": false
+    },
+    {
+      "path": "tools/verify-deployment.mjs",
+      "bytes": 5603,
+      "sha256": "67a59cee42576464b787e7b81674d23bc8ac491e614526865b1f4d3b7667612e",
       "critical": false
     }
   ]

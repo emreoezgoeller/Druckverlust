@@ -1,8 +1,19 @@
 # Release Notes
 
-**Release:** Version 3.0.1 · Phase 58.10  
+**Release:** Version 3.0.2 · Phase 58.20  
 **Datum:** 22.07.2026
 
+## Neu in Phase 58.20
+
+- Eigenständige `deployment.html` mit Live-Prüfung für Standort, GitHub-Pages-Pfad, HTTPS, Version, Cachekennung, Pflichtdateien und Integritätsmanifest.
+- Zentrale `deployment-config.json` und `src/core/deploymentConfig.js` für den Repository-Pfad `/Druckverlust/`.
+- Robuste GitHub-Pages-404-Seite mit korrekter Basisauflösung auch bei unbekannten Unterpfaden.
+- `.nojekyll` ergänzt, damit alle Laufzeitordner unverändert ausgeliefert werden.
+- Reproduzierbarer GitHub-Pages-Build über `tools/build-github-pages.mjs`.
+- Statische Pfad-, Link-, Cache- und Metadatenprüfung über `tools/verify-deployment.mjs`.
+- Startseite, Bedienungsanleitung, Qualitätseite, Webmanifest und Deployment-Diagnose miteinander verknüpft.
+- Versions- und Cachekennung auf **3.0.2 / 58.20** aktualisiert.
+- Rechenkern und Projektschema **1.3.0** bleiben unverändert.
 
 ## Neu in Phase 58.10
 

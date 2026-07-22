@@ -1,16 +1,16 @@
-import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=58.10';
+import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=58.20';
 import LicenseGate from '../licensing/LicenseGate.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.10';
-import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=58.10';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=58.10';
-import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=58.10';
-import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=58.10';
-import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=58.10';
-import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=58.10';
-import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=58.10';
-import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=58.10';
-import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=58.10';
-import { analyzeSystemVelocityCompliance } from '../standards/SiaVelocityCompliance.js?v=58.10';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.20';
+import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=58.20';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=58.20';
+import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=58.20';
+import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=58.20';
+import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=58.20';
+import ProjectPortfolioQualityEngine from '../project/ProjectPortfolioQualityEngine.js?v=58.20';
+import ProjectStandardizationEngine from '../project/ProjectStandardizationEngine.js?v=58.20';
+import ProjectTaskCenterEngine from '../project/ProjectTaskCenterEngine.js?v=58.20';
+import ProjectDependencyEngine from '../project/ProjectDependencyEngine.js?v=58.20';
+import { analyzeSystemVelocityCompliance } from '../standards/SiaVelocityCompliance.js?v=58.20';
 
 // Druckverlust Pro – ReportEngine
 // Erstellt ein professionelles Berichtmodell und eine A4-Druckansicht.

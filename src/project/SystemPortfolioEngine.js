@@ -2,7 +2,7 @@
 // Herstellerneutraler Anlagenmanager und projektweiter Anlagenvergleich.
 
 import ProjectCalculationService from './ProjectCalculationService.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.10';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.20';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));

@@ -1,20 +1,20 @@
-// Druckverlust Pro – Phase 58.10
+// Druckverlust Pro – Phase 58.20
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
-import ApplicationShell from './ui/ApplicationShell.js?v=58.10';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=58.10';
-import SidebarComponent from './ui/components/SidebarComponent.js?v=58.10';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.10';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=58.10';
+import ApplicationShell from './ui/ApplicationShell.js?v=58.20';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=58.20';
+import SidebarComponent from './ui/components/SidebarComponent.js?v=58.20';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.20';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=58.20';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
-import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=58.10';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=58.20';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=58.10';
-import UiTooltipController from './ui/core/UiTooltipController.js?v=58.10';
-import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=58.10';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=58.20';
+import UiTooltipController from './ui/core/UiTooltipController.js?v=58.20';
+import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=58.20';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 

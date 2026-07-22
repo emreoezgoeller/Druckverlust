@@ -5,7 +5,7 @@ import FormPartValidationDiagnostics from './FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from './FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from './ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from './PracticeProjectDiagnostics.js';
-import BetaFeedbackDiagnostics from './BetaFeedbackDiagnostics.js?v=58.10';
+import BetaFeedbackDiagnostics from './BetaFeedbackDiagnostics.js?v=58.20';
 import {
   createExpertTestCsv,
   createExpertTestJson,
@@ -13,7 +13,7 @@ import {
   formatExpertTestProtocol,
   summarizeExpertTestDraft,
   validateExpertTestDraft,
-} from '../testing/ExpertTestProtocol.js?v=58.10';
+} from '../testing/ExpertTestProtocol.js?v=58.20';
 
 function suiteResult(id, label, report = {}) {
   const checks = Number(

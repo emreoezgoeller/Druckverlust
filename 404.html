@@ -7,23 +7,29 @@
   <meta name="description" content="Die gesuchte Seite von Druckverlust Pro wurde nicht gefunden." />
   <meta name="robots" content="noindex, follow" />
   <meta name="theme-color" content="#073a6f" />
+  <script>
+    // GitHub Pages liefert 404.html auch für Unterpfade aus. Das dynamische
+    // Basisziel hält CSS, Logo und Navigation im Projektpfad /Druckverlust/.
+    (() => {
+      const githubPages = /github\.io$/i.test(window.location.hostname || '');
+      const base = githubPages ? '/Druckverlust/' : './';
+      document.write(`<base href="${base}">`);
+    })();
+  </script>
   <link rel="icon" href="favicon.ico" />
   <link rel="manifest" href="site.webmanifest" />
-  <link rel="stylesheet" href="src/landing/landing.css?v=52.00" />
+  <link rel="stylesheet" href="src/landing/landing.css?v=58.20" />
 </head>
 <body class="dp-legal-page">
   <header class="dp-landing-header">
     <a class="dp-landing-brand" href="index.html" aria-label="Zur Produktseite">
       <img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" />
-      <span>
-        <strong>Druckverlust Pro</strong>
-        <em>Professional</em>
-      </span>
+      <span><strong>Druckverlust Pro</strong><em>Professional</em></span>
     </a>
     <nav aria-label="Seitennavigation">
       <a href="index.html#funktionen">Funktionen</a>
       <a href="bedienungsanleitung.html">Anleitung</a>
-      <a href="lizenz.html">Lizenz</a>
+      <a href="deployment.html">Online-Status</a>
       <a class="dp-nav-button" href="app.html">Tool starten</a>
     </nav>
   </header>
@@ -32,9 +38,10 @@
     <section class="dp-legal-card dp-not-found-card">
       <span class="dp-eyebrow">404</span>
       <h1>Diese Seite wurde nicht gefunden.</h1>
-      <p class="dp-legal-note">Der Link ist möglicherweise veraltet oder die Datei wurde verschoben. Du kannst direkt zur Produktseite zurück oder das Berechnungstool öffnen.</p>
+      <p class="dp-legal-note">Der Link ist möglicherweise veraltet oder die Datei wurde verschoben. Du kannst direkt zur Produktseite zurück, den Online-Status prüfen oder das Berechnungstool öffnen.</p>
       <div class="dp-legal-actions">
         <a class="dp-primary" href="index.html">Zur Produktseite</a>
+        <a class="dp-secondary" href="deployment.html">Online-Status</a>
         <a class="dp-secondary" href="app.html">Tool starten</a>
       </div>
     </section>
@@ -42,7 +49,7 @@
 
   <footer class="dp-landing-footer">
     <span>© 2026 Emre Özgöller – Druckverlust Pro · Professional</span>
-    <span class="dp-footer-links"><a href="index.html">Startseite</a><a href="lizenz.html">Lizenz</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Version 3.0.1</em></span>
+    <span class="dp-footer-links"><a href="index.html">Startseite</a><a href="bedienungsanleitung.html">Anleitung</a><a href="deployment.html">Online-Status</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a><em>Version 3.0.2</em></span>
   </footer>
 
   <script>

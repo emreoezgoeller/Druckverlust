@@ -9,6 +9,7 @@ import { APP_RELEASE, APP_VERSION } from '../src/core/appVersion.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const FINAL_RELEASE_FILES = [
+  '.nojekyll',
   '404.html',
   'Druckverlust_starten.bat',
   'LOKAL_STARTEN.txt',
@@ -21,6 +22,9 @@ export const FINAL_RELEASE_FILES = [
   'beta.html',
   'bedienungsanleitung.html',
   'datenschutz.html',
+  'deployment.html',
+  'deployment-config.json',
+  'DEPLOYMENT_GITHUB_PAGES.md',
   'feedback.html',
   'favicon.ico',
   'impressum.html',
@@ -44,9 +48,12 @@ export const CRITICAL_RELEASE_FILES = new Set([
   'index.html',
   'app.html',
   'bedienungsanleitung.html',
+  'deployment.html',
+  'deployment-config.json',
   'release.json',
   'src/main.js',
   'src/core/appVersion.js',
+  'src/core/deploymentConfig.js',
   'src/core/CalculationEngine.js',
   'src/core/FrictionFactorEngine.js',
   'src/project/ProjectCalculationService.js',
@@ -57,6 +64,8 @@ export const CRITICAL_RELEASE_FILES = new Set([
   'src/ui/components/RibbonComponent.js',
   'src/ui/core/RibbonActions.js',
   'src/ui/ApplicationShell.css',
+  'src/landing/deployment-page.js',
+  'src/landing/deployment.css',
   'assets/logo/eo-logo.png',
   'assets/report/duct-network-hero.png',
 ]);
@@ -152,6 +161,8 @@ export function buildFinalRelease({ root = ROOT, target } = {}) {
     '- temporäre Prüf- und Renderdateien',
     '',
     'Start unter Windows: Druckverlust_starten.bat',
+    'GitHub Pages: tools/build-github-pages.mjs',
+    'Online-Prüfung: deployment.html',
   ].join('\n');
   fs.writeFileSync(path.join(target, 'FINAL_RELEASE_DATEIEN.txt'), `${inventory}\n`, 'utf8');
 

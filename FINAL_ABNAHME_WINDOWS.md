@@ -1,6 +1,6 @@
 # Druckverlust Pro 3.0 – Windows-Finalabnahme
 
-**Version:** 3.0.1 · Phase 58.10  
+**Version:** 3.0.2 · Phase 58.20  
 **Zweck:** Letzte visuelle Druckkontrolle unter Google Chrome und Microsoft Edge.
 
 ## Vorbereitung
@@ -35,7 +35,7 @@ Die gleichen Schritte in Microsoft Edge wiederholen. Danach in der Finalprüfung
 Die Finalprüfung zeigt erst **Finalfreigabe bereit**, wenn:
 
 - keine roten technischen Prüfpunkte vorhanden sind,
-- Integritätsmanifest und Deployment-QS ohne Fehler sind,
+- Integritätsmanifest, `deployment.html` und Deployment-QS ohne Fehler sind,
 - Chrome- und Edge-Druckabnahme bestätigt wurden,
 - das Projekt keine ungespeicherten Änderungen enthält.
 

@@ -1,7 +1,8 @@
 // Druckverlust Pro – DeploymentDiagnostics
 // Prüft GitHub-Pages-Pfade, Cache-Version, Pflichtdateien, UI-Layout und Startzustand.
 
-import { APP_ASSET_VERSION } from '../core/appVersion.js?v=58.10';
+import { APP_ASSET_VERSION } from '../core/appVersion.js?v=58.20';
+import { DEPLOYMENT_CONFIG, getDeploymentLocationInfo } from '../core/deploymentConfig.js?v=58.20';
 
 const DEFAULT_VERSION = APP_ASSET_VERSION;
 
@@ -10,24 +11,7 @@ function nowIso() {
 }
 
 function getLocationInfo() {
-  if (typeof window === 'undefined' || !window.location) {
-    return {
-      href: 'Node/Testumgebung',
-      origin: '',
-      pathname: '',
-      host: '',
-      isGithubPages: false,
-      isLocalFile: false,
-      expectedBasePath: '/',
-    };
-  }
-
-  const { href, origin, pathname, host, protocol } = window.location;
-  const isGithubPages = /github\.io$/i.test(host || '');
-  const isLocalFile = protocol === 'file:';
-  const expectedBasePath = isGithubPages ? '/Druckverlust/' : './';
-
-  return { href, origin, pathname, host, isGithubPages, isLocalFile, expectedBasePath };
+  return getDeploymentLocationInfo();
 }
 
 function normalizeStatus(items = []) {
@@ -169,6 +153,11 @@ function getRequiredFiles(version = DEFAULT_VERSION) {
     { area: 'QS', label: 'Finalprüfung', path: `src/diagnostics/ReleaseCandidateDiagnostics.js?v=${version}` },
     { area: 'QS', label: 'Release-Integrität', path: `src/diagnostics/ReleaseIntegrityDiagnostics.js?v=${version}` },
     { area: 'Release', label: 'Integritätsmanifest', path: 'release-integrity.json' },
+    { area: 'Deployment', label: 'Deployment-Konfiguration', path: 'deployment-config.json' },
+    { area: 'Deployment', label: 'Öffentliche Online-Prüfung', path: `deployment.html?v=${version}` },
+    { area: 'Deployment', label: 'Deployment-Prüfscript', path: `src/landing/deployment-page.js?v=${version}` },
+    { area: 'Deployment', label: 'Deployment-Prüfdesign', path: `src/landing/deployment.css?v=${version}` },
+    { area: 'Anleitung', label: 'Vollständige Bedienungsanleitung', path: `bedienungsanleitung.html?v=${version}` },
     { area: 'Version', label: 'Versionszentrale', path: `src/core/appVersion.js?v=${version}` },
     { area: 'Lizenz', label: 'Lizenz-Konfiguration', path: `src/licensing/licenseConfig.js?v=${version}` },
     { area: 'Lizenz', label: 'License-Gate', path: `src/licensing/LicenseGate.js?v=${version}` },
@@ -186,16 +175,36 @@ function checkRuntime(project = null, version = DEFAULT_VERSION) {
   const scriptVersion = getScriptVersion();
   const stylesheetVersion = getStylesheetVersion();
 
-  if (location.isGithubPages && !String(location.pathname || '').startsWith('/Druckverlust/')) {
+  if (location.isGithubPages && !String(location.pathname || '').startsWith(DEPLOYMENT_CONFIG.repositoryPath)) {
     items.push(createItem(
       'GitHub Pages',
       'Projektpfad',
       'error',
-      'Die Seite läuft nicht unter /Druckverlust/. Dadurch können relative Pfade falsch aufgelöst werden.',
+      `Die Seite läuft nicht unter ${DEPLOYMENT_CONFIG.repositoryPath}. Dadurch können relative Pfade falsch aufgelöst werden.`,
       location.pathname,
     ));
   } else {
-    items.push(createItem('GitHub Pages', 'Projektpfad', 'ok', 'Projektpfad ist für GitHub Pages geeignet.', location.pathname || location.href));
+    items.push(createItem(
+      'GitHub Pages',
+      'Projektpfad',
+      'ok',
+      location.isGithubPages
+        ? `Projektpfad ${DEPLOYMENT_CONFIG.repositoryPath} ist für GitHub Pages geeignet.`
+        : 'Relative Projektpfade sind für den aktuellen Standort geeignet.',
+      location.pathname || location.href,
+    ));
+  }
+
+  if (location.isGithubPages && !location.isHttps) {
+    items.push(createItem('GitHub Pages', 'HTTPS', 'error', 'Die öffentliche GitHub-Pages-Version muss über HTTPS geladen werden.', location.protocol));
+  } else {
+    items.push(createItem(
+      'GitHub Pages',
+      'HTTPS',
+      'ok',
+      location.isGithubPages ? 'GitHub Pages wird über HTTPS geladen.' : 'HTTPS-Pflicht gilt nur für die öffentliche Veröffentlichung.',
+      location.protocol || '',
+    ));
   }
 
   if (scriptVersion !== version) {

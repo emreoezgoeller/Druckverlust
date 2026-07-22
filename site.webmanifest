@@ -1,7 +1,7 @@
 {
   "name": "Druckverlust Pro Professional",
   "short_name": "Druckverlust Pro",
-  "description": "Herstellerneutrale Druckverlustberechnung mit Rauigkeit k je Teilstrecke, automatischer Reibungszahl λ, Excel-/CSV-Schnellerfassung, Engineering-QS, Anlagenschema und Professional Report.",
+  "description": "Herstellerneutrale Druckverlustberechnung mit SIA-Geschwindigkeitsprüfung, Teilstrecken, 21 Formteiltypen, Engineering-QS, Anlagenschema, Bedienungsanleitung und Professional Report.",
   "lang": "de-CH",
   "start_url": "./index.html",
   "scope": "./",
@@ -50,8 +50,8 @@
     {
       "name": "Anleitung öffnen",
       "short_name": "Anleitung",
-      "url": "./app.html?help=1",
-      "description": "Hilfe-Center und geführte Schritte öffnen"
+      "url": "./bedienungsanleitung.html",
+      "description": "Vollständige durchsuchbare Bedienungsanleitung öffnen"
     },
     {
       "name": "Qualität und Tests",
@@ -64,6 +64,12 @@
       "short_name": "Feedback",
       "url": "./feedback.html",
       "description": "Auffälligkeit oder Funktionswunsch lokal dokumentieren"
+    },
+    {
+      "name": "Online-Status prüfen",
+      "short_name": "Online-Status",
+      "url": "./deployment.html",
+      "description": "Pfad-, Versions- und Pflichtdateiprüfung für die veröffentlichte Web-Version"
     }
   ]
 }
