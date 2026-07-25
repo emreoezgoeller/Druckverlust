@@ -1,4 +1,4 @@
-// Druckverlust Pro – Phase 54.00
+// Druckverlust Pro – Phase 58.20 PDF-Hotfix 2
 // Erzeugt das druckoptimierte, herstellerneutrale Anlagenschema für den PDF-/HTML-Bericht.
 
 function num(value, fallback = 0) {
@@ -88,6 +88,14 @@ export class ReportSchematicRenderer {
   }
 
   static get maximumVisibleAttachmentsPerLane() {
+    return 18;
+  }
+
+  static get maximumAttachmentsPerRow() {
+    return 6;
+  }
+
+  static get maximumAttachmentRows() {
     return 3;
   }
 
@@ -147,7 +155,7 @@ export class ReportSchematicRenderer {
     const nodeComplexity = node => {
       const attachments = this.getNodeAttachments(schematic, node?.id, attachmentIndex);
       const labelPenalty = String(node?.label || '').length > 18 ? 0.25 : 0;
-      return 1 + Math.min(6, attachments.length) * 0.15 + labelPenalty;
+      return 1 + Math.min(this.maximumVisibleAttachmentsPerLane, attachments.length) * 0.22 + Math.max(0, attachments.length - this.maximumVisibleAttachmentsPerLane) * 0.08 + labelPenalty;
     };
 
     const pushPage = () => {
@@ -246,31 +254,50 @@ export class ReportSchematicRenderer {
 
   static createClusterLayout(position = {}, items = [], lane = 'top') {
     if (!items.length) return null;
-    const maxVisible = this.maximumVisibleAttachmentsPerLane;
-    const visibleItems = items.slice(0, maxVisible);
+
+    const maxVisible = Math.max(1, this.maximumVisibleAttachmentsPerLane);
+    const hasOverflow = items.length > maxVisible;
+    const visibleLimit = hasOverflow ? Math.max(1, maxVisible - 1) : maxVisible;
+    const visibleItems = items.slice(0, visibleLimit);
     const overflow = Math.max(0, items.length - visibleItems.length);
-    const slotCount = visibleItems.length + (overflow ? 1 : 0);
-    const spacing = 21;
-    const width = Math.max(0, (slotCount - 1) * spacing);
-    const startX = position.x - width / 2;
-    const y = lane === 'bottom'
-      ? position.cardY + position.cardHeight + 35
-      : position.cardY - 35;
+    const slots = visibleItems.map(item => ({ item, overflow: 0 }));
+    if (overflow) slots.push({ item: null, overflow });
+
+    const rowCapacity = Math.max(1, this.maximumAttachmentsPerRow);
+    const maxRows = Math.max(1, this.maximumAttachmentRows);
+    const rows = [];
+    for (let index = 0; index < slots.length && rows.length < maxRows; index += rowCapacity) {
+      const rowSlots = slots.slice(index, index + rowCapacity);
+      const slotCount = rowSlots.length;
+      const spacing = slotCount <= 1 ? 0 : clamp(72 / Math.max(1, slotCount - 1), 12, 18);
+      const width = Math.max(0, (slotCount - 1) * spacing);
+      const startX = position.x - width / 2;
+      const rowIndex = rows.length;
+      const yBase = lane === 'bottom'
+        ? position.cardY + position.cardHeight + 30
+        : position.cardY - 30;
+      const y = yBase + (lane === 'bottom' ? 1 : -1) * rowIndex * 24;
+      rows.push({
+        y,
+        startX,
+        spacing,
+        width,
+        slots: rowSlots,
+      });
+    }
+
+    const left = Math.min(...rows.map(row => row.startX - 10));
+    const right = Math.max(...rows.map(row => row.startX + row.width + 10));
+    const top = Math.min(...rows.map(row => row.y - 18));
+    const bottom = Math.max(...rows.map(row => row.y + 20));
 
     return {
       lane,
-      y,
-      startX,
-      spacing,
+      rows,
       visibleItems,
       overflow,
-      slots: slotCount,
-      bounds: {
-        left: startX - 10,
-        right: startX + width + 10,
-        top: y - 19,
-        bottom: y + 19,
-      },
+      slots: slots.length,
+      bounds: { left, right, top, bottom },
     };
   }
 
@@ -335,38 +362,39 @@ export class ReportSchematicRenderer {
     const kind = lane === 'bottom' ? 'special' : 'formPart';
     const kindClass = attachmentKindClass(kind);
     const anchorY = lane === 'bottom' ? position.cardY + position.cardHeight : position.cardY;
-    const lineEnd = lane === 'bottom' ? cluster.y - 11 : cluster.y + 11;
+    const nearestRow = cluster.rows[0];
+    const lineEnd = lane === 'bottom' ? nearestRow.y - 11 : nearestRow.y + 11;
     const line = `<path d="M ${formatNumber(position.x, 1)} ${formatNumber(anchorY, 1)} V ${formatNumber(lineEnd, 1)}" class="report-schematic-attachment-line ${kindClass}"/>`;
-    const itemsMarkup = cluster.visibleItems.map((item, index) => {
-      const x = cluster.startX + index * cluster.spacing;
-      const referenceY = lane === 'bottom' ? cluster.y + 18 : cluster.y - 14;
+
+    const rowsMarkup = cluster.rows.map(row => row.slots.map((slot, index) => {
+      const x = row.startX + index * row.spacing;
+      if (slot.overflow) {
+        return `<g class="report-schematic-attachment-overflow ${kindClass}">
+          <circle cx="${formatNumber(x, 1)}" cy="${formatNumber(row.y, 1)}" r="9"/>
+          <text x="${formatNumber(x, 1)}" y="${formatNumber(row.y + 2.4, 1)}" text-anchor="middle">+${slot.overflow}</text>
+        </g>`;
+      }
+
+      const item = slot.item;
+      const referenceY = lane === 'bottom' ? row.y + 18 : row.y - 14;
       return `<g class="report-schematic-attachment-symbol ${kindClass}">
-        <circle cx="${formatNumber(x, 1)}" cy="${formatNumber(cluster.y, 1)}" r="10"/>
-        ${this.renderSymbol(item.icon, x, cluster.y, { size: .68, className: kindClass })}
+        <circle cx="${formatNumber(x, 1)}" cy="${formatNumber(row.y, 1)}" r="10"/>
+        ${this.renderSymbol(item.icon, x, row.y, { size: .68, className: kindClass })}
         <text x="${formatNumber(x, 1)}" y="${formatNumber(referenceY, 1)}" text-anchor="middle">${escapeHtml(item.reference)}</text>
       </g>`;
-    }).join('');
-    const overflowMarkup = cluster.overflow ? (() => {
-      const x = cluster.startX + cluster.visibleItems.length * cluster.spacing;
-      return `<g class="report-schematic-attachment-overflow ${kindClass}">
-        <circle cx="${formatNumber(x, 1)}" cy="${formatNumber(cluster.y, 1)}" r="9"/>
-        <text x="${formatNumber(x, 1)}" y="${formatNumber(cluster.y + 2.4, 1)}" text-anchor="middle">+${cluster.overflow}</text>
-      </g>`;
-    })() : '';
+    }).join('')).join('');
 
-    return `<g class="report-schematic-attachment-cluster ${kindClass}">${line}${itemsMarkup}${overflowMarkup}</g>`;
+    return `<g class="report-schematic-attachment-cluster ${kindClass}">${line}${rowsMarkup}</g>`;
   }
 
-  static renderAssignmentItems(items = [], limit = 4) {
+  static renderAssignmentItems(items = []) {
     if (!items.length) return '<span class="report-schematic-empty-assignment">–</span>';
-    const visible = items.slice(0, limit);
-    const overflow = Math.max(0, items.length - visible.length);
-    return `${visible.map(item => {
+    return items.map(item => {
       const detail = item.kind === 'special'
         ? `${formatNumber(item.pressureLoss, 1)} Pa`
         : (Math.abs(num(item.pressureLoss)) > 0.001 ? `${formatNumber(item.pressureLoss, 1)} Pa` : `ζ ${formatNumber(item.zeta, 2)}`);
       return `<span class="report-schematic-assignment-item ${attachmentKindClass(item.kind)}"><b>${escapeHtml(item.reference)}</b><em>${escapeHtml(compactText(item.label || ICON_LABELS[item.icon], 42))}</em><small>${escapeHtml(detail)}</small></span>`;
-    }).join('')}${overflow ? `<span class="report-schematic-assignment-more">+ ${overflow} weitere</span>` : ''}`;
+    }).join('');
   }
 
   static renderAssignmentTable(schematic = {}, nodes = [], options = {}) {

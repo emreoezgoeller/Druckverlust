@@ -1,19 +1,19 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
+  "packageType": "GitHub Pages",
   "version": "3.0.2",
   "phase": "58.20",
-  "generatedAt": "2026-07-22T16:03:12.720Z",
+  "generatedAt": "2026-07-25T17:48:00.000Z",
   "algorithm": "SHA-256",
-  "fileCount": 220,
-  "totalBytes": 9120962,
+  "fileCount": 210,
+  "totalBytes": 9084747,
   "criticalFileCount": 23,
   "exclusions": [
-    "tests",
-    ".github",
-    "docs",
-    "package.json",
-    "Entwicklungsprotokolle"
+    "Windows-Starter",
+    "lokale Startanleitung",
+    "Build-Werkzeuge",
+    "interne Entwicklungsunterlagen"
   ],
   "files": [
     {
@@ -30,8 +30,8 @@
     },
     {
       "path": "app.html",
-      "bytes": 3661,
-      "sha256": "dc4446de7de2d958864c82057e980e3d3fec666280beec9437fef6952623df7f",
+      "bytes": 3666,
+      "sha256": "47878817179ff9574c34a8ff2c8ea156ec52ad40e563033a595b7c2624f8f3d1",
       "critical": true
     },
     {
@@ -335,12 +335,6 @@
       "critical": true
     },
     {
-      "path": "Druckverlust_starten.bat",
-      "bytes": 623,
-      "sha256": "ce4bda2d93a2b0f6f61cca0198ea822966c46a87be529321689d5b208d03d123",
-      "critical": false
-    },
-    {
       "path": "favicon.ico",
       "bytes": 405,
       "sha256": "ba333fcd88cf83516ebd10c1bdcb04bb4c16117076ee8ff7833cf562bf1a10ac",
@@ -350,12 +344,6 @@
       "path": "feedback.html",
       "bytes": 5943,
       "sha256": "da1fe3dfc165572c3bb6a0dc1cf12fcf5e3cc9c2700ae19bb7d5c52a8425fe65",
-      "critical": false
-    },
-    {
-      "path": "FINAL_ABNAHME_WINDOWS.md",
-      "bytes": 1666,
-      "sha256": "7d8f378d5c5dd382526a7f16448323b60c99bf4c39858efe5f338e7e8fb48172",
       "critical": false
     },
     {
@@ -383,33 +371,9 @@
       "critical": false
     },
     {
-      "path": "LOKAL_STARTEN.txt",
-      "bytes": 1465,
-      "sha256": "806a5c03c024c99dd7bbd2be1d13cc57dcf7a60a14661bec36ad3227fc8e7d81",
-      "critical": false
-    },
-    {
       "path": "produkt.html",
       "bytes": 584,
       "sha256": "4f4116cf8e999da66780c56f42bcc4dc7ff8ec707ebbc2e64465ab1190caaf4e",
-      "critical": false
-    },
-    {
-      "path": "README.md",
-      "bytes": 6353,
-      "sha256": "a5b7c3f4e1e673f1cefa84481ba1acb1941fb0308959bc90273ecc567ffeaa46",
-      "critical": false
-    },
-    {
-      "path": "RELEASE_NOTES.md",
-      "bytes": 4243,
-      "sha256": "1fac14ea384cc5be10e72015587862985df30bc5b0a7fa9d5e05693adbd43e23",
-      "critical": false
-    },
-    {
-      "path": "RELEASE_VERIFICATION.txt",
-      "bytes": 1738,
-      "sha256": "fd2ce97496a58fa79ed1ff130fe6a0b789f382537de544241713f0642fa2152d",
       "critical": false
     },
     {
@@ -744,8 +708,8 @@
     },
     {
       "path": "src/main.js",
-      "bytes": 17573,
-      "sha256": "058576fc080e26174e3fdb72b990ae9d14176dfd13636e1ff795d8d88a54e5e2",
+      "bytes": 17578,
+      "sha256": "ac88e29d3adde6ed11c74278e24358e0da2a7c7cb5645ec0fadca8ebf07d0886",
       "critical": true
     },
     {
@@ -828,14 +792,14 @@
     },
     {
       "path": "src/report/ReportEngine.js",
-      "bytes": 188024,
-      "sha256": "ed688d37570878337104428c88ee7ec46d068579c25fa27ca04016663a2d79d7",
+      "bytes": 191407,
+      "sha256": "9194d7c1244d1cc9450cd23efe7cc27c22ffa3907528658605cbe96348231c56",
       "critical": true
     },
     {
       "path": "src/report/ReportSchematicRenderer.js",
-      "bytes": 25482,
-      "sha256": "bfc9c42ccbac1959328aded588d5e0d46b82558eaa9b9b1a847d8dc5476f8930",
+      "bytes": 26464,
+      "sha256": "27b3d19e0f6156bf78930d5cef535b9244dc93e72a95fa2649d542e73ed2d769",
       "critical": false
     },
     {
@@ -967,7 +931,7 @@
     {
       "path": "src/testing/PracticeProjectRunner.js",
       "bytes": 9246,
-      "sha256": "8ea8d18eac1f6f792f518dbc70d38c5ebbf73097d433e280da8ff5bb81091a43",
+      "sha256": "b5703f2f931cae673db892867f20b5bd692d3c183736c91d6f11e21ba5cfcef2",
       "critical": false
     },
     {
@@ -1020,8 +984,8 @@
     },
     {
       "path": "src/ui/components/WorkspaceComponent.js",
-      "bytes": 679044,
-      "sha256": "e55c999d8cc3c73c01d21def53e77036fd19d597ce62b7adaff4e569998dc856",
+      "bytes": 679055,
+      "sha256": "744049d24c2199a4950d55f3803ccbb762ba91ec20cfbbddcd2960a2bd85137f",
       "critical": true
     },
     {
@@ -1310,30 +1274,6 @@
       "path": "src/validation/ValidationEngine.js",
       "bytes": 6213,
       "sha256": "a126ebd8c06948e8743a43dd46e98eca3d5c7b030eb6e881a6b84206c9cb2d32",
-      "critical": false
-    },
-    {
-      "path": "tools/build-final-release.mjs",
-      "bytes": 5937,
-      "sha256": "fc18da54c3df709144cd7c3f7c82de20ac918cde28cf0c1f1fc9490e46511501",
-      "critical": false
-    },
-    {
-      "path": "tools/build-github-pages.mjs",
-      "bytes": 5418,
-      "sha256": "665f36c54c1f6d0c901a2c78aa7dbafc4047d71f02e0439c8b4c52c34f8fd021",
-      "critical": false
-    },
-    {
-      "path": "tools/start-local-server.ps1",
-      "bytes": 7555,
-      "sha256": "ffbecdf5548df97903b436fc06ec86c68cdbd4801ca86b51dde90de356f79c7d",
-      "critical": false
-    },
-    {
-      "path": "tools/verify-deployment.mjs",
-      "bytes": 5603,
-      "sha256": "67a59cee42576464b787e7b81674d23bc8ac491e614526865b1f4d3b7667612e",
       "critical": false
     }
   ]

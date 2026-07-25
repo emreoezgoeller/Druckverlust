@@ -1,0 +1,18 @@
+Druckverlust Pro – PDF-Hotfix 2 für Version 3.0.2 / Phase 58.20
+
+Voraussetzung:
+- Aktueller Projektstand mit dem vorherigen PDF-Hotfix 1.
+
+Installation:
+1. Druckverlust Pro vollständig schliessen.
+2. Den Inhalt dieses Ordners in den Hauptordner von Druckverlust Pro kopieren.
+3. Vorhandene Dateien ersetzen.
+4. Browser-Cache neu laden: Strg + F5.
+
+Enthaltene Korrekturen:
+- Anlagenschema: Formteile werden nicht mehr bereits nach vier Einträgen mit „+ weitere“ gekürzt.
+- Bis zu 18 Formteile je Teilstrecke werden im Schema auf bis zu drei Reihen dargestellt.
+- In der Bauteil-Zuordnung werden alle Formteile vollständig aufgelistet.
+- Hauptberechnung Luftnetz: schmalere Positionsspalte und breitere Beschreibungsspalte.
+- SIA-Geschwindigkeitsangabe bleibt vollständig innerhalb der Geschwindigkeitsspalte.
+- Der veraltete Praxistest-Grenzwert für die kompaktere Formteil-Paginierung wurde korrigiert.

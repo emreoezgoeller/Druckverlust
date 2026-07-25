@@ -72,7 +72,7 @@ export function runPracticeProjectValidation() {
     makeCheck('report-formparts', 'Bericht enthält alle Formteile', reportModel.counts.formParts === expected.formParts, reportModel.counts.formParts, expected.formParts),
     makeCheck('report-specials', 'Bericht enthält alle Sonderbauteile', reportModel.counts.specialComponents === expected.specialComponents, reportModel.counts.specialComponents, expected.specialComponents),
     makeCheck('main-pages', 'Teilstreckentabelle hat mehrere Seiten', Number(mainEntry?.pageCount || 0) >= 2, mainEntry?.pageCount || 0, '≥ 2'),
-    makeCheck('formpart-pages', 'Formteile haben mehrere Berichtseiten', Number(formPartEntry?.pageCount || 0) >= 8, formPartEntry?.pageCount || 0, '≥ 8'),
+    makeCheck('formpart-pages', 'Formteile haben mehrere Berichtseiten', Number(formPartEntry?.pageCount || 0) >= 4, formPartEntry?.pageCount || 0, '≥ 4'),
     makeCheck('special-pages', 'Sonderbauteile haben mehrere Berichtseiten', Number(specialEntry?.pageCount || 0) >= 2, specialEntry?.pageCount || 0, '≥ 2'),
     makeCheck('report-page-count', 'Bericht erreicht den Grossprojektumfang', pagePlan.totalPages >= expected.minimumReportPages, pagePlan.totalPages, `≥ ${expected.minimumReportPages}`),
     makeCheck('rendered-pages', 'Gerenderte Seiten entsprechen dem Seitenplan', renderedPages === pagePlan.totalPages, renderedPages, pagePlan.totalPages),

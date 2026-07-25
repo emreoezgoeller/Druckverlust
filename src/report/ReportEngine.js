@@ -2,7 +2,7 @@ import { APP_BUILD_LABEL, APP_RELEASE } from '../core/appVersion.js?v=58.20';
 import LicenseGate from '../licensing/LicenseGate.js';
 import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.20';
 import NetworkSchematicEngine from '../schematic/NetworkSchematicEngine.js?v=58.20';
-import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=58.20';
+import ReportSchematicRenderer from './ReportSchematicRenderer.js?v=58.20-pdf2';
 import ProjectCompletionEngine from '../closing/ProjectCompletionEngine.js?v=58.20';
 import ProjectHandoverEngine from '../handover/ProjectHandoverEngine.js?v=58.20';
 import SystemPortfolioEngine from '../project/SystemPortfolioEngine.js?v=58.20';
@@ -76,8 +76,8 @@ function createCsvFileName(fileBaseName = 'Druckverlustbericht') {
 
 const MAIN_NETWORK_ROWS_PER_PAGE = 15;
 const SPECIAL_ROWS_PER_PAGE = 20;
-const FORMPART_BOXES_PER_PAGE = 4;
-const FORMPART_ROWS_PER_BOX = 5;
+const FORMPART_PAGE_CONTENT_HEIGHT_MM = 188;
+const FORMPART_GRID_GAP_MM = 3;
 const FORMPART_CATALOG_ROWS_PER_PAGE = 6;
 const QUALITY_FIRST_PAGE_ROWS = 8;
 const QUALITY_CONTINUATION_ROWS = 14;
@@ -153,6 +153,58 @@ function rangeLabel(startIndex, count, total) {
   return `${start}–${end} von ${total}`;
 }
 
+function estimateFormPartBoxHeightMm(group = {}) {
+  const rowCount = Math.max(1, Array.isArray(group.formParts) ? group.formParts.length : 0);
+  const rowHeightMm = rowCount > 10 ? 5.2 : rowCount > 5 ? 7.5 : 11;
+  return 21 + rowCount * rowHeightMm;
+}
+
+function paginateFormPartGroups(groups = []) {
+  const source = Array.isArray(groups) ? groups : [];
+  if (!source.length) return [[]];
+
+  const pages = [];
+  let currentPage = [];
+  let rowHeights = [];
+  let usedHeightMm = 0;
+
+  const addGroup = group => {
+    const blockHeight = estimateFormPartBoxHeightMm(group);
+    const startsNewGridRow = currentPage.length % 2 === 0;
+    let additionalHeight = 0;
+
+    if (startsNewGridRow) {
+      additionalHeight = blockHeight + (rowHeights.length ? FORMPART_GRID_GAP_MM : 0);
+    } else {
+      const rowIndex = rowHeights.length - 1;
+      additionalHeight = Math.max(rowHeights[rowIndex], blockHeight) - rowHeights[rowIndex];
+    }
+
+    if (currentPage.length && usedHeightMm + additionalHeight > FORMPART_PAGE_CONTENT_HEIGHT_MM) {
+      pages.push(currentPage);
+      currentPage = [];
+      rowHeights = [];
+      usedHeightMm = 0;
+      return addGroup(group);
+    }
+
+    currentPage.push(group);
+
+    if (startsNewGridRow) {
+      rowHeights.push(blockHeight);
+      usedHeightMm += additionalHeight;
+    } else {
+      const rowIndex = rowHeights.length - 1;
+      rowHeights[rowIndex] = Math.max(rowHeights[rowIndex], blockHeight);
+      usedHeightMm += additionalHeight;
+    }
+  };
+
+  source.forEach(addGroup);
+  if (currentPage.length) pages.push(currentPage);
+  return pages;
+}
+
 function normalizeQualityIssue(item, type = 'Hinweis', severity = 'warning', index = 0) {
   if (typeof item === 'object' && item !== null) {
     return {
@@ -202,6 +254,8 @@ function createPrintWaitScript() {
 
           images.forEach(function(img){
             img.setAttribute('draggable', 'false');
+            img.setAttribute('loading', 'eager');
+            img.setAttribute('fetchpriority', 'high');
             img.classList.add('dp-protected-image');
           });
 
@@ -221,11 +275,20 @@ function createPrintWaitScript() {
           if (!images.length) return Promise.resolve();
 
           return Promise.all(images.map(function(img){
-            if (img.complete) return Promise.resolve();
+            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+
             return new Promise(function(resolve){
-              img.addEventListener('load', resolve, { once:true });
-              img.addEventListener('error', resolve, { once:true });
-              setTimeout(resolve, 2500);
+              var finish = function(){ resolve(); };
+              img.addEventListener('load', finish, { once:true });
+              img.addEventListener('error', finish, { once:true });
+
+              if (img.complete && img.naturalWidth === 0 && img.src) {
+                var source = img.src;
+                img.removeAttribute('src');
+                img.src = source;
+              }
+
+              setTimeout(finish, 4000);
             });
           }));
         }
@@ -1302,7 +1365,7 @@ export class ReportEngine {
       : 0;
     const formPartGroupCount = this.splitFormPartGroupsForReport(model.formPartsBySection || []).length;
     const formPartPageCount = reportOptions.includeAssignedFormParts
-      ? chunkArray(new Array(formPartGroupCount).fill(null), FORMPART_BOXES_PER_PAGE).length
+      ? paginateFormPartGroups(this.splitFormPartGroupsForReport(model.formPartsBySection || [])).length
       : 0;
     const specialPageCount = reportOptions.includeSpecialComponents
       ? chunkArray(model.specialComponents || [], SPECIAL_ROWS_PER_PAGE).length
@@ -1488,7 +1551,7 @@ export class ReportEngine {
       <section class="report-page" data-report-page="${page}" data-report-title="${escapeHtml(title)}">
         <header class="report-page-head">
           <div class="report-logo-wrap">
-            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
+            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="eager" fetchpriority="high" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
           </div>
           <div>
             <h2>${escapeHtml(title)}</h2>
@@ -1526,7 +1589,7 @@ export class ReportEngine {
         ${model.assets.logo ? `<div class="report-cover-watermark" aria-hidden="true"><img src="${escapeHtml(model.assets.logo)}" alt="" draggable="false"></div>` : ''}
         <header class="report-cover-topbar">
           <div class="report-logo-wrap large">
-            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="lazy" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
+            ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="eager" fetchpriority="high" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
           </div>
           <div class="report-generated">Erstellt: ${escapeHtml(generatedLabel)}</div>
         </header>
@@ -1553,18 +1616,6 @@ export class ReportEngine {
               ['Datum', model.project.date],
               ['Bericht-Nr.', model.project.reportNumber],
               ['Revision', model.project.revision],
-            ])}
-          </div>
-          <div class="report-cover-document-card">
-            <span class="report-cover-eyebrow">Technischer Berechnungsnachweis</span>
-            <strong>${escapeHtml(model.system.name || 'Lüftungsanlage')}</strong>
-            <p>Berechnungsstand mit Teilstrecken, Formteilen, Sonderbauteilen und automatischer Qualitätsprüfung.</p>
-            ${this.renderDefinitionList([
-              ['Raumnutzung', model.system.roomUsage || '-'],
-              ['Betriebsart', model.system.operationMode || '-'],
-              ['Elektro-Vollaststunden', Number.isFinite(Number(model.system.electricalFullLoadHours)) ? `${formatNumber(model.system.electricalFullLoadHours, 0)} h/a` : '-'],
-              ['QS-Status', qualityStatusLabel(model.quality.status)],
-              ['Berichtsumfang', `${totalPages} Seiten`],
             ])}
           </div>
         </div>
@@ -2018,6 +2069,22 @@ export class ReportEngine {
 
       const content = `
         <table class="report-table compact report-table-network">
+          <colgroup>
+            <col class="network-col-position" />
+            <col class="network-col-type" />
+            <col class="network-col-description" />
+            <col class="network-col-section" />
+            <col class="network-col-airflow" />
+            <col class="network-col-width" />
+            <col class="network-col-height" />
+            <col class="network-col-diameter" />
+            <col class="network-col-length" />
+            <col class="network-col-roughness" />
+            <col class="network-col-lambda" />
+            <col class="network-col-velocity" />
+            <col class="network-col-friction-rate" />
+            <col class="network-col-pressure" />
+          </colgroup>
           <thead>
             <tr>
               <th>Pos.</th><th>Typ</th><th>Beschreibung</th><th>TS</th><th>Luft-<br>menge<br>m³/h</th><th>Breite<br>mm</th><th>Höhe<br>mm</th><th>Ø<br>mm</th><th>Länge<br>m</th><th>k<br>mm</th><th>λ<br>-</th><th>v<br>m/s</th><th>R<br>Pa/m</th><th>Δp<br>Kanal/Rohr<br>Pa</th>
@@ -2045,7 +2112,7 @@ export class ReportEngine {
           : '';
     const siaClass = sia.status === 'exceeded' ? 'error' : sia.status === 'warning' ? 'warn' : 'ok';
     const siaInline = toNumber(sia.maximumVelocityMs) > 0
-      ? `<small class="report-sia-inline ${siaClass}">SIA ≤ ${formatNumber(sia.maximumVelocityMs, 2)} · ${escapeHtml(siaLabel)}</small>`
+      ? `<small class="report-sia-inline ${siaClass}"><span>SIA ≤ ${formatNumber(sia.maximumVelocityMs, 2)}</span><span>${escapeHtml(siaLabel)}</span></small>`
       : '';
 
     return `
@@ -2086,13 +2153,15 @@ export class ReportEngine {
 
   static renderAssignedFormPartsPages(model, nextPage, totalPages) {
     const allGroups = this.splitFormPartGroupsForReport(model.formPartsBySection || []);
-    const pageGroups = chunkArray(allGroups, FORMPART_BOXES_PER_PAGE);
+    const pageGroups = paginateFormPartGroups(allGroups);
     const totalBoxes = allGroups.length;
+    let renderedBoxes = 0;
 
     return pageGroups.map((groups, chunkIndex) => {
-      const startIndex = chunkIndex * FORMPART_BOXES_PER_PAGE;
+      const startIndex = renderedBoxes;
+      renderedBoxes += groups.length;
       const isLastChunk = chunkIndex === pageGroups.length - 1;
-      const subtitle = totalBoxes > FORMPART_BOXES_PER_PAGE
+      const subtitle = totalBoxes > groups.length
         ? `Übersicht aller Formteile pro Teilstrecke (${rangeLabel(startIndex, groups.length, totalBoxes)})`
         : 'Übersicht aller Formteile pro Teilstrecke';
 
@@ -2100,7 +2169,7 @@ export class ReportEngine {
         <div class="report-formpart-grid">
           ${groups.length ? groups.map(group => this.renderFormPartSectionBox(group)).join('') : '<div class="report-empty">Keine Formteile vorhanden.</div>'}
         </div>
-        ${isLastChunk ? `<div class="report-total-line"><span>Summe Formteile (alle Teilstrecken)</span><strong>${formatNumber(model.totals.formParts, 1)} Pa</strong></div>${this.renderHiddenEntriesNote(model.reportScope?.hiddenFormParts, 'leere Formteile')}` : '<p class="report-continuation-note">Fortsetzung der Formteile auf der nächsten Seite.</p>'}
+        ${isLastChunk ? `<div class="report-total-line"><span>Summe Formteile (alle Teilstrecken)</span><strong>${formatNumber(model.totals.formParts, 1)} Pa</strong></div>${this.renderHiddenEntriesNote(model.reportScope?.hiddenFormParts, 'leere Formteile')}` : '<p class="report-continuation-note">Fortsetzung mit vollständigen Teilstreckenblöcken auf der nächsten Seite.</p>'}
       `;
 
       return this.renderPage(model, nextPage(), chunkIndex ? 'Zugeordnete Formteile Fortsetzung' : 'Zugeordnete Formteile', subtitle, content, totalPages);
@@ -2108,33 +2177,29 @@ export class ReportEngine {
   }
 
   static splitFormPartGroupsForReport(groups = []) {
-    const reportGroups = [];
-
-    groups
+    return (groups || [])
       .filter(group => group.formParts?.length)
-      .forEach(group => {
-        const chunks = chunkArray(group.formParts, FORMPART_ROWS_PER_BOX);
-
-        chunks.forEach((formParts, index) => {
-          reportGroups.push({
-            ...group,
-            formParts,
-            continuation: index > 0,
-            sum: formParts.reduce((total, part) => total + toNumber(part.pressureLoss), 0),
-            totalSectionSum: group.sum,
-          });
-        });
-      });
-
-    return reportGroups;
+      .map(group => ({
+        ...group,
+        formParts: [...group.formParts],
+        continuation: false,
+        sum: group.formParts.reduce((total, part) => total + toNumber(part.pressureLoss), 0),
+        totalSectionSum: group.sum,
+      }));
   }
 
   static renderFormPartSectionBox(group) {
     const section = group.section;
     const title = `${section.name} – ${this.describeSection(section)}${group.continuation ? ' (Fortsetzung)' : ''}`;
 
+    const densityClass = group.formParts.length > 10
+      ? ' is-very-dense'
+      : group.formParts.length > 5
+        ? ' is-dense'
+        : '';
+
     return `
-      <div class="report-formpart-box">
+      <div class="report-formpart-box${densityClass}">
         <h3>${escapeHtml(title)}</h3>
         <div class="report-formpart-friction">
           <span>Von Teilstrecke übernommen</span>
@@ -2146,7 +2211,7 @@ export class ReportEngine {
             ${group.formParts.map(part => `
               <tr>
                 <td class="left">${escapeHtml(part.type || part.name)}</td>
-                <td>${part.image ? `<img class="report-part-img" src="${escapeHtml(part.image)}" alt="${escapeHtml(part.name)}" draggable="false" loading="lazy" decoding="async">` : '-'}</td>
+                <td>${part.image ? `<img class="report-part-img" src="${escapeHtml(part.image)}" alt="${escapeHtml(part.name)}" draggable="false" loading="eager" fetchpriority="high" decoding="async">` : '-'}</td>
                 <td>${formatNumber(part.zeta, 3)}</td>
                 <td>${formatNumber(part.pressureLoss, 2)}</td>
               </tr>
@@ -2190,7 +2255,7 @@ export class ReportEngine {
     return `
       <article class="report-catalog-card">
         <div class="report-catalog-image">
-          ${row.image ? `<img src="${escapeHtml(row.image)}" alt="${escapeHtml(row.name)}" draggable="false" loading="lazy" decoding="async">` : '<span>Keine Skizze</span>'}
+          ${row.image ? `<img src="${escapeHtml(row.image)}" alt="${escapeHtml(row.name)}" draggable="false" loading="eager" fetchpriority="high" decoding="async">` : '<span>Keine Skizze</span>'}
         </div>
         <div class="report-catalog-body">
           <div class="report-catalog-head">
@@ -2735,9 +2800,9 @@ export class ReportEngine {
       .report-lead{margin:0;color:#20354f;font-size:10.5px;line-height:1.45;max-width:105mm}
       .report-cover-divider{height:1.5px;background:var(--report-blue);opacity:.75;margin:11mm 0 9mm}
       .report-cover-divider.slim{margin:8mm 0 6mm;opacity:.5}
-      .report-cover-main{position:relative;z-index:2;display:grid;grid-template-columns:78mm 1fr;gap:9mm;align-items:start;min-height:74mm}
+      .report-cover-main{position:relative;z-index:2;display:grid;grid-template-columns:82mm 1fr;gap:9mm;align-items:start;min-height:74mm}
       .report-cover-watermark{position:absolute;z-index:0;right:-15mm;top:31mm;width:128mm;height:156mm;overflow:hidden;opacity:.055;pointer-events:none}.report-cover-watermark img{display:block;width:128mm;height:auto;max-width:none;clip-path:inset(0 0 35% 0);filter:saturate(.65)}
-      .report-project-card,.report-cover-document-card{position:relative;z-index:2}.report-cover-document-card{border:1px solid #d7e2ee;border-radius:8px;background:rgba(255,255,255,.88);padding:12px 14px;min-height:68mm}.report-cover-eyebrow{display:block;color:var(--report-blue-2);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.report-cover-document-card>strong{display:block;color:var(--report-blue);font-size:16px;line-height:1.15;margin-bottom:7px}.report-cover-document-card>p{margin:0 0 10px;color:#435a72;font-size:8.8px;line-height:1.4}
+      .report-project-card{position:relative;z-index:2}
       .report-project-card h3,.report-section-title,.report-info-box h3,.report-two-col h3{color:var(--report-blue);font-size:11px;text-transform:uppercase;margin:0 0 8px;font-weight:900;letter-spacing:.1px}
       .report-definition-list{display:grid;grid-template-columns:27mm 1fr;gap:5px 8px;margin:0;font-size:9.2px;line-height:1.35}
       .report-definition-list dt{font-weight:900;color:#06172b}.report-definition-list dd{margin:0;color:#06172b}
@@ -2793,7 +2858,7 @@ export class ReportEngine {
       .report-project-cockpit-findings .report-table th:nth-child(4){width:auto}
       .report-small-note{margin:5px 0 0;color:var(--report-muted);font-size:7.6px;line-height:1.35}
       .report-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:12mm;padding:1mm 2mm;border-radius:99px;font-size:7px;font-weight:900;text-transform:uppercase}.report-status-pill.ok{color:#176c46;background:#eaf8f0}.report-status-pill.warn{color:#8a5a0a;background:#fff1d4}.report-status-pill.error{color:#a52828;background:#ffe6e6}
-      .report-sia-inline{display:block;margin-top:.7mm;font-size:6.3px;font-weight:800;line-height:1.15;white-space:nowrap}.report-sia-inline.ok{color:#176c46}.report-sia-inline.warn{color:#8a5a0a}.report-sia-inline.error{color:#a52828}
+      .report-sia-inline{display:grid;gap:.15mm;margin-top:.7mm;font-size:5.8px;font-weight:800;line-height:1.08;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center}.report-sia-inline span{display:block;max-width:100%}.report-sia-inline.ok{color:#176c46}.report-sia-inline.warn{color:#8a5a0a}.report-sia-inline.error{color:#a52828}
 
       .report-approval-table th{font-size:8px}.report-approval-table td{height:20mm;font-size:10px}
       .report-approval-table .signature-cell{background:linear-gradient(to bottom, transparent 70%, #d9e2ee 70%, #d9e2ee 72%, transparent 72%)}
@@ -2848,6 +2913,19 @@ export class ReportEngine {
       .report-table.compact th{font-size:7.1px;padding:4px 2px;line-height:1.12}
       .report-table.compact td{padding:4.5px 3px}
       .report-table-network td{padding:3.6px 2.6px;font-size:7.4px;line-height:1.18}
+      .report-table-network col.network-col-position{width:4%}
+      .report-table-network col.network-col-type{width:7%}
+      .report-table-network col.network-col-description{width:11%}
+      .report-table-network col.network-col-section{width:6%}
+      .report-table-network col.network-col-airflow{width:7%}
+      .report-table-network col.network-col-width,.report-table-network col.network-col-height,.report-table-network col.network-col-diameter{width:7%}
+      .report-table-network col.network-col-length,.report-table-network col.network-col-roughness,.report-table-network col.network-col-lambda{width:6%}
+      .report-table-network col.network-col-velocity{width:10.5%}
+      .report-table-network col.network-col-friction-rate{width:7.5%}
+      .report-table-network col.network-col-pressure{width:8%}
+      .report-table-network th:nth-child(3),.report-table-network td:nth-child(3){text-align:left;overflow-wrap:anywhere;word-break:normal;hyphens:auto}
+      .report-table-network th:nth-child(1),.report-table-network td:nth-child(1){padding-left:1px;padding-right:1px}
+      .report-table-network td:nth-child(12){padding-left:2px;padding-right:2px}
       .report-continuation-note{margin:10px 0 0;color:var(--report-muted);font-size:9px;font-style:italic}
       .report-filter-note{margin:9px 0 0;color:#536a83;font-size:8.8px;font-style:italic;text-align:right}
       .report-table.small{font-size:8.2px}
@@ -2860,6 +2938,12 @@ export class ReportEngine {
       .report-formpart-friction{display:flex;justify-content:space-between;gap:8px;padding:5px 8px;background:#eef5fc;border-bottom:1px solid var(--report-line);font-size:7.5px;color:#40566f}
       .report-formpart-friction strong{color:#123b64;text-align:right}
       .report-part-img{max-width:82px;max-height:50px;object-fit:contain}
+      .report-formpart-box.is-dense .report-table.small td{padding:3px 3px;font-size:7.4px}
+      .report-formpart-box.is-dense .report-part-img{max-height:30px}
+      .report-formpart-box.is-very-dense .report-formpart-friction{padding:3px 6px;font-size:6.6px}
+      .report-formpart-box.is-very-dense .report-table.small th{padding:2.5px 2px;font-size:6.6px}
+      .report-formpart-box.is-very-dense .report-table.small td{padding:2px 2px;font-size:6.5px;line-height:1.1}
+      .report-formpart-box.is-very-dense .report-part-img{max-height:18px}
       .report-catalog-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .report-catalog-card{display:grid;grid-template-columns:30mm 1fr;gap:9px;border:1px solid var(--report-line);border-radius:7px;background:#fff;overflow:hidden;min-height:31mm;break-inside:avoid;page-break-inside:avoid}
       .report-catalog-image{display:grid;place-items:center;background:#f4f8fd;border-right:1px solid var(--report-line);padding:5px}
@@ -2906,7 +2990,7 @@ export class ReportEngine {
       .report-executive-kpis span{font-size:8px;color:var(--report-muted);font-weight:900;text-transform:uppercase}.report-executive-kpis strong{font-size:17px;color:var(--report-blue);line-height:1.08}.report-executive-kpis small{font-size:8px;color:#536a83;line-height:1.25}
       .report-executive-score.ok{background:#f2fbf5;border-color:#bde5ce}.report-executive-score.warn{background:#fff8ed;border-color:#f2c282}.report-executive-score.error{background:#fff4f4;border-color:#efb7b7}
       .report-executive-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.report-executive-grid .report-info-box{margin-top:0;min-height:82mm}.report-executive-priority ol{margin:0;padding-left:18px}.report-executive-priority li{margin:0 0 9px}.report-executive-priority li strong,.report-executive-priority li span{display:block}.report-executive-priority li strong{color:#123b64;font-size:9.2px}.report-executive-priority li span{color:#52677e;font-size:8.4px;line-height:1.35;margin-top:2px}.report-top-loss-table td{font-size:8px}.report-executive-note{margin-top:10px;padding:9px 12px}
-      .report-schematic-page-block{display:flex;flex-direction:column;gap:6px}.report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-grid-pattern{stroke:none}.report-schematic-grid-pattern+*{}.report-schematic-svg defs pattern path{fill:none;stroke:#edf3f8;stroke-width:1}.report-schematic-svg marker path{fill:#315b7d}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node>rect:first-child{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-position{font-size:5.4px;font-weight:900;fill:#698198;letter-spacing:.05em}.report-schematic-node-title{font-size:7.8px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.4px;fill:#425b74}.report-schematic-node-line.strong{font-size:6.8px;font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-progress rect{fill:#dfe8f0}.report-schematic-progress rect.is-active{fill:#0b6cae}.report-schematic-transition-marker path{fill:#fff;stroke:#0b6cae;stroke-width:1}.report-schematic-transition-marker text{font-size:5.8px;font-weight:900;fill:#0b6cae}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2;fill:none}.report-schematic-attachment-line.is-formpart{stroke:#d58a18}.report-schematic-attachment-line.is-special{stroke:#765eb0}.report-schematic-attachment-symbol circle{stroke-width:1.2}.report-schematic-attachment-symbol.is-formpart circle{fill:#fff8e8;stroke:#d8870c}.report-schematic-attachment-symbol.is-special circle{fill:#f6f1ff;stroke:#6e55ad}.report-schematic-symbol{fill:none;stroke:#294b69;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.report-schematic-attachment-symbol text{font-size:5.1px;font-weight:900;fill:#425b74}.report-schematic-attachment-overflow circle{stroke-width:1}.report-schematic-attachment-overflow.is-formpart circle{fill:#e28a0c;stroke:#c97700}.report-schematic-attachment-overflow.is-special circle{fill:#6e55ad;stroke:#584091}.report-schematic-attachment-overflow text{font-size:5.2px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6px;fill:#536a83}.report-schematic-assignment-block{border:1px solid var(--report-line);border-radius:7px;overflow:hidden;background:#fff}.report-schematic-assignment-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 7px;background:#f2f7fb;border-bottom:1px solid var(--report-line)}.report-schematic-assignment-heading strong{font-size:7.2px;color:var(--report-blue);text-transform:uppercase;letter-spacing:.04em}.report-schematic-assignment-heading span{font-size:6.2px;color:var(--report-muted)}.report-schematic-assignment-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6px}.report-schematic-assignment-table th{padding:3px 5px;background:#f8fbfd;color:#496078;text-align:left;border-bottom:1px solid var(--report-line);font-size:5.8px;text-transform:uppercase}.report-schematic-assignment-table th:first-child{width:22%}.report-schematic-assignment-table th:nth-child(2),.report-schematic-assignment-table th:nth-child(3){width:39%}.report-schematic-assignment-table td{padding:3px 5px;vertical-align:top;border-bottom:1px solid #e8eef4}.report-schematic-assignment-table tr:last-child td{border-bottom:none}.report-schematic-assignment-table td:first-child strong,.report-schematic-assignment-table td:first-child span,.report-schematic-assignment-table td:first-child small{display:block}.report-schematic-assignment-table td:first-child strong{font-size:6.5px;color:#073f7a}.report-schematic-assignment-table td:first-child span{font-weight:800;color:#334f69}.report-schematic-assignment-table td:first-child small{color:#71859a}.report-schematic-assignment-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:baseline;gap:3px;margin-bottom:1px}.report-schematic-assignment-item:last-child{margin-bottom:0}.report-schematic-assignment-item b{padding:1px 2px;border-radius:3px;text-align:center;font-size:5.5px}.report-schematic-assignment-item.is-formpart b{background:#fff0d6;color:#9b5900}.report-schematic-assignment-item.is-special b{background:#eee8fb;color:#584091}.report-schematic-assignment-item em{font-style:normal;font-weight:750;color:#314b64;overflow-wrap:anywhere}.report-schematic-assignment-item small{color:#71859a;white-space:nowrap}.report-schematic-assignment-more,.report-schematic-empty-assignment{font-size:5.7px;color:#71859a;font-weight:800}.report-schematic-symbol-legend{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;border:1px solid var(--report-line);border-radius:6px;padding:4px 7px;background:#f9fbfd}.report-schematic-symbol-legend>strong{font-size:6.5px;color:#334f69;text-transform:uppercase}.report-schematic-symbol-legend>div{display:flex;flex-wrap:wrap;gap:4px 10px}.report-schematic-symbol-legend>div span{display:inline-flex;align-items:center;gap:3px;font-size:5.6px;color:#536a83}.report-schematic-symbol-legend svg{width:15px;height:15px}.report-schematic-symbol-legend small{display:flex;align-items:center;gap:4px;font-size:5.6px;color:#536a83;white-space:nowrap}.report-schematic-symbol-legend small i{width:7px;height:7px;border-radius:2px;display:inline-block}.report-schematic-symbol-legend small i.is-formpart{background:#e28a0c}.report-schematic-symbol-legend small i.is-special{background:#6e55ad}.report-schematic-layout-warning{margin:0;padding:4px 7px;border:1px solid #f2c979;border-radius:5px;background:#fff8e6;color:#845800;font-size:6.2px;font-weight:800}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:6px 8px}.report-schematic-summary span{display:block;font-size:6.5px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:10px;color:var(--report-blue);margin-top:2px;white-space:nowrap}.report-schematic-disclaimer{font-size:6.8px;color:#5c6f87;margin:4px 0 0;line-height:1.3}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
+      .report-schematic-page-block{display:flex;flex-direction:column;gap:6px}.report-schematic-wrap{border:1px solid var(--report-line);border-radius:10px;background:#fbfdff;padding:4px;overflow:hidden}.report-schematic-svg{width:100%;height:auto;display:block}.report-schematic-grid{fill:#fff;stroke:#d7e2ef;stroke-width:1}.report-schematic-grid-pattern{stroke:none}.report-schematic-grid-pattern+*{}.report-schematic-svg defs pattern path{fill:none;stroke:#edf3f8;stroke-width:1}.report-schematic-svg marker path{fill:#315b7d}.report-schematic-duct{stroke:#718ba3;stroke-width:1.25}.report-schematic-arrow,.report-schematic-terminal-arrow{stroke:#315b7d;stroke-width:2;fill:none}.report-schematic-terminal-arrow{stroke:#0b6cae;stroke-width:2.5}.report-schematic-node>rect:first-child{fill:#fff;stroke:#0b6cae;stroke-width:1.7}.report-schematic-node .report-schematic-node-accent{fill:#0b6cae;stroke:none}.report-schematic-node-position{font-size:5.4px;font-weight:900;fill:#698198;letter-spacing:.05em}.report-schematic-node-title{font-size:7.8px;font-weight:900;fill:#073f7a}.report-schematic-node-line{font-size:6.4px;fill:#425b74}.report-schematic-node-line.strong{font-size:6.8px;font-weight:900;fill:#0b355d}.report-schematic-terminal{font-size:7px;font-weight:900;fill:#425b74;letter-spacing:.03em}.report-schematic-terminal-value{font-size:6.8px;font-weight:800;fill:#073f7a}.report-schematic-terminal.is-end circle{fill:#123f66;stroke:#fff;stroke-width:2}.report-schematic-section-label{font-size:7px;font-weight:900;fill:#0b6cae;letter-spacing:.04em}.report-schematic-section-range{font-size:6.8px;font-weight:800;fill:#536a83}.report-schematic-progress rect{fill:#dfe8f0}.report-schematic-progress rect.is-active{fill:#0b6cae}.report-schematic-transition-marker path{fill:#fff;stroke:#0b6cae;stroke-width:1}.report-schematic-transition-marker text{font-size:5.8px;font-weight:900;fill:#0b6cae}.report-schematic-attachment-line{stroke:#8ca2b8;stroke-width:1;stroke-dasharray:3 2;fill:none}.report-schematic-attachment-line.is-formpart{stroke:#d58a18}.report-schematic-attachment-line.is-special{stroke:#765eb0}.report-schematic-attachment-symbol circle{stroke-width:1.2}.report-schematic-attachment-symbol.is-formpart circle{fill:#fff8e8;stroke:#d8870c}.report-schematic-attachment-symbol.is-special circle{fill:#f6f1ff;stroke:#6e55ad}.report-schematic-symbol{fill:none;stroke:#294b69;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.report-schematic-attachment-symbol text{font-size:5.1px;font-weight:900;fill:#425b74}.report-schematic-attachment-overflow circle{stroke-width:1}.report-schematic-attachment-overflow.is-formpart circle{fill:#e28a0c;stroke:#c97700}.report-schematic-attachment-overflow.is-special circle{fill:#6e55ad;stroke:#584091}.report-schematic-attachment-overflow text{font-size:5.2px;font-weight:900;fill:#fff}.report-schematic-legend text{font-size:6px;fill:#536a83}.report-schematic-assignment-block{border:1px solid var(--report-line);border-radius:7px;overflow:hidden;background:#fff}.report-schematic-assignment-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 7px;background:#f2f7fb;border-bottom:1px solid var(--report-line)}.report-schematic-assignment-heading strong{font-size:7.2px;color:var(--report-blue);text-transform:uppercase;letter-spacing:.04em}.report-schematic-assignment-heading span{font-size:6.2px;color:var(--report-muted)}.report-schematic-assignment-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:6px}.report-schematic-assignment-table th{padding:3px 5px;background:#f8fbfd;color:#496078;text-align:left;border-bottom:1px solid var(--report-line);font-size:5.8px;text-transform:uppercase}.report-schematic-assignment-table th:first-child{width:22%}.report-schematic-assignment-table th:nth-child(2),.report-schematic-assignment-table th:nth-child(3){width:39%}.report-schematic-assignment-table td{padding:3px 5px;vertical-align:top;border-bottom:1px solid #e8eef4}.report-schematic-assignment-table tr:last-child td{border-bottom:none}.report-schematic-assignment-table td:first-child strong,.report-schematic-assignment-table td:first-child span,.report-schematic-assignment-table td:first-child small{display:block}.report-schematic-assignment-table td:first-child strong{font-size:6.5px;color:#073f7a}.report-schematic-assignment-table td:first-child span{font-weight:800;color:#334f69}.report-schematic-assignment-table td:first-child small{color:#71859a}.report-schematic-assignment-item{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:baseline;gap:3px;margin-bottom:.7px;line-height:1.12}.report-schematic-assignment-item:last-child{margin-bottom:0}.report-schematic-assignment-item b{padding:1px 2px;border-radius:3px;text-align:center;font-size:5.5px}.report-schematic-assignment-item.is-formpart b{background:#fff0d6;color:#9b5900}.report-schematic-assignment-item.is-special b{background:#eee8fb;color:#584091}.report-schematic-assignment-item em{font-style:normal;font-weight:750;color:#314b64;overflow-wrap:anywhere}.report-schematic-assignment-item small{color:#71859a;white-space:nowrap}.report-schematic-assignment-more,.report-schematic-empty-assignment{font-size:5.7px;color:#71859a;font-weight:800}.report-schematic-symbol-legend{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;border:1px solid var(--report-line);border-radius:6px;padding:4px 7px;background:#f9fbfd}.report-schematic-symbol-legend>strong{font-size:6.5px;color:#334f69;text-transform:uppercase}.report-schematic-symbol-legend>div{display:flex;flex-wrap:wrap;gap:4px 10px}.report-schematic-symbol-legend>div span{display:inline-flex;align-items:center;gap:3px;font-size:5.6px;color:#536a83}.report-schematic-symbol-legend svg{width:15px;height:15px}.report-schematic-symbol-legend small{display:flex;align-items:center;gap:4px;font-size:5.6px;color:#536a83;white-space:nowrap}.report-schematic-symbol-legend small i{width:7px;height:7px;border-radius:2px;display:inline-block}.report-schematic-symbol-legend small i.is-formpart{background:#e28a0c}.report-schematic-symbol-legend small i.is-special{background:#6e55ad}.report-schematic-layout-warning{margin:0;padding:4px 7px;border:1px solid #f2c979;border-radius:5px;background:#fff8e6;color:#845800;font-size:6.2px;font-weight:800}.report-schematic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px}.report-schematic-summary.is-five-columns{grid-template-columns:repeat(5,1fr)}.report-schematic-summary div{border:1px solid var(--report-line);border-radius:6px;background:#f7faff;padding:6px 8px}.report-schematic-summary span{display:block;font-size:6.5px;color:var(--report-muted);text-transform:uppercase;font-weight:900;line-height:1.2}.report-schematic-summary strong{display:block;font-size:10px;color:var(--report-blue);margin-top:2px;white-space:nowrap}.report-schematic-disclaimer{font-size:6.8px;color:#5c6f87;margin:4px 0 0;line-height:1.3}.report-schematic-empty{min-height:100mm;display:grid;place-items:center}
       .report-loss-analysis-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}.report-loss-analysis-grid .report-info-box{margin-top:0;min-height:56mm}.report-chart-row{margin:0 0 10px}.report-chart-row>div{display:flex;justify-content:space-between;gap:10px;font-size:8.5px}.report-chart-row>div span{color:#536a83}.report-chart-row i{display:block;height:8px;background:#e8eff7;border-radius:999px;overflow:hidden;margin-top:4px}.report-chart-row i b{display:block;height:100%;background:linear-gradient(90deg,#0b559c,#45a2d8);border-radius:999px}.report-section-ranking{margin-top:12px}.report-ranking-row{display:grid;grid-template-columns:18px 38mm 1fr 20mm;align-items:center;gap:7px;margin:7px 0;font-size:8.6px}.report-ranking-row>span{display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#eaf2fb;color:#073f7a;font-weight:900}.report-ranking-row>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.report-ranking-row i{height:7px;background:#e8eff7;border-radius:999px;overflow:hidden}.report-ranking-row i b{display:block;height:100%;background:#0b6cae;border-radius:999px}.report-ranking-row em{font-style:normal;text-align:right;font-weight:900;color:#073f7a}
       .report-engineering-overview{display:grid;grid-template-columns:38mm 1fr;gap:14px;margin-bottom:12px}.report-engineering-score{border:1px solid #b9d8ee;border-radius:9px;background:linear-gradient(135deg,#edf7ff,#f8fbff);padding:10px;display:flex;flex-direction:column;justify-content:center}.report-engineering-score span{font-size:7.8px;text-transform:uppercase;color:#536a83;font-weight:900}.report-engineering-score strong{font-size:34px;line-height:1;color:#073f7a}.report-engineering-score small{font-size:8px;color:#536a83;margin-top:3px}.report-engineering-overview>div:last-child{border:1px solid var(--report-line);border-radius:9px;padding:10px;background:#fbfdff}.report-engineering-table th:nth-child(1){width:18mm}.report-engineering-table th:nth-child(2){width:25mm}.report-engineering-table th:nth-child(3){width:66mm}.report-engineering-table td{font-size:7.6px;line-height:1.25}.report-engineering-table td span{color:#536a83}.report-engineering-table .engineering-critical td:first-child{color:#a52828;font-weight:900}.report-engineering-table .engineering-warning td:first-child{color:#9a5a00;font-weight:900}.report-engineering-disclaimer{font-size:8px;color:#5c6f87;margin:10px 0 0;font-style:italic}
       @media screen and (max-width:960px){.dp-professional-report{overflow:auto}.report-page{width:100%;height:auto;min-height:auto}.report-formpart-grid,.report-catalog-list,.report-cover-main,.report-summary-cards.cover,.report-two-col,.report-quality-grid,.report-audit-grid,.report-approval-layout,.report-executive-kpis,.report-executive-grid,.report-loss-analysis-grid,.report-schematic-summary,.report-revision-compare-head,.report-revision-summary-grid,.report-review-checks{grid-template-columns:1fr}.report-cover-summary{margin-top:18px}}
@@ -3217,13 +3301,15 @@ export class ReportEngine {
     URL.revokeObjectURL(link.href);
   }
 
-  static openPrintWindow(model) {
-    const html = this.createStandaloneHtml(model);
+  static async openPrintWindow(model) {
     const reportWindow = window.open('', '_blank');
 
     if (!reportWindow) {
       throw new Error('Druckfenster konnte nicht geöffnet werden. Bitte Pop-up-Blocker prüfen.');
     }
+
+    const html = await this.createStandaloneHtmlWithEmbeddedAssets(model)
+      .catch(() => this.createStandaloneHtml(model));
 
     const printWhenReady = () => {
       const ready = typeof reportWindow.__druckverlustPrintReady === 'function'
