@@ -4,10 +4,10 @@
   "packageType": "GitHub Pages",
   "version": "3.0.2",
   "phase": "58.20",
-  "generatedAt": "2026-07-25T17:48:00.000Z",
+  "generatedAt": "2026-07-28T19:32:12.000Z",
   "algorithm": "SHA-256",
   "fileCount": 210,
-  "totalBytes": 9084747,
+  "totalBytes": 9098627,
   "criticalFileCount": 23,
   "exclusions": [
     "Windows-Starter",
@@ -31,7 +31,7 @@
     {
       "path": "app.html",
       "bytes": 3666,
-      "sha256": "47878817179ff9574c34a8ff2c8ea156ec52ad40e563033a595b7c2624f8f3d1",
+      "sha256": "2cc9eadec27bb1861450d46458fa7910c50fe78f721c35f39956383d2bace5e9",
       "critical": true
     },
     {
@@ -709,7 +709,7 @@
     {
       "path": "src/main.js",
       "bytes": 17578,
-      "sha256": "ac88e29d3adde6ed11c74278e24358e0da2a7c7cb5645ec0fadca8ebf07d0886",
+      "sha256": "582e78bafe719defde2cecc83d15943f9b8e88658bf165018793d23f7f0054dc",
       "critical": true
     },
     {
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/report/ReportEngine.js",
-      "bytes": 191407,
-      "sha256": "9194d7c1244d1cc9450cd23efe7cc27c22ffa3907528658605cbe96348231c56",
+      "bytes": 205287,
+      "sha256": "82dbee885ccf762343e1f700148b1972cf6b99a56240c7f5475c237c3768cd72",
       "critical": true
     },
     {
@@ -985,7 +985,7 @@
     {
       "path": "src/ui/components/WorkspaceComponent.js",
       "bytes": 679055,
-      "sha256": "744049d24c2199a4950d55f3803ccbb762ba91ec20cfbbddcd2960a2bd85137f",
+      "sha256": "1f4202d116b811157fd0d07fea3be6db4276f930b92457c6d9837d64ff2e96ae",
       "critical": true
     },
     {

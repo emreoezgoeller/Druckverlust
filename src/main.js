@@ -5,7 +5,7 @@ import ApplicationState from './app/ApplicationState.js';
 import ApplicationShell from './ui/ApplicationShell.js?v=58.20';
 import RibbonComponent from './ui/components/RibbonComponent.js?v=58.20';
 import SidebarComponent from './ui/components/SidebarComponent.js?v=58.20';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.20-pdf2';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.20-pdf3';
 import StatusBarComponent from './ui/components/StatusBarComponent.js?v=58.20';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';

@@ -20,7 +20,7 @@ import {
   resolveFormPartContextSection,
 } from '../../formteile/FormPartWorkflowEngine.js?v=58.20';
 import ProjectCommands from '../../app/ProjectCommands.js?v=58.20';
-import ReportEngine from '../../report/ReportEngine.js?v=58.20-pdf2';
+import ReportEngine from '../../report/ReportEngine.js?v=58.20-pdf3';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
 import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.20';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';

@@ -153,6 +153,52 @@ function rangeLabel(startIndex, count, total) {
   return `${start}–${end} von ${total}`;
 }
 
+function reportSectionKeyFromTitle(title = '') {
+  const normalized = String(title || '')
+    .toLocaleLowerCase('de-CH')
+    .replace(/\s+-\s+fortsetzung$/u, '')
+    .replace(/\s+fortsetzung$/u, '')
+    .trim();
+
+  const mappings = [
+    ['deckblatt', 'cover'],
+    ['inhaltsverzeichnis', 'toc'],
+    ['management-zusammenfassung', 'executiveSummary'],
+    ['projektweite anlagenübersicht', 'systemsOverview'],
+    ['projektweite qs-matrix', 'projectCockpit'],
+    ['projektaufgaben', 'projectTasks'],
+    ['struktur- und abhängigkeitsprüfung', 'projectDependencies'],
+    ['anlagenschema', 'networkSchematic'],
+    ['druckverlustanalyse', 'lossAnalysis'],
+    ['revisionsvergleich', 'revisionComparison'],
+    ['variantenvergleich', 'variantComparison'],
+    ['hauptberechnung – luftnetz', 'mainNetwork'],
+    ['hauptberechnung - luftnetz', 'mainNetwork'],
+    ['zugeordnete formteile', 'assignedFormParts'],
+    ['sonderbauteile', 'specialComponents'],
+    ['gesamtzusammenfassung', 'summary'],
+    ['engineering-qs', 'engineeringQuality'],
+    ['qs-prüfprotokoll', 'qualityProtocol'],
+    ['anhang – formteilübersicht', 'formPartCatalog'],
+    ['anhang - formteilübersicht', 'formPartCatalog'],
+    ['prüfung / freigabe', 'approval'],
+    ['anlageninformationen', 'info'],
+  ];
+
+  const match = mappings.find(([label]) => normalized === label || normalized.startsWith(`${label} `));
+  if (match) return match[1];
+
+  return normalized
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'report-section';
+}
+
+function reportPagePackMode(title = '', key = reportSectionKeyFromTitle(title)) {
+  return ['cover', 'toc', 'networkSchematic', 'approval'].includes(key) ? 'isolated' : 'auto';
+}
+
 function estimateFormPartBoxHeightMm(group = {}) {
   const rowCount = Math.max(1, Array.isArray(group.formParts) ? group.formParts.length : 0);
   const rowHeightMm = rowCount > 10 ? 5.2 : rowCount > 5 ? 7.5 : 11;
@@ -293,12 +339,205 @@ function createPrintWaitScript() {
           }));
         }
 
+        function directChild(element, selector){
+          if (!element) return null;
+          var children = Array.prototype.slice.call(element.children || []);
+          return children.find(function(child){ return child.matches && child.matches(selector); }) || null;
+        }
+
+        function reportPageTitle(page){
+          var heading = page && page.querySelector ? page.querySelector('.report-page-head h2') : null;
+          return heading ? heading.textContent.trim() : (page ? page.getAttribute('data-report-title') || '' : '');
+        }
+
+        function reportPageSubtitle(page){
+          var subtitle = page && page.querySelector ? page.querySelector('.report-page-head p') : null;
+          return subtitle ? subtitle.textContent.trim() : '';
+        }
+
+        function createFlowBlock(page, isPrimary){
+          var content = directChild(page, '.report-page-content');
+          var block = document.createElement('section');
+          block.className = 'report-flow-block ' + (isPrimary ? 'report-flow-primary' : 'report-flow-secondary');
+          block.setAttribute('data-report-key', page.getAttribute('data-report-key') || '');
+          block.setAttribute('data-report-title', page.getAttribute('data-report-title') || reportPageTitle(page));
+
+          if (!isPrimary) {
+            var sectionHead = document.createElement('header');
+            sectionHead.className = 'report-flow-section-head';
+            var title = document.createElement('h3');
+            title.textContent = reportPageTitle(page);
+            sectionHead.appendChild(title);
+            var subtitleText = reportPageSubtitle(page);
+            if (subtitleText) {
+              var subtitle = document.createElement('p');
+              subtitle.textContent = subtitleText;
+              sectionHead.appendChild(subtitle);
+            }
+            block.appendChild(sectionHead);
+          }
+
+          if (content) {
+            while (content.firstChild) block.appendChild(content.firstChild);
+          }
+
+          return block;
+        }
+
+        function makePrimaryBlock(block){
+          block.classList.remove('report-flow-secondary');
+          block.classList.add('report-flow-primary');
+          var header = directChild(block, '.report-flow-section-head');
+          if (header) header.remove();
+        }
+
+        function makeSecondaryBlock(block, page){
+          block.classList.remove('report-flow-primary');
+          block.classList.add('report-flow-secondary');
+          if (directChild(block, '.report-flow-section-head')) return;
+
+          var sectionHead = document.createElement('header');
+          sectionHead.className = 'report-flow-section-head';
+          var title = document.createElement('h3');
+          title.textContent = reportPageTitle(page);
+          sectionHead.appendChild(title);
+          var subtitleText = reportPageSubtitle(page);
+          if (subtitleText) {
+            var subtitle = document.createElement('p');
+            subtitle.textContent = subtitleText;
+            sectionHead.appendChild(subtitle);
+          }
+          block.insertBefore(sectionHead, block.firstChild);
+        }
+
+        function isPackablePage(page){
+          if (!page || page.classList.contains('report-cover-page')) return false;
+          return page.getAttribute('data-report-pack') !== 'isolated';
+        }
+
+        function contentFits(content){
+          return content && content.scrollHeight <= content.clientHeight + 2 && content.scrollWidth <= content.clientWidth + 2;
+        }
+
+        function renumberReportPages(){
+          var pages = Array.prototype.slice.call(document.querySelectorAll('.report-page'));
+          var total = pages.length;
+          var pageRanges = Object.create(null);
+
+          pages.forEach(function(page, index){
+            var pageNumber = index + 1;
+            page.setAttribute('data-report-page', String(pageNumber));
+            var footer = directChild(page, '.report-footer');
+            var footerSpans = footer ? footer.querySelectorAll('span') : [];
+            if (footerSpans.length > 1) footerSpans[1].textContent = 'Seite ' + pageNumber + ' / ' + total;
+
+            var keys = [];
+            var pageKey = page.getAttribute('data-report-key');
+            if (pageKey) keys.push(pageKey);
+            page.querySelectorAll('.report-flow-block[data-report-key]').forEach(function(block){
+              var key = block.getAttribute('data-report-key');
+              if (key && keys.indexOf(key) === -1) keys.push(key);
+            });
+
+            keys.forEach(function(key){
+              if (!pageRanges[key]) pageRanges[key] = { first: pageNumber, last: pageNumber };
+              pageRanges[key].first = Math.min(pageRanges[key].first, pageNumber);
+              pageRanges[key].last = Math.max(pageRanges[key].last, pageNumber);
+            });
+          });
+
+          document.querySelectorAll('[data-report-toc-key]').forEach(function(row){
+            var key = row.getAttribute('data-report-toc-key');
+            var range = pageRanges[key];
+            var cell = row.querySelector('[data-report-toc-page]');
+            if (!range || !cell) return;
+            cell.textContent = range.first === range.last ? String(range.first) : range.first + '–' + range.last;
+          });
+
+          var countNode = document.getElementById('report-page-count');
+          if (countNode) {
+            var fileName = countNode.getAttribute('data-report-file-name') || '';
+            countNode.textContent = total + ' Seite(n)' + (fileName ? ' · Dateiname: ' + fileName : '');
+          }
+
+          document.documentElement.setAttribute('data-report-page-count', String(total));
+          return total;
+        }
+
+        function compactReportPages(){
+          if (document.documentElement.getAttribute('data-report-compacted') === 'true') {
+            return Number(document.documentElement.getAttribute('data-report-page-count') || 0);
+          }
+
+          var report = document.querySelector('.dp-professional-report');
+          if (!report) return 0;
+
+          var pages = Array.prototype.slice.call(report.querySelectorAll('.report-page'));
+          var currentPage = null;
+          var currentContent = null;
+
+          pages.forEach(function(page){
+            if (!page.isConnected) return;
+
+            if (!isPackablePage(page)) {
+              currentPage = null;
+              currentContent = null;
+              return;
+            }
+
+            var sourceContent = directChild(page, '.report-page-content');
+            if (!sourceContent) {
+              currentPage = null;
+              currentContent = null;
+              return;
+            }
+
+            var block = createFlowBlock(page, !currentPage);
+
+            if (!currentPage) {
+              makePrimaryBlock(block);
+              sourceContent.appendChild(block);
+              currentPage = page;
+              currentContent = sourceContent;
+              return;
+            }
+
+            var currentBlocks = currentContent.querySelectorAll(':scope > .report-flow-block').length;
+            if (currentBlocks >= 3) {
+              makePrimaryBlock(block);
+              sourceContent.appendChild(block);
+              currentPage = page;
+              currentContent = sourceContent;
+              return;
+            }
+
+            makeSecondaryBlock(block, page);
+            currentPage.classList.add('report-flow-page');
+            currentContent.appendChild(block);
+
+            if (contentFits(currentContent)) {
+              page.remove();
+              return;
+            }
+
+            currentContent.removeChild(block);
+            if (currentBlocks < 2) currentPage.classList.remove('report-flow-page');
+            makePrimaryBlock(block);
+            sourceContent.appendChild(block);
+            currentPage = page;
+            currentContent = sourceContent;
+          });
+
+          document.documentElement.setAttribute('data-report-compacted', 'true');
+          return renumberReportPages();
+        }
+
         function auditPageLayout(){
           var pages = Array.prototype.slice.call(document.querySelectorAll('.report-page'));
           var findings = [];
 
           pages.forEach(function(page, index){
-            var content = page.querySelector('.report-page-content');
+            var content = directChild(page, '.report-page-content');
             if (!content) return;
             var verticalOverflow = content.scrollHeight > content.clientHeight + 3;
             var horizontalOverflow = content.scrollWidth > content.clientWidth + 3;
@@ -326,12 +565,16 @@ function createPrintWaitScript() {
           return findings;
         }
 
+        window.__druckverlustCompactPages = compactReportPages;
         window.__druckverlustLayoutAudit = auditPageLayout;
         window.__druckverlustPrintReady = function(){
           return waitForImages().then(function(){
-            return new Promise(function(resolve){ setTimeout(resolve, 300); });
+            return new Promise(function(resolve){ setTimeout(resolve, 180); });
           }).then(function(){
-            auditPageLayout();
+            compactReportPages();
+            return new Promise(function(resolve){ setTimeout(resolve, 180); });
+          }).then(function(){
+            return auditPageLayout();
           });
         };
 
@@ -340,7 +583,9 @@ function createPrintWaitScript() {
             var button = event.target && event.target.closest ? event.target.closest('[data-print-action]') : null;
             if (!button) return;
             var action = button.getAttribute('data-print-action');
-            if (action === 'print') window.print();
+            if (action === 'print') {
+              window.__druckverlustPrintReady().then(function(){ window.print(); });
+            }
             if (action === 'close') window.close();
           });
         }
@@ -1347,7 +1592,7 @@ export class ReportEngine {
       <div class="report-print-helper no-print">
         <div>
           <strong>PDF-Ausgabe vorbereitet</strong>
-          <span>${escapeHtml(guidance.totalPages)} Seite(n) · Dateiname: ${escapeHtml(guidance.fileName)}</span>
+          <span id="report-page-count" data-report-file-name="${escapeHtml(guidance.fileName)}">${escapeHtml(guidance.totalPages)} Seite(n) · Dateiname: ${escapeHtml(guidance.fileName)}</span>
           <span id="report-layout-status" class="report-layout-status">Layout und Bilder werden geprüft …</span>
         </div>
         <div class="report-print-helper-actions">
@@ -1470,12 +1715,12 @@ export class ReportEngine {
           <table class="report-toc-table">
             <tbody>
               ${plan.entries.filter(entry => entry.page !== 1).map(entry => `
-                <tr>
+                <tr data-report-toc-key="${escapeHtml(entry.key)}">
                   <td>
                     <strong>${escapeHtml(entry.title)}</strong>
                     <span>${escapeHtml(entry.description || '')}</span>
                   </td>
-                  <td>${entry.pageCount && entry.pageCount > 1 ? `${entry.page}–${entry.page + entry.pageCount - 1}` : entry.page}</td>
+                  <td data-report-toc-page>${entry.pageCount && entry.pageCount > 1 ? `${entry.page}–${entry.page + entry.pageCount - 1}` : entry.page}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -1547,8 +1792,11 @@ export class ReportEngine {
   }
 
   static renderPage(model, page, title, subtitle, content, totalPages = 6) {
+    const reportKey = reportSectionKeyFromTitle(title);
+    const packMode = reportPagePackMode(title, reportKey);
+
     return `
-      <section class="report-page" data-report-page="${page}" data-report-title="${escapeHtml(title)}">
+      <section class="report-page" data-report-page="${page}" data-report-title="${escapeHtml(title)}" data-report-key="${escapeHtml(reportKey)}" data-report-pack="${escapeHtml(packMode)}">
         <header class="report-page-head">
           <div class="report-logo-wrap">
             ${model.assets.logo ? `<img class="report-logo" src="${escapeHtml(model.assets.logo)}" alt="EO Logo" draggable="false" loading="eager" fetchpriority="high" decoding="async">` : '<div class="report-logo-placeholder">EO</div>'}
@@ -1585,7 +1833,7 @@ export class ReportEngine {
 
   static renderCoverPage(model, generatedLabel, page = 1, totalPages = 6) {
     return `
-      <section class="report-page report-cover-page" data-report-page="${page}" data-report-title="Deckblatt">
+      <section class="report-page report-cover-page" data-report-page="${page}" data-report-title="Deckblatt" data-report-key="cover" data-report-pack="isolated">
         ${model.assets.logo ? `<div class="report-cover-watermark" aria-hidden="true"><img src="${escapeHtml(model.assets.logo)}" alt="" draggable="false"></div>` : ''}
         <header class="report-cover-topbar">
           <div class="report-logo-wrap large">
@@ -2789,6 +3037,52 @@ export class ReportEngine {
       .report-page-head h2{margin:3px 0 3px;color:var(--report-blue);text-transform:uppercase;font-size:17px;line-height:1.12;letter-spacing:.02em}
       .report-page-head p{margin:0;color:#24364c;font-size:11px}
       .report-page-content{height:calc(297mm - 12mm - 15mm - 36mm);min-height:0;overflow:hidden}
+      .report-flow-page .report-page-head{gap:9px;margin-bottom:7px}
+      .report-flow-page .report-logo-wrap{width:18mm;height:18mm}
+      .report-flow-page .report-page-head h2{font-size:15.5px;margin-top:2px}
+      .report-flow-page .report-page-head p{font-size:9.5px}
+      .report-flow-page .report-page-content{height:240mm;display:flex;flex-direction:column;gap:4mm;overflow:hidden}
+      .report-flow-block{min-width:0;break-inside:avoid;page-break-inside:avoid}
+      .report-flow-block.report-flow-secondary{padding-top:0}
+      .report-flow-section-head{border-top:1.2px solid #9fb8d1;padding-top:3mm;margin-bottom:2.5mm}
+      .report-flow-section-head h3{margin:0;color:var(--report-blue);font-size:12.5px;line-height:1.15;text-transform:uppercase;letter-spacing:.025em}
+      .report-flow-section-head p{margin:1mm 0 0;color:#52677e;font-size:8.6px;line-height:1.25}
+      .report-flow-page .report-summary-card{min-height:15mm;padding:5px 7px}
+      .report-flow-page .report-summary-card small{min-height:0;font-size:7.4px}
+      .report-flow-page .report-summary-card strong{font-size:13px}
+      .report-flow-page .report-system-overview-kpis,
+      .report-flow-page .report-project-cockpit-kpis,
+      .report-flow-page .report-executive-kpis{gap:5px;margin-bottom:7px}
+      .report-flow-page .report-executive-kpis>div{min-height:19mm;padding:7px 8px}
+      .report-flow-page .report-executive-kpis strong{font-size:14px}
+      .report-flow-page .report-executive-kpis small{font-size:7.2px}
+      .report-flow-page .report-executive-grid{gap:8px}
+      .report-flow-page .report-executive-grid .report-info-box{min-height:0}
+      .report-flow-page .report-executive-priority li{margin-bottom:5px}
+      .report-flow-page .report-executive-note{margin-top:6px;padding:6px 9px}
+      .report-flow-page .report-project-cockpit-grid{gap:7px;margin-bottom:7px}
+      .report-flow-page .report-info-box{margin-top:7px;padding:8px 10px;font-size:9px;line-height:1.35}
+      .report-flow-page .report-info-box.compact{padding:8px 10px}
+      .report-flow-page .report-info-box h3,
+      .report-flow-page .report-info-box.compact h3{margin-bottom:5px;font-size:9.5px}
+      .report-flow-page .report-loss-analysis-grid{gap:8px}
+      .report-flow-page .report-loss-analysis-grid .report-info-box{min-height:0}
+      .report-flow-page .report-section-ranking{margin-top:7px}
+      .report-flow-page .report-ranking-row{margin:4px 0}
+      .report-flow-page .report-chart-row{margin-bottom:6px}
+      .report-flow-page .report-quality-grid{gap:5px;margin-bottom:7px}
+      .report-flow-page .report-quality-status{min-height:18mm;padding:6px 8px}
+      .report-flow-page .report-audit-box{margin-bottom:7px}
+      .report-flow-page .report-audit-grid{gap:5px}
+      .report-flow-page .report-table th{padding:3.2px 2.5px;font-size:7.1px}
+      .report-flow-page .report-table td{padding:3.6px 3px;font-size:7.9px}
+      .report-flow-page .report-table.small td{font-size:7.5px}
+      .report-flow-page .report-formpart-grid{gap:2mm}
+      .report-flow-page .report-formpart-box{margin-bottom:0}
+      .report-flow-page .report-catalog-list{gap:2mm}
+      .report-flow-page .report-catalog-card{min-height:27mm}
+      .report-flow-page .report-engineering-overview{gap:9px;margin-bottom:7px}
+      .report-flow-page .report-engineering-score strong{font-size:27px}
       .report-formpart-box,.report-summary-card,.report-result-box,.report-info-box,.report-table tr{break-inside:avoid;page-break-inside:avoid}
 
       .report-cover-page{display:flex;flex-direction:column;gap:0;padding:12mm 13mm 15mm;background:#fff;isolation:isolate}

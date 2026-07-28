@@ -1,18 +1,32 @@
-Druckverlust Pro – PDF-Hotfix 2 für Version 3.0.2 / Phase 58.20
+Druckverlust Pro - PDF-Hotfix 3: Dynamische Seitenausnutzung
+============================================================
 
-Voraussetzung:
-- Aktueller Projektstand mit dem vorherigen PDF-Hotfix 1.
+Basis:
+- Druckverlust Pro v3.0.2 / Phase 58.20
+- PDF-Hotfix 1 installiert
+- PDF-Hotfix 2 installiert
 
 Installation:
-1. Druckverlust Pro vollständig schliessen.
-2. Den Inhalt dieses Ordners in den Hauptordner von Druckverlust Pro kopieren.
+1. ZIP-Datei entpacken.
+2. Den gesamten Inhalt dieses Ordners in den aktuellen Druckverlust-Pro-Ordner kopieren.
 3. Vorhandene Dateien ersetzen.
-4. Browser-Cache neu laden: Strg + F5.
+4. Browser mit Strg + F5 vollständig neu laden.
 
-Enthaltene Korrekturen:
-- Anlagenschema: Formteile werden nicht mehr bereits nach vier Einträgen mit „+ weitere“ gekürzt.
-- Bis zu 18 Formteile je Teilstrecke werden im Schema auf bis zu drei Reihen dargestellt.
-- In der Bauteil-Zuordnung werden alle Formteile vollständig aufgelistet.
-- Hauptberechnung Luftnetz: schmalere Positionsspalte und breitere Beschreibungsspalte.
-- SIA-Geschwindigkeitsangabe bleibt vollständig innerhalb der Geschwindigkeitsspalte.
-- Der veraltete Praxistest-Grenzwert für die kompaktere Formteil-Paginierung wurde korrigiert.
+Geänderte Projektdateien:
+- app.html
+- release-integrity.json
+- src/main.js
+- src/report/ReportEngine.js
+- src/ui/components/WorkspaceComponent.js
+
+Neu:
+- Automatische, höhenbasierte Zusammenfassung kurzer Berichtskapitel.
+- Deckblatt, Inhaltsverzeichnis, Anlagenschema und Prüfung/Freigabe bleiben separat.
+- Inhaltsblöcke werden nicht zwischen zwei Seiten getrennt.
+- Inhaltsverzeichnis, Fusszeilen und Gesamtseitenzahl werden nach der Verdichtung automatisch aktualisiert.
+- Maximal drei vollständige Kapitelblöcke pro Seite.
+- Automatische Überlaufprüfung vor dem Drucken.
+
+Hinweis:
+Der Bericht wird erst nach dem Laden der Bilder dynamisch verdichtet. Beim Drucken kurz warten,
+bis oben "Layout geprüft" angezeigt wird.
