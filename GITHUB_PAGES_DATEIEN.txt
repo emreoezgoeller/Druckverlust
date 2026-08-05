@@ -1,0 +1,15 @@
+DRUCKVERLUST PRO 3.0.4 – GITHUB PAGES PHASE 58.40
+================================================================
+Release-Datum: 2026-08-03
+Laufzeitdateien laut Integritätsmanifest: 214
+Kritische Dateien: 26
+Startseite: index.html
+Berechnung: app.html
+Bedienungsanleitung: bedienungsanleitung.html
+Abnahme und Freigabe: abnahme.html
+Online-Prüfung: deployment.html
+Zielpfad: /Druckverlust/
+
+Den INHALT dieses Ordners direkt in den Repository-Stamm kopieren.
+Die Datei .nojekyll sowie release.json und release-integrity.json müssen erhalten bleiben.
+Nach der Veröffentlichung zuerst deployment.html und danach abnahme.html ausführen.

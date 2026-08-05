@@ -1,16 +1,17 @@
 {
   "name": "Druckverlust Pro",
   "edition": "Professional",
-  "version": "3.0.2",
-  "phase": "58.20",
-  "releaseDate": "2026-07-22",
+  "version": "3.0.4",
+  "phase": "58.40",
+  "releaseDate": "2026-08-03",
   "projectFileSchema": "1.3.0",
   "entryPoints": {
     "product": "index.html",
     "application": "app.html",
     "windowsStarter": "Druckverlust_starten.bat",
     "manual": "bedienungsanleitung.html",
-    "deployment": "deployment.html"
+    "deployment": "deployment.html",
+    "acceptance": "abnahme.html"
   },
   "projectFormats": [
     ".dvp",
@@ -49,23 +50,37 @@
     "cacheConsistencyChecks": 6,
     "finalReleaseChecks": 453,
     "releaseIntegrationChecks": 1607,
-    "integrityManifestFiles": 220,
-    "integrityCriticalFiles": 23,
+    "integrityManifestFiles": 214,
+    "integrityCriticalFiles": 26,
     "fullRegressionSuite": "bestanden",
-    "manualWindowsChromePrintGate": "offen bis zur echten Bestätigung",
-    "manualWindowsEdgePrintGate": "offen bis zur echten Bestätigung",
+    "manualWindowsChromePrintGate": "über Abnahmezentrum dokumentierbar",
+    "manualWindowsEdgePrintGate": "über Abnahmezentrum dokumentierbar",
     "manualChapters": 14,
     "manualSearch": "integriert",
     "deploymentPage": "integriert",
     "githubPagesBuild": "integriert",
     "staticDeploymentChecks": 440,
     "githubPagesRuntimeFiles": 210,
-    "helpTopics": 17
+    "helpTopics": 17,
+    "pdfHotfixesMerged": 3,
+    "dynamicPagePacking": "integriert",
+    "reportBlockIntegrity": "Teilstrecken-, Tabellen- und Formteilblöcke bleiben zusammen",
+    "reportImageEmbedding": "integriert",
+    "reportPageRenumbering": "dynamisch nach Seitenverdichtung",
+    "pdfLayoutRelease": "abgeschlossen",
+    "acceptanceCenter": "integriert",
+    "acceptanceRequiredChecks": 12,
+    "acceptanceLocalPersistence": "integriert",
+    "acceptanceExports": [
+      "HTML",
+      "JSON",
+      "Druckansicht"
+    ]
   },
   "excludedModules": [
     "Ventilatorauslegung",
     "Hersteller-Bauteildatenbank"
   ],
-  "notes": "Deployment- und Veröffentlichungsupdate mit GitHub-Pages-Build, öffentlicher Deployment-Prüfseite, robuster 404-Pfadbehandlung, .nojekyll und erneuertem SHA-256-Integritätsmanifest. Rechenkern und Projektschema 1.3.0 bleiben unverändert.",
-  "status": "Release 3.0.2 – GitHub-Pages-Deployment vorbereitet; Rechenkern unverändert"
+  "notes": "Abnahme-Release: Neues lokales Abnahmezentrum mit zwölf Pflichtprüfungen für Oberfläche, Fachworkflow, Projektdateien, Bericht, Chrome, Edge und Deployment. Der Status wird lokal gespeichert und kann als HTML- oder JSON-Protokoll exportiert werden. Eine Freigabe wird erst nach vollständiger manueller Bestätigung ermöglicht. Rechenkern und Projektschema 1.3.0 bleiben unverändert.",
+  "status": "Release 3.0.4 – Phase 58.40 Abnahmezentrum und dokumentierte Freigabe"
 }

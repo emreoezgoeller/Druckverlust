@@ -1,14 +1,15 @@
-import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=58.20';
+import { APP_RELEASE, APP_VERSION } from '../core/appVersion.js?v=58.40';
 import {
   DEPLOYMENT_CONFIG,
   getDeploymentLocationInfo,
   resolveRuntimeBaseUrl,
-} from '../core/deploymentConfig.js?v=58.20';
+} from '../core/deploymentConfig.js?v=58.40';
 
 const REQUIRED_RESOURCES = Object.freeze([
   { area: 'Startseite', label: 'Produktseite', path: 'index.html' },
   { area: 'Anwendung', label: 'Berechnungstool', path: 'app.html' },
   { area: 'Anleitung', label: 'Bedienungsanleitung', path: 'bedienungsanleitung.html' },
+  { area: 'Abnahme', label: 'Abnahmezentrum', path: 'abnahme.html' },
   { area: 'Version', label: 'Release-Metadaten', path: 'release.json' },
   { area: 'Deployment', label: 'Deployment-Konfiguration', path: 'deployment-config.json' },
   { area: 'Integrität', label: 'SHA-256-Manifest', path: 'release-integrity.json' },

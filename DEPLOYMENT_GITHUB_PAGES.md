@@ -1,6 +1,6 @@
 # Druckverlust Pro auf GitHub Pages veröffentlichen
 
-**Release:** Version 3.0.2 · Phase 58.20  
+**Release:** Version 3.0.4 · Phase 58.40  
 **Zieladresse:** `https://emreoezgoeller.github.io/Druckverlust/`
 
 ## 1. Richtiges Paket verwenden
@@ -48,7 +48,7 @@ Auf `deployment.html` die Prüfung starten. Erwartet werden:
 - GitHub Pages erkannt,
 - Projektpfad `/Druckverlust/` korrekt,
 - HTTPS aktiv,
-- Version 3.0.2 und Phase 58.20 konsistent,
+- Version 3.0.4 und Phase 58.40 konsistent,
 - alle Pflichtdateien erreichbar,
 - Integritätsmanifest passend zum Release.
 
@@ -58,7 +58,7 @@ Jeder Release erhält eine neue Cachekennung. Falls trotzdem ein alter Stand ers
 
 1. Seite mit `Ctrl + F5` neu laden.
 2. Alternativ Browsercache für die Seite leeren.
-3. Auf `deployment.html` kontrollieren, ob `src/main.js?v=58.20` erkannt wird.
+3. Auf `deployment.html` kontrollieren, ob `src/main.js?v=58.40` erkannt wird.
 
 ## 5. Projektdaten und Datenschutz
 
@@ -85,3 +85,11 @@ Die veröffentlichte Adresse muss zum Repositorynamen passen: `/Druckverlust/`. 
 ### Neuer Stand wird nicht angezeigt
 
 Zuerst `Ctrl + F5` verwenden. Danach auf `deployment.html` Version und Cachekennung prüfen.
+
+## Phase 58.40 – PDF-Abschluss
+
+Version 3.0.4 enthält die konsolidierten PDF-Korrekturen: dynamische blockweise Seitenausnutzung, vollständige Formteilbilder, überarbeitete Tabellenbreiten, vollständige Bauteilzuordnung sowie automatische Aktualisierung von Inhaltsverzeichnis und Seitenzahlen. Der Rechenkern und das Projektschema 1.3.0 wurden nicht verändert.
+
+## Abnahme nach der Veröffentlichung
+
+Nach erfolgreicher Online-Prüfung `abnahme.html` öffnen. Dort werden der echte Büroablauf, Speichern/Öffnen sowie die PDF-Ausgabe in Google Chrome und Microsoft Edge dokumentiert. Das Protokoll bleibt lokal und kann als HTML oder JSON exportiert werden.

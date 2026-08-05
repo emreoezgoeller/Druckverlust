@@ -2,8 +2,8 @@
 // Phase 31.00: Variantenarchiv, detaillierte Revisionen und neutraler Projektabschluss.
 
 import ProjectCalculationService from '../project/ProjectCalculationService.js';
-import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.20';
-import RevisionComparisonEngine from '../revision/RevisionComparisonEngine.js?v=58.20';
+import EngineeringQualityEngine from '../quality/EngineeringQualityEngine.js?v=58.40';
+import RevisionComparisonEngine from '../revision/RevisionComparisonEngine.js?v=58.40';
 
 function number(value, fallback = 0) {
   const parsed = Number(String(value ?? '').replace(',', '.'));

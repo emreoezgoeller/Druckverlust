@@ -1,5 +1,5 @@
 // Druckverlust Pro – HelpCenterEngine
-// Phase 58.20: Hilfe-Center mit Gesamtworkflow, Bedienungsanleitung und Online-Prüfung.
+// Phase 58.40: Hilfe-Center mit Gesamtworkflow, Bedienungsanleitung und Online-Prüfung.
 
 const HELP_PROGRESS_KEY = 'druckverlust-pro.help-center.progress.v2';
 
@@ -159,7 +159,7 @@ const HELP_TOPICS = Object.freeze([
     keywords: ['bericht', 'pdf', 'drucken', 'csv', 'export', 'report'],
     action: 'showReport',
     actionLabel: 'Bericht öffnen',
-    steps: ['Berechnung aktualisieren.', 'Export-QS, Seitenplan und Berichtumfang prüfen.', 'Druckansicht öffnen und Deckblatt sowie Schema kontrollieren.', 'Als PDF mit A4, 100 % Skalierung und aktivierten Hintergrundgrafiken speichern.'],
+    steps: ['Berechnung aktualisieren.', 'Export-QS, Seitenplan und Berichtumfang prüfen.', 'Druckansicht öffnen und warten, bis „Layout geprüft“ angezeigt wird.', 'Deckblatt, Formteilbilder, Fortsetzungsseiten und Schema kontrollieren.', 'Als PDF mit A4, 100 % Skalierung und aktivierten Hintergrundgrafiken speichern.'],
     tips: ['Browser-Kopf- und Fusszeilen deaktivieren.', 'Vor der Freigabe die Ausgabe in Chrome oder Edge visuell kontrollieren.'],
   },
   {
@@ -183,6 +183,14 @@ const HELP_TOPICS = Object.freeze([
     actionLabel: 'Übergabe öffnen',
     steps: ['Aktuellen Revisionssnapshot erstellen.', 'Änderungen zur Basisrevision prüfen.', 'Prüfprotokoll vervollständigen.', 'Übergabestatus dokumentieren und Paket exportieren.'],
     tips: ['Ein importiertes Paket wird vor der Übernahme geprüft und verändert das offene Projekt nicht sofort.'],
+  },
+  {
+    id: 'release-acceptance',
+    category: 'Ausgabe & Freigabe',
+    title: 'Abnahme in Chrome und Edge dokumentieren',
+    summary: 'Das Abnahmezentrum führt durch zwölf Pflichtprüfungen und exportiert ein lokales Freigabeprotokoll.',
+    keywords: ['abnahme', 'freigabe', 'chrome', 'edge', 'pdf', 'protokoll', '58.40'],
+    steps: ['Auf der Startseite Abnahme öffnen.', 'Demo oder reales Projekt vollständig prüfen.', 'Jeden Prüfpunkt als Bestanden, Problem oder Offen dokumentieren.', 'HTML- oder JSON-Protokoll exportieren.', 'Freigabe erst nach zwölf bestandenen Prüfpunkten bestätigen.'],
   },
   {
     id: 'online-deployment',

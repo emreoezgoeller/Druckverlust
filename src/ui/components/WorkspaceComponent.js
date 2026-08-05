@@ -10,33 +10,33 @@ import {
   createSectionSizingResult,
   dimensionToMillimetres,
   normalizeTargetVelocity,
-} from '../../sections/SectionSizingAssistant.js?v=58.20';
-import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=58.20';
+} from '../../sections/SectionSizingAssistant.js?v=58.40';
+import { createDefaultFormPartRegistry } from '../../formteile/FormPartRegistry.js?v=58.40';
 import {
   getAdjacentSection,
   getConnectionAssignmentIssues,
   getFormPartPosition,
   getSuggestedConnectionSectionId,
   resolveFormPartContextSection,
-} from '../../formteile/FormPartWorkflowEngine.js?v=58.20';
-import ProjectCommands from '../../app/ProjectCommands.js?v=58.20';
-import ReportEngine from '../../report/ReportEngine.js?v=58.20-pdf3';
+} from '../../formteile/FormPartWorkflowEngine.js?v=58.40';
+import ProjectCommands from '../../app/ProjectCommands.js?v=58.40';
+import ReportEngine from '../../report/ReportEngine.js?v=58.40';
 import ProjectDiagnostics from '../../diagnostics/ProjectDiagnostics.js';
-import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.20';
+import DeploymentDiagnostics from '../../diagnostics/DeploymentDiagnostics.js?v=58.40';
 import CalculationDiagnostics from '../../diagnostics/CalculationDiagnostics.js';
 import ReferenceTestDiagnostics from '../../diagnostics/ReferenceTestDiagnostics.js';
 import FormPartValidationDiagnostics from '../../diagnostics/FormPartValidationDiagnostics.js';
 import FormPartSyncDiagnostics from '../../diagnostics/FormPartSyncDiagnostics.js';
 import ComparisonMatrixDiagnostics from '../../diagnostics/ComparisonMatrixDiagnostics.js';
 import PracticeProjectDiagnostics from '../../diagnostics/PracticeProjectDiagnostics.js';
-import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=58.20';
+import ExpertTestDiagnostics from '../../diagnostics/ExpertTestDiagnostics.js?v=58.40';
 import {
   EXPERT_TEST_RECOMMENDATIONS,
   EXPERT_TEST_STATUS_OPTIONS,
   EXPERT_TEST_STORAGE_KEY,
   createExpertTestDraft,
   createExpertTestFilename,
-} from '../../testing/ExpertTestProtocol.js?v=58.20';
+} from '../../testing/ExpertTestProtocol.js?v=58.40';
 import {
   EXPERT_FEEDBACK_STORAGE_KEY,
   createFeedbackRound,
@@ -46,7 +46,7 @@ import {
   formatFeedbackRound,
   parseFeedbackJson,
   serializeFeedbackRoundEntries,
-} from '../../testing/ExpertFeedbackRound.js?v=58.20';
+} from '../../testing/ExpertFeedbackRound.js?v=58.40';
 import {
   RELEASE_ACTION_STATUS_OPTIONS,
   RELEASE_DECISION_OPTIONS,
@@ -60,7 +60,7 @@ import {
   serializeReleaseDecision,
   summarizeReleaseDecision,
   validateReleaseDecisionDraft,
-} from '../../testing/ReleaseDecisionPlan.js?v=58.20';
+} from '../../testing/ReleaseDecisionPlan.js?v=58.40';
 import {
   BETA_RELEASE_STORAGE_KEY,
   createBetaReleaseCsv,
@@ -69,7 +69,7 @@ import {
   formatBetaRelease,
   serializeBetaRelease,
   summarizeBetaRelease,
-} from '../../testing/BetaReleaseReadiness.js?v=58.20';
+} from '../../testing/BetaReleaseReadiness.js?v=58.40';
 import {
   BETA_FEEDBACK_CATEGORIES,
   BETA_FEEDBACK_SEVERITIES,
@@ -82,7 +82,7 @@ import {
   getBetaFeedbackCategoryLabel,
   getBetaFeedbackSeverityLabel,
   summarizeBetaFeedback,
-} from '../../testing/BetaFeedbackReport.js?v=58.20';
+} from '../../testing/BetaFeedbackReport.js?v=58.40';
 import {
   BETA_FEEDBACK_INBOX_STORAGE_KEY,
   BETA_FEEDBACK_TRIAGE_STATUSES,
@@ -100,30 +100,30 @@ import {
   removeBetaFeedbackInboxItem,
   serializeBetaFeedbackInbox,
   updateBetaFeedbackInboxItem,
-} from '../../testing/BetaFeedbackInbox.js?v=58.20';
+} from '../../testing/BetaFeedbackInbox.js?v=58.40';
 import createPracticeProject from '../../project/practiceProject.js';
-import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=58.20';
-import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=58.20';
-import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=58.20';
+import ProjectFileDiagnostics from '../../diagnostics/ProjectFileDiagnostics.js?v=58.40';
+import ReleaseCandidateDiagnostics from '../../diagnostics/ReleaseCandidateDiagnostics.js?v=58.40';
+import { APP_ASSET_VERSION, APP_RELEASE, APP_VERSION } from '../../core/appVersion.js?v=58.40';
 import { createLicenseStatus, getLicenseFeatureRows } from '../../licensing/licenseConfig.js';
 import LicenseGate from '../../licensing/LicenseGate.js';
-import UiDialogService from '../core/UiDialogService.js?v=58.20';
-import RibbonActions from '../core/RibbonActions.js?v=58.20';
-import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=58.20';
-import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=58.20';
-import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=58.20';
-import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=58.20';
-import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=58.20';
-import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=58.20';
-import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=58.20';
-import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=58.20';
-import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=58.20';
-import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=58.20';
-import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=58.20';
-import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=58.20';
-import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=58.20';
-import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=58.20';
-import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=58.20';
+import UiDialogService from '../core/UiDialogService.js?v=58.40';
+import RibbonActions from '../core/RibbonActions.js?v=58.40';
+import HelpCenterEngine from '../../help/HelpCenterEngine.js?v=58.40';
+import ProjectTableImportEngine from '../../import/ProjectTableImportEngine.js?v=58.40';
+import EngineeringQualityEngine from '../../quality/EngineeringQualityEngine.js?v=58.40';
+import NetworkSchematicEngine from '../../schematic/NetworkSchematicEngine.js?v=58.40';
+import LiveSimulationEngine from '../../simulation/LiveSimulationEngine.js?v=58.40';
+import ProjectCompletionEngine from '../../closing/ProjectCompletionEngine.js?v=58.40';
+import RevisionComparisonEngine from '../../revision/RevisionComparisonEngine.js?v=58.40';
+import ProjectSafetyEngine from '../../safety/ProjectSafetyEngine.js?v=58.40';
+import ProjectHandoverEngine from '../../handover/ProjectHandoverEngine.js?v=58.40';
+import SystemPortfolioEngine from '../../project/SystemPortfolioEngine.js?v=58.40';
+import ProjectPortfolioQualityEngine from '../../project/ProjectPortfolioQualityEngine.js?v=58.40';
+import ProjectStandardizationEngine from '../../project/ProjectStandardizationEngine.js?v=58.40';
+import ProjectTaskCenterEngine from '../../project/ProjectTaskCenterEngine.js?v=58.40';
+import ProjectSearchEngine from '../../project/ProjectSearchEngine.js?v=58.40';
+import ProjectDependencyEngine from '../../project/ProjectDependencyEngine.js?v=58.40';
 import AutoSaveEngine from '../../storage/AutoSaveEngine.js';
 import {
   SIA_OPERATION_MODES,
@@ -132,14 +132,14 @@ import {
   analyzeSystemVelocityCompliance,
   evaluateSectionVelocityCompliance,
   normalizeSiaVelocityConfig,
-} from '../../standards/SiaVelocityCompliance.js?v=58.20';
+} from '../../standards/SiaVelocityCompliance.js?v=58.40';
 import {
   RESULT_GLOSSARY,
   RESULT_VIEW_MODES,
   createSectionResultPresentation,
   createSystemResultPresentation,
   normalizeResultViewMode,
-} from '../../results/ResultPresentationEngine.js?v=58.20';
+} from '../../results/ResultPresentationEngine.js?v=58.40';
 
 export default class WorkspaceComponent {
   constructor(rootElement, state) {
@@ -291,7 +291,7 @@ export default class WorkspaceComponent {
     this.root.innerHTML = `
       <header class="workspace-header dp-help-center-header">
         <div>
-          <span class="dp-overline">Phase 58.10 · Hilfe-Center</span>
+          <span class="dp-overline">Phase 58.40 · Hilfe-Center</span>
           <h1>Bedienung, Fachlogik und nächste Schritte</h1>
           <p>Durchsuchbare Hilfe für den aktuellen Arbeitsbereich – mit geführtem Projektablauf und direkten Sprüngen in das Tool.</p>
         </div>
@@ -5641,7 +5641,7 @@ export default class WorkspaceComponent {
           </div>
         </div>
         ${this.renderPdfPrintGuidance(model)}
-        <p class="dp-report-export-note">HTML-Berichte werden mit eingebetteten Bildern gespeichert und können dadurch auch ausserhalb des Projektordners geöffnet werden. Für PDF wird der Browser-Druckdialog genutzt; der vorgeschlagene PDF-Name ist in der Dateivorschau ersichtlich.</p>
+        <p class="dp-report-export-note">HTML-Berichte werden mit eingebetteten Bildern gespeichert und können dadurch auch ausserhalb des Projektordners geöffnet werden. Für PDF wird der Browser-Druckdialog genutzt. Vor dem Drucken kurz warten, bis der Bericht „Layout geprüft“ meldet; der vorgeschlagene PDF-Name ist in der Dateivorschau ersichtlich.</p>
       </section>
     `;
   }

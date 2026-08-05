@@ -1,5 +1,5 @@
 // Druckverlust Pro – zentrale Deployment-Konfiguration
-// Phase 58.20: einheitlicher GitHub-Pages-Pfad und robuste Standorterkennung.
+// Phase 58.40: einheitlicher GitHub-Pages-Pfad und robuste Standorterkennung.
 
 export const DEPLOYMENT_CONFIG = Object.freeze({
   productionOrigin: 'https://emreoezgoeller.github.io',

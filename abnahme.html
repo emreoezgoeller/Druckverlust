@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Druckverlust Pro – Abnahme und Freigabe</title>
+  <meta name="description" content="Lokales Abnahmezentrum für Druckverlust Pro 3.0.4 mit Browser-, Projekt-, Speicher- und PDF-Prüfung." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#071c35" />
+  <link rel="canonical" href="https://emreoezgoeller.github.io/Druckverlust/abnahme.html" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="manifest" href="site.webmanifest" />
+  <link rel="stylesheet" href="src/landing/product.css?v=58.40" />
+  <link rel="stylesheet" href="src/landing/acceptance.css?v=58.40" />
+</head>
+<body>
+  <a class="dp-skip-link" href="#hauptinhalt">Zum Inhalt springen</a>
+  <header class="dp-site-header">
+    <a class="dp-brand" href="index.html" aria-label="Druckverlust Pro Startseite">
+      <img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" />
+      <span><strong>Druckverlust Pro</strong><em>Professional</em></span>
+    </a>
+    <nav class="dp-site-nav dp-acceptance-nav" aria-label="Abnahmenavigation">
+      <a href="index.html">Startseite</a>
+      <a href="bedienungsanleitung.html">Anleitung</a>
+      <a href="deployment.html">Online-Status</a>
+      <a href="feedback.html">Rückmeldung</a>
+      <a class="dp-nav-cta" href="app.html">Tool starten</a>
+    </nav>
+  </header>
+
+  <main id="hauptinhalt" class="dp-acceptance-main">
+    <section class="dp-section-shell dp-acceptance-hero">
+      <div>
+        <span class="dp-kicker">Version 3.0.4 · Phase 58.40</span>
+        <h1>Abnahme dokumentieren. <span>Freigabe bewusst erteilen.</span></h1>
+        <p>Diese Seite führt durch den echten Büroablauf in Chrome und Edge. Alle Eingaben bleiben lokal im Browser. Eine Freigabe wird niemals automatisch gesetzt.</p>
+        <div class="dp-hero-actions">
+          <a class="dp-button dp-button-primary" href="app.html?demo=1">Demo-Projekt öffnen</a>
+          <a class="dp-button dp-button-secondary" href="deployment.html">Deployment prüfen</a>
+          <button class="dp-button dp-button-secondary" type="button" data-print-protocol>Protokoll drucken</button>
+        </div>
+      </div>
+      <aside class="dp-acceptance-status" aria-live="polite">
+        <span>ABNAHMESTATUS</span>
+        <strong data-release-status>Noch offen</strong>
+        <p data-release-summary>Bearbeite alle Pflichtprüfungen und dokumentiere Auffälligkeiten.</p>
+        <div class="dp-acceptance-progress"><i data-progress-bar></i></div>
+        <dl>
+          <div><dt>Bestanden</dt><dd data-count-passed>0</dd></div>
+          <div><dt>Problem</dt><dd data-count-failed>0</dd></div>
+          <div><dt>Offen</dt><dd data-count-open>12</dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="dp-section dp-section-muted">
+      <div class="dp-section-shell">
+        <div class="dp-section-heading">
+          <span class="dp-kicker">Abnahmedaten</span>
+          <h2>Wer hat welchen Stand geprüft?</h2>
+          <p>Die Angaben werden gemeinsam mit den Prüfpunkten im lokalen Abnahmeprotokoll gespeichert.</p>
+        </div>
+        <form class="dp-acceptance-meta" data-acceptance-meta autocomplete="off">
+          <label>Name / Prüfer<input name="tester" type="text" placeholder="Name der prüfenden Person" /></label>
+          <label>Firma<input name="company" type="text" placeholder="Firma / Büro" /></label>
+          <label>Projekt / Testfall<input name="project" type="text" placeholder="z. B. Demo, Schulhaus, Grossprojekt" /></label>
+          <label>Prüfdatum<input name="date" type="date" /></label>
+          <label class="is-wide">Allgemeine Bemerkung<textarea name="generalNote" rows="3" placeholder="Zusammenfassung, bekannte Grenzen oder Freigabebedingungen"></textarea></label>
+        </form>
+      </div>
+    </section>
+
+    <section class="dp-section-shell dp-acceptance-system">
+      <div class="dp-section-heading dp-section-heading-left">
+        <span class="dp-kicker">Technischer Kontext</span>
+        <h2>Browser und Laufzeitumgebung.</h2>
+        <p>Diese Angaben werden automatisch erfasst und helfen bei der Einordnung von Darstellungs- oder PDF-Abweichungen.</p>
+      </div>
+      <div class="dp-system-grid" data-system-grid></div>
+    </section>
+
+    <section class="dp-section dp-section-muted">
+      <div class="dp-section-shell">
+        <div class="dp-section-heading">
+          <span class="dp-kicker">Pflichtprüfungen</span>
+          <h2>Zwölf nachvollziehbare Prüfpunkte.</h2>
+          <p>Jeder Punkt bleibt vollständig zusammen. Bei „Problem“ sollte eine kurze Bemerkung erfasst und anschließend die Rückmeldung exportiert werden.</p>
+        </div>
+        <div class="dp-check-groups" data-check-groups></div>
+      </div>
+    </section>
+
+    <section class="dp-section-shell dp-acceptance-decision">
+      <div class="dp-section-heading dp-section-heading-left">
+        <span class="dp-kicker">Freigabeentscheidung</span>
+        <h2>Release erst nach vollständiger Prüfung bestätigen.</h2>
+      </div>
+      <div class="dp-decision-grid">
+        <article>
+          <h3>Automatische Einordnung</h3>
+          <strong data-decision-text>Noch nicht freigabefähig</strong>
+          <p data-decision-reason>Es sind noch Pflichtprüfungen offen.</p>
+        </article>
+        <article class="dp-final-confirmation">
+          <label><input type="checkbox" data-final-confirmation disabled /> Ich bestätige die fachliche und technische Abnahme dieses geprüften Stands.</label>
+          <small>Die Checkbox wird erst freigeschaltet, wenn alle zwölf Prüfpunkte als „Bestanden“ markiert sind.</small>
+        </article>
+      </div>
+      <div class="dp-acceptance-actions">
+        <button class="dp-button dp-button-primary" type="button" data-export-html>Abnahmeprotokoll als HTML</button>
+        <button class="dp-button dp-button-secondary" type="button" data-export-json>Prüfdaten als JSON</button>
+        <button class="dp-button dp-button-secondary" type="button" data-copy-summary>Zusammenfassung kopieren</button>
+        <a class="dp-button dp-button-secondary" href="feedback.html">Problem dokumentieren</a>
+        <button class="dp-button dp-button-danger" type="button" data-reset-acceptance>Abnahme zurücksetzen</button>
+      </div>
+      <p class="dp-acceptance-storage-note" data-storage-note>Lokale Speicherung wird geprüft.</p>
+    </section>
+  </main>
+
+  <footer class="dp-site-footer">
+    <div class="dp-footer-brand"><img src="assets/logo/eo-logo.png" alt="EO Logo" draggable="false" /><span><strong>Druckverlust Pro</strong><small>Professional · Version 3.0.4</small></span></div>
+    <div class="dp-footer-links"><a href="index.html">Startseite</a><a href="app.html">Tool</a><a href="bedienungsanleitung.html">Anleitung</a><a href="deployment.html">Online-Status</a><a href="feedback.html">Feedback</a><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div>
+    <p>© 2026 Emre Özgöller – Druckverlust Pro · Professional</p>
+  </footer>
+
+  <script type="module" src="src/landing/acceptance-page.js?v=58.40"></script>
+</body>
+</html>

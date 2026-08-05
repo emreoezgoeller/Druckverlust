@@ -1,4 +1,4 @@
-// Druckverlust Pro – Phase 58.20 PDF-Hotfix 2
+// Druckverlust Pro – Phase 58.40 PDF-Hotfix 2
 // Erzeugt das druckoptimierte, herstellerneutrale Anlagenschema für den PDF-/HTML-Bericht.
 
 function num(value, fallback = 0) {

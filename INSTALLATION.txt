@@ -1,32 +1,27 @@
-Druckverlust Pro - PDF-Hotfix 3: Dynamische Seitenausnutzung
-============================================================
+DRUCKVERLUST PRO 3.0.3 - PHASE 58.30 PDF-ABSCHLUSS
+==================================================
 
-Basis:
-- Druckverlust Pro v3.0.2 / Phase 58.20
-- PDF-Hotfix 1 installiert
-- PDF-Hotfix 2 installiert
+Voraussetzung:
+- Aktueller Projektstand Version 3.0.2 / Phase 58.20
+- PDF-Hotfix 1, PDF-Hotfix 2 und PDF-Hotfix 3 sind bereits eingespielt.
 
 Installation:
-1. ZIP-Datei entpacken.
-2. Den gesamten Inhalt dieses Ordners in den aktuellen Druckverlust-Pro-Ordner kopieren.
+1. Sicherheitskopie des aktuellen Projektordners erstellen.
+2. Den INHALT dieses Patch-Ordners in den Projektstamm kopieren.
 3. Vorhandene Dateien ersetzen.
 4. Browser mit Strg + F5 vollständig neu laden.
+5. Bericht öffnen und warten, bis "Layout geprüft" angezeigt wird.
+6. PDF in Chrome und Edge kontrollieren.
 
-Geänderte Projektdateien:
-- app.html
-- release-integrity.json
-- src/main.js
-- src/report/ReportEngine.js
-- src/ui/components/WorkspaceComponent.js
+Enthalten:
+- Konsolidierte Version 3.0.3 / Phase 58.30
+- Einheitliche Cachekennung 58.30
+- Dynamische blockweise Seitenausnutzung aus PDF-Hotfix 3
+- Vollständige Formteilbilder und Bauteilzuordnungen
+- Optimierte Haupttabelle und Anlagenschema
+- Aktualisierte Bedienungs-, Release- und Deployment-Daten
 
-Neu:
-- Automatische, höhenbasierte Zusammenfassung kurzer Berichtskapitel.
-- Deckblatt, Inhaltsverzeichnis, Anlagenschema und Prüfung/Freigabe bleiben separat.
-- Inhaltsblöcke werden nicht zwischen zwei Seiten getrennt.
-- Inhaltsverzeichnis, Fusszeilen und Gesamtseitenzahl werden nach der Verdichtung automatisch aktualisiert.
-- Maximal drei vollständige Kapitelblöcke pro Seite.
-- Automatische Überlaufprüfung vor dem Drucken.
-
-Hinweis:
-Der Bericht wird erst nach dem Laden der Bilder dynamisch verdichtet. Beim Drucken kurz warten,
-bis oben "Layout geprüft" angezeigt wird.
+Nicht verändert:
+- Rechenkern
+- Projektschema 1.3.0
+- Bestehende Projektdateien und Formteilberechnungen

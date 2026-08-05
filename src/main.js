@@ -1,20 +1,20 @@
-// Druckverlust Pro – Phase 58.20
+// Druckverlust Pro – Phase 58.40
 // Startet Tool, Demo, Hilfe, Beispielbericht, Fachtest, Freigabeentscheidung und Beta-Status über URL-Parameter.
 
 import ApplicationState from './app/ApplicationState.js';
-import ApplicationShell from './ui/ApplicationShell.js?v=58.20';
-import RibbonComponent from './ui/components/RibbonComponent.js?v=58.20';
-import SidebarComponent from './ui/components/SidebarComponent.js?v=58.20';
-import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.20-pdf3';
-import StatusBarComponent from './ui/components/StatusBarComponent.js?v=58.20';
+import ApplicationShell from './ui/ApplicationShell.js?v=58.40';
+import RibbonComponent from './ui/components/RibbonComponent.js?v=58.40';
+import SidebarComponent from './ui/components/SidebarComponent.js?v=58.40';
+import WorkspaceComponent from './ui/components/WorkspaceComponent.js?v=58.40';
+import StatusBarComponent from './ui/components/StatusBarComponent.js?v=58.40';
 import ProjectCalculationService from './project/ProjectCalculationService.js';
 import createDefaultProject from './project/defaultProject.js';
 import createDemoProject from './project/demoProject.js';
-import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=58.20';
+import KeyboardShortcuts from './ui/core/KeyboardShortcuts.js?v=58.40';
 import AutoSaveEngine from './storage/AutoSaveEngine.js';
-import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=58.20';
-import UiTooltipController from './ui/core/UiTooltipController.js?v=58.20';
-import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=58.20';
+import { APP_RELEASE, APP_BUILD_LABEL, createAppInfo } from './core/appVersion.js?v=58.40';
+import UiTooltipController from './ui/core/UiTooltipController.js?v=58.40';
+import ProjectHistoryEngine from './project/ProjectHistoryEngine.js?v=58.40';
 import { createLicenseStatus } from './licensing/licenseConfig.js';
 import LicenseGate from './licensing/LicenseGate.js';
 

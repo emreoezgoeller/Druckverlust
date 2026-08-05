@@ -66,6 +66,12 @@
       "description": "Auffälligkeit oder Funktionswunsch lokal dokumentieren"
     },
     {
+      "name": "Abnahme und Freigabe",
+      "short_name": "Abnahme",
+      "url": "./abnahme.html",
+      "description": "Chrome-, Edge-, Projekt- und PDF-Abnahme lokal dokumentieren"
+    },
+    {
       "name": "Online-Status prüfen",
       "short_name": "Online-Status",
       "url": "./deployment.html",
